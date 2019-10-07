@@ -26,11 +26,11 @@ import dragonfly
 ## Local Development
 1. Clone this repo locally
 ```console
-git clone git@github.com:ladybug-tools/dragonfly
+git clone git@github.com:ladybug-tools/dragonfly-core.git
 
 # or
 
-git clone https://github.com/ladybug-tools/dragonfly
+git clone https://github.com/ladybug-tools/dragonfly-core.git
 ```
 2. Install dependencies:
 ```console
