@@ -4,7 +4,6 @@ from ._base import _BaseGeometry
 from .properties import BuildingProperties
 from .story import Story
 
-from honeybee.typing import int_in_range
 from honeybee.shade import Shade
 from honeybee.model import Model
 
@@ -19,7 +18,6 @@ class Building(_BaseGeometry):
         * name
         * display_name
         * unique_stories
-        * multipliers
         * all_stories
         * unique_room_2ds
         * all_room_2ds
@@ -30,9 +28,9 @@ class Building(_BaseGeometry):
         * exterior_wall_area
         * exterior_aperture_area
     """
-    __slots__ = ('_unique_stories', '_multipliers')
+    __slots__ = ('_unique_stories',)
 
-    def __init__(self, name, unique_stories, multipliers=None):
+    def __init__(self, name, unique_stories):
         """A complete Building defined by Stories.
 
         Args:
@@ -43,10 +41,6 @@ class Building(_BaseGeometry):
                 repeated several times over the height of the building, the unique
                 story included in this list should be the first (lowest) story
                 of the repeated floors.
-            multipliers: A list of integers with the same length as the input
-                unique_stories that denotes the number of times that each of the
-                unique_stories is repeated over the height of the building. If None,
-                ir will be assumed that each story is repeated only once. Default: None.
         """
         _BaseGeometry.__init__(self, name)  # process the name
 
@@ -59,18 +53,6 @@ class Building(_BaseGeometry):
                 'Expected dragonfly Story. Got {}'.format(type(story))
             story._parent = self
         self._unique_stories = unique_stories
-
-        # process the input multipliers
-        if multipliers is None:
-            self._multipliers = [1 for i in self._unique_stories]
-        else:
-            assert len(multipliers) == len(self._unique_stories), 'The length of ' \
-                'Building multipliers must match the length of unique_stories. ' \
-                '{} != {}'.format(len(multipliers), len(self._unique_stories))
-            new_mults = []
-            for m in multipliers:
-                new_mults.append(int_in_range(m, 1, input_name='building multipliers'))
-            self._multipliers = multipliers
 
         self._properties = BuildingProperties(self)  # properties for extensions
 
@@ -86,9 +68,8 @@ class Building(_BaseGeometry):
             'Got {}.'.format(data['type'])
 
         stories = [Story.from_dict(s_dict) for s_dict in data['unique_stories']]
-        mults = data['multipliers'] if 'multipliers' in data else None
 
-        building = Building(data['name'], stories, mults)
+        building = Building(data['name'], stories)
         if 'display_name' in data and data['display_name'] is not None:
             building._display_name = data['display_name']
 
@@ -102,18 +83,13 @@ class Building(_BaseGeometry):
         return self._unique_stories
 
     @property
-    def multipliers(self):
-        """A tuple of integers denoting how many times each unique_story is repeated."""
-        return tuple(self._multipliers)
-
-    @property
     def all_stories(self):
         """A list of all Story objects that form the Building."""
         all_stories = []
-        for story, m in zip(self._unique_stories, self._multipliers):
+        for story in self._unique_stories:
             all_stories.append(story)
-            if m != 1:
-                for i in range(m - 1):
+            if story.multiplier != 1:
+                for i in range(story.multiplier - 1):
                     m_vec = Vector3D(0, 0, story.floor_to_floor_height * (i + 1))
                     new_story = story.duplicate()
                     new_story.move(m_vec)
@@ -124,23 +100,24 @@ class Building(_BaseGeometry):
     def unique_room_2ds(self):
         """A list of the unique Room2D objects that form the Building."""
         rooms = []
-        for room in self._unique_stories:
-            rooms.extend(room.room_2ds)
+        for story in self._unique_stories:
+            rooms.extend(story.room_2ds)
         return rooms
 
     @property
     def all_room_2ds(self):
         """A list of all Room2D objects that form the Building."""
         rooms = []
-        for room in self.all_stories:
-            rooms.extend(room.room_2ds)
+        for story in self.all_stories:
+            rooms.extend(story.room_2ds)
         return rooms
 
     @property
     def height(self):
         """Get a number for the height of the top ceiling of the Building."""
-        return self._unique_stories[-1].floor_height + \
-            (self._unique_stories[-1].floor_to_floor_height * self._multipliers[-1])
+        last_flr = self._unique_stories[-1]
+        return last_flr.floor_height + \
+            (last_flr.floor_to_floor_height * last_flr.multiplier)
 
     @property
     def height_from_first_floor(self):
@@ -149,27 +126,39 @@ class Building(_BaseGeometry):
 
     @property
     def volume(self):
-        """Get a number for the volume of all the Rooms in the Building."""
-        return sum([story.volume * m for story, m in
-                    zip(self._unique_stories, self._multipliers)])
+        """Get a number for the volume of all the Rooms in the Building.
+
+        Note that this property uses the story multipliers.
+        """
+        return sum([story.volume * story.multiplier
+                    for story in self._unique_stories])
 
     @property
     def floor_area(self):
-        """Get a number for the total floor area in the Building."""
-        return sum([story.floor_area * m for story, m in
-                    zip(self._unique_stories, self._multipliers)])
+        """Get a number for the total floor area in the Building.
+
+        Note that this property uses the story multipliers.
+        """
+        return sum([story.floor_area * story.multiplier
+                    for story in self._unique_stories])
 
     @property
     def exterior_wall_area(self):
-        """Get a number for the total exterior wall area in the Building."""
-        return sum([story.exterior_wall_area * m for story, m in
-                    zip(self._unique_stories, self._multipliers)])
+        """Get a number for the total exterior wall area in the Building.
+
+        Note that this property uses the story multipliers.
+        """
+        return sum([story.exterior_wall_area * story.multiplier
+                    for story in self._unique_stories])
 
     @property
     def exterior_aperture_area(self):
-        """Get a number for the total exterior aperture area in the Building."""
-        return sum([story.exterior_aperture_area * m for story, m in
-                    zip(self._unique_stories, self._multipliers)])
+        """Get a number for the total exterior aperture area in the Building.
+
+        Note that this property uses the story multipliers.
+        """
+        return sum([story.exterior_aperture_area * story.multiplier
+                    for story in self._unique_stories])
 
     def shade_representation(self, tolerance):
         """A list of honeybee Shade objects representing the building geometry.
@@ -182,8 +171,8 @@ class Building(_BaseGeometry):
                 not considered touching.
         """
         context_shades = []
-        for story, mult in zip(self.unique_stories, self.multipliers):
-            extru_vec = Vector3D(0, 0, story.floor_to_floor_height * mult)
+        for story in self.unique_stories:
+            extru_vec = Vector3D(0, 0, story.floor_to_floor_height * story.multiplier)
             for i, seg in enumerate(story.outline_segments(tolerance)):
                 extru_geo = Face3D.from_extrusion(seg, extru_vec)
                 shd_name = '{}_{}_{}'.format(self.name, story.name, i)
@@ -204,16 +193,16 @@ class Building(_BaseGeometry):
         of each of the relevant Stories.
         """
         self._unique_stories[0].is_ground_floor = True
-        if self._multipliers[-1] == 1:
+        if self._unique_stories[-1].multiplier == 1:
             self._unique_stories[-1].is_top_floor = True
         else:
             top = self._unique_stories[-1].duplicate()
-            move_vec = Vector3D(0, 0, top.floor_to_floor_height * self._multipliers[-1])
+            move_vec = Vector3D(0, 0, top.floor_to_floor_height * top.multiplier)
             top.move(move_vec)
             top.is_top_floor = True
+            top.multiplier = 1
+            self._unique_stories[-1].multiplier = self._unique_stories[-1].multiplier - 1
             self._unique_stories = self._unique_stories + (top,)
-            self._multipliers[-1] = self._multipliers[-1] - 1
-            self._multipliers.append(1)
 
     def set_outdoor_glazing_parameters(self, glazing_parameter):
         """Set all of the outdoor walls to have the same glazing parameters."""
@@ -266,17 +255,25 @@ class Building(_BaseGeometry):
         for story in self._unique_stories:
             story.scale(factor, origin)
 
-    def to_honeybee(self, tolerance):
+    def to_honeybee(self, use_multiplier=True, tolerance=None):
         """Convert Dragonfly Building to a Honeybee Model.
 
         Args:
+            use_multiplier: If True, the multipliers on this Building's Stories will be
+                passed along to the generated Honeybee Room objects, indicating the
+                simulation will be run once for each unique room and then results
+                will be multiplied. If False, full geometry objects will be written
+                for each and every floor in the building that are represented through
+                multipliers and all resulting multipliers will be 1. Default: True
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 If None, no splitting will occur. Default: None.
         """
-        # TODO: Add an option to only export unique rooms
-        # once we have multipliers in honeybee-core
-        hb_rooms = [room.to_honeybee(tolerance) for room in self.all_room_2ds]
+        if use_multiplier:
+            hb_rooms = [room for story in self._unique_stories
+                        for room in story.to_honeybee(True, tolerance)]
+        else:
+            hb_rooms = [room.to_honeybee(1, tolerance) for room in self.all_room_2ds]
         return Model(self.display_name, hb_rooms)
 
     def to_dict(self, abridged=False, included_prop=None):
@@ -296,14 +293,12 @@ class Building(_BaseGeometry):
         base['display_name'] = self.display_name
         base['unique_stories'] = [s.to_dict(abridged, included_prop)
                                   for s in self._unique_stories]
-        base['multipliers'] = self.multipliers
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         return base
 
     def __copy__(self):
         new_b = Building(self.name,
-                         tuple(story.duplicate() for story in self._unique_stories),
-                         self._multipliers)
+                         tuple(story.duplicate() for story in self._unique_stories))
         new_b._display_name = self.display_name
         new_b._properties._duplicate_extension_attr(self._properties)
         return new_b

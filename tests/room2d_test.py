@@ -390,6 +390,27 @@ def test_solve_adjacency_aperture():
         Room2D.solve_adjacency([room2d_1, room2d_3], 0.01)
 
 
+def test_room2d_intersect_adjacency():
+    """Test the Room2D intersect_adjacency method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 5, 2), Point3D(20, 5, 2), Point3D(20, 15, 2), Point3D(10, 15, 2))
+    room2d_1 = Room2D('Square Shoebox 1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Square Shoebox 2', Face3D(pts_2), 3)
+    room2d_1, room2d_2 = Room2D.intersect_adjacency([room2d_1, room2d_2], 0.01)
+
+    assert len(room2d_1) == 5
+    assert len(room2d_2) == 5
+
+    Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
+
+    assert isinstance(room2d_1.boundary_conditions[2], Surface)
+    assert isinstance(room2d_2.boundary_conditions[4], Surface)
+    assert room2d_1.boundary_conditions[2].boundary_condition_object == \
+        '{}_Face5'.format(room2d_2.name)
+    assert room2d_2.boundary_conditions[4].boundary_condition_object == \
+        '{}_Face3'.format(room2d_1.name)
+
+
 def test_to_honeybee():
     """Test the to_honeybee method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
@@ -399,7 +420,7 @@ def test_to_honeybee():
     glazing = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
     room2d = Room2D('Zone: SHOE_BOX [920980]', Face3D(pts), 3, boundarycs, glazing, shading)
-    room = room2d.to_honeybee(0.1)
+    room = room2d.to_honeybee(1, 0.1)
 
     assert room.name == 'ZoneSHOE_BOX920980'
     assert room.display_name == 'Zone: SHOE_BOX [920980]'
