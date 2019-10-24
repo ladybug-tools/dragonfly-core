@@ -582,10 +582,15 @@ class Room2D(_BaseGeometry):
                     self.display_name, tolerance))
         return False
 
-    def to_honeybee(self, tolerance=None):
+    def to_honeybee(self, multiplier=1, tolerance=None):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
+            multiplier: An integer greater than 0 that denotes the number of times
+                the room is repeated. You may want to set this differently depending
+                on whether you are exporting each room as its own geometry (in which
+                case, this should be 1) or you only want to simulate the "unique" room
+                once and have the results multiplied. Default: 1.
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 If None, no splitting will occur. Default: None.
@@ -606,11 +611,14 @@ class Room2D(_BaseGeometry):
             if shd_par is not None:
                 shd_par.add_shading_to_face(hb_room[i + 1], tol)
 
-        # ensure matching adjacent Faces if tolerance is input
+        # ensure matching adjacent Faces across the Story if tolerance is input
         if tolerance is not None and self._parent is not None:
             new_faces = self._split_walls_along_height(hb_room, tolerance)
             if len(new_faces) != len(hb_room):  # rebuild the room with split surfaces
                 hb_room = Room(self.name, new_faces, tolerance, 0.1)
+
+        # set the multiplier
+        hb_room.multiplier = multiplier
 
         # assign properties for the roof and floor from the parent Story
         try:
@@ -618,7 +626,7 @@ class Room2D(_BaseGeometry):
             hb_room[-1].boundary_condition = bcs.adiabatic
         except AttributeError:
             pass  # honeybee_energy is not loaded and Adiabatic type doesn't exist
-        if self._parent is not None:
+        if self._parent is not None and multiplier == 1:
             if self._parent.is_ground_floor:
                 hb_room[0].boundary_condition = bcs.ground
             if self._parent.is_top_floor:
@@ -693,6 +701,76 @@ class Room2D(_BaseGeometry):
                                     break
             except IndexError:
                 pass  # we have reached the end of the list of zones
+
+    @staticmethod
+    def intersect_adjacency(room_2ds, tolerance):
+        """Intersect the line segments of an array of Room2Ds to ensure matching walls.
+
+        Note that this method effectively erases all assigned boundary conditions,
+        glazing parameters and shading parameters as the original segments are
+        subdivided. As such, it is recommended that this method be used before all
+        other steps when creating a Story.
+
+        Also note that this method does not actually set the walls that are next to one
+        another to be adjacent. The solve_adjacency method must be used for this after
+        runing this method.
+
+        Args:
+            room_2ds: A list of Room2Ds for which adjacencent segments will be solved.
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered centered adjacent.
+
+        Returns:
+            An array of Room2Ds that have been intersected with one another. Note
+            that these Room2Ds lack all assigned boundary conditions, glazing parameters
+            and shading parameters of the original Room2Ds.
+        """
+        # keep track of all data needed to map between 2D and 3D space
+        master_plane = room_2ds[0].floor_geometry.plane
+        move_dists = []
+        is_holes = []
+        polygon_2ds = []
+
+        # map all Room geometry into the same 2D space
+        for room in room_2ds:
+            # ensure all starting room heights match
+            dist = master_plane.o.z - room.floor_height
+            move_dists.append(dist)  # record all distances moved
+            is_holes.append(False)  # record that first Polygon doesn't have holes
+            polygon_2ds.append(room._floor_geometry.boundary_polygon2d)
+            # of there are holes in the face, add them as their own polygons
+            if room._floor_geometry.has_holes:
+                for hole in room._floor_geometry.hole_polygon2d:
+                    move_dists.append(dist)  # record all distances moved
+                    is_holes.append(True)  # record that first Polygon doesn't have holes
+                    polygon_2ds.append(hole)
+
+        # intersect the Room2D polygons within the 2D space
+        int_poly = Polygon2D.intersect_polygon_segments(polygon_2ds, tolerance)
+
+        # convert the resulting coordinates back to 3D space
+        face_pts = []
+        for poly, dist, is_hole in zip(int_poly, move_dists, is_holes):
+            pt_3d = [master_plane.xy_to_xyz(pt) for pt in poly]
+            if dist != 0:
+                pt_3d = [Point3D(pt.x, pt.y, pt.z - dist) for pt in pt_3d]
+            if not is_hole:
+                face_pts.append((pt_3d, []))
+            else:
+                face_pts[-1][1].append(pt_3d)
+
+        # rebuild all of the floor geometries to the input Room2Ds
+        intersected_rooms = []
+        for i, face_loops in enumerate(face_pts):
+            if len(face_loops[1]) == 0:  # no holes
+                new_geo = Face3D(face_loops[0], room_2ds[i].floor_geometry.plane)
+            else:  # ensure holes are included
+                new_geo = Face3D(face_loops[0], room_2ds[i].floor_geometry.plane,
+                                 face_loops[1])
+            rebuilt_room = Room2D(room_2ds[i].display_name, new_geo,
+                                  room_2ds[i].floor_to_ceiling_height)
+            intersected_rooms.append(rebuilt_room)
+        return intersected_rooms
 
     def _check_wall_assinged_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""

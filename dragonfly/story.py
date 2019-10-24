@@ -4,7 +4,7 @@ from ._base import _BaseGeometry
 from .properties import StoryProperties
 from .room2d import Room2D
 
-from honeybee.typing import float_positive
+from honeybee.typing import float_positive, int_in_range
 from honeybee.model import Model
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
@@ -19,6 +19,7 @@ class Story(_BaseGeometry):
         * display_name
         * room_2ds
         * floor_to_floor_height
+        * multiplier
         * is_ground_floor
         * is_top_floor
         * parent
@@ -29,10 +30,10 @@ class Story(_BaseGeometry):
         * exterior_wall_area
         * exterior_aperture_area
     """
-    __slots__ = ('_room_2ds', '_floor_to_floor_height', '_is_ground_floor',
-                 '_is_top_floor', '_parent')
+    __slots__ = ('_room_2ds', '_floor_to_floor_height', '_multiplier',
+                 '_is_ground_floor', '_is_top_floor', '_parent')
 
-    def __init__(self, name, room_2ds, floor_to_floor_height=None,
+    def __init__(self, name, room_2ds, floor_to_floor_height=None, multiplier=1,
                  is_ground_floor=False, is_top_floor=False):
         """A Story of a building defined by an extruded Floor2Ds.
 
@@ -44,6 +45,8 @@ class Story(_BaseGeometry):
                 this Story to the floor of the story above this one (if it exists).
                 If None, this value will be the maximum floor_to_ceiling_height of the
                 input room_2ds.
+            multiplier: An integer with that denotes the number of times that this
+                Story is repeated over the height of the building. Default: 1.
             is_ground_floor: A boolean to note whether this Story is a ground floor,
                 in which case the floor Faces of the resulting Rooms will have a Ground
                 boundary condition instead of an Adiabatic one. Default: False.
@@ -65,6 +68,7 @@ class Story(_BaseGeometry):
 
         # process the input properties
         self.floor_to_floor_height = floor_to_floor_height
+        self.multiplier = multiplier
         self.is_ground_floor = is_ground_floor
         self.is_top_floor = is_top_floor
 
@@ -84,10 +88,11 @@ class Story(_BaseGeometry):
 
         rooms = [Room2D.from_dict(r_dict) for r_dict in data['room_2ds']]
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
+        mult = data['multiplier'] if 'multiplier' in data else 1
         gf = data['is_ground_floor'] if 'is_ground_floor' in data else False
         tf = data['is_top_floor'] if 'is_top_floor' in data else False
 
-        story = Story(data['name'], rooms, f2fh, gf, tf)
+        story = Story(data['name'], rooms, f2fh, mult, gf, tf)
         if 'display_name' in data and data['display_name'] is not None:
             story._display_name = data['display_name']
 
@@ -110,6 +115,27 @@ class Story(_BaseGeometry):
         if value is None:
             value = max([room.floor_to_ceiling_height for room in self._room_2ds])
         self._floor_to_floor_height = float_positive(value, 'floor-to-floor height')
+
+    @property
+    def multiplier(self):
+        """Get or set an integer noting how many times this Story is repeated.
+
+        Multipliers are used to speed up the calculation when similar Stories are
+        repeated more than once. Essentially, a given simulation with the
+        Story is run once and then the result is mutliplied by the multiplier.
+        This comes with some inaccuracy. However, this error might not be too large
+        if the Stories are similar enough and it can often be worth it since it can
+        greatly speed up the calculation.
+
+        For more information on multipliers in EnergyPlus see EnergyPlus Tips and Tricks:
+        https://bigladdersoftware.com/epx/docs/9-1/tips-and-tricks-using-energyplus/
+        using-multipliers-zone-and-or-window.html
+        """
+        return self._multiplier
+
+    @multiplier.setter
+    def multiplier(self, value):
+        self._multiplier = int_in_range(value, 1, input_name='room multiplier')
 
     @property
     def is_ground_floor(self):
@@ -150,22 +176,34 @@ class Story(_BaseGeometry):
 
     @property
     def volume(self):
-        """Get a number for the volume of all the Rooms in the Story."""
+        """Get a number for the volume of all the Rooms in the Story.
+
+        Note that this property is for one story and does NOT use the multiplier.
+        """
         return sum([room.volume for room in self._room_2ds])
 
     @property
     def floor_area(self):
-        """Get a number for the total floor area in the Story."""
+        """Get a number for the total floor area in the Story.
+
+        Note that this property is for one story and does NOT use the multiplier.
+        """
         return sum([room.floor_area for room in self._room_2ds])
 
     @property
     def exterior_wall_area(self):
-        """Get a number for the total exterior wall area in the Story."""
+        """Get a number for the total exterior wall area in the Story.
+
+        Note that this property is for one story and does NOT use the multiplier.
+        """
         return sum([room.exterior_wall_area for room in self._room_2ds])
 
     @property
     def exterior_aperture_area(self):
-        """Get a number for the total exterior aperture area in the Story."""
+        """Get a number for the total exterior aperture area in the Story.
+
+        Note that this property is for one story and does NOT use the multiplier.
+        """
         return sum([room.exterior_aperture_area for room in self._room_2ds])
 
     def floor_geometry(self, tolerance):
@@ -234,10 +272,25 @@ class Story(_BaseGeometry):
     def solve_room_2d_adjacency(self, tolerance):
         """Automatically solve adjacencies across the Room2Ds in this story.
 
-        tolerance: The minimum difference between the coordinate values of two
-            faces at which they can be considered centered adjacent.
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered centered adjacent.
         """
         Room2D.solve_adjacency(self._room_2ds, tolerance)
+
+    def intersect_room_2d_adjacency(self, tolerance):
+        """Automatically intersect the line segments of the Story's Room2Ds.
+
+        Note that this method effectively erases all assigned boundary conditions,
+        glazing parameters and shading parameters as the original segments are
+        subdivided. As such, it is recommended that this method be used before all
+        other steps when creating a Story.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered centered adjacent.
+        """
+        self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
 
     def set_outdoor_glazing_parameters(self, glazing_parameter):
         """Set all of the outdoor walls to have the same glazing parameters."""
@@ -304,15 +357,21 @@ class Story(_BaseGeometry):
             room.scale(factor, origin)
         self._floor_to_floor_height = self._floor_to_floor_height * factor
 
-    def to_honeybee(self, tolerance=None):
+    def to_honeybee(self, use_multiplier=True, tolerance=None):
         """Convert Dragonfly Story to a Honeybee Model.
 
         Args:
+            use_multiplier: If True, this Story's multiplier will be passed along
+                to the generated Honeybee Room objects, indicating the simulation
+                will be run once for the Story and then results will be multiplied.
+                You will want to set this to False when exporting each Story as
+                full geometry.
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 If None, no splitting will occur. Default: None.
         """
-        hb_rooms = [room.to_honeybee(tolerance) for room in self._room_2ds]
+        mult = self.multiplier if use_multiplier else 1
+        hb_rooms = [room.to_honeybee(mult, tolerance) for room in self._room_2ds]
         return Model(self.display_name, hb_rooms)
 
     def to_dict(self, abridged=False, included_prop=None):
@@ -332,6 +391,7 @@ class Story(_BaseGeometry):
         base['display_name'] = self.display_name
         base['room_2ds'] = [r.to_dict(abridged, included_prop) for r in self._room_2ds]
         base['floor_to_floor_height'] = self.floor_to_floor_height
+        base['multiplier'] = self.multiplier
         base['is_ground_floor'] = self.is_ground_floor
         base['is_top_floor'] = self.is_top_floor
         base['properties'] = self.properties.to_dict(abridged, included_prop)
@@ -339,8 +399,8 @@ class Story(_BaseGeometry):
 
     def __copy__(self):
         new_s = Story(self.name, tuple(room.duplicate() for room in self._room_2ds),
-                      self._floor_to_floor_height, self._is_ground_floor,
-                      self._is_top_floor)
+                      self._floor_to_floor_height, self._multiplier,
+                      self._is_ground_floor, self._is_top_floor)
         new_s._display_name = self.display_name
         new_s._parent = self._parent
         new_s._properties._duplicate_extension_attr(self._properties)

@@ -38,6 +38,7 @@ def test_story_init():
         assert isinstance(room, Room2D)
         assert room.has_parent
     assert story.floor_to_floor_height == 3
+    assert story.multiplier == 1
     assert not story.is_ground_floor
     assert not story.is_top_floor
     assert story.parent is None
@@ -269,7 +270,7 @@ def test_to_honeybee_different_heights():
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
 
-    hb_model = story.to_honeybee(0.01)
+    hb_model = story.to_honeybee(True, 0.01)
     assert isinstance(hb_model, Model)
     assert len(hb_model.rooms) == 2
     assert len(hb_model.rooms[0]) == 8
@@ -305,6 +306,7 @@ def test_to_dict():
     assert 'room_2ds' in sd
     assert len(sd['room_2ds']) == 2
     assert sd['floor_to_floor_height'] == 5
+    assert sd['multiplier'] == 1
     assert not sd['is_ground_floor']
     assert sd['is_top_floor']
     assert 'properties' in sd

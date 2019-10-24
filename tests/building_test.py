@@ -28,12 +28,12 @@ def test_building_init():
     story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
 
     str(building)  # test the string representation
     assert building.name == 'OfficeBuilding'
     assert building.display_name == 'Office Building'
-    assert building.multipliers == (4,)
     assert len(building.unique_stories) == 1
     assert len(building.all_stories) == 4
     assert len(building.unique_room_2ds) == 4
@@ -70,7 +70,8 @@ def test_building_shade_representation():
     room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
     story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
 
     shade_rep = building.shade_representation(0.01)
     assert len(shade_rep) == 8
@@ -90,7 +91,8 @@ def test_building_glazing_shading_parameters():
     room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
     story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
 
     assert building.exterior_aperture_area == 0
     assert building.unique_room_2ds[0].glazing_parameters[2] is None
@@ -104,12 +106,10 @@ def test_building_glazing_shading_parameters():
     story.set_outdoor_shading_parameters(overhang)
     assert building.unique_room_2ds[0].shading_parameters[2] == overhang
 
-    assert building.multipliers == (4,)
     assert len(building.unique_stories) == 1
     assert len(building.all_stories) == 4
     assert len(building.unique_room_2ds) == 4
     building.auto_assign_top_bottom_floors()
-    assert building.multipliers == (3, 1)
     assert len(building.unique_stories) == 2
     assert len(building.all_stories) == 4
     assert len(building.unique_room_2ds) == 8
@@ -123,7 +123,8 @@ def test_move():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
 
     vec_1 = Vector3D(2, 2, 2)
     new_b = building.duplicate()
@@ -150,7 +151,8 @@ def test_scale():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
 
     new_b = building.duplicate()
     new_b.scale(2)
@@ -174,7 +176,8 @@ def test_rotate_xy():
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
     room = Room2D('Square Shoebox', Face3D(pts, plane), 3)
     story = Story('Office Floor', [room])
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
     origin_1 = Point3D(1, 1, 0)
 
     test_1 = building.duplicate()
@@ -207,7 +210,8 @@ def test_reflect():
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
     room = Room2D('Square Shoebox', Face3D(pts, plane), 3)
     story = Story('Office Floor', [room])
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
 
     origin_1 = Point3D(1, 0, 2)
     normal_1 = Vector3D(1, 0, 0)
@@ -232,9 +236,10 @@ def test_to_honeybee():
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
 
-    hb_model = building.to_honeybee(0.01)
+    hb_model = building.to_honeybee(False, 0.01)
     assert isinstance(hb_model, Model)
     assert len(hb_model.rooms) == 8
     assert len(hb_model.rooms[0]) == 6
@@ -263,7 +268,8 @@ def test_to_dict():
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
     building.auto_assign_top_bottom_floors()
 
     bd = building.to_dict()
@@ -272,8 +278,6 @@ def test_to_dict():
     assert bd['display_name'] == 'Office Building'
     assert 'unique_stories' in bd
     assert len(bd['unique_stories']) == 2
-    assert 'multipliers' in bd
-    assert bd['multipliers'] == (3, 1)
     assert 'properties' in bd
     assert bd['properties']['type'] == 'BuildingProperties'
 
@@ -288,7 +292,8 @@ def test_to_from_dict():
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
-    building = Building('Office Building', [story], [4])
+    story.multiplier = 4
+    building = Building('Office Building', [story])
     building.auto_assign_top_bottom_floors()
 
     building_dict = building.to_dict()
