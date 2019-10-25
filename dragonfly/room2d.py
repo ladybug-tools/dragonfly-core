@@ -632,6 +632,9 @@ class Room2D(_BaseGeometry):
             if self._parent.is_top_floor:
                 hb_room[-1].boundary_condition = bcs.outdoors
 
+        # transfer any extension properties assigned to the Room2D
+        hb_room._properties = self.properties.to_honeybee(hb_room)
+
         return hb_room
 
     def to_dict(self, abridged=False, included_prop=None):

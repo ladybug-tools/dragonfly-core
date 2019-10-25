@@ -5,11 +5,12 @@ These objects hold all attributes assigned by extensions like dragonfly-radiance
 and dragonfly-energy.  Note that these Property objects are not intended to exist
 on their own but should have a host object.
 """
+from honeybee.properties import RoomProperties
 
 
 class _Properties(object):
     """Base class for all Properties classes."""
-    _do_not_duplicate = ('host', 'to_dict', 'ToString')
+    _do_not_duplicate = ('host', 'to_dict', 'to_honeybee', 'ToString')
 
     def __init__(self, host):
         """Initialize properties.
@@ -51,6 +52,32 @@ class _Properties(object):
                 import traceback
                 traceback.print_exc()
                 raise Exception('Failed to duplicate {}: {}'.format(var, e))
+
+    def _add_extension_attr_to_honeybee(self, host, honeybee_properties):
+        """Add Dragonfly properties for extensions to Honeybee extension properties.
+
+        This method should be called within the to_honeybee method for any
+        dragonfly-core geometry object that maps directly to a honeybee-core object.
+
+        Args:
+            host: A honeybee-core object that hosts these properties.
+            honeybee_properties: A honeybee-core Properties object to which the
+                dragonfly-core extension attributes will be added.
+        """
+        attr = [atr for atr in dir(self)
+                if not atr.startswith('_') and atr not in self._do_not_duplicate]
+
+        for atr in attr:
+            var = getattr(self, atr)
+            if not hasattr(var, 'to_honeybee'):
+                continue
+            try:
+                setattr(honeybee_properties, '_' + atr, var.to_honeybee(host))
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception('Failed to translate {} to_honeybee: {}'.format(var, e))
+        return honeybee_properties
 
     def _add_extension_attr_to_dict(self, base, abridged, include):
         """Add attributes for extensions to the base dictionary.
@@ -216,6 +243,15 @@ class Room2DProperties(_Properties):
 
         base = self._add_extension_attr_to_dict(base, abridged, include)
         return base
+
+    def to_honeybee(self, host):
+        """Convert this Room2D's extension properties to honeybee Room properties.
+
+        Args:
+            host: A honeybee-core Room object that hosts these properties.
+        """
+        hb_prop = RoomProperties(host)
+        return self._add_extension_attr_to_honeybee(host, hb_prop)
 
     def __repr__(self):
         """Properties representation."""

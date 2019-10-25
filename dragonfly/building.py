@@ -270,8 +270,8 @@ class Building(_BaseGeometry):
                 If None, no splitting will occur. Default: None.
         """
         if use_multiplier:
-            hb_rooms = [room for story in self._unique_stories
-                        for room in story.to_honeybee(True, tolerance)]
+            hb_rooms = [room.to_honeybee(story.multiplier, tolerance)
+                        for story in self._unique_stories for room in story]
         else:
             hb_rooms = [room.to_honeybee(1, tolerance) for room in self.all_room_2ds]
         return Model(self.display_name, hb_rooms)

@@ -257,6 +257,11 @@ def test_to_honeybee():
     assert len(hb_model.rooms[0][1].apertures) == 1
     assert len(hb_model.rooms[0][2].apertures) == 0
 
+    hb_model = building.to_honeybee(True, 0.01)
+    assert len(hb_model.rooms) == 2
+    for room in hb_model.rooms:
+        assert room.multiplier == 4
+
 
 def test_to_dict():
     """Test the Building to_dict method."""
