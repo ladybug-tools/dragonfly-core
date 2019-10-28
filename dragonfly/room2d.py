@@ -499,9 +499,9 @@ class Room2D(_BaseGeometry):
         assert isinstance(other_room_2d, Room2D), \
             'Expected dragonfly Room2D. Got {}.'.format(type(other_room_2d))
         # set the boundary conditions of the segments
-        names_1 = ('{}_Face{}'.format(self.name, self_seg_index + 1),
+        names_1 = ('{}..Face{}'.format(self.name, self_seg_index + 1),
                    self.name)
-        names_2 = ('{}_Face{}'.format(other_room_2d.name, other_seg_index + 1),
+        names_2 = ('{}..Face{}'.format(other_room_2d.name, other_seg_index + 1),
                    other_room_2d.name)
         self._boundary_conditions[self_seg_index] = Surface(names_2)
         other_room_2d._boundary_conditions[other_seg_index] = Surface(names_1)
@@ -863,11 +863,11 @@ class Room2D(_BaseGeometry):
 
     def __copy__(self):
         new_r = Room2D(self.name, self._floor_geometry, self.floor_to_ceiling_height,
-                       self._boundary_conditions)
+                       self._boundary_conditions[:])  # copy boundary condition list
         new_r._display_name = self.display_name
         new_r._parent = self._parent
-        new_r._glazing_parameters = self._glazing_parameters
-        new_r._shading_parameters = self._shading_parameters
+        new_r._glazing_parameters = self._glazing_parameters[:]  # copy glazing list
+        new_r._shading_parameters = self._shading_parameters[:]  # copy shading list
         new_r._properties._duplicate_extension_attr(self._properties)
         return new_r
 

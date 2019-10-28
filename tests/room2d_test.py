@@ -363,9 +363,9 @@ def test_room2d_solve_adjacency():
     assert isinstance(room2d_1.boundary_conditions[1], Surface)
     assert isinstance(room2d_2.boundary_conditions[3], Surface)
     assert room2d_1.boundary_conditions[1].boundary_condition_object == \
-        '{}_Face4'.format(room2d_2.name)
+        '{}..Face4'.format(room2d_2.name)
     assert room2d_2.boundary_conditions[3].boundary_condition_object == \
-        '{}_Face2'.format(room2d_1.name)
+        '{}..Face2'.format(room2d_1.name)
 
 
 def test_solve_adjacency_aperture():
@@ -382,9 +382,9 @@ def test_solve_adjacency_aperture():
     Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
 
     assert room2d_1.boundary_conditions[1].boundary_condition_object == \
-        '{}_Face4'.format(room2d_2.name)
+        '{}..Face4'.format(room2d_2.name)
     assert room2d_2.boundary_conditions[3].boundary_condition_object == \
-        '{}_Face2'.format(room2d_1.name)
+        '{}..Face2'.format(room2d_1.name)
 
     with pytest.raises(AssertionError):
         Room2D.solve_adjacency([room2d_1, room2d_3], 0.01)
@@ -406,9 +406,9 @@ def test_room2d_intersect_adjacency():
     assert isinstance(room2d_1.boundary_conditions[2], Surface)
     assert isinstance(room2d_2.boundary_conditions[4], Surface)
     assert room2d_1.boundary_conditions[2].boundary_condition_object == \
-        '{}_Face5'.format(room2d_2.name)
+        '{}..Face5'.format(room2d_2.name)
     assert room2d_2.boundary_conditions[4].boundary_condition_object == \
-        '{}_Face3'.format(room2d_1.name)
+        '{}..Face3'.format(room2d_1.name)
 
 
 def test_to_honeybee():
