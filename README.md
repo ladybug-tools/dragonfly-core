@@ -1,5 +1,5 @@
-[![Build Status](https://travis-ci.org/ladybug-tools/dragonfly.svg?branch=master)](https://travis-ci.org/ladybug-tools/dragonfly)
-[![Coverage Status](https://coveralls.io/repos/github/ladybug-tools/dragonfly/badge.svg?branch=master)](https://coveralls.io/github/ladybug-tools/dragonfly)
+[![Build Status](https://travis-ci.org/ladybug-tools/dragonfly-core.svg?branch=master)](https://travis-ci.org/ladybug-tools/dragonfly-core)
+[![Coverage Status](https://coveralls.io/repos/github/ladybug-tools/dragonfly-core/badge.svg?branch=master)](https://coveralls.io/github/ladybug-tools/dragonfly-core)
 
 [![Python 2.7](https://img.shields.io/badge/python-2.7-green.svg)](https://www.python.org/downloads/release/python-270/) [![Python 3.6](https://img.shields.io/badge/python-3.6-blue.svg)](https://www.python.org/downloads/release/python-360/)
 
@@ -21,7 +21,7 @@ import dragonfly
 
 ```
 
-## [API Documentation](http://ladybug-tools.github.io/dragonfly/docs)
+## [API Documentation](https://www.ladybug.tools/dragonfly-core/docs/)
 
 ## Local Development
 1. Clone this repo locally
@@ -34,7 +34,7 @@ git clone https://github.com/ladybug-tools/dragonfly-core.git
 ```
 2. Install dependencies:
 ```console
-cd dragonfly
+cd dragonfly-core
 pip install -r dev-requirements.txt
 pip install -r requirements.txt
 ```
