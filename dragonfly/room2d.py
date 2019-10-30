@@ -316,7 +316,7 @@ class Room2D(_BaseGeometry):
             if glz is not None:
                 assert isinstance(val, (Outdoors, Surface)), \
                     '{} cannot be assigned to a wall with windows.'.format(val)
-        self._boundary_condition = value
+        self._boundary_conditions = value
 
     @property
     def glazing_parameters(self):
