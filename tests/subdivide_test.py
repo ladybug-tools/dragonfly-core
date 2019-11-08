@@ -29,6 +29,14 @@ def test_interpret_floor_height_subdivide():
     assert interpret_floor_height_subdivide(test_6, 25)[1] == [5, 4, 4, 3, 3, 3, 3]
 
 
+def test_interpret_floor_height_subdivide_odd_last_floor():
+    """Test the interpret_floor_height_subdivide method with a short last floor."""
+    test = ["1@5", "2@4", "@3"]
+
+    assert interpret_floor_height_subdivide(test, 23)[0] == [0, 5, 9, 13, 16, 19]
+    assert interpret_floor_height_subdivide(test, 23)[1] == [5, 4, 4, 3, 3, 4]
+
+
 def test_interpret_core_perimeter_subdivide():
     """Test the interpret_core_perimeter_subdivide method."""
     test_1 = [5]

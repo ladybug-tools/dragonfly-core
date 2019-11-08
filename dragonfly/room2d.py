@@ -48,6 +48,8 @@ class Room2D(_BaseGeometry):
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * min
+        * max
     """
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
                  '_boundary_conditions', '_glazing_parameters', '_shading_parameters',
@@ -436,6 +438,24 @@ class Room2D(_BaseGeometry):
                 area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
                 glz_areas.append(area)
         return sum(glz_areas)
+    
+    @property
+    def min(self):
+        """A Point2D for the minimum bounding rectangle vertex around this Room2D.
+        
+        This is useful in calculations to determine if this Room2D is in proximity
+        to other Room2Ds.
+        """
+        return self._floor_geometry.boundary_polygon2d.min
+    
+    @property
+    def max(self):
+        """A Point2D for the maximum bounding rectangle vertex around this Room2D.
+        
+        This is useful in calculations to determine if this Room2D is in proximity
+        to other Room2Ds.
+        """
+        return self._floor_geometry.boundary_polygon2d.min
 
     def segment_orientations(self, north_vector=Vector2D(0, 1)):
         """A list of numbers between 0 and 360 for the orientation of the segments.
@@ -694,6 +714,10 @@ class Room2D(_BaseGeometry):
         for i, room_1 in enumerate(room_2ds):
             try:
                 for room_2 in room_2ds[i + 1:]:
+                    if not Polygon2D.overlapping_bounding_rect(
+                            room_1._floor_geometry.boundary_polygon2d,
+                            room_2._floor_geometry.boundary_polygon2d, tolerance):
+                        continue  # no overlap in bounding rect; adjacency impossible
                     for j, seg_1 in enumerate(room_1.floor_segments_2d):
                         for k, seg_2 in enumerate(room_2.floor_segments_2d):
                             if not isinstance(room_2._boundary_conditions[k], Surface):

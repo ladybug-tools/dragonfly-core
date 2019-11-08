@@ -7,6 +7,7 @@ from .room2d import Room2D
 from honeybee.typing import float_positive, int_in_range
 from honeybee.model import Model
 
+from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 
@@ -29,6 +30,8 @@ class Story(_BaseGeometry):
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * min
+        * max
     """
     __slots__ = ('_room_2ds', '_floor_to_floor_height', '_multiplier',
                  '_is_ground_floor', '_is_top_floor', '_parent')
@@ -205,6 +208,24 @@ class Story(_BaseGeometry):
         Note that this property is for one story and does NOT use the multiplier.
         """
         return sum([room.exterior_aperture_area for room in self._room_2ds])
+    
+    @property
+    def min(self):
+        """A Point2D for the minimum bounding rectangle vertex around this Story.
+        
+        This is useful in calculations to determine if this Story is in proximity
+        to other Stories.
+        """
+        return self._calculate_min()
+    
+    @property
+    def max(self):
+        """A Point2D for the maximum bounding rectangle vertex around this Story.
+        
+        This is useful in calculations to determine if this Story is in proximity
+        to other Atories.
+        """
+        return self._calculate_max()
 
     def floor_geometry(self, tolerance):
         """Get a ladybug_geometry Polyface3D object representing the floor plate.
@@ -396,6 +417,30 @@ class Story(_BaseGeometry):
         base['is_top_floor'] = self.is_top_floor
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         return base
+    
+    def _calculate_min(self):
+        """Calculate minimum Point2D for this object."""
+        min_pt = [self._room_2ds[0].min.x, self._room_2ds[0].min.y]
+
+        for room in self._room_2ds[1:]:
+            if room.min.x < min_pt[0]:
+                min_pt[0] = room.min.x
+            if room.min.y < min_pt[1]:
+                min_pt[1] = room.min.y
+
+        return Point2D(min_pt[0], min_pt[1])
+    
+    def _calculate_max(self):
+        """Calculate maximum Point2D for this object."""
+        max_pt = [self._room_2ds[0].min.x, self._room_2ds[0].min.y]
+
+        for room in self._room_2ds[1:]:
+            if room.max.x > max_pt[0]:
+                max_pt[0] = room.max.x
+            if room.max.y > max_pt[1]:
+                max_pt[1] = room.max.y
+
+        return Point2D(max_pt[0], max_pt[1])
 
     def __copy__(self):
         new_s = Story(self.name, tuple(room.duplicate() for room in self._room_2ds),

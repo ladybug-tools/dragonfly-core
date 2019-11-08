@@ -2,7 +2,7 @@
 """Shading Parameters with instructions for generating shades."""
 from honeybee.typing import float_in_range, float_positive, int_positive
 
-from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry2d.pointvector import Vector2D
 
 
 class _ShadingParameterBase(object):
@@ -219,7 +219,7 @@ class _LouversBase(_ShadingParameterBase):
     """
     __slots__ = ('_depth', '_offset', '_angle', '_contour_vector', '_flip_start_side')
 
-    def __init__(self, depth, offset=0, angle=0, contour_vector=Vector3D(0, 0, 1),
+    def __init__(self, depth, offset=0, angle=0, contour_vector=Vector2D(0, 1),
                  flip_start_side=False):
         """Initialize LouversBase.
 
@@ -229,8 +229,11 @@ class _LouversBase(_ShadingParameterBase):
                 Default is 0 for no offset.
             angle: A number for the for an angle to rotate the louvers in degrees.
                 Default is 0 for no rotation.
-            contour_vector: A Vector3D for the direction along which contours
-                are generated. Default is Z-Axis, which generates horizontal louvers.
+            contour_vector: A Vector2D for the direction along which contours
+                are generated. This 2D vector will be interpreted into a 3D vector
+                within the plane of this Face. (0, 1) will usually generate
+                horizontal contours in 3D space, (1, 0) will generate vertical
+                contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
             flip_start_side: Boolean to note whether the side the louvers start from
                 should be flipped. Default is False to have contours on top or right.
                 Setting to True will start contours on the bottom or left.
@@ -238,7 +241,7 @@ class _LouversBase(_ShadingParameterBase):
         self._depth = float_positive(depth, 'louver depth')
         self._offset = float_positive(offset, 'louver offset')
         self._angle = float_in_range(angle, -90, 90, 'overhang angle')
-        assert isinstance(contour_vector, Vector3D), 'Expected Vector3D for ' \
+        assert isinstance(contour_vector, Vector2D), 'Expected Vector2D for ' \
             'LouversByDistance contour_vector. Got {}.'.format(type(contour_vector))
         self._contour_vector = contour_vector
         self._flip_start_side = bool(flip_start_side)
@@ -260,7 +263,7 @@ class _LouversBase(_ShadingParameterBase):
 
     @property
     def contour_vector(self):
-        """Get a Vector3D for the direction along which contours are generated."""
+        """Get a Vector2D for the direction along which contours are generated."""
         return self._contour_vector
 
     @property
@@ -273,7 +276,7 @@ class _LouversBase(_ShadingParameterBase):
         """Get defaulted parameters from a base dictionary."""
         offset = data['offset'] if 'offset' in data else 0
         angle = data['angle'] if 'angle' in data else 0
-        contr = data['contour_vector'] if 'contour_vector' in data else Vector3D(0, 0, 1)
+        contr = data['contour_vector'] if 'contour_vector' in data else Vector2D(0, 1)
         flip = data['flip_start_side'] if 'flip_start_side' in data else False
         return offset, angle, contr, flip
 
@@ -313,7 +316,7 @@ class LouversByDistance(_LouversBase):
     __slots__ = ('_distance',)
 
     def __init__(self, distance, depth, offset=0, angle=0,
-                 contour_vector=Vector3D(0, 0, 1), flip_start_side=False):
+                 contour_vector=Vector2D(0, 1), flip_start_side=False):
         """Initialize LouversByDistance.
 
         Args:
@@ -323,8 +326,11 @@ class LouversByDistance(_LouversBase):
                 Default is 0 for no offset.
             angle: A number for the for an angle to rotate the louvers in degrees.
                 Default is 0 for no rotation.
-            contour_vector: A Vector3D for the direction along which contours
-                are generated. Default is Z-Axis, which generates horizontal louvers.
+            contour_vector: A Vector2D for the direction along which contours
+                are generated. This 2D vector will be interpreted into a 3D vector
+                within the plane of this Face. (0, 1) will usually generate
+                horizontal contours in 3D space, (1, 0) will generate vertical
+                contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
             flip_start_side: Boolean to note whether the side the louvers start from
                 should be flipped. Default is False to have contours on top or right.
                 Setting to True will start contours on the bottom or left.
@@ -363,7 +369,7 @@ class LouversByDistance(_LouversBase):
             "depth": 0.1,
             "offset": 0.3,
             "angle": 0,
-            "contour_vector": {"type": "Vector3D", "x": 0,  "y": 0, "z": 1},
+            "contour_vector": {"type": "Vector2D", "x": 0, "y": 1},
             "flip_start_side": False
             }
         """
@@ -421,7 +427,7 @@ class LouversByCount(_LouversBase):
     __slots__ = ('_louver_count',)
 
     def __init__(self, louver_count, depth, offset=0, angle=0,
-                 contour_vector=Vector3D(0, 0, 1), flip_start_side=False):
+                 contour_vector=Vector2D(0, 1), flip_start_side=False):
         """Initialize LouversByCount.
 
         Args:
@@ -431,8 +437,11 @@ class LouversByCount(_LouversBase):
                 Default is 0 for no offset.
             angle: A number for the for an angle to rotate the louvers in degrees.
                 Default is 0 for no rotation.
-            contour_vector: A Vector3D for the direction along which contours
-                are generated. Default is Z-Axis, which generates horizontal louvers.
+            contour_vector: A Vector2D for the direction along which contours
+                are generated. This 2D vector will be interpreted into a 3D vector
+                within the plane of this Face. (0, 1) will usually generate
+                horizontal contours in 3D space, (1, 0) will generate vertical
+                contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
             flip_start_side: Boolean to note whether the side the louvers start from
                 should be flipped. Default is False to have contours on top or right.
                 Setting to True will start contours on the bottom or left.
@@ -471,7 +480,7 @@ class LouversByCount(_LouversBase):
             "depth": 0.1,
             "offset": 0.3,
             "angle": 0,
-            "contour_vector": {"type": "Vector3D", "x": 0,  "y": 0, "z": 1},
+            "contour_vector": {"type": "Vector2D", "x": 0,  "y": 1},
             "flip_start_side": False
             }
         """
