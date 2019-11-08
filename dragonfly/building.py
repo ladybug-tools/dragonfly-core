@@ -9,6 +9,7 @@ from honeybee.model import Model
 from honeybee.shade import Shade
 from honeybee.boundarycondition import Surface
 
+from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.face import Face3D
 
@@ -50,13 +51,13 @@ class Building(_BaseGeometry):
         _BaseGeometry.__init__(self, name)  # process the name
 
         # process the story geometry
-        if not isinstance(unique_stories, tuple):
-            unique_stories = tuple(unique_stories)
         assert len(unique_stories) > 0, 'Building must have at least one Story.'
         for story in unique_stories:
             assert isinstance(story, Story), \
                 'Expected dragonfly Story. Got {}'.format(type(story))
             story._parent = self
+        flr_hgts = (story.floor_height for story in unique_stories)
+        unique_stories = tuple(x for h, x in sorted(zip(flr_hgts, unique_stories)))
         self._unique_stories = unique_stories
 
         self._properties = BuildingProperties(self)  # properties for extensions
@@ -467,6 +468,96 @@ class Building(_BaseGeometry):
                                   for s in self._unique_stories]
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         return base
+    
+    @staticmethod
+    def buildings_to_honeybee(buildings, use_multiplier, tolerance):
+        """Convert an array of Building objects into a single honeybee Model.
+        
+        Args:
+            buildings: An array of Building objects to be converted into a
+                honeybee Model.
+            use_multiplier: If True, the multipliers on this Building's Stories will be
+                passed along to the generated Honeybee Room objects, indicating the
+                simulation will be run once for each unique room and then results
+                will be multiplied. If False, full geometry objects will be written
+                for each and every floor in the building that are represented through
+                multipliers and all resulting multipliers will be 1.
+            tolerance: The minimum distance in z values of floor_height and
+                floor_to_ceiling_height at which adjacent Faces will be split.
+                If None, no splitting will occur.
+        """
+        # create a base model to which everything will be added
+        base_model = buildings[0].to_honeybee(use_multiplier, tolerance)
+        # loop through each Building, create a model, and add it to the base one
+        for bldg in buildings[1:]:
+            base_model.add_model(bldg.to_honeybee(use_multiplier, tolerance))
+        return base_model
+    
+    @staticmethod
+    def buildings_to_honeybee_self_shade(buildings, shade_dist, use_multiplier,
+                                         tolerance):
+        """Convert an array of Buildings into several honeybee Models with self-shading.
+
+        Each input Building will be exported into its own Model. For each Model,
+        the other input Buildings will appear as context shade geometry. Thus,
+        each Model is its own simulate-able unit accounting for the total
+        self-shading of the input Buildings.
+        
+        Args:
+            buildings: An array of Building objects to be converted into honeybee
+                Models that account for their own shading of one another.
+            shade_dist: A number to note the distance beyond which other
+                buildings' shade should not be exported into a given Model. This is
+                helpful for reducing the simulation run time of each Model when other
+                connected buildings are too far away to have a meaningful impact on
+                the results. If None, all other buildings will be included as context
+                shade in each and every Model. Set to 0 to exclude all neighboring
+                buildings from the resulting models.
+            use_multiplier: If True, the multipliers on this Building's Stories will be
+                passed along to the generated Honeybee Room objects, indicating the
+                simulation will be run once for each unique room and then results
+                will be multiplied. If False, full geometry objects will be written
+                for each and every floor in the building that are represented through
+                multipliers and all resulting multipliers will be 1. Default: True
+            tolerance: The minimum distance in z values of floor_height and
+                floor_to_ceiling_height at which adjacent Faces will be split.
+                If None, no splitting will occur.
+        """
+        models = []  # list to be filled with Honeybee Models
+
+        # create a list with all context representations of the buildings
+        bldg_shades = []
+        bnd_pts = []
+        if shade_dist != 0:
+            for bldg in buildings:
+                bldg_shades.append(bldg.shade_representation(tolerance))
+                min, max = bldg.unique_stories[0].min, bldg.unique_stories[0].max
+                center = Point2D((min.x + max.x) / 2, (min.y + max.y) / 2)
+                bnd_pts.append((min, center, max))
+        
+        # loop through each Building and create a model
+        num_bldg = len(buildings)
+        for i, bldg in enumerate(buildings):
+            model = bldg.to_honeybee(use_multiplier, tolerance)
+            
+            if shade_dist is None:  # add all other bldg shades to the model
+                for j in xrange(i + 1, num_bldg):
+                    for shd in bldg_shades[j]:
+                        model.add_shade(shd)
+                for k in xrange(i):
+                    for shd in bldg_shades[k]:
+                        model.add_shade(shd)
+            elif shade_dist > 0:  # add only context shade within the distance
+                for j in xrange(i + 1, num_bldg):
+                    if Building._bound_rect_in_dist(bnd_pts[i], bnd_pts[j], shade_dist):
+                        for shd in bldg_shades[j]:
+                            model.add_shade(shd)
+                for k in xrange(i):
+                    if Building._bound_rect_in_dist(bnd_pts[i], bnd_pts[k], shade_dist):
+                        for shd in bldg_shades[k]:
+                            model.add_shade(shd)
+            models.append(model)  # apend to the final list of Models
+        return models
 
     @staticmethod
     def _generate_room_2ds(face3d_array, flr_to_flr, bldg_name, flr_count, tolerance):
@@ -509,6 +600,33 @@ class Building(_BaseGeometry):
             return False
 
         return True
+    
+    @staticmethod
+    def _bound_rect_in_dist(bound_pts1, bound_pts2, distance):
+        """Check if the bounding rectangles of two footprints overlap within a distance.
+
+        Checking the overlap of the bounding rectangels is extremely quick given this
+        method's use of the Separating Axis Theorem.
+
+        Args:
+            bound_pts1: An array of Point2Ds (min, center, max) for the first footprint.
+            bound_pts2: An array of Point2Ds (min, center, max) for the second footprint.
+            distance: Acceptable distance between the two bounding rectangles.
+        """
+        # Bounding rectangle check using the Separating Axis Theorem
+        polygon1_width = bound_pts1[2].x - bound_pts1[0].x
+        polygon2_width = bound_pts2[2].x - bound_pts2[0].x
+        dist_btwn_x = abs(bound_pts1[1].x - bound_pts2[1].x)
+        x_gap_btwn_rect = dist_btwn_x - (0.5 * polygon1_width) - (0.5 * polygon2_width)
+
+        polygon1_height = bound_pts1[2].y - bound_pts1[0].y
+        polygon2_height = bound_pts2[2].y - bound_pts2[0].y
+        dist_btwn_y = abs(bound_pts1[1].y - bound_pts2[1].y)
+        y_gap_btwn_rect = dist_btwn_y - (0.5 * polygon1_height) - (0.5 * polygon2_height)
+
+        if x_gap_btwn_rect > distance or y_gap_btwn_rect > distance:
+            return False  # no overlap
+        return True  # overlap exists
 
     @staticmethod
     def _separated_ground_floor(base_story):

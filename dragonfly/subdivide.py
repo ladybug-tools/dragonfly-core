@@ -51,8 +51,16 @@ def interpret_floor_height_subdivide(floor_to_floor_heights, max_height,
     # check to be sure no heights are above the max height
     if floor_heights[-1] >= max_height:
         floor_heights = [hgt for hgt in floor_heights if hgt < max_height]
-        interpreted_f2f = [interpreted_f2f[i] for i in range(len(floor_heights) - 1)]
-    interpreted_f2f.append(max_height - floor_heights[-1])
+        interpreted_f2f = [interpreted_f2f[i] for i in range(len(floor_heights))]
+
+    # remove last height if the difference between it and max height is too small
+    if len(floor_heights) != 1 and \
+            max_height - floor_heights[-1] < interpreted_f2f[-1] - 1e-9:
+        del floor_heights[-1]
+        del interpreted_f2f[-1]
+        interpreted_f2f.append(max_height - floor_heights[-1])
+    elif len(interpreted_f2f) < len(floor_heights):
+        interpreted_f2f.append(max_height - floor_heights[-1])
 
     return floor_heights, interpreted_f2f
 

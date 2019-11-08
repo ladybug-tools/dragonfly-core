@@ -311,6 +311,79 @@ def test_to_honeybee():
     assert hb_model.check_missing_adjacencies()
 
 
+def test_buildings_to_honeybee():
+    """Test the buildings_to_honeybee method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(0, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(0, 30, 3))
+    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
+    story_big = Story('Office Floor Big', [room2d_3])
+    story = Story('Office Floor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office Building', [story])
+    story_big.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story_big.multiplier = 4
+    building_big = Building('Office Building Big', [story_big])
+
+    hb_model = Building.buildings_to_honeybee([building, building_big], False, 0.01)
+    assert isinstance(hb_model, Model)
+    assert len(hb_model.rooms) == 12
+    assert len(hb_model.rooms[-1]) == 6
+    assert hb_model.rooms[-1].volume == 600
+    assert hb_model.rooms[-1].floor_area == 200
+    assert hb_model.rooms[-1].exterior_wall_area == 180
+
+    hb_model = Building.buildings_to_honeybee([building, building_big], True, 0.01)
+    assert isinstance(hb_model, Model)
+    assert len(hb_model.rooms) == 3
+    for room in hb_model.rooms:
+        assert room.multiplier == 4
+
+
+def test_buildings_to_honeybee_self_shade():
+    """Test the buildings_to_honeybee_self_shade method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(0, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(0, 30, 3))
+    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
+    story_big = Story('Office Floor Big', [room2d_3])
+    story = Story('Office Floor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office Building', [story])
+    story_big.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story_big.multiplier = 4
+    building_big = Building('Office Building Big', [story_big])
+
+    hb_models = Building.buildings_to_honeybee_self_shade(
+        [building, building_big], None, False, 0.01)
+    assert len(hb_models) == 2
+    assert isinstance(hb_models[0], Model)
+    assert len(hb_models[0].orphaned_shades) == 4
+    assert isinstance(hb_models[-1], Model)
+    assert len(hb_models[-1].rooms) == 4
+    assert len(hb_models[-1].rooms[-1]) == 6
+    assert hb_models[-1].rooms[-1].volume == 600
+    assert hb_models[-1].rooms[-1].floor_area == 200
+    assert hb_models[-1].rooms[-1].exterior_wall_area == 180
+
+    hb_models = Building.buildings_to_honeybee_self_shade(
+        [building, building_big], 5, True, 0.01)
+    assert len(hb_models) == 2
+    assert isinstance(hb_models[0], Model)
+    assert len(hb_models[0].orphaned_shades) == 0
+    assert len(hb_models[0].rooms) == 2
+    for room in hb_models[0].rooms:
+        assert room.multiplier == 4
+
+
 def test_to_dict():
     """Test the Building to_dict method."""
     pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))

@@ -6,6 +6,7 @@ from dragonfly.shadingparameter import ExtrudedBorder, Overhang, LouversByDistan
 
 from honeybee.face import Face
 
+from ladybug_geometry.geometry2d.pointvector import Vector2D
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.line import LineSegment3D
 from ladybug_geometry.geometry3d.face import Face3D
@@ -115,7 +116,7 @@ def test_louvers_by_distance_init():
     assert louvers.depth == 0.3
     assert louvers.offset == 1
     assert louvers.angle == 30
-    assert louvers.contour_vector == Vector3D(0, 0, 1)
+    assert louvers.contour_vector == Vector2D(0, 1)
     assert louvers.flip_start_side is False
 
 
@@ -164,7 +165,7 @@ def test_louvers_by_count_init():
     assert louvers.depth == 0.3
     assert louvers.offset == 1
     assert louvers.angle == 30
-    assert louvers.contour_vector == Vector3D(0, 0, 1)
+    assert louvers.contour_vector == Vector2D(0, 1)
     assert louvers.flip_start_side is False
 
 
@@ -197,11 +198,9 @@ def test_louvers_by_count_add_shading_to_face():
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
     face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
-    # TODO: uncomment after the next stable relase of honeybee-core
-    """
+
     louvers.add_shading_to_face(face, 0.01)
 
     assert len(face.outdoor_shades) == 6
     shd_area = sum([shd.area for shd in face.outdoor_shades])
     assert shd_area == pytest.approx(0.3 * width * 6, rel=1e-3)
-    """
