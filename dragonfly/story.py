@@ -303,7 +303,7 @@ class Story(_BaseGeometry):
         """Automatically intersect the line segments of the Story's Room2Ds.
 
         Note that this method effectively erases all assigned boundary conditions,
-        glazing parameters and shading parameters as the original segments are
+        window parameters and shading parameters as the original segments are
         subdivided. As such, it is recommended that this method be used before all
         other steps when creating a Story.
 
@@ -313,10 +313,10 @@ class Story(_BaseGeometry):
         """
         self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
 
-    def set_outdoor_glazing_parameters(self, glazing_parameter):
-        """Set all of the outdoor walls to have the same glazing parameters."""
+    def set_outdoor_window_parameters(self, window_parameter):
+        """Set all of the outdoor walls to have the same window parameters."""
         for room in self._room_2ds:
-            room.set_outdoor_glazing_parameters(glazing_parameter)
+            room.set_outdoor_window_parameters(window_parameter)
 
     def set_outdoor_shading_parameters(self, shading_parameter):
         """Set all of the outdoor walls to have the same shading parameters."""

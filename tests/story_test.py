@@ -3,7 +3,7 @@ import pytest
 
 from dragonfly.story import Story
 from dragonfly.room2d import Room2D
-from dragonfly.glazingparameter import SimpleGlazingRatio
+from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
 
 from honeybee.model import Model
@@ -28,7 +28,7 @@ def test_story_init():
     room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
     story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
     str(story)  # test the string representation
     assert story.name == 'OfficeFloor'
@@ -95,8 +95,8 @@ def test_story_add_rooms():
     assert isinstance(story.room_by_name('Office3'), Room2D)
 
 
-def test_room2d_set_outdoor_glazing_shading_parameters():
-    """Test the Story set_outdoor_glazing_parameters method."""
+def test_room2d_set_outdoor_window_shading_parameters():
+    """Test the Story set_outdoor_window_parameters method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
@@ -108,13 +108,13 @@ def test_room2d_set_outdoor_glazing_shading_parameters():
     story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
 
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
-    story.set_outdoor_glazing_parameters(ashrae_base)
+    story.set_outdoor_window_parameters(ashrae_base)
     story.set_outdoor_shading_parameters(overhang)
 
-    assert story.room_2ds[0].glazing_parameters[1] is None
-    assert story.room_2ds[0].glazing_parameters[2] == ashrae_base
+    assert story.room_2ds[0].window_parameters[1] is None
+    assert story.room_2ds[0].window_parameters[2] == ashrae_base
     assert story.room_2ds[0].shading_parameters[1] is None
     assert story.room_2ds[0].shading_parameters[2] == overhang
 
@@ -239,7 +239,7 @@ def test_to_honeybee():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
     hb_model = story.to_honeybee(0.01)
     assert isinstance(hb_model, Model)
@@ -268,7 +268,7 @@ def test_to_honeybee_different_heights():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
     hb_model = story.to_honeybee(True, 0.01)
     assert isinstance(hb_model, Model)
@@ -295,7 +295,7 @@ def test_to_dict():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
     story.is_top_floor = True
 
@@ -321,7 +321,7 @@ def test_to_from_dict():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
     story.is_top_floor = True
 

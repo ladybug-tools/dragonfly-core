@@ -2,8 +2,8 @@
 """Dragonfly Room2D."""
 from ._base import _BaseGeometry
 from .properties import Room2DProperties
-import dragonfly.glazingparameter as glzpar
-from dragonfly.glazingparameter import _GlazingParameterBase
+import dragonfly.windowparameter as glzpar
+from dragonfly.windowparameter import _WindowParameterBase
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 
@@ -34,7 +34,7 @@ class Room2D(_BaseGeometry):
         * floor_geometry
         * floor_to_ceiling_height
         * boundary_conditions
-        * glazing_parameters
+        * window_parameters
         * shading_parameters
         * parent
         * has_parent
@@ -52,11 +52,11 @@ class Room2D(_BaseGeometry):
         * max
     """
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
-                 '_boundary_conditions', '_glazing_parameters', '_shading_parameters',
+                 '_boundary_conditions', '_window_parameters', '_shading_parameters',
                  '_parent')
 
     def __init__(self, name, floor_geometry, floor_to_ceiling_height,
-                 boundary_conditions=None, glazing_parameters=None,
+                 boundary_conditions=None, window_parameters=None,
                  shading_parameters=None, tolerance=None):
         """A volume defined by an extruded floor plate, representing a single room.
 
@@ -73,7 +73,7 @@ class Room2D(_BaseGeometry):
                 model. If None, all boundary conditions will be Outdoors or Ground
                 depending on whether ceiling of the room is below 0 (the assumed
                 ground plane). Default: None.
-            glazing_parameters: A list of GlazingParameter objects that dictate how the
+            window_parameters: A list of WindowParameter objects that dictate how the
                 window geometries will be generated for each of the walls. If None,
                 no windows will exist over the entire Room2D. Default: None.
             shading_parameters: A list of ShadingParameter objects that dictate how the
@@ -95,8 +95,8 @@ class Room2D(_BaseGeometry):
             self._floor_geometry = floor_geometry.flip()
             boundary_conditions = tuple(reversed(boundary_conditions)) if \
                 boundary_conditions is not None else None
-            glazing_parameters = tuple(reversed(glazing_parameters)) if \
-                glazing_parameters is not None else None
+            window_parameters = tuple(reversed(window_parameters)) if \
+                window_parameters is not None else None
             shading_parameters = tuple(reversed(shading_parameters)) if \
                 shading_parameters is not None else None
         # ensure a global 2D origin, which helps in solve adjacency and the dict schema
@@ -125,8 +125,8 @@ class Room2D(_BaseGeometry):
                     'Expected BoundaryCondition. Got {}'.format(type(value))
             self._boundary_conditions = value
 
-        # process the glazing and shading parameters
-        self.glazing_parameters = glazing_parameters
+        # process the window and shading parameters
+        self.window_parameters = window_parameters
         self.shading_parameters = shading_parameters
 
         self._parent = None  # _parent will be set when Room2D is added to a Story
@@ -167,16 +167,16 @@ class Room2D(_BaseGeometry):
         else:
             b_conditions = None
 
-        # re-assemble glazing parameters
-        if 'glazing_parameters' in data and data['glazing_parameters'] is not None:
+        # re-assemble window parameters
+        if 'window_parameters' in data and data['window_parameters'] is not None:
             glz_pars = []
-            for glz_dict in data['glazing_parameters']:
+            for glz_dict in data['window_parameters']:
                 if glz_dict is not None:
                     try:
                         glz_class = getattr(glzpar, glz_dict['type'])
                     except AttributeError:
                         raise ValueError(
-                            'Glazing parameter "{}" is not supported in this honyebee '
+                            'Window parameter "{}" is not supported in this honyebee '
                             'installation.'.format(glz_dict['type']))
                     glz_pars.append(glz_class.from_dict(glz_dict))
                 else:
@@ -212,7 +212,7 @@ class Room2D(_BaseGeometry):
 
     @classmethod
     def from_polygon(cls, name, polygon, floor_height, floor_to_ceiling_height,
-                     boundary_conditions=None, glazing_parameters=None,
+                     boundary_conditions=None, window_parameters=None,
                      shading_parameters=None):
         """Create a Room2D from a ladybug-geometry Polygon2D and a floor_height.
 
@@ -231,7 +231,7 @@ class Room2D(_BaseGeometry):
                 model. If None, all boundary conditions will be Outdoors or Ground
                 depending on whether ceiling of the room is below 0 (the assumed
                 ground plane). Default: None.
-            glazing_parameters: A list of GlazingParameter objects that dictate how the
+            window_parameters: A list of WindowParameter objects that dictate how the
                 window geometries will be generated for each of the walls. If None,
                 no windows will exist over the entire Room2D. Default: None.
             shading_parameters: A list of ShadingParameter objects that dictate how the
@@ -245,8 +245,8 @@ class Room2D(_BaseGeometry):
             polygon = polygon.reverse()
             boundary_conditions = reversed(boundary_conditions) if \
                 boundary_conditions is not None else None
-            glazing_parameters = reversed(glazing_parameters) if \
-                glazing_parameters is not None else None
+            window_parameters = reversed(window_parameters) if \
+                window_parameters is not None else None
 
         # build the Face3D
         base_plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, floor_height))
@@ -254,11 +254,11 @@ class Room2D(_BaseGeometry):
         floor_geometry = Face3D(vert3d, base_plane, enforce_right_hand=False)
 
         return cls(name, floor_geometry, floor_to_ceiling_height, boundary_conditions,
-                   glazing_parameters, shading_parameters)
+                   window_parameters, shading_parameters)
 
     @classmethod
     def from_vertices(cls, name, vertices, floor_height, floor_to_ceiling_height,
-                      boundary_conditions=None, glazing_parameters=None,
+                      boundary_conditions=None, window_parameters=None,
                       shading_parameters=None):
         """Create a Room2D from 2D vertices with each vertex as an iterable of 2 floats.
 
@@ -279,7 +279,7 @@ class Room2D(_BaseGeometry):
                 model. If None, all boundary conditions will be Outdoors or Ground
                 depending on whether ceiling of the room is below 0 (the assumed
                 ground plane). Default: None.
-            glazing_parameters: A list of GlazingParameter objects that dictate how the
+            window_parameters: A list of WindowParameter objects that dictate how the
                 window geometries will be generated for each of the walls. If None,
                 no windows will exist over the entire Room2D. Default: None.
             shading_parameters: A list of ShadingParameter objects that dictate how the
@@ -289,7 +289,7 @@ class Room2D(_BaseGeometry):
         polygon = Polygon2D(tuple(Point2D(*v) for v in vertices))
         return cls.from_polygon(
             name, polygon, floor_height, floor_to_ceiling_height,
-            boundary_conditions, glazing_parameters, shading_parameters)
+            boundary_conditions, window_parameters, shading_parameters)
 
     @property
     def floor_geometry(self):
@@ -313,7 +313,7 @@ class Room2D(_BaseGeometry):
     @boundary_conditions.setter
     def boundary_conditions(self, value):
         value = self._check_wall_assinged_object(value, 'boundary conditions')
-        for val, glz in zip(value, self._glazing_parameters):
+        for val, glz in zip(value, self._window_parameters):
             assert val in bcs, 'Expected BoundaryCondition. Got {}'.format(type(value))
             if glz is not None:
                 assert isinstance(val, (Outdoors, Surface)), \
@@ -321,24 +321,24 @@ class Room2D(_BaseGeometry):
         self._boundary_conditions = value
 
     @property
-    def glazing_parameters(self):
-        """Get or set a list of GlazingParameters describing how to generate windows.
+    def window_parameters(self):
+        """Get or set a list of WindowParameters describing how to generate windows.
         """
-        return tuple(self._glazing_parameters)
+        return tuple(self._window_parameters)
 
-    @glazing_parameters.setter
-    def glazing_parameters(self, value):
+    @window_parameters.setter
+    def window_parameters(self, value):
         if value is not None:
-            value = self._check_wall_assinged_object(value, 'glazing_parameters')
+            value = self._check_wall_assinged_object(value, 'window_parameters')
             for val, bc in zip(value, self._boundary_conditions):
                 if val is not None:
-                    assert isinstance(val, _GlazingParameterBase), \
-                        'Expected Glazing Parameters. Got {}'.format(type(value))
+                    assert isinstance(val, _WindowParameterBase), \
+                        'Expected Window Parameters. Got {}'.format(type(value))
                     assert isinstance(bc, (Outdoors, Surface)), \
                         '{} cannot be assigned to a wall with windows.'.format(bc)
-            self._glazing_parameters = value
+            self._window_parameters = value
         else:
-            self._glazing_parameters = [None for i in range(len(self))]
+            self._window_parameters = [None for i in range(len(self))]
 
     @property
     def shading_parameters(self):
@@ -433,7 +433,7 @@ class Room2D(_BaseGeometry):
         """
         glz_areas = []
         for seg, bc, glz in zip(self.floor_segments, self._boundary_conditions,
-                                self._glazing_parameters):
+                                self._window_parameters):
             if isinstance(bc, Outdoors) and glz is not None:
                 area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
                 glz_areas.append(area)
@@ -469,20 +469,20 @@ class Room2D(_BaseGeometry):
         normals = (Vector2D(sg.v.y, -sg.v.x) for sg in self.floor_segments)
         return [math.degrees(north_vector.angle_clockwise(norm)) for norm in normals]
 
-    def set_outdoor_glazing_parameters(self, glazing_parameter):
-        """Set all of the outdoor walls to have the same glazing parameters."""
-        assert isinstance(glazing_parameter, _GlazingParameterBase), \
-            'Expected Glazing Parameters. Got {}'.format(type(glazing_parameter))
+    def set_outdoor_window_parameters(self, window_parameter):
+        """Set all of the outdoor walls to have the same window parameters."""
+        assert isinstance(window_parameter, _WindowParameterBase), \
+            'Expected Window Parameters. Got {}'.format(type(window_parameter))
         glz_ps = []
         for bc in self._boundary_conditions:
-            glz_p = glazing_parameter if isinstance(bc, Outdoors) else None
+            glz_p = window_parameter if isinstance(bc, Outdoors) else None
             glz_ps.append(glz_p)
-        self._glazing_parameters = glz_ps
+        self._window_parameters = glz_ps
 
     def set_outdoor_shading_parameters(self, shading_parameter):
         """Set all of the outdoor walls to have the same shading parameters."""
         assert isinstance(shading_parameter, _ShadingParameterBase), \
-            'Expected Glazing Parameters. Got {}'.format(type(shading_parameter))
+            'Expected Window Parameters. Got {}'.format(type(shading_parameter))
         shd_ps = []
         for bc in self._boundary_conditions:
             shd_p = shading_parameter if isinstance(bc, Outdoors) else None
@@ -525,12 +525,12 @@ class Room2D(_BaseGeometry):
                    other_room_2d.name)
         self._boundary_conditions[self_seg_index] = Surface(names_2)
         other_room_2d._boundary_conditions[other_seg_index] = Surface(names_1)
-        # check that the glazing parameters match
-        if self._glazing_parameters[self_seg_index] is not None or \
-                other_room_2d._glazing_parameters[other_seg_index] is not None:
-            assert self._glazing_parameters[self_seg_index] == \
-                other_room_2d._glazing_parameters[other_seg_index], \
-                'Glazing parameters do not match between adjacent Room2Ds "{}" and ' \
+        # check that the window parameters match
+        if self._window_parameters[self_seg_index] is not None or \
+                other_room_2d._window_parameters[other_seg_index] is not None:
+            assert self._window_parameters[self_seg_index] == \
+                other_room_2d._window_parameters[other_seg_index], \
+                'Window parameters do not match between adjacent Room2Ds "{}" and ' \
                 '"{}".'.format(self.name, other_room_2d.name)
             assert self.floor_to_ceiling_height == \
                 other_room_2d.floor_to_ceiling_height, 'floor_to_ceiling_height does '\
@@ -571,7 +571,7 @@ class Room2D(_BaseGeometry):
         if self._floor_geometry.normal.z < 0:  # ensure upward-facing Face3D
             self._floor_geometry = self._floor_geometry.flip()
             self._boundary_conditions = tuple(reversed(self._boundary_conditions))
-            self._glazing_parameters = tuple(reversed(self._glazing_parameters))
+            self._window_parameters = tuple(reversed(self._window_parameters))
             self._shading_parameters = tuple(reversed(self._shading_parameters))
 
     def scale(self, factor, origin=None):
@@ -620,13 +620,13 @@ class Room2D(_BaseGeometry):
             self._floor_geometry, self.floor_to_ceiling_height)
         hb_room = Room.from_polyface3d(self.display_name, room_polyface)
 
-        # assign boundary conditions, glazing and shading to walls
+        # assign boundary conditions, window and shading to walls
         for i, bc in enumerate(self._boundary_conditions):
             hb_room[i + 1]._boundary_condition = bc
         tol = 0 if tolerance is None else tolerance
-        for i, glz_par in enumerate(self._glazing_parameters):
+        for i, glz_par in enumerate(self._window_parameters):
             if glz_par is not None:
-                glz_par.add_glazing_to_face(hb_room[i + 1], tol)
+                glz_par.add_window_to_face(hb_room[i + 1], tol)
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
                 shd_par.add_shading_to_face(hb_room[i + 1], tol)
@@ -688,11 +688,11 @@ class Room2D(_BaseGeometry):
                 bc_dicts.append(bc.to_dict())
         base['boundary_conditions'] = bc_dicts
 
-        if not all((param is None for param in self._glazing_parameters)):
-            base['glazing_parameters'] = []
-            for glz in self._glazing_parameters:
+        if not all((param is None for param in self._window_parameters)):
+            base['window_parameters'] = []
+            for glz in self._window_parameters:
                 val = glz.to_dict() if glz is not None else None
-                base['glazing_parameters'].append(val)
+                base['window_parameters'].append(val)
 
         if not all((param is None for param in self._shading_parameters)):
             base['shading_parameters'] = []
@@ -734,7 +734,7 @@ class Room2D(_BaseGeometry):
         """Intersect the line segments of an array of Room2Ds to ensure matching walls.
 
         Note that this method effectively erases all assigned boundary conditions,
-        glazing parameters and shading parameters as the original segments are
+        window parameters and shading parameters as the original segments are
         subdivided. As such, it is recommended that this method be used before all
         other steps when creating a Story.
 
@@ -743,13 +743,14 @@ class Room2D(_BaseGeometry):
         runing this method.
 
         Args:
-            room_2ds: A list of Room2Ds for which adjacencent segments will be solved.
+            room_2ds: A list of Room2Ds for which adjacencent segments will be
+                intersected.
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered centered adjacent.
 
         Returns:
             An array of Room2Ds that have been intersected with one another. Note
-            that these Room2Ds lack all assigned boundary conditions, glazing parameters
+            that these Room2Ds lack all assigned boundary conditions, window parameters
             and shading parameters of the original Room2Ds.
         """
         # keep track of all data needed to map between 2D and 3D space
@@ -890,7 +891,7 @@ class Room2D(_BaseGeometry):
                        self._boundary_conditions[:])  # copy boundary condition list
         new_r._display_name = self.display_name
         new_r._parent = self._parent
-        new_r._glazing_parameters = self._glazing_parameters[:]  # copy glazing list
+        new_r._window_parameters = self._window_parameters[:]  # copy window list
         new_r._shading_parameters = self._shading_parameters[:]  # copy shading list
         new_r._properties._duplicate_extension_attr(self._properties)
         return new_r
