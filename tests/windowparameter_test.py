@@ -1,8 +1,8 @@
 # coding=utf-8
 import pytest
 
-from dragonfly.glazingparameter import SingleWindow, SimpleGlazingRatio, \
-    RepeatingGlazingRatio
+from dragonfly.windowparameter import SingleWindow, SimpleWindowRatio, \
+    RepeatingWindowRatio
 
 from honeybee.face import Face
 
@@ -43,14 +43,14 @@ def test_single_window_dict_methods():
     assert glz_dict == new_simple_window.to_dict()
 
 
-def test_single_window_add_glazing_to_face():
-    """Test the add_glazing_to_face method."""
+def test_single_window_add_window_to_face():
+    """Test the add_window_to_face method."""
     simple_window = SingleWindow(5, 2, 0.8)
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
     face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
-    simple_window.add_glazing_to_face(face, 0.01)
+    simple_window.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 1
     assert face.center.x == face.apertures[0].center.x
@@ -58,19 +58,19 @@ def test_single_window_add_glazing_to_face():
     assert simple_window.area_from_segment(seg, height) == face.apertures[0].area == 10
 
 
-def test_simple_glazing_ratio_init():
-    """Test the initalization of SimpleGlazingRatio objects and basic properties."""
-    ashrae_base = SimpleGlazingRatio(0.4)
+def test_simple_window_ratio_init():
+    """Test the initalization of SimpleWindowRatio objects and basic properties."""
+    ashrae_base = SimpleWindowRatio(0.4)
     str(ashrae_base)  # test the string representation
 
-    assert ashrae_base.glazing_ratio == 0.4
+    assert ashrae_base.window_ratio == 0.4
 
 
-def test_simple_glazing_ratio_equality():
-    """Test the equality of SimpleGlazingRatio objects."""
-    ashrae_base = SimpleGlazingRatio(0.4)
+def test_simple_window_ratio_equality():
+    """Test the equality of SimpleWindowRatio objects."""
+    ashrae_base = SimpleWindowRatio(0.4)
     ashrae_base_dup = ashrae_base.duplicate()
-    ashrae_base_alt = SimpleGlazingRatio(0.25)
+    ashrae_base_alt = SimpleWindowRatio(0.25)
 
     assert ashrae_base is ashrae_base
     assert ashrae_base is not ashrae_base_dup
@@ -78,24 +78,24 @@ def test_simple_glazing_ratio_equality():
     assert ashrae_base != ashrae_base_alt
 
 
-def test_simple_glazing_ratio_dict_methods():
+def test_simple_window_ratio_dict_methods():
     """Test the to/from dict methods."""
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
 
     glz_dict = ashrae_base.to_dict()
-    new_ashrae_base = SimpleGlazingRatio.from_dict(glz_dict)
+    new_ashrae_base = SimpleWindowRatio.from_dict(glz_dict)
     assert new_ashrae_base == ashrae_base
     assert glz_dict == new_ashrae_base.to_dict()
 
 
-def test_simple_glazing_ratio_add_glazing_to_face():
-    """Test the add_glazing_to_face method."""
-    ashrae_base = SimpleGlazingRatio(0.4)
+def test_simple_window_ratio_add_window_to_face():
+    """Test the add_window_to_face method."""
+    ashrae_base = SimpleWindowRatio(0.4)
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
     face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
-    ashrae_base.add_glazing_to_face(face, 0.01)
+    ashrae_base.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 1
     assert face.center == face.apertures[0].center
@@ -103,23 +103,23 @@ def test_simple_glazing_ratio_add_glazing_to_face():
         width * height * 0.4
 
 
-def test_repeating_glazing_ratio_init():
-    """Test the initalization of RepeatingGlazingRatio objects and basic properties."""
-    ashrae_base = RepeatingGlazingRatio(0.4, 2, 0.8, 3)
+def test_repeating_window_ratio_init():
+    """Test the initalization of RepeatingWindowRatio objects and basic properties."""
+    ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
     str(ashrae_base)  # test the string representation
 
-    assert ashrae_base.glazing_ratio == 0.4
-    assert ashrae_base.glazing_height == 2
+    assert ashrae_base.window_ratio == 0.4
+    assert ashrae_base.window_height == 2
     assert ashrae_base.sill_height == 0.8
     assert ashrae_base.horizontal_separation == 3
     assert ashrae_base.vertical_separation == 0
 
 
-def test_repeating_glazing_ratio_equality():
-    """Test the equality of RepeatingGlazingRatio objects."""
-    ashrae_base = RepeatingGlazingRatio(0.4, 2, 0.8, 3)
+def test_repeating_window_ratio_equality():
+    """Test the equality of RepeatingWindowRatio objects."""
+    ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
     ashrae_base_dup = ashrae_base.duplicate()
-    ashrae_base_alt = RepeatingGlazingRatio(0.25, 2, 0.8, 3)
+    ashrae_base_alt = RepeatingWindowRatio(0.25, 2, 0.8, 3)
 
     assert ashrae_base is ashrae_base
     assert ashrae_base is not ashrae_base_dup
@@ -127,24 +127,24 @@ def test_repeating_glazing_ratio_equality():
     assert ashrae_base != ashrae_base_alt
 
 
-def test_repeating_glazing_ratio_dict_methods():
+def test_repeating_window_ratio_dict_methods():
     """Test the to/from dict methods."""
-    ashrae_base = RepeatingGlazingRatio(0.4, 2, 0.8, 3)
+    ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
 
     glz_dict = ashrae_base.to_dict()
-    new_ashrae_base = RepeatingGlazingRatio.from_dict(glz_dict)
+    new_ashrae_base = RepeatingWindowRatio.from_dict(glz_dict)
     assert new_ashrae_base == ashrae_base
     assert glz_dict == new_ashrae_base.to_dict()
 
 
-def test_repeating_glazing_ratio_add_glazing_to_face():
-    """Test the add_glazing_to_face method."""
-    ashrae_base = RepeatingGlazingRatio(0.4, 2, 0.8, 3)
+def test_repeating_window_ratio_add_window_to_face():
+    """Test the add_window_to_face method."""
+    ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
     face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
-    ashrae_base.add_glazing_to_face(face, 0.01)
+    ashrae_base.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 3
     ap_area = sum([ap.area for ap in face.apertures])

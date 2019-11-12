@@ -17,7 +17,7 @@ class _ShadingParameterBase(object):
         pass
 
     def add_shading_to_face(self, face):
-        """Add Shades to a Honeybee Face using these Glazing Parameters."""
+        """Add Shades to a Honeybee Face using these Window Parameters."""
         pass
 
     @classmethod

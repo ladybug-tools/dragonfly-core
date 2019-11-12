@@ -2,7 +2,7 @@
 import pytest
 
 from dragonfly.room2d import Room2D
-from dragonfly.glazingparameter import SimpleGlazingRatio
+from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
 
 from honeybee.boundarycondition import Outdoors, Ground, Surface
@@ -33,7 +33,7 @@ def test_room2d_init():
     assert len(room2d) == 4
     assert room2d.floor_to_ceiling_height == 3
     assert all([isinstance(bc, Outdoors) for bc in room2d.boundary_conditions])
-    assert all([glzpar is None for glzpar in room2d.glazing_parameters])
+    assert all([glzpar is None for glzpar in room2d.window_parameters])
     assert all([shdpar is None for shdpar in room2d.shading_parameters])
     assert room2d.parent is None
     assert not room2d.has_parent
@@ -53,12 +53,12 @@ def test_room2d_init():
 def test_room2d_init_with_windows():
     """Test the initalization of Room2D objects with windows."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
-    glazing = (ashrae_base, None, ashrae_base, None)
+    window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
-    room2d = Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, glazing, shading)
+    room2d = Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, window, shading)
 
     assert len(room2d.floor_geometry.vertices) == 4
     assert room2d.floor_geometry.vertices == tuple(pts)
@@ -66,8 +66,8 @@ def test_room2d_init_with_windows():
     assert room2d.floor_to_ceiling_height == 3
     assert isinstance(room2d.boundary_conditions[0], Outdoors)
     assert isinstance(room2d.boundary_conditions[1], Ground)
-    assert room2d.glazing_parameters[0] == ashrae_base
-    assert room2d.glazing_parameters[1] is None
+    assert room2d.window_parameters[0] == ashrae_base
+    assert room2d.window_parameters[1] is None
     assert room2d.shading_parameters[0] == overhang
     assert room2d.shading_parameters[1] is None
 
@@ -104,31 +104,31 @@ def test_room_init_with_hole():
 def test_room2d_init_invalid():
     """Test the initalization of Room2D objects with invalid inputs."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
     boundarycs = [bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground]
-    glazing = [ashrae_base, None, ashrae_base, None]
+    window = [ashrae_base, None, ashrae_base, None]
     shading = [overhang, None, None, None]
-    Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, glazing, shading)
+    Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, window, shading)
 
     old_bc = boundarycs.pop(-1)
     with pytest.raises(AssertionError):
-        Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, glazing, shading)
+        Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, window, shading)
     boundarycs.append(old_bc)
 
-    old_glz = glazing.pop(-1)
+    old_glz = window.pop(-1)
     with pytest.raises(AssertionError):
-        Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, glazing, shading)
-    glazing.append(old_glz)
+        Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, window, shading)
+    window.append(old_glz)
 
     old_shd = shading.pop(-1)
     with pytest.raises(AssertionError):
-        Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, glazing, shading)
+        Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, window, shading)
     shading.append(old_shd)
 
     new_bcs = [bcs.ground, bcs.outdoors, bcs.outdoors, bcs.ground]
     with pytest.raises(AssertionError):
-        Room2D('Square Shoebox', Face3D(pts), 3, new_bcs, glazing, shading)
+        Room2D('Square Shoebox', Face3D(pts), 3, new_bcs, window, shading)
 
     new_glz = [None, ashrae_base, ashrae_base, None]
     with pytest.raises(AssertionError):
@@ -139,21 +139,21 @@ def test_room2d_init_from_polygon():
     """Test the initalization of Room2D objects from a Polygon2D."""
     pts = (Point2D(0, 0), Point2D(10, 0), Point2D(10, 10), Point2D(0, 10))
     polygon = Polygon2D(pts)
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
-    glazing = (ashrae_base, None, ashrae_base, None)
+    window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
     room2d = Room2D.from_polygon('Square Shoebox', polygon, 3, 3,
-                                 boundarycs, glazing, shading)
+                                 boundarycs, window, shading)
 
     assert len(room2d.floor_geometry.vertices) == 4
     assert len(room2d) == 4
     assert room2d.floor_to_ceiling_height == 3
     assert isinstance(room2d.boundary_conditions[0], Outdoors)
     assert isinstance(room2d.boundary_conditions[1], Ground)
-    assert room2d.glazing_parameters[0] == ashrae_base
-    assert room2d.glazing_parameters[1] is None
+    assert room2d.window_parameters[0] == ashrae_base
+    assert room2d.window_parameters[1] is None
     assert room2d.shading_parameters[0] == overhang
     assert room2d.shading_parameters[1] is None
 
@@ -168,21 +168,21 @@ def test_room2d_init_from_polygon():
 def test_room2d_init_from_vertices():
     """Test the initalization of Room2D objects from 2D vertices."""
     pts = (Point2D(0, 0), Point2D(10, 0), Point2D(10, 10), Point2D(0, 10))
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
-    glazing = (ashrae_base, None, ashrae_base, None)
+    window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
     room2d = Room2D.from_vertices('Square Shoebox', pts, 3, 3,
-                                  boundarycs, glazing, shading)
+                                  boundarycs, window, shading)
 
     assert len(room2d.floor_geometry.vertices) == 4
     assert len(room2d) == 4
     assert room2d.floor_to_ceiling_height == 3
     assert isinstance(room2d.boundary_conditions[0], Outdoors)
     assert isinstance(room2d.boundary_conditions[1], Ground)
-    assert room2d.glazing_parameters[0] == ashrae_base
-    assert room2d.glazing_parameters[1] is None
+    assert room2d.window_parameters[0] == ashrae_base
+    assert room2d.window_parameters[1] is None
     assert room2d.shading_parameters[0] == overhang
     assert room2d.shading_parameters[1] is None
 
@@ -212,14 +212,14 @@ def test_room2d_segment_orientations():
     assert orientations[3] == pytest.approx(180, rel=1e-3)
 
 
-def test_room2d_set_outdoor_glazing_shading_parameters():
-    """Test the Room2D set_outdoor_glazing_parameters method."""
+def test_room2d_set_outdoor_window_shading_parameters():
+    """Test the Room2D set_outdoor_window_parameters method."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
     room2d = Room2D('Square Shoebox', Face3D(pts), 3, boundarycs)
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
-    room2d.set_outdoor_glazing_parameters(ashrae_base)
+    room2d.set_outdoor_window_parameters(ashrae_base)
     room2d.set_outdoor_shading_parameters(overhang)
 
     assert len(room2d.floor_geometry.vertices) == 4
@@ -228,8 +228,8 @@ def test_room2d_set_outdoor_glazing_shading_parameters():
     assert room2d.floor_to_ceiling_height == 3
     assert isinstance(room2d.boundary_conditions[0], Outdoors)
     assert isinstance(room2d.boundary_conditions[1], Ground)
-    assert room2d.glazing_parameters[0] == ashrae_base
-    assert room2d.glazing_parameters[1] is None
+    assert room2d.window_parameters[0] == ashrae_base
+    assert room2d.window_parameters[1] is None
     assert room2d.shading_parameters[0] == overhang
     assert room2d.shading_parameters[1] is None
 
@@ -372,13 +372,13 @@ def test_solve_adjacency_aperture():
     """Test the Room2D solve_adjacency method with an interior aperture."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    ashrae_base = SimpleGlazingRatio(0.4)
-    glazing_1 = (None, ashrae_base, None, None)
-    glazing_2 = (None, None, None, ashrae_base)
-    glazing_3 = (None, None, None, None)
-    room2d_1 = Room2D('Square Shoebox 1', Face3D(pts_1), 3, None, glazing_1)
-    room2d_2 = Room2D('Square Shoebox 2', Face3D(pts_2), 3, None, glazing_2)
-    room2d_3 = Room2D('Square Shoebox 3', Face3D(pts_2), 3, None, glazing_3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    window_1 = (None, ashrae_base, None, None)
+    window_2 = (None, None, None, ashrae_base)
+    window_3 = (None, None, None, None)
+    room2d_1 = Room2D('Square Shoebox 1', Face3D(pts_1), 3, None, window_1)
+    room2d_2 = Room2D('Square Shoebox 2', Face3D(pts_2), 3, None, window_2)
+    room2d_3 = Room2D('Square Shoebox 3', Face3D(pts_2), 3, None, window_3)
     Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
 
     assert room2d_1.boundary_conditions[1].boundary_condition_object == \
@@ -414,12 +414,12 @@ def test_room2d_intersect_adjacency():
 def test_to_honeybee():
     """Test the to_honeybee method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
-    ashrae_base = SimpleGlazingRatio(0.5)
+    ashrae_base = SimpleWindowRatio(0.5)
     overhang = Overhang(1)
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
-    glazing = (ashrae_base, None, ashrae_base, None)
+    window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
-    room2d = Room2D('Zone: SHOE_BOX [920980]', Face3D(pts), 3, boundarycs, glazing, shading)
+    room2d = Room2D('Zone: SHOE_BOX [920980]', Face3D(pts), 3, boundarycs, window, shading)
     room = room2d.to_honeybee(1, 0.1)
 
     assert room.name == 'ZoneSHOE_BOX920980'
@@ -443,12 +443,12 @@ def test_to_honeybee():
 def test_to_dict():
     """Test the Room2D to_dict method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
-    glazing = (ashrae_base, None, ashrae_base, None)
+    window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
-    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, glazing, shading)
+    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, window, shading)
 
     rd = room.to_dict()
     assert rd['type'] == 'Room2D'
@@ -461,8 +461,8 @@ def test_to_dict():
     assert rd['floor_to_ceiling_height'] == 3
     assert 'boundary_conditions' in rd
     assert len(rd['boundary_conditions']) == 4
-    assert 'glazing_parameters' in rd
-    assert len(rd['glazing_parameters']) == 4
+    assert 'window_parameters' in rd
+    assert len(rd['window_parameters']) == 4
     assert 'shading_parameters' in rd
     assert len(rd['shading_parameters']) == 4
     assert 'properties' in rd
@@ -472,19 +472,19 @@ def test_to_dict():
     rd = room.to_dict()
     assert 'boundary_conditions' in rd
     assert len(rd['boundary_conditions']) == 4
-    assert 'glazing_parameters' not in rd
+    assert 'window_parameters' not in rd
     assert 'shading_parameters' not in rd
 
 
 def test_to_from_dict():
     """Test the to/from dict of Room2D objects."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
-    ashrae_base = SimpleGlazingRatio(0.4)
+    ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
-    glazing = (ashrae_base, None, ashrae_base, None)
+    window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
-    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, glazing, shading)
+    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, window, shading)
 
     room_dict = room.to_dict()
     new_room = Room2D.from_dict(room_dict)

@@ -4,7 +4,7 @@ import pytest
 from dragonfly.building import Building
 from dragonfly.story import Story
 from dragonfly.room2d import Room2D
-from dragonfly.glazingparameter import SimpleGlazingRatio
+from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
 
 from honeybee.model import Model
@@ -27,7 +27,7 @@ def test_building_init():
     room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
     story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
     building = Building('Office Building', [story])
 
@@ -64,7 +64,7 @@ def test_building_init_from_footprint():
     pts_2 = (Point3D(0, 10, 0), Point3D(0, 20, 0), Point3D(10, 20, 0), Point3D(10, 10, 0))
     building = Building.from_footprint('Office Tower', [Face3D(pts_1), Face3D(pts_2)],
                                        [5, 4, 4, 3, 3, 3, 3, 3])
-    building.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    building.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
     assert building.name == 'OfficeTower'
     assert building.display_name == 'Office Tower'
@@ -83,7 +83,7 @@ def test_building_init_from_all_story_geometry():
     story_geo = [[Face3D(pts_1)], [Face3D(pts_2)], [Face3D(pts_3)], [Face3D(pts_4)]]
     building = Building.from_all_story_geometry(
         'Office Tower', story_geo, [4, 4, 3, 3], 0.01)
-    building.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    building.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
     print(Building._is_story_equivalent(story_geo[0][0], story_geo[1][0], 0.1))
 
@@ -116,8 +116,8 @@ def test_building_shade_representation():
     assert shd_area == building.exterior_wall_area
 
 
-def test_building_glazing_shading_parameters():
-    """Test the Building set_outdoor_glazing_parameters method."""
+def test_building_window_shading_parameters():
+    """Test the Building set_outdoor_window_parameters method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
@@ -133,11 +133,11 @@ def test_building_glazing_shading_parameters():
     building.auto_assign_top_bottom_floors()
 
     assert building.exterior_aperture_area == 0
-    assert building.unique_room_2ds[0].glazing_parameters[2] is None
-    ashrae_base = SimpleGlazingRatio(0.4)
-    story.set_outdoor_glazing_parameters(ashrae_base)
+    assert building.unique_room_2ds[0].window_parameters[2] is None
+    ashrae_base = SimpleWindowRatio(0.4)
+    story.set_outdoor_window_parameters(ashrae_base)
     assert building.exterior_aperture_area == 60 * 4 * 4 * 0.4
-    assert building.unique_room_2ds[0].glazing_parameters[2] == ashrae_base
+    assert building.unique_room_2ds[0].window_parameters[2] == ashrae_base
 
     assert building.unique_room_2ds[0].shading_parameters[2] is None
     overhang = Overhang(1)
@@ -273,7 +273,7 @@ def test_to_honeybee():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
     building = Building('Office Building', [story])
 
@@ -322,10 +322,10 @@ def test_buildings_to_honeybee():
     story_big = Story('Office Floor Big', [room2d_3])
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
     building = Building('Office Building', [story])
-    story_big.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story_big.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story_big.multiplier = 4
     building_big = Building('Office Building Big', [story_big])
 
@@ -355,10 +355,10 @@ def test_buildings_to_honeybee_self_shade():
     story_big = Story('Office Floor Big', [room2d_3])
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
     building = Building('Office Building', [story])
-    story_big.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story_big.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story_big.multiplier = 4
     building_big = Building('Office Building Big', [story_big])
 
@@ -392,7 +392,7 @@ def test_to_dict():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
     story.multiplier = 4
     building = Building('Office Building', [story])
@@ -417,7 +417,7 @@ def test_to_from_dict():
     room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
     story = Story('Office Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_glazing_parameters(SimpleGlazingRatio(0.4))
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
     story.multiplier = 4
     building = Building('Office Building', [story])

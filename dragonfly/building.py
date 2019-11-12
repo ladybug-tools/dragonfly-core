@@ -377,10 +377,10 @@ class Building(_BaseGeometry):
         self._unique_stories = tuple(new_ground_floors) + self._unique_stories + \
             tuple(new_top_floors)
 
-    def set_outdoor_glazing_parameters(self, glazing_parameter):
-        """Set all of the outdoor walls to have the same glazing parameters."""
+    def set_outdoor_window_parameters(self, window_parameter):
+        """Set all of the outdoor walls to have the same window parameters."""
         for story in self._unique_stories:
-            story.set_outdoor_glazing_parameters(glazing_parameter)
+            story.set_outdoor_window_parameters(window_parameter)
 
     def set_outdoor_shading_parameters(self, shading_parameter):
         """Set all of the outdoor walls to have the same shading parameters."""
