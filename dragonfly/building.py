@@ -33,6 +33,8 @@ class Building(_BaseGeometry):
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * min
+        * max
     """
     __slots__ = ('_unique_stories',)
 
@@ -256,6 +258,24 @@ class Building(_BaseGeometry):
         """
         return sum([story.exterior_aperture_area * story.multiplier
                     for story in self._unique_stories])
+    
+    @property
+    def min(self):
+        """Get a Point2D for the min bounding rectangle vertex in the XY plane.
+        
+        This is useful in calculations to determine if this Building is in proximity
+        to other objects.
+        """
+        return self._calculate_min(self._unique_stories)
+    
+    @property
+    def max(self):
+        """Get a Point2D for the max bounding rectangle vertex in the XY plane.
+        
+        This is useful in calculations to determine if this Building is in proximity
+        to other objects.
+        """
+        return self._calculate_max(self._unique_stories)
 
     def all_stories(self):
         """Get a list of all Story objects that form the Building.
@@ -494,8 +514,9 @@ class Building(_BaseGeometry):
         return base_model
     
     @staticmethod
-    def buildings_to_honeybee_self_shade(buildings, shade_dist, use_multiplier,
-                                         tolerance):
+    def buildings_to_honeybee_self_shade(
+            buildings, context_shades=None, shade_distance=None, use_multiplier=True,
+            tolerance=None):
         """Convert an array of Buildings into several honeybee Models with self-shading.
 
         Each input Building will be exported into its own Model. For each Model,
@@ -506,13 +527,16 @@ class Building(_BaseGeometry):
         Args:
             buildings: An array of Building objects to be converted into honeybee
                 Models that account for their own shading of one another.
-            shade_dist: A number to note the distance beyond which other
-                buildings' shade should not be exported into a given Model. This is
+            context_shades: An optional array of ContextShade objects that will be
+                added to the honeybee Models if their bounding box overlaps with a
+                given building within the shade_distance.
+            shade_distance: An optional number to note the distance beyond which other
+                objects' shade should not be exported into a given Model. This is
                 helpful for reducing the simulation run time of each Model when other
                 connected buildings are too far away to have a meaningful impact on
                 the results. If None, all other buildings will be included as context
                 shade in each and every Model. Set to 0 to exclude all neighboring
-                buildings from the resulting models.
+                buildings from the resulting models. Default: None.
             use_multiplier: If True, the multipliers on this Building's Stories will be
                 passed along to the generated Honeybee Room objects, indicating the
                 simulation will be run once for each unique room and then results
@@ -521,40 +545,58 @@ class Building(_BaseGeometry):
                 multipliers and all resulting multipliers will be 1. Default: True
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur.
+                If None, no splitting will occur. Default: None.
         """
         models = []  # list to be filled with Honeybee Models
 
-        # create a list with all context representations of the buildings
+        # create lists with all context representations of the buildings + shade
         bldg_shades = []
-        bnd_pts = []
-        if shade_dist != 0:
+        bldg_pts = []
+        con_shades = []
+        con_pts = []
+        if shade_distance is None or shade_distance > 0:
             for bldg in buildings:
                 bldg_shades.append(bldg.shade_representation(tolerance))
-                min, max = bldg.unique_stories[0].min, bldg.unique_stories[0].max
-                center = Point2D((min.x + max.x) / 2, (min.y + max.y) / 2)
-                bnd_pts.append((min, center, max))
+                b_min, b_max = bldg.min, bldg.max
+                center = Point2D((b_min.x + b_max.x) / 2, (b_min.y + b_max.y) / 2)
+                bldg_pts.append((b_min, center, b_max))
+            if context_shades is not None:
+                for con in context_shades:
+                    con_shades.append(con.to_honeybee())
+                    c_min, c_max = con.min, con.max
+                    center = Point2D((c_min.x + c_max.x) / 2, (c_min.y + c_max.y) / 2)
+                    con_pts.append((c_min, center, c_max))
         
         # loop through each Building and create a model
         num_bldg = len(buildings)
         for i, bldg in enumerate(buildings):
             model = bldg.to_honeybee(use_multiplier, tolerance)
             
-            if shade_dist is None:  # add all other bldg shades to the model
-                for j in xrange(i + 1, num_bldg):
+            if shade_distance is None:  # add all other bldg shades to the model
+                for j in xrange(i + 1, num_bldg):  # buildings before this one
                     for shd in bldg_shades[j]:
                         model.add_shade(shd)
-                for k in xrange(i):
+                for k in xrange(i):  # buildings after this one
                     for shd in bldg_shades[k]:
                         model.add_shade(shd)
-            elif shade_dist > 0:  # add only context shade within the distance
-                for j in xrange(i + 1, num_bldg):
-                    if Building._bound_rect_in_dist(bnd_pts[i], bnd_pts[j], shade_dist):
+                for c_shade in con_shades:  # context shades
+                    for shd in c_shade:
+                        model.add_shade(shd)
+            elif shade_distance > 0:  # add only shade within the distance
+                for j in xrange(i + 1, num_bldg):  # buildings before this one
+                    if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[j],
+                                                    shade_distance):
                         for shd in bldg_shades[j]:
                             model.add_shade(shd)
-                for k in xrange(i):
-                    if Building._bound_rect_in_dist(bnd_pts[i], bnd_pts[k], shade_dist):
+                for k in xrange(i):  # buildings after this one
+                    if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[k],
+                                                    shade_distance):
                         for shd in bldg_shades[k]:
+                            model.add_shade(shd)
+                for s in xrange(len(con_shades)):  # context shades
+                    if Building._bound_rect_in_dist(bldg_pts[i], con_pts[s],
+                                                    shade_distance):
+                        for shd in con_shades[s]:
                             model.add_shade(shd)
             models.append(model)  # apend to the final list of Models
         return models

@@ -441,7 +441,7 @@ class Room2D(_BaseGeometry):
     
     @property
     def min(self):
-        """A Point2D for the minimum bounding rectangle vertex around this Room2D.
+        """Get a Point2D for the min bounding rectangle vertex in the XY plane.
         
         This is useful in calculations to determine if this Room2D is in proximity
         to other Room2Ds.
@@ -450,12 +450,12 @@ class Room2D(_BaseGeometry):
     
     @property
     def max(self):
-        """A Point2D for the maximum bounding rectangle vertex around this Room2D.
+        """Get a Point2D for the max bounding rectangle vertex in the XY plane.
         
         This is useful in calculations to determine if this Room2D is in proximity
         to other Room2Ds.
         """
-        return self._floor_geometry.boundary_polygon2d.min
+        return self._floor_geometry.boundary_polygon2d.max
 
     def segment_orientations(self, north_vector=Vector2D(0, 1)):
         """A list of numbers between 0 and 360 for the orientation of the segments.

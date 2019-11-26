@@ -5,9 +5,9 @@ from .properties import StoryProperties
 from .room2d import Room2D
 
 from honeybee.typing import float_positive, int_in_range
+from honeybee.boundarycondition import Surface
 from honeybee.model import Model
 
-from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 
@@ -211,21 +211,21 @@ class Story(_BaseGeometry):
     
     @property
     def min(self):
-        """A Point2D for the minimum bounding rectangle vertex around this Story.
+        """Get a Point2D for the min bounding rectangle vertex in the XY plane.
         
         This is useful in calculations to determine if this Story is in proximity
-        to other Stories.
+        to others.
         """
-        return self._calculate_min()
+        return self._calculate_min(self._room_2ds)
     
     @property
     def max(self):
-        """A Point2D for the maximum bounding rectangle vertex around this Story.
+        """Get a Point2D for the max bounding rectangle vertex in the XY plane.
         
         This is useful in calculations to determine if this Story is in proximity
-        to other Atories.
+        to others.
         """
-        return self._calculate_max()
+        return self._calculate_max(self._room_2ds)
 
     def floor_geometry(self, tolerance):
         """Get a ladybug_geometry Polyface3D object representing the floor plate.
@@ -268,7 +268,27 @@ class Story(_BaseGeometry):
         for room in self._room_2ds:
             if room.name == room_name:
                 return room
-        return None
+        else:
+            raise ValueError('Room2D "{}" was not found in the story "{}"'
+                             '.'.format(room_name, self.name))
+    
+    def rooms_by_name(self, room_names):
+        """Get a list of Room2D objects in this story given Room2D names.
+        
+        Args:
+            room_name: Array of strings for the names of the Room2D to be retrieved
+                from this Story.
+        """
+        room_2ds = []
+        for name in room_names:
+            for room in self._room_2ds:
+                if room.name == name:
+                    room_2ds.append(room)
+                    break
+            else:
+                raise ValueError('Room2D "{}" was not found in the story '
+                                 '"{}".'.format(name, self.name))
+        return room_2ds
 
     def add_room_2d(self, room_2d):
         """Add a Room2D to this Story.
@@ -378,6 +398,22 @@ class Story(_BaseGeometry):
             room.scale(factor, origin)
         self._floor_to_floor_height = self._floor_to_floor_height * factor
 
+    def check_missing_adjacencies(self, raise_exception=True):
+        """Check that all Room2Ds have adjacent objects that exist within this Story."""
+        bc_obj_names = []
+        for room in self._room_2ds:
+            for bc in room._boundary_conditions:
+                if isinstance(bc, Surface):
+                    bc_obj_names.append(bc.boundary_condition_objects[-1])
+        try:
+            self.rooms_by_name(bc_obj_names)
+        except ValueError as e:
+            if raise_exception:
+                raise ValueError('A Room2D has an adjacent object that is missing '
+                                 'from the model:\n{}'.format(e))
+            return False
+        return True
+
     def to_honeybee(self, use_multiplier=True, tolerance=None):
         """Convert Dragonfly Story to a Honeybee Model.
 
@@ -417,30 +453,6 @@ class Story(_BaseGeometry):
         base['is_top_floor'] = self.is_top_floor
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         return base
-    
-    def _calculate_min(self):
-        """Calculate minimum Point2D for this object."""
-        min_pt = [self._room_2ds[0].min.x, self._room_2ds[0].min.y]
-
-        for room in self._room_2ds[1:]:
-            if room.min.x < min_pt[0]:
-                min_pt[0] = room.min.x
-            if room.min.y < min_pt[1]:
-                min_pt[1] = room.min.y
-
-        return Point2D(min_pt[0], min_pt[1])
-    
-    def _calculate_max(self):
-        """Calculate maximum Point2D for this object."""
-        max_pt = [self._room_2ds[0].min.x, self._room_2ds[0].min.y]
-
-        for room in self._room_2ds[1:]:
-            if room.max.x > max_pt[0]:
-                max_pt[0] = room.max.x
-            if room.max.y > max_pt[1]:
-                max_pt[1] = room.max.y
-
-        return Point2D(max_pt[0], max_pt[1])
 
     def __copy__(self):
         new_s = Story(self.name, tuple(room.duplicate() for room in self._room_2ds),

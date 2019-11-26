@@ -2,6 +2,8 @@
 """Base class for all geometry objects."""
 from honeybee.typing import valid_string
 
+from ladybug_geometry.geometry2d.pointvector import Point2D
+
 
 class _BaseGeometry(object):
     """A base class for all geometry objects.
@@ -50,6 +52,40 @@ class _BaseGeometry(object):
     def duplicate(self):
         """Get a copy of this object."""
         return self.__copy__()
+    
+    @staticmethod
+    def _calculate_min(geometry_objects):
+        """Calculate min Point2D around an array of geometry with min attributes.
+        
+        This is used in all functions that calculate bounding rectangles around
+        dragonfly objects and assess when two objects are in close proximity.
+        """
+        min_pt = [geometry_objects[0].min.x, geometry_objects[0].min.y]
+
+        for room in geometry_objects[1:]:
+            if room.min.x < min_pt[0]:
+                min_pt[0] = room.min.x
+            if room.min.y < min_pt[1]:
+                min_pt[1] = room.min.y
+
+        return Point2D(min_pt[0], min_pt[1])
+
+    @staticmethod
+    def _calculate_max(geometry_objects):
+        """Calculate max Point2D around an array of geometry with max attributes.
+        
+        This is used in all functions that calculate bounding rectangles around
+        dragonfly objects and assess when two objects are in close proximity.
+        """
+        max_pt = [geometry_objects[0].max.x, geometry_objects[0].max.y]
+
+        for room in geometry_objects[1:]:
+            if room.max.x > max_pt[0]:
+                max_pt[0] = room.max.x
+            if room.max.y > max_pt[1]:
+                max_pt[1] = room.max.y
+
+        return Point2D(max_pt[0], max_pt[1])
 
     def __copy__(self):
         new_obj = self.__class__(self.name)

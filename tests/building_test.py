@@ -363,7 +363,7 @@ def test_buildings_to_honeybee_self_shade():
     building_big = Building('Office Building Big', [story_big])
 
     hb_models = Building.buildings_to_honeybee_self_shade(
-        [building, building_big], None, False, 0.01)
+        [building, building_big], None, None, False, 0.01)
     assert len(hb_models) == 2
     assert isinstance(hb_models[0], Model)
     assert len(hb_models[0].orphaned_shades) == 4
@@ -375,7 +375,7 @@ def test_buildings_to_honeybee_self_shade():
     assert hb_models[-1].rooms[-1].exterior_wall_area == 180
 
     hb_models = Building.buildings_to_honeybee_self_shade(
-        [building, building_big], 5, True, 0.01)
+        [building, building_big], None, 5, True, 0.01)
     assert len(hb_models) == 2
     assert isinstance(hb_models[0], Model)
     assert len(hb_models[0].orphaned_shades) == 0
