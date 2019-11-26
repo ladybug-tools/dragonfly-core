@@ -5,7 +5,7 @@ These objects hold all attributes assigned by extensions like dragonfly-radiance
 and dragonfly-energy.  Note that these Property objects are not intended to exist
 on their own but should have a host object.
 """
-from honeybee.properties import RoomProperties
+import honeybee.properties as hb_properties
 
 
 class _Properties(object):
@@ -156,6 +156,121 @@ class _Properties(object):
         return 'BaseProperties'
 
 
+class ModelProperties(_Properties):
+    """Dragonfly Model Properties. This class will be extended by extensions.
+
+    Usage:
+        model = Model('South Boston District', list_of_buildings)
+        model.properties -> ModelProperties
+        model.properties.radiance -> ModelRadianceProperties
+        model.properties.energy -> ModelEnergyProperties
+    """
+
+    def to_dict(self, include=None):
+        """Convert properties to dictionary.
+
+        Args:
+            include: A list of keys to be included in dictionary.
+                If None all the available keys will be included.
+        """
+        base = {
+            'type': 'ModelProperties'
+        }
+        if include is not None:
+            attr = include
+        else:
+            attr = [atr for atr in dir(self)
+                    if not atr.startswith('_') and atr != 'host']
+
+        for atr in attr:
+            var = getattr(self, atr)
+            if not hasattr(var, 'to_dict'):
+                continue
+            try:
+                base.update(var.to_dict())  # no abridged dictionary for model
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception('Failed to convert {} to a dict: {}'.format(var, e))
+        return base
+
+    def apply_properties_from_dict(self, data):
+        """Apply extension properties from a Model dictionary to the host Model.
+
+        Args:
+            data: A dictionary representation of an entire dragonfly-core Model.
+        """
+        attr = [atr for atr in dir(self)
+                if not atr.startswith('_') and atr not in self._do_not_duplicate]
+
+        for atr in attr:
+            if atr not in data['properties']:
+                continue
+            var = getattr(self, atr)
+            if not hasattr(var, 'apply_properties_from_dict'):
+                continue
+            try:
+                var.apply_properties_from_dict(data)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception(
+                    'Failed to apply {} properties to the Model: {}'.format(atr, e))
+
+    def to_honeybee(self, host):
+        """Convert this Model's extension properties to honeybee Model properties.
+
+        Args:
+            host: A honeybee-core Model object that hosts these properties.
+        """
+        hb_prop = hb_properties.ModelProperties(host)
+        return self._add_extension_attr_to_honeybee(host, hb_prop)
+
+    def __repr__(self):
+        """Properties representation."""
+        return 'ModelProperties'
+
+
+class ContextShadeProperties(_Properties):
+    """Dragonfly ContextShade properties. This class will be extended by extensions.
+
+    Usage:
+        canopy = ContextShade('Outdoor Canopy', canopy_geo)
+        canopy.properties -> ContextShadeProperties
+        canopy.properties.radiance -> ContextShadeRadianceProperties
+        canopy.properties.energy -> ContextShadeEnergyProperties
+    """
+
+    def to_dict(self, abridged=False, include=None):
+        """Convert properties to dictionary.
+
+        Args:
+            abridged: Boolean to note whether the full dictionary describing the
+                object should be returned (False) or just an abridged version (True).
+                Default: False.
+            include: A list of keys to be included in dictionary.
+                If None all the available keys will be included.
+        """
+        base = {'type': 'ContextShadeProperties'} if not abridged else \
+            {'type': 'ContextShadePropertiesAbridged'}
+
+        base = self._add_extension_attr_to_dict(base, abridged, include)
+        return base
+
+    def to_honeybee(self, host):
+        """Convert this ContextShade's extension properties to honeybee Shade properties.
+
+        Args:
+            host: A honeybee-core Shade object that hosts these properties.
+        """
+        hb_prop = hb_properties.ShadeProperties(host)
+        return self._add_extension_attr_to_honeybee(host, hb_prop)
+
+    def __repr__(self):
+        """Properties representation."""
+        return 'ContextShadeProperties'
+
+
 class BuildingProperties(_Properties):
     """Dragonfly Building properties. This class will be extended by extensions.
 
@@ -250,7 +365,7 @@ class Room2DProperties(_Properties):
         Args:
             host: A honeybee-core Room object that hosts these properties.
         """
-        hb_prop = RoomProperties(host)
+        hb_prop = hb_properties.RoomProperties(host)
         return self._add_extension_attr_to_honeybee(host, hb_prop)
 
     def __repr__(self):

@@ -84,12 +84,14 @@ def test_story_add_rooms():
     story = Story('Office Floor', [room2d_1])
 
     assert story.floor_area == 100
-    assert isinstance(story.room_by_name('Office1'), Room2D)
-    assert story.room_by_name('Office2') is None
+    assert isinstance(story.room_by_name('Office1'), Room2D) 
+    with pytest.raises(ValueError):
+        story.room_by_name('Office2')
     story.add_room_2d(room2d_2)
     assert story.floor_area == 200
     assert isinstance(story.room_by_name('Office2'), Room2D)
-    assert story.room_by_name('Office3') is None
+    with pytest.raises(ValueError):
+        story.room_by_name('Office3')
     story.add_room_2ds([room2d_3, room2d_4])
     assert story.floor_area == 400
     assert isinstance(story.room_by_name('Office3'), Room2D)

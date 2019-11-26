@@ -468,8 +468,8 @@ def test_to_dict():
     assert 'properties' in rd
     assert rd['properties']['type'] == 'Room2DProperties'
 
-    room = Room2D('Shoe Box Zone', Face3D(pts), 3)
-    rd = room.to_dict()
+    room_2 = Room2D('Shoe Box Zone', Face3D(pts), 3)
+    rd = room_2.to_dict()
     assert 'boundary_conditions' in rd
     assert len(rd['boundary_conditions']) == 4
     assert 'window_parameters' not in rd
