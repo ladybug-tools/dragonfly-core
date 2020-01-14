@@ -489,6 +489,29 @@ class Room2D(_BaseGeometry):
             shd_ps.append(shd_p)
         self._shading_parameters = shd_ps
 
+    def add_prefix(self, prefix):
+        """Change the name of this object and all child segments by inserting a prefix.
+        
+        This is particularly useful in workflows where you duplicate and edit
+        a starting object and then want to combine it with the original object
+        into one Model (like making a model of repeated rooms) since all objects
+        within a Model must have unique names.
+
+        Args:
+            prefix: Text that will be inserted at the start of this object's
+                (and child segments') name and display_name. It is recommended
+                that this name be short to avoid maxing out the 100 allowable
+                characters for honeybee names.
+        """
+        self.name = '{}_{}'.format(prefix, self.display_name)
+        self.properties.add_prefix(prefix)
+        for i, bc in enumerate(self._boundary_conditions):
+            if isinstance(bc, Surface):
+                new_face_name = '{}_{}'.format(prefix, bc.boundary_condition_objects[0])
+                new_room_name = '{}_{}'.format(prefix, bc.boundary_condition_objects[1])
+                self._boundary_conditions[i] = \
+                    Surface((new_face_name, new_room_name))
+
     def generate_grid(self, x_dim, y_dim=None, offset=1.0):
         """Get a gridded Mesh3D object offset from the floor of this room.
 

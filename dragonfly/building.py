@@ -291,7 +291,7 @@ class Building(_BaseGeometry):
         all_stories = []
         for story in self._unique_stories:
             new_story = story.duplicate()
-            self._rename_story(new_story, 1)
+            new_story.add_prefix('Flr1')
             new_story.multiplier = 1
             if story.multiplier != 1 and story.is_top_floor:
                 new_story.is_top_floor = False  # top floor is above this one
@@ -300,7 +300,7 @@ class Building(_BaseGeometry):
             if story.multiplier != 1:
                 for i in range(story.multiplier - 1):
                     new_story = story.duplicate()
-                    self._rename_story(new_story, i + 2)
+                    new_story.add_prefix('Flr{}'.format(i + 2))
                     new_story.multiplier = 1
                     m_vec = Vector3D(0, 0, story.floor_to_floor_height * (i + 1))
                     new_story.move(m_vec)
@@ -338,6 +338,25 @@ class Building(_BaseGeometry):
                 context_shades.append(Shade(shd_name, extru_geo))
             # TODO: add a Shade object to cap the extrusion once lb_geometry has polyline
         return context_shades
+
+    def add_prefix(self, prefix):
+        """Change the name of this object and all child objects by inserting a prefix.
+        
+        This is particularly useful in workflows where you duplicate and edit
+        a starting object and then want to combine it with the original object
+        into one Model (like making a model of repeating buildings) since all objects
+        within a Model must have unique names.
+
+        Args:
+            prefix: Text that will be inserted at the start of this object's
+                (and child segments') name and display_name. It is recommended
+                that this name be short to avoid maxing out the 100 allowable
+                characters for honeybee names.
+        """
+        self.name = '{}_{}'.format(prefix, self.display_name)
+        self.properties.add_prefix(prefix)
+        for story in self.unique_stories:
+            story.add_prefix(prefix)
 
     def auto_assign_top_bottom_floors(self):
         """Set the first Story as the ground floor and the last to be the top.
@@ -676,7 +695,7 @@ class Building(_BaseGeometry):
         bottom = base_story.duplicate()  # generate a new bottom floor
         bottom.is_ground_floor = True
         bottom.multiplier = 1
-        Building._rename_story(bottom, 'Ground')
+        bottom.add_prefix('Ground')
         return bottom
 
     @staticmethod
@@ -687,29 +706,8 @@ class Building(_BaseGeometry):
         top.move(move_vec)
         top.is_top_floor = True
         top.multiplier = 1
-        Building._rename_story(top, 'Top')
+        top.add_prefix('Top')
         return top
-
-    @staticmethod
-    def _rename_story(story, id):
-        """Rename a Story and all of the children Room2Ds.
-
-        Args:
-            story: A Story object to be re-named.
-            id: A unique ID to be appended to all of the names.
-        """
-        story.name = '{}_{}'.format(story.name, id)
-        for room in story.room_2ds:
-            room.name = '{}_{}'.format(room.name, id)
-            for i, bc in enumerate(room._boundary_conditions):
-                if isinstance(bc, Surface):
-                    bc_obj_name = bc.boundary_condition_object.split('..Face')
-                    bc_rm_name = bc_obj_name[0]
-                    face_num = bc_obj_name[1]
-                    new_bc_rm_name = '{}_{}'.format(bc_rm_name, id)
-                    new_face_name = '{}..Face{}'.format(new_bc_rm_name, face_num)
-                    room._boundary_conditions[i] = \
-                        Surface((new_face_name, new_bc_rm_name))
 
     def __copy__(self):
         new_b = Building(self.name,
