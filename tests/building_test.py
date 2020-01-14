@@ -149,6 +149,7 @@ def test_building_window_shading_parameters():
     assert len(building.unique_room_2ds) == 4
     building.separate_top_bottom_floors()
     assert len(building.unique_stories) == 3
+    assert len(set(story.name for story in building.unique_stories)) == 3
     assert len(building.all_stories()) == 4
     assert len(building.unique_room_2ds) == 12
 

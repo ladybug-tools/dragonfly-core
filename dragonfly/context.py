@@ -91,6 +91,22 @@ class ContextShade(_BaseGeometry):
         proximity to other objects.
         """
         return self._calculate_max(self._geometry)
+
+    def add_prefix(self, prefix):
+        """Change the name of this object by inserting a prefix.
+        
+        This is particularly useful in workflows where you duplicate and edit
+        a starting object and then want to combine it with the original object
+        into one Model (like making a model of repeated shades) since all objects
+        within a Model must have unique names.
+
+        Args:
+            prefix: Text that will be inserted at the start of this object's name
+                and display_name. It is recommended that this name be short to
+                avoid maxing out the 100 allowable characters for honeybee names.
+        """
+        self.name = '{}_{}'.format(prefix, self.display_name)
+        self.properties.add_prefix(prefix)
     
     def move(self, moving_vec):
         """Move this ContextShade along a vector.

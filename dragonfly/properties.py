@@ -53,6 +53,36 @@ class _Properties(object):
                 traceback.print_exc()
                 raise Exception('Failed to duplicate {}: {}'.format(var, e))
 
+    def _add_prefix_extension_attr(self, prefix):
+        """Change the name extension attributes unique to this object by adding a prefix.
+        
+        This is particularly useful in workflows where you duplicate and edit
+        a starting object and then want to combine it with the original object
+        into one Model (like making a model of repeated buildings).
+        
+        Notably, this method only adds the prefix to extension attributes that must
+        be unique to the object and does not add the prefix to attributes that are
+        shared across several objects.
+
+        Args:
+            prefix: Text that will be inserted at the start of the extension attributes'
+                name. It is recommended that this name be short to avoid maxing
+                out the 100 allowable characters for honeybee names.
+        """
+        attr = [atr for atr in dir(self)
+                if not atr.startswith('_') and atr not in self._do_not_duplicate]
+
+        for atr in attr:
+            var = getattr(self, atr)
+            if not hasattr(var, 'add_prefix'):
+                continue
+            try:
+                var.add_prefix(prefix)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception('Failed to add prefix to {}: {}'.format(var, e))
+
     def _add_extension_attr_to_honeybee(self, host, honeybee_properties):
         """Add Dragonfly properties for extensions to Honeybee extension properties.
 
@@ -266,6 +296,18 @@ class ContextShadeProperties(_Properties):
         hb_prop = hb_properties.ShadeProperties(host)
         return self._add_extension_attr_to_honeybee(host, hb_prop)
 
+    def add_prefix(self, prefix):
+        """Change the name extension attributes unique to this object by adding a prefix.
+        
+        Notably, this method only adds the prefix to extension attributes that must
+        be unique to the ContextShade and does not add the prefix to attributes that are
+        shared across several ContextShades.
+
+        Args:
+            prefix: Text that will be inserted at the start of extension attribute names.
+        """
+        self._add_prefix_extension_attr(prefix)
+
     def __repr__(self):
         """Properties representation."""
         return 'ContextShadeProperties'
@@ -297,6 +339,18 @@ class BuildingProperties(_Properties):
         base = self._add_extension_attr_to_dict(base, abridged, include)
         return base
 
+    def add_prefix(self, prefix):
+        """Change the name extension attributes unique to this object by adding a prefix.
+        
+        Notably, this method only adds the prefix to extension attributes that must
+        be unique to the Building and does not add the prefix to attributes that are
+        shared across several Buildings.
+
+        Args:
+            prefix: Text that will be inserted at the start of extension attribute names.
+        """
+        self._add_prefix_extension_attr(prefix)
+
     def __repr__(self):
         """Properties representation."""
         return 'BuildingProperties'
@@ -327,6 +381,18 @@ class StoryProperties(_Properties):
 
         base = self._add_extension_attr_to_dict(base, abridged, include)
         return base
+
+    def add_prefix(self, prefix):
+        """Change the name extension attributes unique to this object by adding a prefix.
+        
+        Notably, this method only adds the prefix to extension attributes that must
+        be unique to the Story and does not add the prefix to attributes that are
+        shared across several Stories.
+
+        Args:
+            prefix: Text that will be inserted at the start of extension attribute names.
+        """
+        self._add_prefix_extension_attr(prefix)
 
     def __repr__(self):
         """Properties representation."""
@@ -367,6 +433,19 @@ class Room2DProperties(_Properties):
         """
         hb_prop = hb_properties.RoomProperties(host)
         return self._add_extension_attr_to_honeybee(host, hb_prop)
+
+    def add_prefix(self, prefix):
+        """Change the name extension attributes unique to this object by adding a prefix.
+        
+        Notably, this method only adds the prefix to extension attributes that must
+        be unique to the Room2D (eg. single-room HVAC systems) and does not add
+        the prefix to attributes that are shared across several Rooms2Ds (eg.
+        ConstructionSets).
+
+        Args:
+            prefix: Text that will be inserted at the start of extension attribute names.
+        """
+        self._add_prefix_extension_attr(prefix)
 
     def __repr__(self):
         """Properties representation."""

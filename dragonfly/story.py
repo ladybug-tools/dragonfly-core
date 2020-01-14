@@ -290,6 +290,28 @@ class Story(_BaseGeometry):
                                  '"{}".'.format(name, self.name))
         return room_2ds
 
+    def add_prefix(self, prefix):
+        """Change the name of this object and all child Room2Ds by inserting a prefix.
+        
+        This is particularly useful in workflows where you duplicate and edit
+        a starting object and then want to combine it with the original object
+        into one Model (like making a model of repeated stories) since all objects
+        within a Model must have unique names.
+
+        This method is used internally to convert from a Story with a mutliplier
+        to fully-detailed Stories with unique names.
+
+        Args:
+            prefix: Text that will be inserted at the start of this object's
+                (and child segments') name and display_name. It is recommended
+                that this name be short to avoid maxing out the 100 allowable
+                characters for honeybee names.
+        """
+        self.name = '{}_{}'.format(prefix, self.display_name)
+        self.properties.add_prefix(prefix)
+        for room in self.room_2ds:
+            room.add_prefix(prefix)
+
     def add_room_2d(self, room_2d):
         """Add a Room2D to this Story.
 
