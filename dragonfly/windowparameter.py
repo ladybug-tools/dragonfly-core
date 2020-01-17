@@ -26,6 +26,16 @@ class _WindowParameterBase(object):
         """Add Apertures to a Honeybee Face using these Window Parameters."""
         pass
 
+    def scale(self, factor):
+        """Get a scaled version of these WindowParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return self
+
     @classmethod
     def from_dict(cls, data):
         """Create WindowParameterBase from a dictionary.
@@ -139,6 +149,17 @@ class SingleWindow(_WindowParameterBase):
                 adj_ap_name = '{}_Glz1'.format(names[0])
                 final_names = (adj_ap_name,) + names
                 face.apertures[0].boundary_condition = Surface(final_names, True)
+
+    def scale(self, factor):
+        """Get a scaled version of these WindowParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return SingleWindow(
+            self.width * factor, self.height * factor, self.sill_height * factor)
 
     @classmethod
     def from_dict(cls, data):
@@ -358,6 +379,18 @@ class RepeatingWindowRatio(SimpleWindowRatio):
                 adj_ap_name = '{}_Glz{}'.format(names[0], num_aps - i - 1)
                 final_names = (adj_ap_name,) + names
                 ap.boundary_condition = Surface(final_names, True)
+
+    def scale(self, factor):
+        """Get a scaled version of these WindowParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return RepeatingWindowRatio(
+            self.window_ratio, self.window_height * factor, self.sill_height * factor,
+            self.horizontal_separation * factor, self.vertical_separation * factor)
 
     @classmethod
     def from_dict(cls, data):

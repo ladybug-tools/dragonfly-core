@@ -2,7 +2,7 @@
 import pytest
 
 from dragonfly.room2d import Room2D
-from dragonfly.windowparameter import SimpleWindowRatio
+from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow
 from dragonfly.shadingparameter import Overhang
 
 from honeybee.boundarycondition import Outdoors, Ground, Surface
@@ -275,6 +275,8 @@ def test_scale():
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane_1 = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 0))
     room = Room2D('Square Shoebox', Face3D(pts, plane_1), 3)
+    room.set_outdoor_window_parameters(SingleWindow(1, 1, 1))
+    room.set_outdoor_shading_parameters(Overhang(1))
 
     new_r = room.duplicate()
     new_r.scale(2)
@@ -284,6 +286,10 @@ def test_scale():
     assert new_r.floor_geometry[3] == Point3D(2, 4, 4)
     assert new_r.floor_area == room.floor_area * 2 ** 2
     assert new_r.volume == room.volume * 2 ** 3
+    assert new_r.window_parameters[0].width == 2
+    assert new_r.window_parameters[0].height == 2
+    assert new_r.window_parameters[0].sill_height == 2
+    assert new_r.shading_parameters[0].depth == 2
 
 
 def test_rotate_xy():
