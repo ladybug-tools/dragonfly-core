@@ -36,6 +36,8 @@ class Room2D(_BaseGeometry):
         * boundary_conditions
         * window_parameters
         * shading_parameters
+        * is_ground_contact
+        * is_top_exposed
         * parent
         * has_parent
         * floor_segments
@@ -53,11 +55,12 @@ class Room2D(_BaseGeometry):
     """
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
                  '_boundary_conditions', '_window_parameters', '_shading_parameters',
-                 '_parent')
+                 '_is_ground_contact', '_is_top_exposed', '_parent')
 
     def __init__(self, name, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
-                 shading_parameters=None, tolerance=None):
+                 shading_parameters=None, is_ground_contact=False, is_top_exposed=False,
+                 tolerance=None):
         """A volume defined by an extruded floor plate, representing a single room.
 
         Args:
@@ -79,6 +82,10 @@ class Room2D(_BaseGeometry):
             shading_parameters: A list of ShadingParameter objects that dictate how the
                 shade geometries will be generated for each of the walls. If None,
                 no shades will exist over the entire Room2D. Default: None.
+            is_ground_contact: A boolean noting whether this Room2D has its floor
+                in contact with the ground. Default: False.
+            is_top_exposed: A boolean noting whether this Room2D has its ceiling
+                exposed to the outdoors. Default: False.
             tolerance: The maximum difference between z values at which point vertices
                 are considered to be in the same horizontal plane. This is used to check
                 that all vertices of the input floor_geometry lie in the same horizontal
@@ -128,6 +135,10 @@ class Room2D(_BaseGeometry):
         # process the window and shading parameters
         self.window_parameters = window_parameters
         self.shading_parameters = shading_parameters
+
+        # process the top and bottom exposure properties
+        self.is_ground_contact = is_ground_contact
+        self.is_top_exposed = is_top_exposed
 
         self._parent = None  # _parent will be set when Room2D is added to a Story
         self._properties = Room2DProperties(self)  # properties for extensions
@@ -200,9 +211,13 @@ class Room2D(_BaseGeometry):
                     shd_pars.append(None)
         else:
             shd_pars = None
+        
+        # get the top and bottom exposure properties
+        grnd = data['is_ground_contact'] if 'is_ground_contact' in data else False
+        top = data['is_top_exposed'] if 'is_top_exposed' in data else False
 
         room = Room2D(data['name'], floor_geometry, data['floor_to_ceiling_height'],
-                      b_conditions, glz_pars, shd_pars)
+                      b_conditions, glz_pars, shd_pars, grnd, top)
         if 'display_name' in data and data['display_name'] is not None:
             room._display_name = data['display_name']
 
@@ -213,7 +228,8 @@ class Room2D(_BaseGeometry):
     @classmethod
     def from_polygon(cls, name, polygon, floor_height, floor_to_ceiling_height,
                      boundary_conditions=None, window_parameters=None,
-                     shading_parameters=None):
+                     shading_parameters=None, is_ground_contact=False,
+                     is_top_exposed=False):
         """Create a Room2D from a ladybug-geometry Polygon2D and a floor_height.
 
         Note that this method is not recommended for a Room with one or more holes
@@ -237,6 +253,10 @@ class Room2D(_BaseGeometry):
             shading_parameters: A list of ShadingParameter objects that dictate how the
                 shade geometries will be generated for each of the walls. If None,
                 no shades will exist over the entire Room2D. Default: None.
+            is_ground_contact: A boolean to note whether this Room2D has its floor
+                in contact with the ground. Default: False.
+            is_top_exposed: A boolean to note whether this Room2D has its ceiling
+                exposed to the outdoors. Default: False.
         """
         # check the input polygon and ensure it's counter-clockwise
         assert isinstance(polygon, Polygon2D), \
@@ -254,12 +274,14 @@ class Room2D(_BaseGeometry):
         floor_geometry = Face3D(vert3d, base_plane, enforce_right_hand=False)
 
         return cls(name, floor_geometry, floor_to_ceiling_height, boundary_conditions,
-                   window_parameters, shading_parameters)
+                   window_parameters, shading_parameters, is_ground_contact,
+                   is_top_exposed)
 
     @classmethod
     def from_vertices(cls, name, vertices, floor_height, floor_to_ceiling_height,
                       boundary_conditions=None, window_parameters=None,
-                      shading_parameters=None):
+                      shading_parameters=None, is_ground_contact=False,
+                      is_top_exposed=False):
         """Create a Room2D from 2D vertices with each vertex as an iterable of 2 floats.
 
         Note that this method is not recommended for a Room with one or more holes
@@ -285,11 +307,16 @@ class Room2D(_BaseGeometry):
             shading_parameters: A list of ShadingParameter objects that dictate how the
                 shade geometries will be generated for each of the walls. If None,
                 no shades will exist over the entire Room2D. Default: None.
+            is_ground_contact: A boolean to note whether this Room2D has its floor
+                in contact with the ground. Default: False.
+            is_top_exposed: A boolean to note whether this Room2D has its ceiling
+                exposed to the outdoors. Default: False.
         """
         polygon = Polygon2D(tuple(Point2D(*v) for v in vertices))
         return cls.from_polygon(
             name, polygon, floor_height, floor_to_ceiling_height,
-            boundary_conditions, window_parameters, shading_parameters)
+            boundary_conditions, window_parameters, shading_parameters,
+            is_ground_contact, is_top_exposed)
 
     @property
     def floor_geometry(self):
@@ -359,25 +386,45 @@ class Room2D(_BaseGeometry):
             self._shading_parameters = [None for i in range(len(self))]
 
     @property
+    def is_ground_contact(self):
+        """Get or set a boolean noting whether the floor is in contact with the ground.
+        """
+        return self._is_ground_contact
+
+    @is_ground_contact.setter
+    def is_ground_contact(self, value):
+        self._is_ground_contact = bool(value)
+
+    @property
+    def is_top_exposed(self):
+        """Get or set a boolean noting whether the ceiling is exposed to the outdoors.
+        """
+        return self._is_top_exposed
+
+    @is_top_exposed.setter
+    def is_top_exposed(self, value):
+        self._is_top_exposed = bool(value)
+
+    @property
     def parent(self):
-        """Parent Story if assigned. None if not assigned."""
+        """Get the parent Story if it is assigned. None if it is not assigned."""
         return self._parent
 
     @property
     def has_parent(self):
-        """Boolean noting whether this Room2D has a parent Story."""
+        """Get a boolean noting whether this Room2D has a parent Story."""
         return self._parent is not None
 
     @property
     def floor_segments(self):
-        """A list of ladybug_geometry LineSegment3D objects for each wall of the Room."""
+        """Get a list of LineSegment3D objects for each wall of the Room."""
         return self._floor_geometry.boundary_segments if self._floor_geometry.holes is \
             None else self._floor_geometry.boundary_segments + \
             tuple(seg for hole in self._floor_geometry.hole_segments for seg in hole)
 
     @property
     def floor_segments_2d(self):
-        """A list of ladybug_geometry LineSegment2D objects for each wall of the Room."""
+        """Get a list of LineSegment2D objects for each wall of the Room."""
         return self._floor_geometry.boundary_polygon2d.segments if \
             self._floor_geometry.holes is None else \
             self._floor_geometry.boundary_polygon2d.segments + \
@@ -386,7 +433,7 @@ class Room2D(_BaseGeometry):
 
     @property
     def segment_count(self):
-        """The number of segments making up the floor geometry.
+        """Get the number of segments making up the floor geometry.
 
         This is equal to the number of walls making up the Room.
         """
@@ -394,7 +441,7 @@ class Room2D(_BaseGeometry):
 
     @property
     def segment_normals(self):
-        """A list of ladybug_geometry Vector2D objects for the normal of each segment."""
+        """Get a list of Vector2D objects for the normal of each segment."""
         return [Vector2D(seg.v.y, -seg.v.x).normalize() for seg in self.floor_segments]
 
     @property
@@ -663,17 +710,16 @@ class Room2D(_BaseGeometry):
         # set the multiplier
         hb_room.multiplier = multiplier
 
-        # assign properties for the roof and floor from the parent Story
+        # assign boundary conditions for the roof and floor
         try:
             hb_room[0].boundary_condition = bcs.adiabatic
             hb_room[-1].boundary_condition = bcs.adiabatic
         except AttributeError:
             pass  # honeybee_energy is not loaded and Adiabatic type doesn't exist
-        if self._parent is not None and multiplier == 1:
-            if self._parent.is_ground_floor:
-                hb_room[0].boundary_condition = bcs.ground
-            if self._parent.is_top_floor:
-                hb_room[-1].boundary_condition = bcs.outdoors
+        if self._is_ground_contact:
+            hb_room[0].boundary_condition = bcs.ground
+        if self._is_top_exposed:
+            hb_room[-1].boundary_condition = bcs.outdoors
 
         # transfer any extension properties assigned to the Room2D
         hb_room._properties = self.properties.to_honeybee(hb_room)
@@ -702,6 +748,8 @@ class Room2D(_BaseGeometry):
                 [[(pt.x, pt.y) for pt in hole] for hole in self._floor_geometry.holes]
         base['floor_height'] = self._floor_geometry[0].z
         base['floor_to_ceiling_height'] = self._floor_to_ceiling_height
+        base['is_ground_contact'] = self._is_ground_contact
+        base['is_top_exposed'] = self._is_top_exposed
 
         bc_dicts = []
         for bc in self._boundary_conditions:
@@ -818,8 +866,10 @@ class Room2D(_BaseGeometry):
             else:  # ensure holes are included
                 new_geo = Face3D(face_loops[0], room_2ds[i].floor_geometry.plane,
                                  face_loops[1])
-            rebuilt_room = Room2D(room_2ds[i].display_name, new_geo,
-                                  room_2ds[i].floor_to_ceiling_height)
+            rebuilt_room = Room2D(
+                room_2ds[i].display_name, new_geo, room_2ds[i].floor_to_ceiling_height,
+                is_ground_contact=room_2ds[i].is_ground_contact,
+                is_top_exposed=room_2ds[i].is_top_exposed)
             intersected_rooms.append(rebuilt_room)
         return intersected_rooms
 
@@ -916,6 +966,8 @@ class Room2D(_BaseGeometry):
         new_r._parent = self._parent
         new_r._window_parameters = self._window_parameters[:]  # copy window list
         new_r._shading_parameters = self._shading_parameters[:]  # copy shading list
+        new_r._is_ground_contact = self._is_ground_contact
+        new_r._is_top_exposed = self._is_top_exposed
         new_r._properties._duplicate_extension_attr(self._properties)
         return new_r
 

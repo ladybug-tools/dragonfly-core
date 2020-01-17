@@ -130,7 +130,6 @@ def test_building_window_shading_parameters():
     story.solve_room_2d_adjacency(0.01)
     story.multiplier = 4
     building = Building('Office Building', [story])
-    building.auto_assign_top_bottom_floors()
 
     assert building.exterior_aperture_area == 0
     assert building.unique_room_2ds[0].window_parameters[2] is None
@@ -397,7 +396,6 @@ def test_to_dict():
     story.set_outdoor_shading_parameters(Overhang(1))
     story.multiplier = 4
     building = Building('Office Building', [story])
-    building.auto_assign_top_bottom_floors()
     building.separate_top_bottom_floors()
 
     bd = building.to_dict()
@@ -422,7 +420,6 @@ def test_to_from_dict():
     story.set_outdoor_shading_parameters(Overhang(1))
     story.multiplier = 4
     building = Building('Office Building', [story])
-    building.auto_assign_top_bottom_floors()
     building.separate_top_bottom_floors()
 
     building_dict = building.to_dict()

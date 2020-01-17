@@ -21,8 +21,6 @@ class Story(_BaseGeometry):
         * room_2ds
         * floor_to_floor_height
         * multiplier
-        * is_ground_floor
-        * is_top_floor
         * parent
         * has_parent
         * floor_height
@@ -33,29 +31,21 @@ class Story(_BaseGeometry):
         * min
         * max
     """
-    __slots__ = ('_room_2ds', '_floor_to_floor_height', '_multiplier',
-                 '_is_ground_floor', '_is_top_floor', '_parent')
+    __slots__ = ('_room_2ds', '_floor_to_floor_height', '_multiplier', '_parent')
 
-    def __init__(self, name, room_2ds, floor_to_floor_height=None, multiplier=1,
-                 is_ground_floor=False, is_top_floor=False):
+    def __init__(self, name, room_2ds, floor_to_floor_height=None, multiplier=1):
         """A Story of a building defined by an extruded Floor2Ds.
 
         Args:
             name: Story name. Must be < 100 characters.
-            room_2ds: A list or tuple of dragonfly Room2D objects that
-                together form an entire story of a building.
+            room_2ds: An array of dragonfly Room2D objects that together form an
+                entire story of a building.
             floor_to_floor_height: A number for the distance from the floor plate of
                 this Story to the floor of the story above this one (if it exists).
                 If None, this value will be the maximum floor_to_ceiling_height of the
                 input room_2ds.
-            multiplier: An integer with that denotes the number of times that this
+            multiplier: An integer that denotes the number of times that this
                 Story is repeated over the height of the building. Default: 1.
-            is_ground_floor: A boolean to note whether this Story is a ground floor,
-                in which case the floor Faces of the resulting Rooms will have a Ground
-                boundary condition instead of an Adiabatic one. Default: False.
-            is_top_floor: A boolean to note whether this Story is a top floor, in which
-                case the ceiling Faces of the resulting Rooms will have an Outdoor
-                boundary condition instead of an Adiabatic one. Default: False.
         """
         _BaseGeometry.__init__(self, name)  # process the name
 
@@ -72,8 +62,6 @@ class Story(_BaseGeometry):
         # process the input properties
         self.floor_to_floor_height = floor_to_floor_height
         self.multiplier = multiplier
-        self.is_ground_floor = is_ground_floor
-        self.is_top_floor = is_top_floor
 
         self._parent = None  # _parent will be set when Story is added to a Building
         self._properties = StoryProperties(self)  # properties for extensions
@@ -92,10 +80,8 @@ class Story(_BaseGeometry):
         rooms = [Room2D.from_dict(r_dict) for r_dict in data['room_2ds']]
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
         mult = data['multiplier'] if 'multiplier' in data else 1
-        gf = data['is_ground_floor'] if 'is_ground_floor' in data else False
-        tf = data['is_top_floor'] if 'is_top_floor' in data else False
 
-        story = Story(data['name'], rooms, f2fh, mult, gf, tf)
+        story = Story(data['name'], rooms, f2fh, mult)
         if 'display_name' in data and data['display_name'] is not None:
             story._display_name = data['display_name']
 
@@ -139,24 +125,6 @@ class Story(_BaseGeometry):
     @multiplier.setter
     def multiplier(self, value):
         self._multiplier = int_in_range(value, 1, input_name='room multiplier')
-
-    @property
-    def is_ground_floor(self):
-        """Get or set a boolean to note whether this Story is a ground floor."""
-        return self._is_ground_floor
-
-    @is_ground_floor.setter
-    def is_ground_floor(self, value):
-        self._is_ground_floor = bool(value)
-
-    @property
-    def is_top_floor(self):
-        """Get or set a boolean to note whether this Story is a top floor."""
-        return self._is_top_floor
-
-    @is_top_floor.setter
-    def is_top_floor(self, value):
-        self._is_top_floor = bool(value)
 
     @property
     def parent(self):
@@ -364,6 +332,26 @@ class Story(_BaseGeometry):
         """Set all of the outdoor walls to have the same shading parameters."""
         for room in self._room_2ds:
             room.set_outdoor_shading_parameters(shading_parameter)
+    
+    def set_ground_contact(self, is_ground_contact=True):
+        """Set all child Room2Ds of this object to have floors in contact with the ground.
+        
+        Args:
+            is_ground_contact: A boolean noting whether all the Story's room_2ds
+                have floors in contact with the ground. Default: True.
+        """
+        for room in self._room_2ds:
+            room.is_ground_contact = is_ground_contact
+
+    def set_top_exposed(self, is_top_exposed=True):
+        """Set all child Room2Ds of this object to have ceilings exposed to the outdoors.
+        
+        Args:
+            is_top_exposed: A boolean noting whether all the Story's room_2ds
+                have ceilings exposed to the outdoors. Default: True.
+        """
+        for room in self._room_2ds:
+            room.is_top_exposed = is_top_exposed
 
     def generate_grid(self, x_dim, y_dim=None, offset=1.0):
         """Get a list of gridded Mesh3D objects offset from the floors of this story.
@@ -471,15 +459,12 @@ class Story(_BaseGeometry):
         base['room_2ds'] = [r.to_dict(abridged, included_prop) for r in self._room_2ds]
         base['floor_to_floor_height'] = self.floor_to_floor_height
         base['multiplier'] = self.multiplier
-        base['is_ground_floor'] = self.is_ground_floor
-        base['is_top_floor'] = self.is_top_floor
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         return base
 
     def __copy__(self):
         new_s = Story(self.name, tuple(room.duplicate() for room in self._room_2ds),
-                      self._floor_to_floor_height, self._multiplier,
-                      self._is_ground_floor, self._is_top_floor)
+                      self._floor_to_floor_height, self._multiplier)
         new_s._display_name = self.display_name
         new_s._parent = self._parent
         new_s._properties._duplicate_extension_attr(self._properties)
