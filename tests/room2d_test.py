@@ -35,6 +35,8 @@ def test_room2d_init():
     assert all([isinstance(bc, Outdoors) for bc in room2d.boundary_conditions])
     assert all([glzpar is None for glzpar in room2d.window_parameters])
     assert all([shdpar is None for shdpar in room2d.shading_parameters])
+    assert not room2d.is_ground_contact
+    assert not room2d.is_top_exposed
     assert room2d.parent is None
     assert not room2d.has_parent
     assert all([isinstance(seg, LineSegment3D) for seg in room2d.floor_segments])
@@ -448,7 +450,7 @@ def test_to_dict():
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
     window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
-    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, window, shading)
+    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, window, shading, True, False)
 
     rd = room.to_dict()
     assert rd['type'] == 'Room2D'
@@ -465,6 +467,8 @@ def test_to_dict():
     assert len(rd['window_parameters']) == 4
     assert 'shading_parameters' in rd
     assert len(rd['shading_parameters']) == 4
+    assert rd['is_ground_contact']
+    assert not rd['is_top_exposed']
     assert 'properties' in rd
     assert rd['properties']['type'] == 'Room2DProperties'
 
@@ -484,7 +488,7 @@ def test_to_from_dict():
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
     window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
-    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, window, shading)
+    room = Room2D('Shoe Box Zone', Face3D(pts), 3, boundarycs, window, shading, True)
 
     room_dict = room.to_dict()
     new_room = Room2D.from_dict(room_dict)

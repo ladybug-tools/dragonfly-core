@@ -69,7 +69,7 @@ class SingleWindow(_WindowParameterBase):
     __slots__ = ('_width', '_height', '_sill_height')
 
     def __init__(self, width, height, sill_height=1):
-        """Instructions for a single window in the face center defined by a width*height.
+        """Instructions for a single window in the wall center defined by a width*height.
 
         Note that, if these parameters are applied to a base face that is too short
         or too narrow for the input width and/or height, the generated window will
@@ -187,7 +187,7 @@ class SingleWindow(_WindowParameterBase):
 
 
 class SimpleWindowRatio(_WindowParameterBase):
-    """Instructions for a single window using an area ratio with the base surface.
+    """Instructions for a single window defined by an area ratio with the base wall.
 
     Properties:
         * window_ratio
@@ -195,7 +195,7 @@ class SimpleWindowRatio(_WindowParameterBase):
     __slots__ = ('_window_ratio',)
 
     def __init__(self, window_ratio):
-        """Instructions for a single window using an area ratio with the base surface.
+        """Instructions for a single window defined by an area ratio with the base wall.
 
         Args:
             window_ratio: A number between 0 and 1 for the ratio between the window
@@ -297,19 +297,19 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         Args:
             window_ratio: A number between 0 and 1 for the ratio between the window
                 area and the total facade area.
-            window_height: A number for the target height of the apertures.
+            window_height: A number for the target height of the windows.
                 Note that, if the window ratio is too large for the height, the
-                ratio will take precedence and the actual aperture_height will
+                ratio will take precedence and the actual window_height will
                 be larger than this value.
             sill_height: A number for the target height above the bottom edge of
-                the rectangle to start the apertures. Note that, if the
+                the rectangle to start the windows. Note that, if the
                 ratio is too large for the height, the ratio will take precedence
                 and the sill_height will be smaller than this value.
             horizontal_separation: A number for the target separation between
-                individual aperture centerlines.  If this number is larger than
-                the parent rectangle base, only one aperture will be produced.
+                individual window centerlines.  If this number is larger than
+                the parent rectangle base, only one window will be produced.
             vertical_separation: An optional number to create a single vertical
-                separation between top and bottom apertures. Default: 0.
+                separation between top and bottom windows. Default: 0.
         """
         self._window_ratio = float_in_range(window_ratio, 0, 0.95, 'window ratio')
         self._window_height = float_positive(window_height, 'window height')
@@ -321,7 +321,7 @@ class RepeatingWindowRatio(SimpleWindowRatio):
 
     @property
     def window_height(self):
-        """Get a number or the target height of the apertures."""
+        """Get a number or the target height of the windows."""
         return self._window_height
 
     @property
@@ -331,12 +331,12 @@ class RepeatingWindowRatio(SimpleWindowRatio):
 
     @property
     def horizontal_separation(self):
-        """Get a number for the separation between individual aperture centerlines."""
+        """Get a number for the separation between individual window centerlines."""
         return self._horizontal_separation
 
     @property
     def vertical_separation(self):
-        """Get a number for a vertical separation between top/bottom apertures."""
+        """Get a number for a vertical separation between top/bottom windows."""
         return self._vertical_separation
 
     def add_window_to_face(self, face, tolerance=0):

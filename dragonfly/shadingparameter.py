@@ -24,7 +24,7 @@ class _ShadingParameterBase(object):
     def from_dict(cls, data):
         """Create ShadingParameterBase from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "ShadingParameterBase"
@@ -139,7 +139,8 @@ class Overhang(_ShadingParameterBase):
         Args:
             depth: A number for the overhang depth.
             angle: A number for the for an angle to rotate the overhang in degrees.
-                Default is 0 for no rotation.
+                Positive values indicate a downward rotation. Negative values indicate
+                an upward rotation. Default is 0 for no rotation.
         """
         self._depth = float_positive(depth, 'overhang width')
         self._angle = float_in_range(angle, -90, 90, 'overhang angle')
@@ -168,7 +169,7 @@ class Overhang(_ShadingParameterBase):
     def from_dict(cls, data):
         """Create Overhang from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "Overhang",
@@ -276,7 +277,8 @@ class _LouversBase(_ShadingParameterBase):
         """Get defaulted parameters from a base dictionary."""
         offset = data['offset'] if 'offset' in data else 0
         angle = data['angle'] if 'angle' in data else 0
-        contr = data['contour_vector'] if 'contour_vector' in data else Vector2D(0, 1)
+        contr = Vector2D.from_array(data['contour_vector']) if 'contour_vector' in data \
+            else Vector2D(0, 1)
         flip = data['flip_start_side'] if 'flip_start_side' in data else False
         return offset, angle, contr, flip
 
@@ -322,13 +324,13 @@ class LouversByDistance(_LouversBase):
         Args:
             distance: A number for the approximate distance between each louver.
             depth: A number for the depth to extrude the louvers.
-            offset: A number for the distance to louvers from this Face.
+            offset: A number for the distance to louvers from the wall.
                 Default is 0 for no offset.
             angle: A number for the for an angle to rotate the louvers in degrees.
                 Default is 0 for no rotation.
             contour_vector: A Vector2D for the direction along which contours
                 are generated. This 2D vector will be interpreted into a 3D vector
-                within the plane of this Face. (0, 1) will usually generate
+                within the plane of the wall. (0, 1) will usually generate
                 horizontal contours in 3D space, (1, 0) will generate vertical
                 contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
             flip_start_side: Boolean to note whether the side the louvers start from
@@ -361,7 +363,7 @@ class LouversByDistance(_LouversBase):
     def from_dict(cls, data):
         """Create LouversByDistance from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "LouversByDistance",
@@ -369,7 +371,7 @@ class LouversByDistance(_LouversBase):
             "depth": 0.1,
             "offset": 0.3,
             "angle": 0,
-            "contour_vector": {"type": "Vector2D", "x": 0, "y": 1},
+            "contour_vector": [0, 1],  # array of (x, y) values
             "flip_start_side": False
             }
         """
@@ -385,7 +387,7 @@ class LouversByDistance(_LouversBase):
                 'depth': self.depth,
                 'offset': self.offset,
                 'angle': self.angle,
-                'contour_vector': self.contour_vector,
+                'contour_vector': self.contour_vector.to_array(),
                 'flip_start_side': self.flip_start_side}
 
     def __copy__(self):
@@ -414,7 +416,7 @@ class LouversByDistance(_LouversBase):
 
 
 class LouversByCount(_LouversBase):
-    """Instructions for a number of louvered Shades over a Face.
+    """Instructions for a specific number of louvered Shades over a wall.
 
     Properties:
         * louver_count
@@ -433,13 +435,13 @@ class LouversByCount(_LouversBase):
         Args:
             louver_count: A positive integer for the number of louvers to generate.
             depth: A number for the depth to extrude the louvers.
-            offset: A number for the distance to louvers from this Face.
+            offset: A number for the distance to louvers from  the wall.
                 Default is 0 for no offset.
             angle: A number for the for an angle to rotate the louvers in degrees.
                 Default is 0 for no rotation.
             contour_vector: A Vector2D for the direction along which contours
                 are generated. This 2D vector will be interpreted into a 3D vector
-                within the plane of this Face. (0, 1) will usually generate
+                within the plane of the wall. (0, 1) will usually generate
                 horizontal contours in 3D space, (1, 0) will generate vertical
                 contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
             flip_start_side: Boolean to note whether the side the louvers start from
@@ -472,7 +474,7 @@ class LouversByCount(_LouversBase):
     def from_dict(cls, data):
         """Create LouversByCount from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "LouversByCount",
@@ -480,7 +482,7 @@ class LouversByCount(_LouversBase):
             "depth": 0.1,
             "offset": 0.3,
             "angle": 0,
-            "contour_vector": {"type": "Vector2D", "x": 0,  "y": 1},
+            "contour_vector": [0,  1],  # array of (x, y) values
             "flip_start_side": False
             }
         """
@@ -496,7 +498,7 @@ class LouversByCount(_LouversBase):
                 'depth': self.depth,
                 'offset': self.offset,
                 'angle': self.angle,
-                'contour_vector': self.contour_vector,
+                'contour_vector': self.contour_vector.to_array(),
                 'flip_start_side': self.flip_start_side}
 
     def __copy__(self):

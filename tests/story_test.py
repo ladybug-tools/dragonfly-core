@@ -39,8 +39,6 @@ def test_story_init():
         assert room.has_parent
     assert story.floor_to_floor_height == 3
     assert story.multiplier == 1
-    assert not story.is_ground_floor
-    assert not story.is_top_floor
     assert story.parent is None
     assert not story.has_parent
     assert story.floor_height == 3
@@ -299,7 +297,6 @@ def test_to_dict():
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
-    story.is_top_floor = True
 
     sd = story.to_dict()
     assert sd['type'] == 'Story'
@@ -309,8 +306,6 @@ def test_to_dict():
     assert len(sd['room_2ds']) == 2
     assert sd['floor_to_floor_height'] == 5
     assert sd['multiplier'] == 1
-    assert not sd['is_ground_floor']
-    assert sd['is_top_floor']
     assert 'properties' in sd
     assert sd['properties']['type'] == 'StoryProperties'
 
@@ -325,7 +320,6 @@ def test_to_from_dict():
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
-    story.is_top_floor = True
 
     story_dict = story.to_dict()
     new_story = Story.from_dict(story_dict)

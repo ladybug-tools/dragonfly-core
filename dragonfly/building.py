@@ -43,12 +43,13 @@ class Building(_BaseGeometry):
 
         Args:
             name: Building name. Must be < 100 characters.
-            unique_stories: A list or tuple of unique dragonfly Story objects that
-                together form the entire building. Stories should generally be ordered
-                from lowest floor to highest floor. Note that, if a given Story is
-                repeated several times over the height of the building, the unique
-                story included in this list should be the first (lowest) story
-                of the repeated floors.
+            unique_stories: An array of unique Dragonfly Story objects that
+                together form the entire building. Stories should be ordered
+                from lowest floor to highest floor and they will be automatically
+                sorted besed on floor height when they are added to a Building.
+                Note that, if a given Story is repeated several times over the
+                height of the Building, the unique Story included in this list
+                should be the first (lowest) Story of the repeated floors.
         """
         _BaseGeometry.__init__(self, name)  # process the name
 
@@ -69,7 +70,10 @@ class Building(_BaseGeometry):
         """Initialize a Building from an array of Face3Ds representing a footprint.
 
         All of the resulting Room2Ds will have a floor-to-ceiling height equal to the
-        Story floor-to-floor height.
+        Story floor-to-floor height. Also, none of the Room2Ds will have contact
+        with the ground or top exposure but the separate_top_bottom_floors method
+        can be used to automatically break these floors out from the multiplier
+        representation and assign these proeprties.
 
         Args:
             name: Building name. Must be < 100 characters.
@@ -109,10 +113,6 @@ class Building(_BaseGeometry):
                 stories[-1].multiplier += 1
             total_height += flr_hgt
             prev_flr_to_flr = flr_hgt
-
-        # automatically set the top and bottom floors
-        stories[0].is_ground_floor = True
-        stories[-1].is_top_floor = True
 
         return cls(name, stories)
 
@@ -167,10 +167,6 @@ class Building(_BaseGeometry):
                 stories[-1].multiplier += 1
             prev_geo = room_geo
             prev_flr_to_flr = flr_hgt
-
-        # automatically set the top and bottom floors
-        stories[0].is_ground_floor = True
-        stories[-1].is_top_floor = True
 
         return cls(name, stories)
 
@@ -280,21 +276,14 @@ class Building(_BaseGeometry):
     def all_stories(self):
         """Get a list of all Story objects that form the Building.
 
-        The Story objects in this property each have a multiplier of 1 and repeated
+        The Story objects returned here each have a multiplier of 1 and repeated
         stories are represented will their own Story object.
-
-        Note that this property correctly assigns is_ground_floor and is_top_floor
-        properties to the unique_stories with a multiplier. So an unique story
-        with a True is_ground_floor and a multiplier of 2 will result in only
-        one of the two stories having is_ground_floor set to True.
         """
         all_stories = []
         for story in self._unique_stories:
             new_story = story.duplicate()
             new_story.add_prefix('Flr1')
             new_story.multiplier = 1
-            if story.multiplier != 1 and story.is_top_floor:
-                new_story.is_top_floor = False  # top floor is above this one
             all_stories.append(new_story)
 
             if story.multiplier != 1:
@@ -304,11 +293,6 @@ class Building(_BaseGeometry):
                     new_story.multiplier = 1
                     m_vec = Vector3D(0, 0, story.floor_to_floor_height * (i + 1))
                     new_story.move(m_vec)
-                    if story.is_ground_floor:  # this story is above the ground floor
-                        new_story.is_ground_floor = False
-                    if story.is_top_floor:
-                        if i + 2 != story.multiplier:
-                            new_story.is_top_floor = False  # top floor is above this one
                     all_stories.append(new_story)
         return all_stories
 
@@ -358,63 +342,39 @@ class Building(_BaseGeometry):
         for story in self.unique_stories:
             story.add_prefix(prefix)
 
-    def auto_assign_top_bottom_floors(self):
-        """Set the first Story as the ground floor and the last to be the top.
-
-        Note that this methods does not change the number of unique_stories.
-
-        Also note that this method may not give the desired result if the building has
-        several top floors (like towers of different heights connected by a plinth).
-        For such a case, it might be better to manually assign the is_top_floor property
-        of each of the relevant Stories.
-        """
-        self._unique_stories[0].is_ground_floor = True
-        self._unique_stories[-1].is_top_floor = True
-
     def separate_top_bottom_floors(self):
-        """Separate top/bottom stories with non-unity multipliers into their own stories.
+        """Separate top/bottom Stories with non-unity multipliers into their own Stories.
 
-        If any Story is found with is_ground_floor or is_top_floor set to True
-        along with a multiplier greater than 1, this method will automatically
-        create a new unique story at the top or bottom of the building with a
-        multiplier of 1 and is_ground_floor or is_top_floor property set to True.
+        The resulting first and last Stories will each have a multiplier of 1 and
+        duplicated middle Stories will be added as needed. This method also
+        automatically assigns the first story Room2Ds to have a ground contact
+        floor and the top story Room2Ds to have an outdoor-exposed roof.
 
-        This is particularly helpful when planning to use to_honeybee workflows
-        with multipliers but one wants to account for the heat exchange of the
-        top or bottom floors (since ground and outdoor boundary conditions are
-        ignored in to_honeybee() when the multiplier is greater than 1).
+        This is particularly helpful when using to_honeybee workflows with
+        multipliers but one wants to account for the heat exchange of the top
+        or bottom floors with the gound or outdoors.
         """
-        new_ground_floors = []
-        new_top_floors = []
-        for story in self._unique_stories:
-            if story.multiplier == 1:
-                continue
-            elif story.is_ground_floor and story.is_top_floor:
-                if story.multiplier >= 3:  # separate into 3 stories
-                    story.is_ground_floor = False  # no longer the ground floor
-                    story.is_top_floor = False  # no longer the top floor
-                    new_ground_floors.append(self._separated_ground_floor(story))
-                    new_top_floors.append(self._separated_top_floor(story))
-                    story.multiplier = story.multiplier - 2
-                    story.move(Vector3D(0, 0, story.floor_to_floor_height))  # 2nd floor
-                else:  # separate into 2 stories
-                    story.is_top_floor = False  # no longer the top floor
-                    new_top_floors.append(self._separated_top_floor(story))
-                    story.multiplier = 1
-            elif story.is_ground_floor:
-                story.is_ground_floor = False  # no longer the ground floor
-                new_ground_floors.append(self._separated_ground_floor(story))
-                story.multiplier = story.multiplier - 1
-                story.move(Vector3D(0, 0, story.floor_to_floor_height))  # 2nd floor
-            elif story.is_top_floor:
-                story.is_top_floor = False  # no longer the top floor
-                new_top_floors.append(self._separated_top_floor(story))
-                story.multiplier = story.multiplier - 1
-            else:
-                continue
+        new_ground_floor = ()
+        new_top_floor = ()
 
-        self._unique_stories = tuple(new_ground_floors) + self._unique_stories + \
-            tuple(new_top_floors)
+        # ensure that the bottom floor is unique
+        if self._unique_stories[0].multiplier != 1:
+            story = self._unique_stories[0]
+            new_ground_floor = (self._separated_ground_floor(story),)
+            story.multiplier = story.multiplier - 1
+            story.move(Vector3D(0, 0, story.floor_to_floor_height))  # 2nd floor
+        
+        # ensure that the top floor is unique
+        if self._unique_stories[-1].multiplier != 1:
+            new_top_floor = (self._separated_top_floor(story),)
+            story.multiplier = story.multiplier - 1
+
+        # set the unique stories to include any new top and bottom floors
+        self._unique_stories = new_ground_floor + self._unique_stories + new_top_floor
+
+        # assign the is_ground_contact and is_top_exposed properties
+        self._unique_stories[0].set_ground_contact()
+        self._unique_stories[-1].set_top_exposed()
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
@@ -693,7 +653,6 @@ class Building(_BaseGeometry):
     def _separated_ground_floor(base_story):
         """Get a separated ground floor from a base_story."""
         bottom = base_story.duplicate()  # generate a new bottom floor
-        bottom.is_ground_floor = True
         bottom.multiplier = 1
         bottom.add_prefix('Ground')
         return bottom
@@ -702,9 +661,8 @@ class Building(_BaseGeometry):
     def _separated_top_floor(base_story):
         """Get a separated top floor from a base_story."""
         top = base_story.duplicate()  # generate a new top floor
-        move_vec = Vector3D(0, 0, top.floor_to_floor_height * top.multiplier)
+        move_vec = Vector3D(0, 0, top.floor_to_floor_height * (top.multiplier - 1))
         top.move(move_vec)
-        top.is_top_floor = True
         top.multiplier = 1
         top.add_prefix('Top')
         return top
