@@ -20,6 +20,16 @@ class _ShadingParameterBase(object):
         """Add Shades to a Honeybee Face using these Window Parameters."""
         pass
 
+    def scale(self, factor):
+        """Get a scaled version of these ShadingParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return self
+
     @classmethod
     def from_dict(cls, data):
         """Create ShadingParameterBase from a dictionary.
@@ -83,6 +93,16 @@ class ExtrudedBorder(_ShadingParameterBase):
         """
         for ap in face.apertures:
             ap.extruded_border(self.depth)
+
+    def scale(self, factor):
+        """Get a scaled version of these ShadingParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return ExtrudedBorder(self.depth * factor)
 
     @classmethod
     def from_dict(cls, data):
@@ -164,6 +184,16 @@ class Overhang(_ShadingParameterBase):
                 than the tolerance. Default is 0, which will always yeild an overhang.
         """
         face.overhang(self.depth, self.angle, False, tolerance)
+
+    def scale(self, factor):
+        """Get a scaled version of these ShadingParameters.
+
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return Overhang(self.depth * factor, self.angle)
 
     @classmethod
     def from_dict(cls, data):
@@ -359,6 +389,18 @@ class LouversByDistance(_LouversBase):
             self.distance, self.depth, self.offset, self.angle, self.contour_vector,
             self.flip_start_side, False, tolerance)
 
+    def scale(self, factor):
+        """Get a scaled version of these ShadingParameters.
+
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return LouversByDistance(
+            self.distance * factor, self.depth * factor, self.offset * factor,
+            self.angle, self.contour_vector, self.flip_start_side)
+
     @classmethod
     def from_dict(cls, data):
         """Create LouversByDistance from a dictionary.
@@ -469,6 +511,18 @@ class LouversByCount(_LouversBase):
         face.louvers_by_count(
             self.louver_count, self.depth, self.offset, self.angle, self.contour_vector,
             self.flip_start_side, False, tolerance)
+
+    def scale(self, factor):
+        """Get a scaled version of these ShadingParameters.
+
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return LouversByCount(
+            self.louver_count, self.depth * factor, self.offset * factor,
+            self.angle, self.contour_vector, self.flip_start_side)
 
     @classmethod
     def from_dict(cls, data):

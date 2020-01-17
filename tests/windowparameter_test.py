@@ -43,6 +43,16 @@ def test_single_window_dict_methods():
     assert glz_dict == new_simple_window.to_dict()
 
 
+def test_single_window_scale():
+    """Test the scale method."""
+    simple_window = SingleWindow(5, 2, 0.8)
+
+    new_simple_window  = simple_window.scale(2)
+    assert new_simple_window.width == 10
+    assert new_simple_window.height == 4
+    assert new_simple_window.sill_height == 1.6
+
+
 def test_single_window_add_window_to_face():
     """Test the add_window_to_face method."""
     simple_window = SingleWindow(5, 2, 0.8)
@@ -125,6 +135,17 @@ def test_repeating_window_ratio_equality():
     assert ashrae_base is not ashrae_base_dup
     assert ashrae_base == ashrae_base_dup
     assert ashrae_base != ashrae_base_alt
+
+
+def test_repeating_window_scale():
+    """Test the scale method."""
+    ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
+
+    new_ashrae_base  = ashrae_base.scale(2)
+    assert new_ashrae_base.window_ratio == ashrae_base.window_ratio
+    assert new_ashrae_base.window_height == 4
+    assert new_ashrae_base.sill_height == 1.6
+    assert new_ashrae_base.horizontal_separation == 6
 
 
 def test_repeating_window_ratio_dict_methods():

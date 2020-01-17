@@ -32,6 +32,14 @@ def test_extruded_border_equality():
     assert simple_border != simple_border_alt
 
 
+def test_extruded_border_scale():
+    """Test the scale method."""
+    simple_border = ExtrudedBorder(0.3)
+
+    new_simple_border  = simple_border.scale(2)
+    assert new_simple_border.depth == 0.6
+
+
 def test_extruded_border_dict_methods():
     """Test the to/from dict methods."""
     simple_border = ExtrudedBorder(0.3)
@@ -83,6 +91,15 @@ def test_overhang_equality():
     assert simple_awning != simple_awning_alt
 
 
+def test_overhang_scale():
+    """Test the scale method."""
+    simple_awning = Overhang(2, 10)
+
+    new_simple_awning  = simple_awning.scale(2)
+    assert new_simple_awning.depth == 4
+    assert new_simple_awning.angle == 10
+
+
 def test_overhang_dict_methods():
     """Test the to/from dict methods."""
     simple_awning = Overhang(2, 10)
@@ -132,6 +149,16 @@ def test_louvers_by_distance_equality():
     assert louvers != louvers_alt
 
 
+def test_louvers_by_distance_scale():
+    """Test the scale method."""
+    louvers = LouversByDistance(0.5, 0.3, 1, 30)
+
+    new_louvers  = louvers.scale(2)
+    assert new_louvers.distance == 1
+    assert new_louvers.depth == 0.6
+    assert new_louvers.offset == 2
+
+
 def test_louvers_by_distance_dict_methods():
     """Test the to/from dict methods."""
     louvers = LouversByDistance(0.5, 0.3, 1, 30)
@@ -179,6 +206,15 @@ def test_louvers_by_count_equality():
     assert louvers is not louvers_dup
     assert louvers == louvers_dup
     assert louvers != louvers_alt
+
+
+def test_louvers_by_distance_scale():
+    """Test the scale method."""
+    louvers = LouversByCount(3, 0.3, 1, 30)
+
+    new_louvers  = louvers.scale(2)
+    assert new_louvers.depth == 0.6
+    assert new_louvers.offset == 2
 
 
 def test_louvers_by_count_dict_methods():

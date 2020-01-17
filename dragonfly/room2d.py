@@ -647,13 +647,27 @@ class Room2D(_BaseGeometry):
     def scale(self, factor, origin=None):
         """Scale this Room2D by a factor from an origin point.
 
+        Note that this will scale both the Room2D geometry and the WindowParameters
+        and FacadeParameters assigned to this Room2D.
+
         Args:
             factor: A number representing how much the object should be scaled.
             origin: A ladybug_geometry Point3D representing the origin from which
                 to scale. If None, it will be scaled from the World origin (0, 0, 0).
         """
+        # scale the Room2D geometry
         self._floor_geometry = self._floor_geometry.scale(factor, origin)
         self._floor_to_ceiling_height = self._floor_to_ceiling_height * factor
+
+        # scale the window parameters
+        for i, win_par in enumerate(self._window_parameters):
+            if win_par is not None:
+                self._window_parameters[i] = win_par.scale(factor)
+
+        # scale the shading parameters
+        for i, shd_par in enumerate(self._shading_parameters):
+            if shd_par is not None:
+                self._shading_parameters[i] = shd_par.scale(factor)
 
     def check_horizontal(self, tolerance, raise_exception=True):
         """Check whether the Room2D's floor geometry is horiztonal within a tolerance.
