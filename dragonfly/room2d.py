@@ -3,7 +3,7 @@
 from ._base import _BaseGeometry
 from .properties import Room2DProperties
 import dragonfly.windowparameter as glzpar
-from dragonfly.windowparameter import _WindowParameterBase
+from dragonfly.windowparameter import _WindowParameterBase, _DetailedParameterBase
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 
@@ -100,12 +100,6 @@ class Room2D(_BaseGeometry):
             self._floor_geometry = floor_geometry
         else:
             self._floor_geometry = floor_geometry.flip()
-            boundary_conditions = tuple(reversed(boundary_conditions)) if \
-                boundary_conditions is not None else None
-            window_parameters = tuple(reversed(window_parameters)) if \
-                window_parameters is not None else None
-            shading_parameters = tuple(reversed(shading_parameters)) if \
-                shading_parameters is not None else None
         # ensure a global 2D origin, which helps in solve adjacency and the dict schema
         o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
         self._floor_geometry = Face3D(self._floor_geometry.boundary,
@@ -135,6 +129,16 @@ class Room2D(_BaseGeometry):
         # process the window and shading parameters
         self.window_parameters = window_parameters
         self.shading_parameters = shading_parameters
+
+        # ensure all wall-asigned objects align with the geometry if it has been flipped
+        if floor_geometry.normal.z < 0:
+            
+            new_bcs, new_win_pars, new_shd_pars = Room2D._flip_wall_assigned_objects(
+                floor_geometry, self._boundary_conditions, self._window_parameters,
+                self._shading_parameters)
+            self._boundary_conditions = new_bcs
+            self._window_parameters = new_win_pars
+            self._shading_parameters = new_shd_pars
 
         # process the top and bottom exposure properties
         self.is_ground_contact = is_ground_contact
@@ -263,12 +267,20 @@ class Room2D(_BaseGeometry):
             'Expected ladybug_geometry Polygon2D. Got {}'.format(type(polygon))
         if polygon.is_clockwise:
             polygon = polygon.reverse()
-            boundary_conditions = reversed(boundary_conditions) if \
-                boundary_conditions is not None else None
-            window_parameters = reversed(window_parameters) if \
-                window_parameters is not None else None
+            if boundary_conditions is not None:
+                boundary_conditions = list(reversed(boundary_conditions))
+            if window_parameters is not None:
+                new_win_pars = []
+                for seg, win_par in zip(polygon.segments, reversed(window_parameters)):
+                    if isinstance (win_par, _DetailedParameterBase):
+                        new_win_pars.append(win_par.flip(seg.length))
+                    else:
+                        new_win_pars.append(win_par)
+                window_parameters = new_win_pars
+            if shading_parameters is not None:
+                shading_parameters = list(reversed(shading_parameters))
 
-        # build the Face3D
+        # build the Face3D without using right-hand rule to ensure alignment w/ bcs
         base_plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, floor_height))
         vert3d = tuple(base_plane.xy_to_xyz(_v) for _v in polygon.vertices)
         floor_geometry = Face3D(vert3d, base_plane, enforce_right_hand=False)
@@ -637,12 +649,17 @@ class Room2D(_BaseGeometry):
         Args:
             plane: A ladybug_geometry Plane across which the object will be reflected.
         """
+        assert plane.n.z == 0, \
+            'Plane normal must be in XY plane to use it on Room2D.reflect.'
         self._floor_geometry = self._floor_geometry.reflect(plane.n, plane.o)
         if self._floor_geometry.normal.z < 0:  # ensure upward-facing Face3D
+            new_bcs, new_win_pars, new_shd_pars = Room2D._flip_wall_assigned_objects(
+                self._floor_geometry, self._boundary_conditions,
+                self._window_parameters, self._shading_parameters)
+            self._boundary_conditions = new_bcs
+            self._window_parameters = new_win_pars
+            self._shading_parameters = new_shd_pars
             self._floor_geometry = self._floor_geometry.flip()
-            self._boundary_conditions = tuple(reversed(self._boundary_conditions))
-            self._window_parameters = tuple(reversed(self._window_parameters))
-            self._shading_parameters = tuple(reversed(self._shading_parameters))
 
     def scale(self, factor, origin=None):
         """Scale this Room2D by a factor from an origin point.
@@ -897,6 +914,40 @@ class Room2D(_BaseGeometry):
             'same as the number of floor_segments. {} != {}'.format(
                 obj_name, len(value), len(self))
         return value
+
+    @staticmethod
+    def _flip_wall_assigned_objects(original_geo, bcs, win_pars, shd_pars):
+        """Get arrays of wall-assigned parameters that are flipped/reversed.
+        
+        This method accounts for the case that a floor geometry has holes in it.
+        """
+        # go through the boundary and ensure detailed parameters are flipped
+        new_bcs = []
+        new_win_pars = []
+        new_shd_pars = []
+        for i, seg in enumerate(original_geo.boundary_segments):
+            new_bcs.append(bcs[i])
+            win_par = win_pars[i]
+            if isinstance (win_par, _DetailedParameterBase):
+                new_win_pars.append(win_par.flip(seg.length))
+            else:
+                new_win_pars.append(win_par)
+            new_shd_pars.append(shd_pars[i])
+        
+        # reverse the lists of wall-assigned objects on the floor boundary
+        new_bcs.reverse()
+        new_win_pars.reverse()
+        new_shd_pars.reverse()
+
+         # add any objects related to the holes
+        if original_geo.has_holes:
+            bound_len = len(original_geo.boundary)
+            new_bcs = new_bcs + bcs[bound_len:]
+            new_win_pars = new_win_pars + win_pars[bound_len:]
+            new_shd_pars = new_shd_pars + shd_pars[bound_len:]
+        
+        # retrun the flipped lists
+        return new_bcs, new_win_pars, new_shd_pars
 
     def _split_walls_along_height(self, hb_room, tolerance):
         """Split adjacent walls to ensure matching surface areas in to_honyebee workflow.

@@ -137,6 +137,39 @@ def test_room2d_init_invalid():
         Room2D('Square Shoebox', Face3D(pts), 3, boundarycs, new_glz, shading)
 
 
+def test_room2d_init_clockwise():
+    """Test the initalization of Room2D objects with clockwise vertices."""
+    pts = (Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3), Point3D(0, 0, 3))
+    ashrae_base = SimpleWindowRatio(0.4)
+    overhang = Overhang(1)
+    boundarycs = (bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground)
+    window = (ashrae_base, ashrae_base, None, None)
+    shading = (overhang, None, None, None)
+    room2d = Room2D('TestZone', Face3D(pts), 3, boundarycs, window, shading)
+
+    assert room2d.floor_geometry.boundary == tuple(reversed(pts))
+    assert room2d.boundary_conditions == tuple(reversed(boundarycs))
+    assert room2d.window_parameters == tuple(reversed(window))
+    assert room2d.shading_parameters == tuple(reversed(shading))
+
+    pts_hole = (Point3D(2, 8, 3), Point3D(8, 8, 3), Point3D(8, 2, 3), Point3D(2, 2, 3))
+    boundarycs = (bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground,
+                  bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground)
+    window = (ashrae_base, ashrae_base, None, None, ashrae_base, ashrae_base, None, None)
+    shading = (overhang, None, None, None, overhang, None, None, None)
+    room2d = Room2D('TestZone', Face3D(pts, holes=[pts_hole]), 3, boundarycs, window, shading)
+
+    assert room2d.floor_geometry.boundary == tuple(reversed(pts))
+    assert room2d.floor_geometry.holes[0] == pts_hole
+    assert room2d.boundary_conditions == \
+        (bcs.ground, bcs.ground, bcs.outdoors, bcs.outdoors,
+        bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground)
+    assert room2d.window_parameters == \
+        (None, None, ashrae_base, ashrae_base, ashrae_base, ashrae_base, None, None)
+    assert room2d.shading_parameters == \
+        (None, None, None, overhang, overhang, None, None, None)
+
+
 def test_room2d_init_from_polygon():
     """Test the initalization of Room2D objects from a Polygon2D."""
     pts = (Point2D(0, 0), Point2D(10, 0), Point2D(10, 10), Point2D(0, 10))
@@ -165,6 +198,25 @@ def test_room2d_init_from_polygon():
     assert room2d.floor_area == 100
     assert room2d.exterior_wall_area == 60
     assert room2d.exterior_aperture_area == 60 * 0.4
+
+
+def test_room2d_init_from_polygon_clockwise():
+    """Test the initalization of Room2D objects from a clockwise Polygon2D."""
+    pts_3d = (Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3), Point3D(0, 0, 3))
+    pts = (Point2D(0, 10), Point2D(10, 10), Point2D(10, 0), Point2D(0, 0))
+    polygon = Polygon2D(pts)
+    ashrae_base = SimpleWindowRatio(0.4)
+    overhang = Overhang(1)
+    boundarycs = (bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground)
+    window = (ashrae_base, ashrae_base, None, None)
+    shading = (overhang, None, None, None)
+    room2d = Room2D.from_polygon('Square Shoebox', polygon, 3, 3,
+                                 boundarycs, window, shading)
+
+    assert room2d.floor_geometry.boundary == tuple(reversed(pts_3d))
+    assert room2d.boundary_conditions == tuple(reversed(boundarycs))
+    assert room2d.window_parameters == tuple(reversed(window))
+    assert room2d.shading_parameters == tuple(reversed(shading))
 
 
 def test_room2d_init_from_vertices():

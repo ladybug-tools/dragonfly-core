@@ -4,7 +4,15 @@ from honeybee.typing import float_in_range, float_positive
 from honeybee.boundarycondition import Surface
 from honeybee.aperture import Aperture
 
+from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
+from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.line import LineSegment3D
+from ladybug_geometry.geometry3d.plane import Plane
+from ladybug_geometry.geometry3d.face import Face3D
+
+import sys
+if (sys.version_info < (3, 0)):  # python 2
+    from itertools import izip as zip  # python 2
 
 
 class _WindowParameterBase(object):
@@ -40,7 +48,7 @@ class _WindowParameterBase(object):
     def from_dict(cls, data):
         """Create WindowParameterBase from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "WindowParameterBase"
@@ -165,7 +173,7 @@ class SingleWindow(_WindowParameterBase):
     def from_dict(cls, data):
         """Create SingleWindow from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "SingleWindow",
@@ -250,7 +258,7 @@ class SimpleWindowRatio(_WindowParameterBase):
         ap_face = face.geometry.scale(scale_factor, face.geometry.center)
         aperture = Aperture('{}_Glz1'.format(face.display_name), ap_face)
         aperture._parent = face
-        face._apertures.append(aperture)
+        face.add_aperture(aperture)
         # if the Aperture is interior, set adjacent boundary condition
         if isinstance(face._boundary_condition, Surface):
             names = face._boundary_condition.boundary_condition_objects
@@ -262,7 +270,7 @@ class SimpleWindowRatio(_WindowParameterBase):
     def from_dict(cls, data):
         """Create SimpleWindowRatio from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "SimpleWindowRatio",
@@ -396,7 +404,7 @@ class RepeatingWindowRatio(SimpleWindowRatio):
     def from_dict(cls, data):
         """Create RepeatingWindowRatio from a dictionary.
 
-        .. code-block:: json
+        .. code-block:: python
 
             {
             "type": "RepeatingWindowRatio",
@@ -448,3 +456,391 @@ class RepeatingWindowRatio(SimpleWindowRatio):
             ' {}\n horizontal: {}\n vertical: {}'.format(
                 self._window_ratio, self.window_height, self.sill_height,
                 self.horizontal_separation, self.vertical_separation)
+
+
+class _DetailedParameterBase(_WindowParameterBase):
+    """Base class for all detailed WindowParameters.
+
+    Detailed parameters allow for the specification of several individual windows
+    within a given Wall plane.
+    """
+
+    def flip(self, segment):
+        """Flip the direction of the windows along a segment.
+
+        This is needed for detailed window specifications since windows can exist
+        asymmetically across the wall segment and operations like reflecting the
+        Room2D across a plane will require the window parameters to be flipped.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+        """
+        return self
+
+
+class DetailedRectangularWindows(_DetailedParameterBase):
+    """Instructions for several rectangular windows, defined by origin, width and height.
+
+    Properties:
+        * origins
+        * widths
+        * heights
+    """
+    __slots__ = ('_origins', '_widths', '_heights')
+
+    def __init__(self, origins, widths, heights):
+        """Instructions for rectangular windows, defined by origin, width and height.
+
+        Note that, if these parameters are applied to a base wall that is too short
+        or too narrow such that the windows fall outside the boundary of the wall, the
+        generated windows will automatically be shortened or excluded. This way, a
+        certain pattern of repating rectangular windows can be encoded in a single
+        DetailedRectangularWindows instance and applied to multiple Room2D segments.
+
+        Args:
+            origins: An array of ladybug_geometry Point2D objects within the plane
+                of the wall for the origin of each window. The wall plane is assumed
+                to have an origin at the first point of the wall segment and an
+                X-axis extending along the length of the segment. The wall plane's
+                Y-axis always points upwards.  Therefore, both X and Y values of
+                each origin point should be positive.
+            widths: An array of postive numbers for the window widths. The length
+                of this list must match the length of the origins.
+            heights: An array of postive numbers for the window heights. The length
+                of this list must match the length of the origins.
+        """
+        if not isinstance(origins, tuple):
+            origins = tuple(origins)
+        for point in origins:
+            assert isinstance(point, Point2D), \
+                'Expected Point2D for window origin. Got {}'.format(type(point))
+        self._origins = origins
+        
+        self._widths = tuple(float_positive(width, 'window width') for width in widths)
+        self._heights = tuple(float_positive(hgt, 'window height') for hgt in heights)
+
+        assert len(self._origins) == len(self._widths) == len(self._heights), \
+            'Number of window origins, widths, and heights must match.'
+
+    @property
+    def origins(self):
+        """Get an array of Point2Ds within the wall plane for the origin of each window."""
+        return self._origins
+
+    @property
+    def widths(self):
+        """Get an array of numbers for the window widths."""
+        return self._widths
+
+    @property
+    def heights(self):
+        """Get an array of numbers for the window heights."""
+        return self._heights
+
+    def area_from_segment(self, segment, floor_to_ceiling_height):
+        """Get the window area generated by these parameters from a LineSegment3D.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+        """
+        max_width = segment.length * 0.999
+        max_height = floor_to_ceiling_height * 0.999
+
+        areas = []
+        for o, width, height in zip(self.origins, self.widths, self.heights):
+            final_width = max_width - o.x if width  + o.x > max_width else width
+            final_height = max_height - o.y if height + o.y > max_height else height
+            if final_height > 0 and final_height > 0:  # inside wall boundary
+                areas.append(final_width * final_height)
+
+        return sum(areas)
+
+    def add_window_to_face(self, face, tolerance=0):
+        """Add Apertures to a Honeybee Face using these Window Parameters.
+
+        Args:
+            face: A honeybee-core Face object.
+            tolerance: Optional tolerance value.
+        """
+        # collect the global properties of the face that set limits on apertures
+        wall_plane = face.geometry.plane
+        width_seg = LineSegment3D.from_end_points(face.geometry[0], face.geometry[1])
+        height_seg = LineSegment3D.from_end_points(face.geometry[1], face.geometry[2])
+        max_width = width_seg.length * 0.99
+        max_height = height_seg.length * 0.99
+
+        # loop through each window and create its geometry
+        for i, (o, wid, hgt) in enumerate(zip(self.origins, self.widths, self.heights)):
+            final_width = max_width - o.x if wid  + o.x > max_width else wid
+            final_height = max_height - o.y if hgt + o.y > max_height else hgt
+            if final_height > 0 and final_height > 0:  # inside wall boundary
+                base_plane = Plane(wall_plane.n, wall_plane.xy_to_xyz(o), wall_plane.x)
+                ap_face = Face3D.from_rectangle(final_width, final_height, base_plane)
+                aperture = Aperture('{}_Glz{}'.format(face.display_name, i + 1), ap_face)
+                aperture._parent = face
+                face.add_aperture(aperture)
+                # if the Aperture is interior, set adjacent boundary condition
+                if isinstance(face._boundary_condition, Surface):
+                    names = face._boundary_condition.boundary_condition_objects
+                    adj_ap_name = '{}_Glz{}'.format(names[0], i + 1)
+                    final_names = (adj_ap_name,) + names
+                    aperture.boundary_condition = Surface(final_names, True)
+
+    def scale(self, factor):
+        """Get a scaled version of these WindowParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return DetailedRectangularWindows(
+            tuple(Point2D(pt.x * factor, pt.y * factor) for pt in self.origins),
+            tuple(width * factor for width in self.widths),
+            tuple(height * factor for height in self.heights))
+
+    def flip(self, seg_length):
+        """Flip the direction of the windows along a segment.
+
+        This is needed since windows can exist asymmetically across the wall
+        segment and operations like reflecting the Room2D across a plane will
+        require the window parameters to be flipped to remain in the same place.
+
+        Args:
+            seg_length: The length of the segment along which the parameters are
+                being flipped.
+        """
+        new_origins = []
+        new_widths = []
+        new_heights = []
+        for o, width, height in zip(self.origins, self.widths, self.heights):
+            new_x = seg_length - o.x - width
+            if new_x > 0:  # fully within the wall boundary
+                new_origins.append(Point2D(new_x, o.y))
+                new_widths.append(width)
+                new_heights.append(height)
+            elif new_x + width > seg_length * 0.001:  # partially within the boundary
+                new_widths.append(width + new_x - (seg_length * 0.001))
+                new_x = seg_length * 0.001
+                new_origins.append(Point2D(new_x, o.y))
+                new_heights.append(height)
+        return DetailedRectangularWindows(new_origins, new_widths, new_heights)
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create DetailedRectangularWindows from a dictionary.
+
+        .. code-block:: python
+
+            {
+            "type": "DetailedRectangularWindows",
+            "origins": [(1, 1), (3, 0.5)],  # array of (x, y) floats in wall plane
+            "widths": [1, 3],  # array of floats for window widths
+            "heights": [1, 2.5]  # array of floats for window heights
+            }
+        """
+        assert data['type'] == 'DetailedRectangularWindows', \
+            'Expected DetailedRectangularWindows. Got {}.'.format(data['type'])
+        return cls(tuple(Point2D.from_array(pt) for pt in data['origins']),
+                   data['widths'], data['heights'])
+
+    def to_dict(self):
+        """Get DetailedRectangularWindows as a dictionary."""
+        return {'type': 'DetailedRectangularWindows',
+                'origins': [pt.to_array() for pt in self.origins],
+                'widths': self.widths,
+                'heights': self.heights
+                }
+
+    def __copy__(self):
+        return DetailedRectangularWindows(self.origins, self.widths, self.heights)
+
+    def __key(self):
+        """A tuple based on the object properties, useful for hashing."""
+        return (hash(self.origins), hash(self.widths), hash(self.heights))
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        return isinstance(other, DetailedRectangularWindows) and \
+            self.__key() == other.__key()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __repr__(self):
+        return 'DetailedRectangularWindows:\n {} windows'.format(len(self.origins))
+
+
+class DetailedWindows(_DetailedParameterBase):
+    """Instructions for detailed windows, defined by 2D Polygons (lists of 2D vertices).
+
+    Properties:
+        * polygons
+    """
+    __slots__ = ('_polygons',)
+
+    def __init__(self, polygons):
+        """Initialize DetailedWindows.
+
+        Note that these parameters are intended to represent windows that are specific
+        to a particular segment and, unlike the other WindowParameters, this class
+        performs no automatic checks to ensure that the windows lie within the
+        boundary of the wall they have been assigned to.
+
+        Args:
+            polygons: An array of ladybug_geometry Polygon2D objects within the plane
+                of the wall with one polygon for each window. The wall plane is
+                assumed to have an origin at the first point of the wall segment
+                and an X-axis extending along the length of the segment. The wall
+                plane's Y-axis always points upwards.  Therefore, both X and Y
+                values of each point in the polygon should always be positive.
+        
+        Usage:
+            Note that, if you are starting from 3D vertices of windows, you can
+            use this class to represent them. Below is some sample code to convert from
+            vertices in the same 3D space as a vertical wall to vertices in the 2D
+            plane of the wall (as this class interprets it).
+
+            In the code, 'seg_p1' is the first point of a given wall segment and
+            is assumed to be the origin of the wall plane. 'seg_p2' is the second
+            point of the wall segment, and 'vertex' is a given vertex of the
+            window that you want to translate from 3D coordinates into 2D. All
+            input points are presented as arrays of 3 floats and the output is
+            an array of 2 (x, y) coordinates.
+
+        .. code-block:: python
+
+            def dot_product(v1, v2):
+                return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[3]
+
+            def normalize(v):
+                d = (v[0] ** 2 + v[1] ** 2 + v[2] ** 2) ** 0.5
+                return (v[0] / d, v[1] / d, v[2] / d)
+
+            def xyz_to_xy(seg_p1, seg_p2, vertex):
+                diff = (vertex[0] - seg_p1[0], vertex[1] - seg_p1[1], vertex[2] - seg_p1[2])
+                a_axis = (seg_p2[0] - seg_p1[0], seg_p2[1] - seg_p1[1], seg_p2[2] - seg_p1[2])
+                plane_x = normalize(a_axis)
+                plane_y = (0, 0, 1)
+                return (dot_product(plane_x , diff), dot_product(plane_y, diff))
+        """
+        if not isinstance(polygons, tuple):
+            polygons = tuple(polygons)
+        for polygon in polygons:
+            assert isinstance(polygon, Polygon2D), \
+                'Expected Polygon2D for window polygon. Got {}'.format(type(polygon))
+        self._polygons = polygons
+
+    @property
+    def polygons(self):
+        """Get an array of Polygon2Ds with one polygon for each window."""
+        return self._polygons
+
+    def area_from_segment(self, segment, floor_to_ceiling_height):
+        """Get the window area generated by these parameters from a LineSegment3D.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+        """
+        return sum(polygon.area for polygon in self._polygons)
+
+    def add_window_to_face(self, face, tolerance=0):
+        """Add Apertures to a Honeybee Face using these Window Parameters.
+
+        Args:
+            face: A honeybee-core Face object.
+            tolerance: Optional tolerance value.
+        """
+        wall_plane = face.geometry.plane
+
+        # loop through each window and create its geometry
+        for i, polygon in enumerate(self.polygons):
+            pt3d = tuple(wall_plane.xy_to_xyz(pt) for pt in polygon)
+            aperture = Aperture('{}_Glz{}'.format(face.display_name, i + 1), Face3D(pt3d))
+            aperture._parent = face
+            face.add_aperture(aperture)
+            # if the Aperture is interior, set adjacent boundary condition
+            if isinstance(face._boundary_condition, Surface):
+                names = face._boundary_condition.boundary_condition_objects
+                adj_ap_name = '{}_Glz{}'.format(names[0], i + 1)
+                final_names = (adj_ap_name,) + names
+                aperture.boundary_condition = Surface(final_names, True)
+
+    def scale(self, factor):
+        """Get a scaled version of these WindowParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return DetailedWindows(
+            tuple(polygon.scale(factor) for polygon in self.polygons))
+
+    def flip(self, seg_length):
+        """Flip the direction of the windows along a segment.
+
+        This is needed since windows can exist asymmetically across the wall
+        segment and operations like reflecting the Room2D across a plane will
+        require the window parameters to be flipped to remain in the same place.
+
+        Args:
+            seg_length: The length of the segment along which the parameters are
+                being flipped.
+        """
+        # set values derived from the proeprty of the segment
+        normal = Vector2D(1, 0)
+        origin = Point2D(seg_length / 2, 0)
+
+        # loop through the polygons and reflect them across the midplane of the wall
+        new_polygons = []
+        for polygon in self.polygons:
+            new_verts = tuple(pt.reflect(normal, origin) for pt in polygon.vertices)
+            new_polygons.append(Polygon2D(tuple(reversed(new_verts))))
+        return DetailedWindows(new_polygons)
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create DetailedWindows from a dictionary.
+
+        .. code-block:: python
+
+            {
+            "type": "DetailedWindows",
+            "polygons": [{"type": "Polygon2D", "vertices": [(0, 0), (10, 0), (0, 10)]}]
+            }
+        """
+        assert data['type'] == 'DetailedWindows', \
+            'Expected DetailedWindows dictionary. Got {}.'.format(data['type'])
+        return cls(tuple(Polygon2D.from_dict(poly) for poly in data['polygons']))
+
+    def to_dict(self):
+        """Get DetailedWindows as a dictionary."""
+        return {'type': 'DetailedWindows',
+                'polygons': [poly.to_dict() for poly in self.polygons]
+                }
+
+    def __copy__(self):
+        return DetailedWindows(self._polygons)
+
+    def __key(self):
+        """A tuple based on the object properties, useful for hashing."""
+        return tuple(hash(polygon) for polygon in self._polygons)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        return isinstance(other, DetailedWindows) and self.__key() == other.__key()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __repr__(self):
+        return 'DetailedWindows:\n {} windows'.format(len(self._polygons))
