@@ -813,17 +813,19 @@ class DetailedWindows(_DetailedParameterBase):
 
             {
             "type": "DetailedWindows",
-            "polygons": [{"type": "Polygon2D", "vertices": [(0, 0), (10, 0), (0, 10)]}]
+            "polygons": [((0.5, 0.5), (2, 0.5), (2, 2), (0.5, 2)),
+                         ((3, 1), (4, 1), (4, 2))]
             }
         """
         assert data['type'] == 'DetailedWindows', \
             'Expected DetailedWindows dictionary. Got {}.'.format(data['type'])
-        return cls(tuple(Polygon2D.from_dict(poly) for poly in data['polygons']))
+        return cls(tuple(Polygon2D(tuple(Point2D.from_array(pt) for pt in poly))
+                         for poly in data['polygons']))
 
     def to_dict(self):
         """Get DetailedWindows as a dictionary."""
         return {'type': 'DetailedWindows',
-                'polygons': [poly.to_dict() for poly in self.polygons]
+                'polygons': [[pt.to_array() for pt in poly] for poly in self.polygons]
                 }
 
     def __copy__(self):
