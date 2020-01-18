@@ -79,27 +79,26 @@ class _WindowParameterBase(object):
 class SingleWindow(_WindowParameterBase):
     """Instructions for a single window in the face center defined by a width x height.
 
+    Note that, if these parameters are applied to a base face that is too short
+    or too narrow for the input width and/or height, the generated window will
+    automatically be shortened when it is applied to the face. In this way,
+    setting the width to be `float('inf')` will create parameters that always
+    generate a ribboin window of the input height.
+
     Properties:
         * width
         * height
         * sill_height
+
+    Args:
+        width: A number for the window width.
+        height: A number for the window height.
+        sill_height: A number for the window sill height. Default: 1.
     """
     __slots__ = ('_width', '_height', '_sill_height')
 
     def __init__(self, width, height, sill_height=1):
-        """Instructions for a single window in the wall center defined by a width*height.
-
-        Note that, if these parameters are applied to a base face that is too short
-        or too narrow for the input width and/or height, the generated window will
-        automatically be shortened when it is applied to the face. In this way,
-        setting the width to be `float('inf')` will create parameters that always
-        generate a ribboin window of the input height.
-
-        Args:
-            width: A number for the window width.
-            height: A number for the window height.
-            sill_height: A number for the window sill height. Default: 1.
-        """
+        """Initialize SingleWindow."""
         self._width = float_positive(width, 'window width')
         self._height = float_positive(height, 'window height')
         self._sill_height = float_positive(sill_height, 'window sill height')
@@ -220,16 +219,15 @@ class SimpleWindowRatio(_WindowParameterBase):
 
     Properties:
         * window_ratio
+
+    Args:
+        window_ratio: A number between 0 and 1 for the ratio between the window
+            area and the parent wall surface area.
     """
     __slots__ = ('_window_ratio',)
 
     def __init__(self, window_ratio):
-        """Instructions for a single window defined by an area ratio with the base wall.
-
-        Args:
-            window_ratio: A number between 0 and 1 for the ratio between the window
-                area and the parent wall surface area.
-        """
+        """Initialize SimpleWindowRatio."""
         self._window_ratio = float_in_range(window_ratio, 0, 1, 'window ratio')
 
     @property
@@ -315,31 +313,30 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         * sill_height
         * horizontal_separation
         * vertical_separation
+
+    Args:
+        window_ratio: A number between 0 and 1 for the ratio between the window
+            area and the total facade area.
+        window_height: A number for the target height of the windows.
+            Note that, if the window ratio is too large for the height, the
+            ratio will take precedence and the actual window_height will
+            be larger than this value.
+        sill_height: A number for the target height above the bottom edge of
+            the rectangle to start the windows. Note that, if the
+            ratio is too large for the height, the ratio will take precedence
+            and the sill_height will be smaller than this value.
+        horizontal_separation: A number for the target separation between
+            individual window centerlines.  If this number is larger than
+            the parent rectangle base, only one window will be produced.
+        vertical_separation: An optional number to create a single vertical
+            separation between top and bottom windows. Default: 0.
     """
     __slots__ = ('_window_height', '_sill_height',
                  '_horizontal_separation', '_vertical_separation')
 
     def __init__(self, window_ratio, window_height, sill_height,
                  horizontal_separation, vertical_separation=0):
-        """Instructions for repeating windows from an area ratio with the base surface.
-
-        Args:
-            window_ratio: A number between 0 and 1 for the ratio between the window
-                area and the total facade area.
-            window_height: A number for the target height of the windows.
-                Note that, if the window ratio is too large for the height, the
-                ratio will take precedence and the actual window_height will
-                be larger than this value.
-            sill_height: A number for the target height above the bottom edge of
-                the rectangle to start the windows. Note that, if the
-                ratio is too large for the height, the ratio will take precedence
-                and the sill_height will be smaller than this value.
-            horizontal_separation: A number for the target separation between
-                individual window centerlines.  If this number is larger than
-                the parent rectangle base, only one window will be produced.
-            vertical_separation: An optional number to create a single vertical
-                separation between top and bottom windows. Default: 0.
-        """
+        """Initialize RepeatingWindowRatio."""
         self._window_ratio = float_in_range(window_ratio, 0, 0.95, 'window ratio')
         self._window_height = float_positive(window_height, 'window height')
         self._sill_height = float_positive(sill_height, 'sill height')
@@ -481,34 +478,33 @@ class _DetailedParameterBase(_WindowParameterBase):
 class DetailedRectangularWindows(_DetailedParameterBase):
     """Instructions for several rectangular windows, defined by origin, width and height.
 
+    Note that, if these parameters are applied to a base wall that is too short
+    or too narrow such that the windows fall outside the boundary of the wall, the
+    generated windows will automatically be shortened or excluded. This way, a
+    certain pattern of repating rectangular windows can be encoded in a single
+    DetailedRectangularWindows instance and applied to multiple Room2D segments.
+
     Properties:
         * origins
         * widths
         * heights
+
+    Args:
+        origins: An array of ladybug_geometry Point2D objects within the plane
+            of the wall for the origin of each window. The wall plane is assumed
+            to have an origin at the first point of the wall segment and an
+            X-axis extending along the length of the segment. The wall plane's
+            Y-axis always points upwards.  Therefore, both X and Y values of
+            each origin point should be positive.
+        widths: An array of postive numbers for the window widths. The length
+            of this list must match the length of the origins.
+        heights: An array of postive numbers for the window heights. The length
+            of this list must match the length of the origins.
     """
     __slots__ = ('_origins', '_widths', '_heights')
 
     def __init__(self, origins, widths, heights):
-        """Instructions for rectangular windows, defined by origin, width and height.
-
-        Note that, if these parameters are applied to a base wall that is too short
-        or too narrow such that the windows fall outside the boundary of the wall, the
-        generated windows will automatically be shortened or excluded. This way, a
-        certain pattern of repating rectangular windows can be encoded in a single
-        DetailedRectangularWindows instance and applied to multiple Room2D segments.
-
-        Args:
-            origins: An array of ladybug_geometry Point2D objects within the plane
-                of the wall for the origin of each window. The wall plane is assumed
-                to have an origin at the first point of the wall segment and an
-                X-axis extending along the length of the segment. The wall plane's
-                Y-axis always points upwards.  Therefore, both X and Y values of
-                each origin point should be positive.
-            widths: An array of postive numbers for the window widths. The length
-                of this list must match the length of the origins.
-            heights: An array of postive numbers for the window heights. The length
-                of this list must match the length of the origins.
-        """
+        """Initialize DetailedRectangularWindows."""
         if not isinstance(origins, tuple):
             origins = tuple(origins)
         for point in origins:
@@ -678,56 +674,55 @@ class DetailedRectangularWindows(_DetailedParameterBase):
 class DetailedWindows(_DetailedParameterBase):
     """Instructions for detailed windows, defined by 2D Polygons (lists of 2D vertices).
 
+    Note that these parameters are intended to represent windows that are specific
+    to a particular segment and, unlike the other WindowParameters, this class
+    performs no automatic checks to ensure that the windows lie within the
+    boundary of the wall they have been assigned to.
+
     Properties:
         * polygons
+
+    Args:
+        polygons: An array of ladybug_geometry Polygon2D objects within the plane
+            of the wall with one polygon for each window. The wall plane is
+            assumed to have an origin at the first point of the wall segment
+            and an X-axis extending along the length of the segment. The wall
+            plane's Y-axis always points upwards.  Therefore, both X and Y
+            values of each point in the polygon should always be positive.
+    
+    Usage:
+        Note that, if you are starting from 3D vertices of windows, you can
+        use this class to represent them. Below is some sample code to convert from
+        vertices in the same 3D space as a vertical wall to vertices in the 2D
+        plane of the wall (as this class interprets it).
+
+        In the code, 'seg_p1' is the first point of a given wall segment and
+        is assumed to be the origin of the wall plane. 'seg_p2' is the second
+        point of the wall segment, and 'vertex' is a given vertex of the
+        window that you want to translate from 3D coordinates into 2D. All
+        input points are presented as arrays of 3 floats and the output is
+        an array of 2 (x, y) coordinates.
+
+    .. code-block:: python
+
+        def dot_product(v1, v2):
+            return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[3]
+
+        def normalize(v):
+            d = (v[0] ** 2 + v[1] ** 2 + v[2] ** 2) ** 0.5
+            return (v[0] / d, v[1] / d, v[2] / d)
+
+        def xyz_to_xy(seg_p1, seg_p2, vertex):
+            diff = (vertex[0] - seg_p1[0], vertex[1] - seg_p1[1], vertex[2] - seg_p1[2])
+            a_axis = (seg_p2[0] - seg_p1[0], seg_p2[1] - seg_p1[1], seg_p2[2] - seg_p1[2])
+            plane_x = normalize(a_axis)
+            plane_y = (0, 0, 1)
+            return (dot_product(plane_x , diff), dot_product(plane_y, diff))
     """
     __slots__ = ('_polygons',)
 
     def __init__(self, polygons):
-        """Initialize DetailedWindows.
-
-        Note that these parameters are intended to represent windows that are specific
-        to a particular segment and, unlike the other WindowParameters, this class
-        performs no automatic checks to ensure that the windows lie within the
-        boundary of the wall they have been assigned to.
-
-        Args:
-            polygons: An array of ladybug_geometry Polygon2D objects within the plane
-                of the wall with one polygon for each window. The wall plane is
-                assumed to have an origin at the first point of the wall segment
-                and an X-axis extending along the length of the segment. The wall
-                plane's Y-axis always points upwards.  Therefore, both X and Y
-                values of each point in the polygon should always be positive.
-        
-        Usage:
-            Note that, if you are starting from 3D vertices of windows, you can
-            use this class to represent them. Below is some sample code to convert from
-            vertices in the same 3D space as a vertical wall to vertices in the 2D
-            plane of the wall (as this class interprets it).
-
-            In the code, 'seg_p1' is the first point of a given wall segment and
-            is assumed to be the origin of the wall plane. 'seg_p2' is the second
-            point of the wall segment, and 'vertex' is a given vertex of the
-            window that you want to translate from 3D coordinates into 2D. All
-            input points are presented as arrays of 3 floats and the output is
-            an array of 2 (x, y) coordinates.
-
-        .. code-block:: python
-
-            def dot_product(v1, v2):
-                return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[3]
-
-            def normalize(v):
-                d = (v[0] ** 2 + v[1] ** 2 + v[2] ** 2) ** 0.5
-                return (v[0] / d, v[1] / d, v[2] / d)
-
-            def xyz_to_xy(seg_p1, seg_p2, vertex):
-                diff = (vertex[0] - seg_p1[0], vertex[1] - seg_p1[1], vertex[2] - seg_p1[2])
-                a_axis = (seg_p2[0] - seg_p1[0], seg_p2[1] - seg_p1[1], seg_p2[2] - seg_p1[2])
-                plane_x = normalize(a_axis)
-                plane_y = (0, 0, 1)
-                return (dot_product(plane_x , diff), dot_product(plane_y, diff))
-        """
+        """Initialize DetailedWindows."""
         if not isinstance(polygons, tuple):
             polygons = tuple(polygons)
         for polygon in polygons:
