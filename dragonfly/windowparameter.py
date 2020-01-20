@@ -455,34 +455,32 @@ class RepeatingWindowRatio(SimpleWindowRatio):
                 self.horizontal_separation, self.vertical_separation)
 
 
-class _DetailedParameterBase(_WindowParameterBase):
-    """Base class for all detailed WindowParameters.
-
-    Detailed parameters allow for the specification of several individual windows
-    within a given Wall plane.
+class _AsymmetricBase(_WindowParameterBase):
+    """Base class for WindowParameters that can make asymmetric windows on a wall.
     """
 
-    def flip(self, segment):
-        """Flip the direction of the windows along a segment.
+    def flip(self, seg_length):
+        """Flip the direction of the windows along a wall segment.
 
-        This is needed for detailed window specifications since windows can exist
-        asymmetically across the wall segment and operations like reflecting the
-        Room2D across a plane will require the window parameters to be flipped.
+        This is needed since windows can exist asymmetically across the wall
+        segment and operations like reflecting the Room2D across a plane will
+        require the window parameters to be flipped.
 
         Args:
-            segment: A LineSegment3D to which these parameters are applied.
+            seg_length: The length of the segment along which the parameters are
+                being flipped.
         """
         return self
 
 
-class DetailedRectangularWindows(_DetailedParameterBase):
+class RectangularWindows(_AsymmetricBase):
     """Instructions for several rectangular windows, defined by origin, width and height.
 
     Note that, if these parameters are applied to a base wall that is too short
     or too narrow such that the windows fall outside the boundary of the wall, the
     generated windows will automatically be shortened or excluded. This way, a
     certain pattern of repating rectangular windows can be encoded in a single
-    DetailedRectangularWindows instance and applied to multiple Room2D segments.
+    RectangularWindows instance and applied to multiple Room2D segments.
 
     Properties:
         * origins
@@ -504,7 +502,7 @@ class DetailedRectangularWindows(_DetailedParameterBase):
     __slots__ = ('_origins', '_widths', '_heights')
 
     def __init__(self, origins, widths, heights):
-        """Initialize DetailedRectangularWindows."""
+        """Initialize RectangularWindows."""
         if not isinstance(origins, tuple):
             origins = tuple(origins)
         for point in origins:
@@ -592,7 +590,7 @@ class DetailedRectangularWindows(_DetailedParameterBase):
         Args:
             factor: A number representing how much the object should be scaled.
         """
-        return DetailedRectangularWindows(
+        return RectangularWindows(
             tuple(Point2D(pt.x * factor, pt.y * factor) for pt in self.origins),
             tuple(width * factor for width in self.widths),
             tuple(height * factor for height in self.heights))
@@ -622,36 +620,36 @@ class DetailedRectangularWindows(_DetailedParameterBase):
                 new_x = seg_length * 0.001
                 new_origins.append(Point2D(new_x, o.y))
                 new_heights.append(height)
-        return DetailedRectangularWindows(new_origins, new_widths, new_heights)
+        return RectangularWindows(new_origins, new_widths, new_heights)
 
     @classmethod
     def from_dict(cls, data):
-        """Create DetailedRectangularWindows from a dictionary.
+        """Create RectangularWindows from a dictionary.
 
         .. code-block:: python
 
             {
-            "type": "DetailedRectangularWindows",
+            "type": "RectangularWindows",
             "origins": [(1, 1), (3, 0.5)],  # array of (x, y) floats in wall plane
             "widths": [1, 3],  # array of floats for window widths
             "heights": [1, 2.5]  # array of floats for window heights
             }
         """
-        assert data['type'] == 'DetailedRectangularWindows', \
-            'Expected DetailedRectangularWindows. Got {}.'.format(data['type'])
+        assert data['type'] == 'RectangularWindows', \
+            'Expected RectangularWindows. Got {}.'.format(data['type'])
         return cls(tuple(Point2D.from_array(pt) for pt in data['origins']),
                    data['widths'], data['heights'])
 
     def to_dict(self):
-        """Get DetailedRectangularWindows as a dictionary."""
-        return {'type': 'DetailedRectangularWindows',
+        """Get RectangularWindows as a dictionary."""
+        return {'type': 'RectangularWindows',
                 'origins': [pt.to_array() for pt in self.origins],
                 'widths': self.widths,
                 'heights': self.heights
                 }
 
     def __copy__(self):
-        return DetailedRectangularWindows(self.origins, self.widths, self.heights)
+        return RectangularWindows(self.origins, self.widths, self.heights)
 
     def __key(self):
         """A tuple based on the object properties, useful for hashing."""
@@ -661,17 +659,17 @@ class DetailedRectangularWindows(_DetailedParameterBase):
         return hash(self.__key())
 
     def __eq__(self, other):
-        return isinstance(other, DetailedRectangularWindows) and \
+        return isinstance(other, RectangularWindows) and \
             self.__key() == other.__key()
 
     def __ne__(self, other):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'DetailedRectangularWindows:\n {} windows'.format(len(self.origins))
+        return 'RectangularWindows:\n {} windows'.format(len(self.origins))
 
 
-class DetailedWindows(_DetailedParameterBase):
+class DetailedWindows(_AsymmetricBase):
     """Instructions for detailed windows, defined by 2D Polygons (lists of 2D vertices).
 
     Note that these parameters are intended to represent windows that are specific
