@@ -3,7 +3,7 @@
 from ._base import _BaseGeometry
 from .properties import Room2DProperties
 import dragonfly.windowparameter as glzpar
-from dragonfly.windowparameter import _WindowParameterBase, _DetailedParameterBase
+from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 
@@ -272,7 +272,7 @@ class Room2D(_BaseGeometry):
             if window_parameters is not None:
                 new_win_pars = []
                 for seg, win_par in zip(polygon.segments, reversed(window_parameters)):
-                    if isinstance (win_par, _DetailedParameterBase):
+                    if isinstance (win_par, _AsymmetricBase):
                         new_win_pars.append(win_par.flip(seg.length))
                     else:
                         new_win_pars.append(win_par)
@@ -928,7 +928,7 @@ class Room2D(_BaseGeometry):
         for i, seg in enumerate(original_geo.boundary_segments):
             new_bcs.append(bcs[i])
             win_par = win_pars[i]
-            if isinstance (win_par, _DetailedParameterBase):
+            if isinstance (win_par, _AsymmetricBase):
                 new_win_pars.append(win_par.flip(seg.length))
             else:
                 new_win_pars.append(win_par)

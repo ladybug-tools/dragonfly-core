@@ -2,7 +2,7 @@
 import pytest
 
 from dragonfly.windowparameter import SingleWindow, SimpleWindowRatio, \
-    RepeatingWindowRatio, DetailedRectangularWindows, DetailedWindows
+    RepeatingWindowRatio, RectangularWindows, DetailedWindows
 
 from honeybee.face import Face
 
@@ -182,11 +182,11 @@ def test_repeating_window_ratio_add_window_to_face():
 
 
 def test_detailed_rectangular_init():
-    """Test the initalization of DetailedRectangularWindows and basic properties."""
+    """Test the initalization of RectangularWindows and basic properties."""
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
-    detailed_window = DetailedRectangularWindows(origins, widths, heights)
+    detailed_window = RectangularWindows(origins, widths, heights)
     str(detailed_window)  # test the string representation
 
     assert detailed_window.origins == origins
@@ -195,14 +195,14 @@ def test_detailed_rectangular_init():
 
 
 def test_detailed_rectangular_equality():
-    """Test the equality of DetailedRectangularWindows."""
+    """Test the equality of RectangularWindows."""
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
     heights_alt = (1, 1)
-    detailed_window = DetailedRectangularWindows(origins, widths, heights)
+    detailed_window = RectangularWindows(origins, widths, heights)
     detailed_window_dup = detailed_window.duplicate()
-    detailed_window_alt = DetailedRectangularWindows(origins, widths, heights_alt)
+    detailed_window_alt = RectangularWindows(origins, widths, heights_alt)
 
     assert detailed_window is detailed_window
     assert detailed_window is not detailed_window_dup
@@ -217,10 +217,10 @@ def test_detailed_rectangular_dict_methods():
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
-    detailed_window = DetailedRectangularWindows(origins, widths, heights)
+    detailed_window = RectangularWindows(origins, widths, heights)
 
     glz_dict = detailed_window.to_dict()
-    new_detailed_window = DetailedRectangularWindows.from_dict(glz_dict)
+    new_detailed_window = RectangularWindows.from_dict(glz_dict)
     assert new_detailed_window == detailed_window
     assert glz_dict == new_detailed_window.to_dict()
 
@@ -230,7 +230,7 @@ def test_detailed_rectangular_scale():
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
-    detailed_window = DetailedRectangularWindows(origins, widths, heights)
+    detailed_window = RectangularWindows(origins, widths, heights)
 
     new_detailed_window  = detailed_window.scale(2)
     assert new_detailed_window.origins == (Point2D(4, 2), Point2D(10, 1))
@@ -243,7 +243,7 @@ def test_detailed_rectangular_flip():
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
-    detailed_window = DetailedRectangularWindows(origins, widths, heights)
+    detailed_window = RectangularWindows(origins, widths, heights)
 
     new_detailed_window  = detailed_window.flip(10)
     assert new_detailed_window.origins == (Point2D(7, 1), Point2D(2, 0.5))
@@ -256,7 +256,7 @@ def test_single_window_add_window_to_face():
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
-    detailed_window = DetailedRectangularWindows(origins, widths, heights)
+    detailed_window = RectangularWindows(origins, widths, heights)
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
