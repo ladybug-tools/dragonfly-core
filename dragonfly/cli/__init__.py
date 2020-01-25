@@ -54,14 +54,6 @@ except ImportError:
 
 from dragonfly.cli.validate import validate
 
-import sys
-import os
-import logging
-import json
-
-
-_logger = logging.getLogger(__name__)
-
 
 @click.group()
 @click.version_option()
