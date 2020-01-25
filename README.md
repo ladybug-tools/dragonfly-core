@@ -10,16 +10,24 @@
 Dragonfly is collection of libraries to model and analyze urban climate, energy use, and daylight.
 It extends the capabilites of [honeybee-core](https://github.com/ladybug-tools/honeybee-core) for the urban scale.
 
+This repository is the core repository that provides dragonfly's common functionalities.
+To extend these functionalities you should install available Dragonfly extensions or write
+your own.
+
+Here are a number of frequently used extensions for Dragonfly:
+- [dragonfly-energy](https://github.com/ladybug-tools/dragonfly-energy): Adds Energy simulation to Dragonfly.
+
+
 ## Installation
-```console
-pip install dragonfly-core
-```
 
-## QuickStart
-```python
-import dragonfly
+`pip install -U dragonfly-core`
 
-```
+If you want to also include the command line interface try:
+
+`pip install -U dragonfly-core[cli]`
+
+To check if Dragonfly command line is installed correctly try `dragonfly viz` and you
+should get a `viiiiiiiiiiiiizzzzzzzzz!` back in response! :bee:
 
 ## [API Documentation](https://www.ladybug.tools/dragonfly-core/docs/)
 
