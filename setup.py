@@ -10,7 +10,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name="dragonfly-core",
-    use_scm_version = True,
+    use_scm_version=True,
     setup_requires=['setuptools_scm'],
     author="Ladybug Tools",
     author_email="info@ladybug.tools",
@@ -20,6 +20,12 @@ setuptools.setup(
     url="https://github.com/ladybug-tools/dragonfly-core",
     packages=setuptools.find_packages(exclude=["tests"]),
     install_requires=requirements,
+    extra_requires={
+        'cli': ['click>=5.1', 'dragonfly-schema>=1.2.0']
+    },
+    entry_points={
+        "console_scripts": ["dragonfly = dragonfly.cli:main"]
+    },
     classifiers=[
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",

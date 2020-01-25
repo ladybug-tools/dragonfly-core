@@ -12,3 +12,4 @@ tox.ini
 /.vscode
 .eggs
 *.code-workspace
+dragonfly.log*
