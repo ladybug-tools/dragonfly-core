@@ -2,7 +2,8 @@
 import pytest
 
 from dragonfly.windowparameter import SingleWindow, SimpleWindowRatio, \
-    RepeatingWindowRatio, RectangularWindows, DetailedWindows
+    RepeatingWindowRatio, RepeatingWindowWidthHeight, RectangularWindows, \
+    DetailedWindows
 
 from honeybee.face import Face
 
@@ -145,7 +146,7 @@ def test_repeating_window_ratio_equality():
     assert hash(ashrae_base) != hash(ashrae_base_alt)
 
 
-def test_repeating_window_scale():
+def test_repeating_window_ratio_scale():
     """Test the scale method."""
     ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
 
@@ -179,6 +180,68 @@ def test_repeating_window_ratio_add_window_to_face():
     ap_area = sum([ap.area for ap in face.apertures])
     assert ashrae_base.area_from_segment(seg, height) == \
         pytest.approx(ap_area, rel=1e-3) == width * height * 0.4
+
+
+def test_repeating_window_width_height_init():
+    """Test the initalization of RepeatingWindowWidthHeight objects and basic properties.
+    """
+    bod_windows = RepeatingWindowWidthHeight(2, 1.5, 0.8, 3)
+    str(bod_windows)  # test the string representation
+
+    assert bod_windows.window_height == 2
+    assert bod_windows.window_width == 1.5
+    assert bod_windows.sill_height == 0.8
+    assert bod_windows.horizontal_separation == 3
+
+
+def test_repeating_window_width_height_equality():
+    """Test the equality of RepeatingWindowWidthHeight objects."""
+    bod_windows = RepeatingWindowWidthHeight(2, 1.5, 0.8, 3)
+    bod_windows_dup = bod_windows.duplicate()
+    bod_windows_alt = RepeatingWindowWidthHeight(2, 2, 0.8, 3)
+
+    assert bod_windows is bod_windows
+    assert bod_windows is not bod_windows_dup
+    assert bod_windows == bod_windows_dup
+    assert hash(bod_windows) == hash(bod_windows_dup)
+    assert bod_windows != bod_windows_alt
+    assert hash(bod_windows) != hash(bod_windows_alt)
+
+
+def test_repeating_window_width_height_scale():
+    """Test the scale method."""
+    bod_windows = RepeatingWindowWidthHeight(2, 1.5, 0.8, 3)
+
+    new_bod_windows  = bod_windows.scale(2)
+    assert new_bod_windows.window_height == 4
+    assert new_bod_windows.window_width == 3
+    assert new_bod_windows.sill_height == 1.6
+    assert new_bod_windows.horizontal_separation == 6
+
+
+def test_repeating_window_width_height_dict_methods():
+    """Test the to/from dict methods."""
+    bod_windows = RepeatingWindowWidthHeight(2, 1.5, 0.8, 3)
+
+    glz_dict = bod_windows.to_dict()
+    new_bod_windows = RepeatingWindowWidthHeight.from_dict(glz_dict)
+    assert new_bod_windows == bod_windows
+    assert glz_dict == new_bod_windows.to_dict()
+
+
+def test_repeating_window_width_height_add_window_to_face():
+    """Test the add_window_to_face method."""
+    bod_windows = RepeatingWindowWidthHeight(2, 2, 0.5, 2.5)
+    height = 3
+    width = 10
+    seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
+    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    bod_windows.add_window_to_face(face, 0.01)
+
+    assert len(face.apertures) == 4
+    assert all(len(ap.geometry.vertices) == 4 for ap in face.apertures)
+    assert sum([ap.area for ap in face.apertures]) == pytest.approx(16, rel=1e-2)
+    assert face.punched_geometry.area == pytest.approx(30 - 16, rel=1e-2)
 
 
 def test_detailed_rectangular_init():

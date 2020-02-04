@@ -455,6 +455,153 @@ class RepeatingWindowRatio(SimpleWindowRatio):
                 self.horizontal_separation, self.vertical_separation)
 
 
+class RepeatingWindowWidthHeight(_WindowParameterBase):
+    """Instructions for repeating rectangular windows of a fixed width and height.
+
+    This class effectively fills a wall with windows at the specified width, height
+    and separation.
+
+    Properties:
+        * window_height
+        * window_width
+        * sill_height
+        * horizontal_separation
+
+    Args:
+        window_height: A number for the target height of the windows.
+            Note that, if the window_height is larger than the height of the wall,
+            the generated windows will have a height equal to the wall height
+            in order to avoid having windows extend outside the wall face.
+        window_width: A number for the target width of the windows.
+            Note that, if the window_width is larger than the width of the wall,
+            the generated windows will have a width equal to the wall width
+            in order to avoid having windows extend outside the wall face.
+        sill_height: A number for the target height above the bottom edge of
+            the wall to start the windows. If the window_height
+            is too large for the sill_height to fit within the rectangle,
+            the window_height will take precedence.
+        horizontal_separation: A number for the target separation between
+            individual window centerlines.  If this number is larger than
+            the parent rectangle base, only one window will be produced.
+    """
+    __slots__ = ('_window_height', '_window_width', '_sill_height',
+                 '_horizontal_separation')
+
+    def __init__(self, window_height, window_width, sill_height, horizontal_separation):
+        """Initialize RepeatingWindowWidthHeight."""
+        self._window_height = float_positive(window_height, 'window height')
+        self._window_width = float_positive(window_width, 'window width')
+        self._sill_height = float_positive(sill_height, 'sill height')
+        self._horizontal_separation = \
+            float_positive(horizontal_separation, 'window horizontal separation')
+
+    @property
+    def window_height(self):
+        """Get a number or the target height of the windows."""
+        return self._window_height
+
+    @property
+    def window_width(self):
+        """Get a number or the target width of the windows."""
+        return self._window_width
+
+    @property
+    def sill_height(self):
+        """Get a number for the height above the bottom edge of the floor."""
+        return self._sill_height
+
+    @property
+    def horizontal_separation(self):
+        """Get a number for the separation between individual window centerlines."""
+        return self._horizontal_separation
+
+    def add_window_to_face(self, face, tolerance=0):
+        """Add Apertures to a Honeybee Face using these Window Parameters.
+
+        Args:
+            face: A honeybee-core Face object.
+            tolerance: The maximum difference between point values for them to be
+                considered a part of a rectangle.
+        """
+        face.apertures_by_width_height_rectangle(
+            self.window_height, self.window_width, self.sill_height,
+            self.horizontal_separation, tolerance)
+        # if the Aperture is interior, set adjacent boundary condition
+        if isinstance(face._boundary_condition, Surface):
+            num_aps = face.apertures
+            for i, ap in enumerate(face.apertures):
+                names = face._boundary_condition.boundary_condition_objects
+                adj_ap_name = '{}_Glz{}'.format(names[0], num_aps - i - 1)
+                final_names = (adj_ap_name,) + names
+                ap.boundary_condition = Surface(final_names, True)
+
+    def scale(self, factor):
+        """Get a scaled version of these WindowParameters.
+        
+        This method is called within the scale methods of the Room2D.
+        
+        Args:
+            factor: A number representing how much the object should be scaled.
+        """
+        return RepeatingWindowWidthHeight(
+            self.window_height * factor, self.window_width * factor,
+            self.sill_height * factor, self.horizontal_separation * factor)
+
+    @classmethod
+    def from_dict(cls, data):
+        """Create RepeatingWindowWidthHeight from a dictionary.
+
+        .. code-block:: python
+
+            {
+            "type": "RepeatingWindowWidthHeight",
+            "window_height": 2,
+            "window_width": 1.5,
+            "sill_height": 0.8,
+            "horizontal_separation": 4
+            }
+        """
+        assert data['type'] == 'RepeatingWindowWidthHeight', 'Expected ' \
+            'RepeatingWindowWidthHeight dictionary. Got {}.'.format(data['type'])
+        return cls(data['window_height'], data['window_width'], data['sill_height'],
+                   data['horizontal_separation'])
+
+    def to_dict(self):
+        """Get RepeatingWindowWidthHeight as a dictionary."""
+        return {'type': 'RepeatingWindowWidthHeight',
+                'window_height': self.window_height,
+                'window_width': self.window_width,
+                'sill_height': self.sill_height,
+                'horizontal_separation': self.horizontal_separation}
+        return base
+
+    def __copy__(self):
+        return RepeatingWindowWidthHeight(
+            self._window_height, self._window_width, self._sill_height,
+            self._horizontal_separation)
+
+    def __key(self):
+        """A tuple based on the object properties, useful for hashing."""
+        return (self._window_height, self._window_width, self._sill_height,
+                self._horizontal_separation)
+
+    def __hash__(self):
+        return hash(self.__key())
+
+    def __eq__(self, other):
+        return isinstance(other, RepeatingWindowWidthHeight) and \
+            self.__key() == other.__key()
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
+
+    def __repr__(self):
+        return 'RepeatingWindowWidthHeight:\n window_height: {}\n window_width: ' \
+            '{}\n sill_height: {}\n horizontal: {}'.format(
+                self.window_height, self.window_width, self.sill_height,
+                self.horizontal_separation)
+
+
 class _AsymmetricBase(_WindowParameterBase):
     """Base class for WindowParameters that can make asymmetric windows on a wall.
     """
@@ -464,7 +611,8 @@ class _AsymmetricBase(_WindowParameterBase):
 
         This is needed since windows can exist asymmetically across the wall
         segment and operations like reflecting the Room2D across a plane will
-        require the window parameters to be flipped.
+        require the window parameters to be flipped. Reversing the Room2D vertices
+        also requires flipping.
 
         Args:
             seg_length: The length of the segment along which the parameters are
