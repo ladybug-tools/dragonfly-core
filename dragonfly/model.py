@@ -5,10 +5,11 @@ from .properties import ModelProperties
 from .building import Building
 from .context import ContextShade
 
+from honeybee.model import Model as hb_model
 from honeybee.shade import Shade
 from honeybee.boundarycondition import Surface
 from honeybee.facetype import AirWall
-from honeybee.typing import float_in_range
+from honeybee.typing import float_in_range, float_positive
 
 from ladybug_geometry.geometry2d.pointvector import Vector2D
 
@@ -23,6 +24,9 @@ class Model(_BaseGeometry):
         * display_name
         * north_angle
         * north_vector
+        * units
+        * tolerance
+        * angle_tolerance
         * buildings
         * context_shades
         * stories
@@ -30,9 +34,13 @@ class Model(_BaseGeometry):
         * min
         * max
     """
-    __slots__ = ('_buildings', '_context_shades', '_north_angle', '_north_vector')
+    __slots__ = ('_buildings', '_context_shades', '_north_angle', '_north_vector',
+                 '_units', '_tolerance', '_angle_tolerance')
+    
+    UNITS = hb_model.UNITS
 
-    def __init__(self, name, buildings=None, context_shades=None, north_angle=0):
+    def __init__(self, name, buildings=None, context_shades=None, north_angle=0,
+                 units='Meters', tolerance=0, angle_tolerance=0):
         """A collection of Buildings and ContextShades for an entire model.
 
         Args:
@@ -41,9 +49,27 @@ class Model(_BaseGeometry):
             context_shades: A list of ContextShade objects in the model.
             north_angle: An number between 0 and 360 to set the clockwise north
                 direction in degrees. Default is 0.
+            units: Text for the units system in which the model geometry
+                exists. Default: 'Meters'. Choose from the following:
+                    * Meters
+                    * Millimeters
+                    * Feet
+                    * Inches
+                    * Centimeters
+            tolerance: The maximum difference between x, y, and z values at which
+                vertices are considered equivalent. Zero indicates that no tolerance
+                checks should be performed and certain capabilities like to_honeybee
+                will not be available. Default: 0.
+            angle_tolerance: The max angle difference in degrees that vertices are
+                allowed to differ from one another in order to consider them colinear.
+                Zero indicates that no angle tolerance checks should be performed.
+                Default: 0.
         """
         self.name = name
         self.north_angle = north_angle
+        self.units = units
+        self.tolerance = tolerance
+        self.angle_tolerance = angle_tolerance
 
         self._buildings = []
         self._context_shades = []
@@ -67,18 +93,24 @@ class Model(_BaseGeometry):
         assert data['type'] == 'Model', 'Expected Model dictionary. ' \
             'Got {}.'.format(data['type'])
 
+        # import the tolerance values
+        tol = 0 if 'tolerance' not in data else data['tolerance']
+        angle_tol = 0 if 'angle_tolerance' not in data else data['angle_tolerance']
+
         buildings = None  # import buildings
         if 'buildings' in data and data['buildings'] is not None:
-            buildings = [Building.from_dict(bldg) for bldg in data['buildings']]
+            buildings = [Building.from_dict(bldg, tol) for bldg in data['buildings']]
         context_shades = None  # import context shades
         if 'context_shades' in data and data['context_shades'] is not None:
             context_shades = [ContextShade.from_dict(s) for s in data['context_shades']]
 
-        # import the north angle
+        # import the north angle and units
         north_angle = 0 if 'north_angle' not in data else data['north_angle']
+        units = 'Meters' if 'units' not in data else data['units']
 
         # build the model object
-        model = Model(data['name'], buildings, context_shades, north_angle)
+        model = Model(data['name'], buildings, context_shades, north_angle,
+                      units, tol, angle_tol)
         assert model.display_name == model.name, \
             'Model name "{}" has invalid characters.'.format(data['name'])
         if 'display_name' in data and data['display_name'] is not None:
@@ -110,6 +142,45 @@ class Model(_BaseGeometry):
         self._north_vector = value
         self._north_angle = \
             math.degrees(Vector2D(0, 1).angle_clockwise(self._north_vector))
+
+    @property
+    def units(self):
+        """Get or set Text for the units system in which the model geometry exists."""
+        return self._units
+
+    @units.setter
+    def units(self, value):
+        assert value in self.UNITS, '{} is not supported as a units system. ' \
+            'Choose from the following: {}'.format(value, self.units)
+        self._units = value
+
+    @property
+    def tolerance(self):
+        """Get or set a number for the max meaningful difference between x, y, z values.
+        
+        This value should be in the Model's units. Zero indicates cases where
+        no tolerance checks should be performed.
+        """
+        return self._tolerance
+
+    @tolerance.setter
+    def tolerance(self, value):
+        self._tolerance = float_positive(value, 'model tolerance')
+
+    @property
+    def angle_tolerance(self):
+        """Get or set a number for the max meaningful angle difference in degrees.
+        
+        Face3D normal vectors differing by this amount are not considered parallel
+        and Face3D segments that differ from 180 by this amount are not considered
+        colinear. Zero indicates cases where no angle_tolerance checks should be
+        performed.
+        """
+        return self._angle_tolerance
+
+    @angle_tolerance.setter
+    def angle_tolerance(self, value):
+        self._angle_tolerance = float_positive(value, 'model angle_tolerance')
 
     @property
     def buildings(self):
@@ -247,6 +318,28 @@ class Model(_BaseGeometry):
         for shade in self._context_shades:
             shade.scale(factor, origin)
 
+    def convert_to_units(self, units='Meters'):
+        """Convert all of the geometry in this model to certain units.
+
+        Thins involves both scaling the geometry and changing the Model's
+        units property.
+
+        Args:
+            units: Text for the units to which the Model geometry should be
+                converted. Default: Meters. Choose from the following:
+                    * Meters
+                    * Millimeters
+                    * Feet
+                    * Inches
+                    * Centimeters
+        """
+        if self.units != units:
+            scale_fac1 = hb_model.conversion_factor_to_meters(self.units)
+            scale_fac2 = hb_model.conversion_factor_to_meters(units)
+            scale_fac = scale_fac1 / scale_fac2
+            self.scale(scale_fac)
+            self.units = units
+
     def check_duplicate_building_names(self, raise_exception=True):
         """Check that there are no duplicate Building names in the model."""
         bldg_names = set()
@@ -324,11 +417,18 @@ class Model(_BaseGeometry):
                 multipliers and all resulting multipliers will be 1. Default: True
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur. Default: None.
-        
+                This is also used in the generation of Windows. This must be a
+                positive, non-zero number. If None, the Model's own tolerance
+                will be used. Default: None.
+
         Returns:
             An array of Honeybee Models that together represent this Dragonfly Model.
         """
+        # check the tolerance, which is required to convert to honeybee
+        tolerance = self.tolerance if tolerance is None else tolerance
+        assert tolerance != 0, \
+            'Model tolerance must be non-zero to use Model.to_honeybee.'
+
         # create the model objects
         if object_per_model is None or object_per_model.title() == 'Building':
             models = Building.buildings_to_honeybee_self_shade(
@@ -349,6 +449,12 @@ class Model(_BaseGeometry):
         if self._north_angle != 0 and self._north_angle != 360:
             for model in models:
                 model.north_angle = self._north_angle
+        
+        # change the tolerance and untis systems to match the dragonfly model
+        for model in models:
+            model.units = self.units
+            model.tolerance = tolerance
+            model.angle_tolerance = self.angle_tolerance
 
         # transfer Model extension attributes to the honeybee models
         for hb_model in models:

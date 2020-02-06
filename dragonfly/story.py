@@ -67,17 +67,21 @@ class Story(_BaseGeometry):
         self._properties = StoryProperties(self)  # properties for extensions
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, tolerance=0):
         """Initialize an Story from a dictionary.
 
         Args:
             data: A dictionary representation of a Story object.
+            tolerance: The maximum difference between z values at which point vertices
+                are considered to be in the same horizontal plane. This is used to check
+                that all vertices of the input floor_geometry lie in the same horizontal
+                floor plane. Default is 0, which will not perform any check.
         """
         # check the type of dictionary
         assert data['type'] == 'Story', 'Expected Story dictionary. ' \
             'Got {}.'.format(data['type'])
 
-        rooms = [Room2D.from_dict(r_dict) for r_dict in data['room_2ds']]
+        rooms = [Room2D.from_dict(r_dict, tolerance) for r_dict in data['room_2ds']]
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
         mult = data['multiplier'] if 'multiplier' in data else 1
 
@@ -195,12 +199,13 @@ class Story(_BaseGeometry):
         """
         return self._calculate_max(self._room_2ds)
 
-    def floor_geometry(self, tolerance):
+    def floor_geometry(self, tolerance=0.01):
         """Get a ladybug_geometry Polyface3D object representing the floor plate.
 
         Args:
             tolerance: The minimum distance between points at which they are
-                not considered touching.
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
         """
         story_height = self.floor_height
         room_floors = []
@@ -213,7 +218,7 @@ class Story(_BaseGeometry):
         # TODO: consider returning a list of polyfaces if input rooms are disjointed
         return Polyface3D.from_faces(room_floors, tolerance)
 
-    def outline_segments(self, tolerance):
+    def outline_segments(self, tolerance=0.01):
         """Get a list of LineSegment3D objects for the outline of the floor plate.
 
         Note that these segments include both the boundary surrounding the floor
@@ -221,7 +226,8 @@ class Story(_BaseGeometry):
 
         Args:
             tolerance: The minimum distance between points at which they are
-                not considered touching.
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
         """
         return self.floor_geometry(tolerance).naked_edges
 
@@ -300,16 +306,17 @@ class Story(_BaseGeometry):
         for room in rooms_2ds:
             self.add_room_2d(room)
 
-    def solve_room_2d_adjacency(self, tolerance):
+    def solve_room_2d_adjacency(self, tolerance=0.01):
         """Automatically solve adjacencies across the Room2Ds in this story.
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent.
+                faces at which they can be considered centered adjacent. Default: 0.01,
+                suitable for objects in meters.
         """
         Room2D.solve_adjacency(self._room_2ds, tolerance)
 
-    def intersect_room_2d_adjacency(self, tolerance):
+    def intersect_room_2d_adjacency(self, tolerance=0.01):
         """Automatically intersect the line segments of the Story's Room2Ds.
 
         Note that this method effectively erases all assigned boundary conditions,
@@ -319,7 +326,8 @@ class Story(_BaseGeometry):
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent.
+                faces at which they can be considered centered adjacent. Default: 0.01,
+                suitable for objects in meters.
         """
         self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
 
@@ -424,7 +432,7 @@ class Story(_BaseGeometry):
             return False
         return True
 
-    def to_honeybee(self, use_multiplier=True, tolerance=None):
+    def to_honeybee(self, use_multiplier=True, tolerance=0.01):
         """Convert Dragonfly Story to a Honeybee Model.
 
         Args:
@@ -435,7 +443,8 @@ class Story(_BaseGeometry):
                 full geometry.
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur. Default: None.
+                If None, no splitting will occur. Default: 0.01, suitable for
+                objects in meters.
         """
         mult = self.multiplier if use_multiplier else 1
         hb_rooms = [room.to_honeybee(mult, tolerance) for room in self._room_2ds]

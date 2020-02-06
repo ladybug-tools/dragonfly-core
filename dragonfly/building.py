@@ -66,7 +66,7 @@ class Building(_BaseGeometry):
         self._properties = BuildingProperties(self)  # properties for extensions
 
     @classmethod
-    def from_footprint(cls, name, footprint, floor_to_floor_heights, tolerance=None):
+    def from_footprint(cls, name, footprint, floor_to_floor_heights, tolerance=0):
         """Initialize a Building from an array of Face3Ds representing a footprint.
 
         All of the resulting Room2Ds will have a floor-to-ceiling height equal to the
@@ -86,7 +86,7 @@ class Building(_BaseGeometry):
             tolerance: The maximum difference between z values at which point vertices
                 are considered to be in the same horizontal plane. This is used to check
                 that all vertices of the input floor_geometry lie in the same horizontal
-                floor plane. Default is None, which will not perform any check.
+                floor plane. Default is 0, which will not perform any check.
         """
         # generate the unique Room2Ds from the footprint
         room_2ds = cls._generate_room_2ds(footprint, floor_to_floor_heights[0],
@@ -118,7 +118,7 @@ class Building(_BaseGeometry):
 
     @classmethod
     def from_all_story_geometry(cls, name, all_story_geometry, floor_to_floor_heights,
-                                tolerance):
+                                tolerance=0.01):
         """Initialize a Building from an array of Face3Ds arrays representing all floors.
 
         This method will test to see which of the stories are geometrically unique
@@ -140,9 +140,10 @@ class Building(_BaseGeometry):
                 represents the floor_to_floor height of the Story starting from
                 the first floor and then moving to the top floor.
             tolerance: The maximum difference between x, y, and z values at which
-                point vertices are considered to be the same. This is required as
+                point vertices are considered to be the same. This is also needed as
                 a means to determine which floor geometries are equivalent to one
-                another.
+                another and should be a part the same Story. Default: 0.01, suitable
+                for objects in meters.
         """
         # generate the first story of the building
         room_2ds = cls._generate_room_2ds(
@@ -171,17 +172,22 @@ class Building(_BaseGeometry):
         return cls(name, stories)
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, tolerance=0):
         """Initialize an Building from a dictionary.
 
         Args:
             data: A dictionary representation of a Building object.
+            tolerance: The maximum difference between z values at which point vertices
+                are considered to be in the same horizontal plane. This is used to check
+                that all vertices of the input floor_geometry lie in the same horizontal
+                floor plane. Default is 0, which will not perform any check.
         """
         # check the type of dictionary
         assert data['type'] == 'Building', 'Expected Building dictionary. ' \
             'Got {}.'.format(data['type'])
 
-        stories = [Story.from_dict(s_dict) for s_dict in data['unique_stories']]
+        stories = [Story.from_dict(s_dict, tolerance)
+                   for s_dict in data['unique_stories']]
 
         building = Building(data['name'], stories)
         if 'display_name' in data and data['display_name'] is not None:
@@ -303,7 +309,7 @@ class Building(_BaseGeometry):
             rooms.extend(story.room_2ds)
         return rooms
 
-    def shade_representation(self, tolerance):
+    def shade_representation(self, tolerance=0.01):
         """A list of honeybee Shade objects representing the building geometry.
 
         These can be used to account for this Building's shade in the simulation of
@@ -311,7 +317,8 @@ class Building(_BaseGeometry):
 
         Args:
             tolerance: The minimum distance between points at which they are
-                not considered touching.
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
         """
         context_shades = []
         for story in self.unique_stories:
@@ -427,7 +434,7 @@ class Building(_BaseGeometry):
         for story in self._unique_stories:
             story.scale(factor, origin)
 
-    def to_honeybee(self, use_multiplier=True, tolerance=None):
+    def to_honeybee(self, use_multiplier=True, tolerance=0.01):
         """Convert Dragonfly Building to a Honeybee Model.
 
         Args:
@@ -439,7 +446,7 @@ class Building(_BaseGeometry):
                 multipliers and all resulting multipliers will be 1. Default: True
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur. Default: None.
+                Default: 0.01, suitable for objects in meters.
         """
         if use_multiplier:
             hb_rooms = [room.to_honeybee(story.multiplier, tolerance)
@@ -469,7 +476,7 @@ class Building(_BaseGeometry):
         return base
     
     @staticmethod
-    def buildings_to_honeybee(buildings, use_multiplier, tolerance):
+    def buildings_to_honeybee(buildings, use_multiplier, tolerance=0.01):
         """Convert an array of Building objects into a single honeybee Model.
         
         Args:
@@ -483,7 +490,7 @@ class Building(_BaseGeometry):
                 multipliers and all resulting multipliers will be 1.
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur.
+                Default: 0.01, suitable for objects in meters.
         """
         # create a base model to which everything will be added
         base_model = buildings[0].to_honeybee(use_multiplier, tolerance)
@@ -495,7 +502,7 @@ class Building(_BaseGeometry):
     @staticmethod
     def buildings_to_honeybee_self_shade(
             buildings, context_shades=None, shade_distance=None, use_multiplier=True,
-            tolerance=None):
+            tolerance=0.01):
         """Convert an array of Buildings into several honeybee Models with self-shading.
 
         Each input Building will be exported into its own Model. For each Model,
@@ -524,7 +531,7 @@ class Building(_BaseGeometry):
                 multipliers and all resulting multipliers will be 1. Default: True
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur. Default: None.
+                Default: 0.01, suitable for objects in meters.
         """
         models = []  # list to be filled with Honeybee Models
 
