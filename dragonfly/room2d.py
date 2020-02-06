@@ -60,7 +60,7 @@ class Room2D(_BaseGeometry):
     def __init__(self, name, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
                  shading_parameters=None, is_ground_contact=False, is_top_exposed=False,
-                 tolerance=None):
+                 tolerance=0):
         """A volume defined by an extruded floor plate, representing a single room.
 
         Args:
@@ -89,7 +89,7 @@ class Room2D(_BaseGeometry):
             tolerance: The maximum difference between z values at which point vertices
                 are considered to be in the same horizontal plane. This is used to check
                 that all vertices of the input floor_geometry lie in the same horizontal
-                floor plane. Default is None, which will not perform any check.
+                floor plane. Default is 0, which will not perform any check.
         """
         _BaseGeometry.__init__(self, name)  # process the name
 
@@ -105,7 +105,7 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(self._floor_geometry.boundary,
                                       o_pl, self._floor_geometry.holes)
         # check that the floor_geometry lies in the same horizontal plane.
-        if tolerance is not None:
+        if tolerance != 0:
             z_vals = tuple(pt.z for pt in self._floor_geometry.vertices)
             assert max(z_vals) - min(z_vals) <= tolerance, 'Not all of Room2D ' \
                 '"{}" vertices lie within the same horizontal plane.'.format(name)
@@ -148,11 +148,15 @@ class Room2D(_BaseGeometry):
         self._properties = Room2DProperties(self)  # properties for extensions
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, tolerance=0):
         """Initialize an Room2D from a dictionary.
 
         Args:
             data: A dictionary representation of a Room2D object.
+            tolerance: The maximum difference between z values at which point vertices
+                are considered to be in the same horizontal plane. This is used to check
+                that all vertices of the input floor_geometry lie in the same horizontal
+                floor plane. Default is 0, which will not perform any check.
         """
         # check the type of dictionary
         assert data['type'] == 'Room2D', 'Expected Room2D dictionary. ' \
@@ -221,7 +225,7 @@ class Room2D(_BaseGeometry):
         top = data['is_top_exposed'] if 'is_top_exposed' in data else False
 
         room = Room2D(data['name'], floor_geometry, data['floor_to_ceiling_height'],
-                      b_conditions, glz_pars, shd_pars, grnd, top)
+                      b_conditions, glz_pars, shd_pars, grnd, top, tolerance)
         if 'display_name' in data and data['display_name'] is not None:
             room._display_name = data['display_name']
 
@@ -686,11 +690,12 @@ class Room2D(_BaseGeometry):
             if shd_par is not None:
                 self._shading_parameters[i] = shd_par.scale(factor)
 
-    def check_horizontal(self, tolerance, raise_exception=True):
+    def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horiztonal within a tolerance.
 
         tolerance: tolerance: The maximum difference between z values at which
-            face vertices are considered at different heights.
+            face vertices are considered at different heights. Default: 0.01,
+            suitable for objects in meters.
         raise_exception: Boolean to note whether a ValueError should be raised
             if the room floor geometry is not horizontal.
         """
@@ -703,7 +708,7 @@ class Room2D(_BaseGeometry):
                     self.display_name, tolerance))
         return False
 
-    def to_honeybee(self, multiplier=1, tolerance=None):
+    def to_honeybee(self, multiplier=1, tolerance=0.01):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -714,7 +719,8 @@ class Room2D(_BaseGeometry):
                 once and have the results multiplied. Default: 1.
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur. Default: None.
+                This is also used in the generation of Windows. Default: 0.01,
+                suitable for objects in meters.
         """
         # create the honeybee Room
         room_polyface = Polyface3D.from_offset_face(
@@ -724,16 +730,15 @@ class Room2D(_BaseGeometry):
         # assign boundary conditions, window and shading to walls
         for i, bc in enumerate(self._boundary_conditions):
             hb_room[i + 1]._boundary_condition = bc
-        tol = 0 if tolerance is None else tolerance
         for i, glz_par in enumerate(self._window_parameters):
             if glz_par is not None:
-                glz_par.add_window_to_face(hb_room[i + 1], tol)
+                glz_par.add_window_to_face(hb_room[i + 1], tolerance)
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
-                shd_par.add_shading_to_face(hb_room[i + 1], tol)
+                shd_par.add_shading_to_face(hb_room[i + 1], tolerance)
 
         # ensure matching adjacent Faces across the Story if tolerance is input
-        if tolerance is not None and self._parent is not None:
+        if self._parent is not None:
             new_faces = self._split_walls_along_height(hb_room, tolerance)
             if len(new_faces) != len(hb_room):  # rebuild the room with split surfaces
                 hb_room = Room(self.name, new_faces, tolerance, 0.1)
@@ -805,13 +810,14 @@ class Room2D(_BaseGeometry):
         return base
 
     @staticmethod
-    def solve_adjacency(room_2ds, tolerance):
+    def solve_adjacency(room_2ds, tolerance=0.01):
         """Solve for all adjacencies between a list of input Room2Ds.
 
         Args:
             room_2ds: A list of Room2Ds for which adjacencies will be solved.
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent.
+                faces at which they can be considered centered adjacent. Default: 0.01,
+                suitable for objects in meters.
         """
         for i, room_1 in enumerate(room_2ds):
             try:
@@ -832,7 +838,7 @@ class Room2D(_BaseGeometry):
                 pass  # we have reached the end of the list of zones
 
     @staticmethod
-    def intersect_adjacency(room_2ds, tolerance):
+    def intersect_adjacency(room_2ds, tolerance=0.01):
         """Intersect the line segments of an array of Room2Ds to ensure matching walls.
 
         Note that this method effectively erases all assigned boundary conditions,
@@ -848,7 +854,8 @@ class Room2D(_BaseGeometry):
             room_2ds: A list of Room2Ds for which adjacencent segments will be
                 intersected.
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent.
+                faces at which they can be considered centered adjacent. Default: 0.01,
+                suitable for objects in meters.
 
         Returns:
             An array of Room2Ds that have been intersected with one another. Note

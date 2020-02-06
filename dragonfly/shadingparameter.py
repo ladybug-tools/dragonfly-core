@@ -16,7 +16,7 @@ class _ShadingParameterBase(object):
     def __init__(self):
         pass
 
-    def add_shading_to_face(self, face):
+    def add_shading_to_face(self, face, tolerance=0.01):
         """Add Shades to a Honeybee Face using these Window Parameters."""
         pass
 
@@ -83,13 +83,13 @@ class ExtrudedBorder(_ShadingParameterBase):
         """Get a number for the depth of the border."""
         return self._depth
 
-    def add_shading_to_face(self, face, tolerance):
+    def add_shading_to_face(self, face, tolerance=0.01):
         """Add Shades to a Honeybee Face using these Shading Parameters.
 
         Args:
             face: A honeybee-core Face object.
             tolerance: An optional value to return None if the overhang has a length less
-                than the tolerance. Default is 0, which will always yeild an overhang.
+                than the tolerance. Default: 0.01, suitable for objects in meters.
         """
         for ap in face.apertures:
             ap.extruded_border(self.depth)
@@ -175,13 +175,13 @@ class Overhang(_ShadingParameterBase):
         """Get a number for the overhang angle."""
         return self._angle
 
-    def add_shading_to_face(self, face, tolerance):
+    def add_shading_to_face(self, face, tolerance=0.01):
         """Add Shades to a Honeybee Face using these Shading Parameters.
 
         Args:
             face: A honeybee-core Face object.
             tolerance: An optional value to return None if the overhang has a length less
-                than the tolerance. Default is 0, which will always yeild an overhang.
+                than the tolerance. Default: 0.01, suitable for objects in meters.
         """
         face.overhang(self.depth, self.angle, False, tolerance)
 
@@ -376,14 +376,13 @@ class LouversByDistance(_LouversBase):
         """Get a number for the approximate distance between each louver."""
         return self._distance
 
-    def add_shading_to_face(self, face, tolerance):
+    def add_shading_to_face(self, face, tolerance=0.01):
         """Add Shades to a Honeybee Face using these Shading Parameters.
 
         Args:
             face: A honeybee-core Face object.
             tolerance: An optional value to remove any louvers with a length less
-                than the tolerance. Default is 0, which will include all louvers
-                no matter how small.
+                than the tolerance. Default: 0.01, suitable for objects in meters.
         """
         face.louvers_by_distance_between(
             self.distance, self.depth, self.offset, self.angle, self.contour_vector,
@@ -499,14 +498,13 @@ class LouversByCount(_LouversBase):
         """Get a integer for the number of louvers to generate."""
         return self._louver_count
 
-    def add_shading_to_face(self, face, tolerance):
+    def add_shading_to_face(self, face, tolerance=0.01):
         """Add Shades to a Honeybee Face using these Shading Parameters.
 
         Args:
             face: A honeybee-core Face object.
             tolerance: An optional value to remove any louvers with a length less
-                than the tolerance. Default is 0, which will include all louvers
-                no matter how small.
+                than the tolerance. Default: 0.01, suitable for objects in meters.
         """
         face.louvers_by_count(
             self.louver_count, self.depth, self.offset, self.angle, self.contour_vector,

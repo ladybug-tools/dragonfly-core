@@ -45,6 +45,9 @@ def test_model_init():
     assert model.display_name == 'New Development'
     assert model.north_angle == 0
     assert model.north_vector == Vector2D(0, 1)
+    assert model.units == 'Meters'
+    assert model.tolerance == 0
+    assert model.angle_tolerance == 0
     assert len(model.buildings) == 1
     assert isinstance(model.buildings[0], Building)
     assert len(model.context_shades) == 1
@@ -52,6 +55,36 @@ def test_model_init():
     assert model.min.x == pytest.approx(-6.73, rel=1e-2)
     assert model.min.y == pytest.approx(-16, rel=1e-2)
     assert model.max == Point2D(20, 20)
+
+
+def test_model_properties_setability():
+    """Test the setting of properties on the Model."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
+    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office Building', [story])
+
+    model = Model('New Development', [building])
+
+    model.name = 'TestBuilding'
+    assert model.name == 'TestBuilding'
+    model.north_angle = 20
+    assert model.north_angle == 20
+    model.units = 'Feet'
+    assert model.units == 'Feet'
+    model.tolerance = 0.01
+    assert model.tolerance == 0.01
+    model.angle_tolerance = 0.01
+    assert model.angle_tolerance == 0.01
 
 
 def test_model_add_objects():
@@ -211,6 +244,26 @@ def test_scale():
 
     assert new_m.context_shades[0][0][0] == Point3D(10, -20, 12)
     assert new_m.context_shades[1][0][0] == Point3D(-10, -20, 6)
+
+
+def test_convert_to_units():
+    """Test the Model convert_to_units method."""
+    pts_1 = (Point3D(0, 0), Point3D(120, 0), Point3D(120, 120), Point3D(0, 120))
+    pts_2 = (Point3D(120, 0), Point3D(240, 0), Point3D(240, 120), Point3D(120, 120))
+    room2d_1 = Room2D('Office 1', Face3D(pts_1), 96)
+    room2d_2 = Room2D('Office 2', Face3D(pts_2), 96)
+    story = Story('Office Floor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story.multiplier = 4
+    building = Building('Office Building', [story])
+    model = Model('New Development', [building], units='Inches')
+
+    inches_conversion = hb_model.Model.conversion_factor_to_meters('Inches')
+    model.convert_to_units('Meters')
+
+    assert room2d_1.floor_area == pytest.approx(120 * 120 * (inches_conversion ** 2), rel=1e-3)
+    assert room2d_1.volume == pytest.approx(120 * 120 * 96 * (inches_conversion ** 3), rel=1e-3)
+    assert model.units == 'Meters'
 
 
 def test_rotate_xy():
