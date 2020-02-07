@@ -22,9 +22,9 @@ class _ShadingParameterBase(object):
 
     def scale(self, factor):
         """Get a scaled version of these ShadingParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -65,17 +65,16 @@ class _ShadingParameterBase(object):
 class ExtrudedBorder(_ShadingParameterBase):
     """Instructions for extruded borders over all windows in the wall.
 
+    Args:
+        depth: A number for the depth of the border.
+
     Properties:
         * depth
     """
     __slots__ = ('_depth',)
 
     def __init__(self, depth):
-        """Instructions for extruded borders over all windows in the wall.
-
-        Args:
-            depth: A number for the depth of the border.
-        """
+        """Instructions for extruded borders over all windows in the wall."""
         self._depth = float_positive(depth, 'overhang width')
 
     @property
@@ -96,9 +95,9 @@ class ExtrudedBorder(_ShadingParameterBase):
 
     def scale(self, factor):
         """Get a scaled version of these ShadingParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -147,6 +146,12 @@ class ExtrudedBorder(_ShadingParameterBase):
 class Overhang(_ShadingParameterBase):
     """Instructions for a single overhang over an entire wall.
 
+    Args:
+        depth: A number for the overhang depth.
+        angle: A number for the for an angle to rotate the overhang in degrees.
+            Positive values indicate a downward rotation. Negative values indicate
+            an upward rotation. Default is 0 for no rotation.
+
     Properties:
         * depth
         * angle
@@ -154,14 +159,7 @@ class Overhang(_ShadingParameterBase):
     __slots__ = ('_depth', '_angle')
 
     def __init__(self, depth, angle=0):
-        """Instructions for a single overhang over an entire wall.
-
-        Args:
-            depth: A number for the overhang depth.
-            angle: A number for the for an angle to rotate the overhang in degrees.
-                Positive values indicate a downward rotation. Negative values indicate
-                an upward rotation. Default is 0 for no rotation.
-        """
+        """Instructions for a single overhang over an entire wall."""
         self._depth = float_positive(depth, 'overhang width')
         self._angle = float_in_range(angle, -90, 90, 'overhang angle')
 
@@ -189,7 +187,7 @@ class Overhang(_ShadingParameterBase):
         """Get a scaled version of these ShadingParameters.
 
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -241,6 +239,21 @@ class Overhang(_ShadingParameterBase):
 class _LouversBase(_ShadingParameterBase):
     """Instructions for a series of louvered Shades over a Face.
 
+    Args:
+        depth: A number for the depth to extrude the louvers.
+        offset: A number for the distance to louvers from this Face.
+            Default is 0 for no offset.
+        angle: A number for the for an angle to rotate the louvers in degrees.
+            Default is 0 for no rotation.
+        contour_vector: A Vector2D for the direction along which contours
+            are generated. This 2D vector will be interpreted into a 3D vector
+            within the plane of this Face. (0, 1) will usually generate
+            horizontal contours in 3D space, (1, 0) will generate vertical
+            contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
+        flip_start_side: Boolean to note whether the side the louvers start from
+            should be flipped. Default is False to have contours on top or right.
+            Setting to True will start contours on the bottom or left.
+
     Properties:
         * depth
         * offset
@@ -252,23 +265,7 @@ class _LouversBase(_ShadingParameterBase):
 
     def __init__(self, depth, offset=0, angle=0, contour_vector=Vector2D(0, 1),
                  flip_start_side=False):
-        """Initialize LouversBase.
-
-        Args:
-            depth: A number for the depth to extrude the louvers.
-            offset: A number for the distance to louvers from this Face.
-                Default is 0 for no offset.
-            angle: A number for the for an angle to rotate the louvers in degrees.
-                Default is 0 for no rotation.
-            contour_vector: A Vector2D for the direction along which contours
-                are generated. This 2D vector will be interpreted into a 3D vector
-                within the plane of this Face. (0, 1) will usually generate
-                horizontal contours in 3D space, (1, 0) will generate vertical
-                contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
-            flip_start_side: Boolean to note whether the side the louvers start from
-                should be flipped. Default is False to have contours on top or right.
-                Setting to True will start contours on the bottom or left.
-        """
+        """Initialize LouversBase."""
         self._depth = float_positive(depth, 'louver depth')
         self._offset = float_positive(offset, 'louver offset')
         self._angle = float_in_range(angle, -90, 90, 'overhang angle')
@@ -337,6 +334,22 @@ class _LouversBase(_ShadingParameterBase):
 class LouversByDistance(_LouversBase):
     """Instructions for a series of louvered Shades at a given distance between.
 
+    Args:
+        distance: A number for the approximate distance between each louver.
+        depth: A number for the depth to extrude the louvers.
+        offset: A number for the distance to louvers from the wall.
+            Default is 0 for no offset.
+        angle: A number for the for an angle to rotate the louvers in degrees.
+            Default is 0 for no rotation.
+        contour_vector: A Vector2D for the direction along which contours
+            are generated. This 2D vector will be interpreted into a 3D vector
+            within the plane of the wall. (0, 1) will usually generate
+            horizontal contours in 3D space, (1, 0) will generate vertical
+            contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
+        flip_start_side: Boolean to note whether the side the louvers start from
+            should be flipped. Default is False to have contours on top or right.
+            Setting to True will start contours on the bottom or left.
+
     Properties:
         * distance
         * depth
@@ -349,24 +362,7 @@ class LouversByDistance(_LouversBase):
 
     def __init__(self, distance, depth, offset=0, angle=0,
                  contour_vector=Vector2D(0, 1), flip_start_side=False):
-        """Initialize LouversByDistance.
-
-        Args:
-            distance: A number for the approximate distance between each louver.
-            depth: A number for the depth to extrude the louvers.
-            offset: A number for the distance to louvers from the wall.
-                Default is 0 for no offset.
-            angle: A number for the for an angle to rotate the louvers in degrees.
-                Default is 0 for no rotation.
-            contour_vector: A Vector2D for the direction along which contours
-                are generated. This 2D vector will be interpreted into a 3D vector
-                within the plane of the wall. (0, 1) will usually generate
-                horizontal contours in 3D space, (1, 0) will generate vertical
-                contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
-            flip_start_side: Boolean to note whether the side the louvers start from
-                should be flipped. Default is False to have contours on top or right.
-                Setting to True will start contours on the bottom or left.
-        """
+        """Initialize LouversByDistance."""
         self._distance = float_positive(distance, 'louver separation distance')
         _LouversBase.__init__(self, depth, offset, angle,
                               contour_vector, flip_start_side)
@@ -392,7 +388,7 @@ class LouversByDistance(_LouversBase):
         """Get a scaled version of these ShadingParameters.
 
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -459,6 +455,22 @@ class LouversByDistance(_LouversBase):
 class LouversByCount(_LouversBase):
     """Instructions for a specific number of louvered Shades over a wall.
 
+    Args:
+        louver_count: A positive integer for the number of louvers to generate.
+        depth: A number for the depth to extrude the louvers.
+        offset: A number for the distance to louvers from  the wall.
+            Default is 0 for no offset.
+        angle: A number for the for an angle to rotate the louvers in degrees.
+            Default is 0 for no rotation.
+        contour_vector: A Vector2D for the direction along which contours
+            are generated. This 2D vector will be interpreted into a 3D vector
+            within the plane of the wall. (0, 1) will usually generate
+            horizontal contours in 3D space, (1, 0) will generate vertical
+            contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
+        flip_start_side: Boolean to note whether the side the louvers start from
+            should be flipped. Default is False to have contours on top or right.
+            Setting to True will start contours on the bottom or left.
+
     Properties:
         * louver_count
         * depth
@@ -471,24 +483,7 @@ class LouversByCount(_LouversBase):
 
     def __init__(self, louver_count, depth, offset=0, angle=0,
                  contour_vector=Vector2D(0, 1), flip_start_side=False):
-        """Initialize LouversByCount.
-
-        Args:
-            louver_count: A positive integer for the number of louvers to generate.
-            depth: A number for the depth to extrude the louvers.
-            offset: A number for the distance to louvers from  the wall.
-                Default is 0 for no offset.
-            angle: A number for the for an angle to rotate the louvers in degrees.
-                Default is 0 for no rotation.
-            contour_vector: A Vector2D for the direction along which contours
-                are generated. This 2D vector will be interpreted into a 3D vector
-                within the plane of the wall. (0, 1) will usually generate
-                horizontal contours in 3D space, (1, 0) will generate vertical
-                contours, and (1, 1) will generate diagonal contours. Default: (0, 1).
-            flip_start_side: Boolean to note whether the side the louvers start from
-                should be flipped. Default is False to have contours on top or right.
-                Setting to True will start contours on the bottom or left.
-        """
+        """Initialize LouversByCount."""
         self._louver_count = int_positive(louver_count, 'louver count')
         _LouversBase.__init__(self, depth, offset, angle,
                               contour_vector, flip_start_side)
@@ -514,7 +509,7 @@ class LouversByCount(_LouversBase):
         """Get a scaled version of these ShadingParameters.
 
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """

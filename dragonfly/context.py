@@ -13,6 +13,11 @@ import math
 class ContextShade(_BaseGeometry):
     """A Context Shade object defined by an array of Face3Ds (eg. canopy, trees, etc.).
 
+    Args:
+        name: ContextShade name. Must be < 100 characters.
+        geometry: An array of ladybug_geometry Face3D objects that together
+            represent the context shade.
+
     Properties:
         * name
         * display_name
@@ -24,13 +29,7 @@ class ContextShade(_BaseGeometry):
     __slots__ = ('_geometry',)
 
     def __init__(self, name, geometry):
-        """A Context Shade object defined by an array of Face3Ds.
-
-        Args:
-            name: ContextShade name. Must be < 100 characters.
-            geometry: An array of ladybug_geometry Face3D objects that together
-                represent the context shade.
-        """
+        """A Context Shade object defined by an array of Face3Ds."""
         _BaseGeometry.__init__(self, name)  # process the name
 
         # process the geometry
@@ -63,30 +62,30 @@ class ContextShade(_BaseGeometry):
         if data['properties']['type'] == 'ContextShadeProperties':
             shade.properties._load_extension_attr_from_dict(data['properties'])
         return shade
-    
+
     @property
     def geometry(self):
         """Get a tuple of Face3D objects that together represent the context shade."""
         return self._geometry
-    
+
     @property
     def area(self):
         """Get a number for the total surface area of the ContextShade."""
         return sum([geo.area for geo in self._geometry])
-    
+
     @property
     def min(self):
         """Get a Point2D for the min bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this ContextShade is in
         proximity to other objects.
         """
         return self._calculate_min(self._geometry)
-    
+
     @property
     def max(self):
         """Get a Point2D for the max bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this ContextShade is in
         proximity to other objects.
         """
@@ -94,7 +93,7 @@ class ContextShade(_BaseGeometry):
 
     def add_prefix(self, prefix):
         """Change the name of this object by inserting a prefix.
-        
+
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeated shades) since all objects
@@ -107,7 +106,7 @@ class ContextShade(_BaseGeometry):
         """
         self.name = '{}_{}'.format(prefix, self.display_name)
         self.properties.add_prefix(prefix)
-    
+
     def move(self, moving_vec):
         """Move this ContextShade along a vector.
 

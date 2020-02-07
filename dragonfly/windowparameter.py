@@ -36,9 +36,9 @@ class _WindowParameterBase(object):
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -85,15 +85,15 @@ class SingleWindow(_WindowParameterBase):
     setting the width to be `float('inf')` will create parameters that always
     generate a ribboin window of the input height.
 
-    Properties:
-        * width
-        * height
-        * sill_height
-
     Args:
         width: A number for the window width.
         height: A number for the window height.
         sill_height: A number for the window sill height. Default: 1.
+
+    Properties:
+        * width
+        * height
+        * sill_height
     """
     __slots__ = ('_width', '_height', '_sill_height')
 
@@ -160,9 +160,9 @@ class SingleWindow(_WindowParameterBase):
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -309,13 +309,6 @@ class SimpleWindowRatio(_WindowParameterBase):
 class RepeatingWindowRatio(SimpleWindowRatio):
     """Instructions for repeating windows derived from an area ratio with the base surface.
 
-    Properties:
-        * window_ratio
-        * window_height
-        * sill_height
-        * horizontal_separation
-        * vertical_separation
-
     Args:
         window_ratio: A number between 0 and 1 for the ratio between the window
             area and the total facade area.
@@ -332,6 +325,13 @@ class RepeatingWindowRatio(SimpleWindowRatio):
             the parent rectangle base, only one window will be produced.
         vertical_separation: An optional number to create a single vertical
             separation between top and bottom windows. Default: 0.
+
+    Properties:
+        * window_ratio
+        * window_height
+        * sill_height
+        * horizontal_separation
+        * vertical_separation
     """
     __slots__ = ('_window_height', '_sill_height',
                  '_horizontal_separation', '_vertical_separation')
@@ -390,9 +390,9 @@ class RepeatingWindowRatio(SimpleWindowRatio):
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -464,12 +464,6 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
     This class effectively fills a wall with windows at the specified width, height
     and separation.
 
-    Properties:
-        * window_height
-        * window_width
-        * sill_height
-        * horizontal_separation
-
     Args:
         window_height: A number for the target height of the windows.
             Note that, if the window_height is larger than the height of the wall,
@@ -486,6 +480,12 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
         horizontal_separation: A number for the target separation between
             individual window centerlines.  If this number is larger than
             the parent rectangle base, only one window will be produced.
+
+    Properties:
+        * window_height
+        * window_width
+        * sill_height
+        * horizontal_separation
     """
     __slots__ = ('_window_height', '_window_width', '_sill_height',
                  '_horizontal_separation')
@@ -541,9 +541,9 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -634,11 +634,6 @@ class RectangularWindows(_AsymmetricBase):
     certain pattern of repating rectangular windows can be encoded in a single
     RectangularWindows instance and applied to multiple Room2D segments.
 
-    Properties:
-        * origins
-        * widths
-        * heights
-
     Args:
         origins: An array of ladybug_geometry Point2D objects within the plane
             of the wall for the origin of each window. The wall plane is assumed
@@ -650,6 +645,11 @@ class RectangularWindows(_AsymmetricBase):
             of this list must match the length of the origins.
         heights: An array of postive numbers for the window heights. The length
             of this list must match the length of the origins.
+
+    Properties:
+        * origins
+        * widths
+        * heights
     """
     __slots__ = ('_origins', '_widths', '_heights')
 
@@ -661,7 +661,7 @@ class RectangularWindows(_AsymmetricBase):
             assert isinstance(point, Point2D), \
                 'Expected Point2D for window origin. Got {}'.format(type(point))
         self._origins = origins
-        
+
         self._widths = tuple(float_positive(width, 'window width') for width in widths)
         self._heights = tuple(float_positive(hgt, 'window height') for hgt in heights)
 
@@ -737,9 +737,9 @@ class RectangularWindows(_AsymmetricBase):
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """
@@ -830,9 +830,6 @@ class DetailedWindows(_AsymmetricBase):
     performs no automatic checks to ensure that the windows lie within the
     boundary of the wall they have been assigned to.
 
-    Properties:
-        * polygons
-
     Args:
         polygons: An array of ladybug_geometry Polygon2D objects within the plane
             of the wall with one polygon for each window. The wall plane is
@@ -840,7 +837,10 @@ class DetailedWindows(_AsymmetricBase):
             and an X-axis extending along the length of the segment. The wall
             plane's Y-axis always points upwards.  Therefore, both X and Y
             values of each point in the polygon should always be positive.
-    
+
+    Properties:
+        * polygons
+
     Usage:
         Note that, if you are starting from 3D vertices of windows, you can
         use this class to represent them. Below is some sample code to convert from
@@ -921,9 +921,9 @@ class DetailedWindows(_AsymmetricBase):
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
-        
+
         This method is called within the scale methods of the Room2D.
-        
+
         Args:
             factor: A number representing how much the object should be scaled.
         """

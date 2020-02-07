@@ -8,18 +8,17 @@ from ladybug_geometry.geometry2d.pointvector import Point2D
 class _BaseGeometry(object):
     """A base class for all geometry objects.
 
+    Args:
+        name: Object name. Must be < 100 characters.
+
     Properties:
-        name
-        display_name
+        * name
+        * display_name
     """
     __slots__ = ('_name', '_display_name', '_properties')
 
     def __init__(self, name):
-        """Initialize base object.
-
-        Args:
-            name: Object name. Must be < 100 characters.
-        """
+        """Initialize base object."""
         self.name = name
         self._properties = None
 
@@ -52,11 +51,11 @@ class _BaseGeometry(object):
     def duplicate(self):
         """Get a copy of this object."""
         return self.__copy__()
-    
+
     @staticmethod
     def _calculate_min(geometry_objects):
         """Calculate min Point2D around an array of geometry with min attributes.
-        
+
         This is used in all functions that calculate bounding rectangles around
         dragonfly objects and assess when two objects are in close proximity.
         """
@@ -73,7 +72,7 @@ class _BaseGeometry(object):
     @staticmethod
     def _calculate_max(geometry_objects):
         """Calculate max Point2D around an array of geometry with max attributes.
-        
+
         This is used in all functions that calculate bounding rectangles around
         dragonfly objects and assess when two objects are in close proximity.
         """

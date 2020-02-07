@@ -22,6 +22,16 @@ except ImportError:
 class Building(_BaseGeometry):
     """A complete Building defined by Stories.
 
+    Args:
+        name: Building name. Must be < 100 characters.
+        unique_stories: An array of unique Dragonfly Story objects that
+            together form the entire building. Stories should be ordered
+            from lowest floor to highest floor and they will be automatically
+            sorted besed on floor height when they are added to a Building.
+            Note that, if a given Story is repeated several times over the
+            height of the Building, the unique Story included in this list
+            should be the first (lowest) Story of the repeated floors.
+
     Properties:
         * name
         * display_name
@@ -39,18 +49,7 @@ class Building(_BaseGeometry):
     __slots__ = ('_unique_stories',)
 
     def __init__(self, name, unique_stories):
-        """A complete Building defined by Stories.
-
-        Args:
-            name: Building name. Must be < 100 characters.
-            unique_stories: An array of unique Dragonfly Story objects that
-                together form the entire building. Stories should be ordered
-                from lowest floor to highest floor and they will be automatically
-                sorted besed on floor height when they are added to a Building.
-                Note that, if a given Story is repeated several times over the
-                height of the Building, the unique Story included in this list
-                should be the first (lowest) Story of the repeated floors.
-        """
+        """A complete Building defined by Stories."""
         _BaseGeometry.__init__(self, name)  # process the name
 
         # process the story geometry
@@ -260,20 +259,20 @@ class Building(_BaseGeometry):
         """
         return sum([story.exterior_aperture_area * story.multiplier
                     for story in self._unique_stories])
-    
+
     @property
     def min(self):
         """Get a Point2D for the min bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Building is in proximity
         to other objects.
         """
         return self._calculate_min(self._unique_stories)
-    
+
     @property
     def max(self):
         """Get a Point2D for the max bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Building is in proximity
         to other objects.
         """
@@ -332,7 +331,7 @@ class Building(_BaseGeometry):
 
     def add_prefix(self, prefix):
         """Change the name of this object and all child objects by inserting a prefix.
-        
+
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeating buildings) since all objects
@@ -370,7 +369,7 @@ class Building(_BaseGeometry):
             new_ground_floor = (self._separated_ground_floor(story),)
             story.multiplier = story.multiplier - 1
             story.move(Vector3D(0, 0, story.floor_to_floor_height))  # 2nd floor
-        
+
         # ensure that the top floor is unique
         if self._unique_stories[-1].multiplier != 1:
             new_top_floor = (self._separated_top_floor(story),)
@@ -474,11 +473,11 @@ class Building(_BaseGeometry):
                                   for s in self._unique_stories]
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         return base
-    
+
     @staticmethod
     def buildings_to_honeybee(buildings, use_multiplier, tolerance=0.01):
         """Convert an array of Building objects into a single honeybee Model.
-        
+
         Args:
             buildings: An array of Building objects to be converted into a
                 honeybee Model.
@@ -498,7 +497,7 @@ class Building(_BaseGeometry):
         for bldg in buildings[1:]:
             base_model.add_model(bldg.to_honeybee(use_multiplier, tolerance))
         return base_model
-    
+
     @staticmethod
     def buildings_to_honeybee_self_shade(
             buildings, context_shades=None, shade_distance=None, use_multiplier=True,
@@ -509,7 +508,7 @@ class Building(_BaseGeometry):
         the other input Buildings will appear as context shade geometry. Thus,
         each Model is its own simulate-able unit accounting for the total
         self-shading of the input Buildings.
-        
+
         Args:
             buildings: An array of Building objects to be converted into honeybee
                 Models that account for their own shading of one another.
@@ -552,12 +551,12 @@ class Building(_BaseGeometry):
                     c_min, c_max = con.min, con.max
                     center = Point2D((c_min.x + c_max.x) / 2, (c_min.y + c_max.y) / 2)
                     con_pts.append((c_min, center, c_max))
-        
+
         # loop through each Building and create a model
         num_bldg = len(buildings)
         for i, bldg in enumerate(buildings):
             model = bldg.to_honeybee(use_multiplier, tolerance)
-            
+
             if shade_distance is None:  # add all other bldg shades to the model
                 for j in xrange(i + 1, num_bldg):  # buildings before this one
                     for shd in bldg_shades[j]:
@@ -628,7 +627,7 @@ class Building(_BaseGeometry):
             return False
 
         return True
-    
+
     @staticmethod
     def _bound_rect_in_dist(bound_pts1, bound_pts2, distance):
         """Check if the bounding rectangles of two footprints overlap within a distance.

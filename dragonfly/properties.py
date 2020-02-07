@@ -9,16 +9,20 @@ import honeybee.properties as hb_properties
 
 
 class _Properties(object):
-    """Base class for all Properties classes."""
+    """Base class for all Properties classes.
+
+    Args:
+        host: A dragonfly-core geometry object that hosts these properties
+            (ie. Building, Story, Room2D).
+
+    Properties:
+        * host
+
+    """
     _do_not_duplicate = ('host', 'to_dict', 'to_honeybee', 'ToString')
 
     def __init__(self, host):
-        """Initialize properties.
-
-        Args:
-            host: A dragonfly-core geometry object that hosts these properties
-                (ie. Building, Story, Room2D).
-        """
+        """Initialize properties."""
         self._host = host
 
     @property
@@ -55,11 +59,11 @@ class _Properties(object):
 
     def _add_prefix_extension_attr(self, prefix):
         """Change the name extension attributes unique to this object by adding a prefix.
-        
+
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeated buildings).
-        
+
         Notably, this method only adds the prefix to extension attributes that must
         be unique to the object and does not add the prefix to attributes that are
         shared across several objects.
@@ -190,6 +194,9 @@ class ModelProperties(_Properties):
     """Dragonfly Model Properties. This class will be extended by extensions.
 
     Usage:
+
+    .. code-block:: python
+
         model = Model('South Boston District', list_of_buildings)
         model.properties -> ModelProperties
         model.properties.radiance -> ModelRadianceProperties
@@ -265,6 +272,9 @@ class ContextShadeProperties(_Properties):
     """Dragonfly ContextShade properties. This class will be extended by extensions.
 
     Usage:
+
+    .. code-block:: python
+
         canopy = ContextShade('Outdoor Canopy', canopy_geo)
         canopy.properties -> ContextShadeProperties
         canopy.properties.radiance -> ContextShadeRadianceProperties
@@ -298,7 +308,7 @@ class ContextShadeProperties(_Properties):
 
     def add_prefix(self, prefix):
         """Change the name extension attributes unique to this object by adding a prefix.
-        
+
         Notably, this method only adds the prefix to extension attributes that must
         be unique to the ContextShade and does not add the prefix to attributes that are
         shared across several ContextShades.
@@ -317,6 +327,9 @@ class BuildingProperties(_Properties):
     """Dragonfly Building properties. This class will be extended by extensions.
 
     Usage:
+
+    .. code-block:: python
+
         building = Building('Office Tower', unique_stories)
         building.properties -> BuildingProperties
         building.properties.radiance -> BuildingRadianceProperties
@@ -341,7 +354,7 @@ class BuildingProperties(_Properties):
 
     def add_prefix(self, prefix):
         """Change the name extension attributes unique to this object by adding a prefix.
-        
+
         Notably, this method only adds the prefix to extension attributes that must
         be unique to the Building and does not add the prefix to attributes that are
         shared across several Buildings.
@@ -360,6 +373,9 @@ class StoryProperties(_Properties):
     """Dragonfly Story properties. This class will be extended by extensions.
 
     Usage:
+
+    .. code-block:: python
+
         story = Story('Ground Floor Retail', room_2ds)
         story.properties -> StoryProperties
         story.properties.radiance -> StoryRadianceProperties
@@ -384,7 +400,7 @@ class StoryProperties(_Properties):
 
     def add_prefix(self, prefix):
         """Change the name extension attributes unique to this object by adding a prefix.
-        
+
         Notably, this method only adds the prefix to extension attributes that must
         be unique to the Story and does not add the prefix to attributes that are
         shared across several Stories.
@@ -403,6 +419,9 @@ class Room2DProperties(_Properties):
     """Dragonfly Room2D properties. This class will be extended by extensions.
 
     Usage:
+
+    .. code-block:: python
+
         room = Room2D('Office', geometry)
         room.properties -> Room2DProperties
         room.properties.radiance -> Room2DRadianceProperties
@@ -436,7 +455,7 @@ class Room2DProperties(_Properties):
 
     def add_prefix(self, prefix):
         """Change the name extension attributes unique to this object by adding a prefix.
-        
+
         Notably, this method only adds the prefix to extension attributes that must
         be unique to the Room2D (eg. single-room HVAC systems) and does not add
         the prefix to attributes that are shared across several Rooms2Ds (eg.
