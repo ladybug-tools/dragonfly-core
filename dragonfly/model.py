@@ -19,6 +19,30 @@ import math
 class Model(_BaseGeometry):
     """A collection of Buildings and ContextShades for an entire model.
 
+    Args:
+        name: Model name. Must be < 100 characters.
+        buildings: A list of Building objects in the model.
+        context_shades: A list of ContextShade objects in the model.
+        north_angle: An number between 0 and 360 to set the clockwise north
+            direction in degrees. Default is 0.
+        units: Text for the units system in which the model geometry
+            exists. Default: 'Meters'. Choose from the following:
+
+            * Meters
+            * Millimeters
+            * Feet
+            * Inches
+            * Centimeters
+
+        tolerance: The maximum difference between x, y, and z values at which
+            vertices are considered equivalent. Zero indicates that no tolerance
+            checks should be performed and certain capabilities like to_honeybee
+            will not be available. Default: 0.
+        angle_tolerance: The max angle difference in degrees that vertices are
+            allowed to differ from one another in order to consider them colinear.
+            Zero indicates that no angle tolerance checks should be performed.
+            Default: 0.
+
     Properties:
         * name
         * display_name
@@ -36,35 +60,12 @@ class Model(_BaseGeometry):
     """
     __slots__ = ('_buildings', '_context_shades', '_north_angle', '_north_vector',
                  '_units', '_tolerance', '_angle_tolerance')
-    
+
     UNITS = hb_model.UNITS
 
     def __init__(self, name, buildings=None, context_shades=None, north_angle=0,
                  units='Meters', tolerance=0, angle_tolerance=0):
-        """A collection of Buildings and ContextShades for an entire model.
-
-        Args:
-            name: Model name. Must be < 100 characters.
-            buildings: A list of Building objects in the model.
-            context_shades: A list of ContextShade objects in the model.
-            north_angle: An number between 0 and 360 to set the clockwise north
-                direction in degrees. Default is 0.
-            units: Text for the units system in which the model geometry
-                exists. Default: 'Meters'. Choose from the following:
-                    * Meters
-                    * Millimeters
-                    * Feet
-                    * Inches
-                    * Centimeters
-            tolerance: The maximum difference between x, y, and z values at which
-                vertices are considered equivalent. Zero indicates that no tolerance
-                checks should be performed and certain capabilities like to_honeybee
-                will not be available. Default: 0.
-            angle_tolerance: The max angle difference in degrees that vertices are
-                allowed to differ from one another in order to consider them colinear.
-                Zero indicates that no angle tolerance checks should be performed.
-                Default: 0.
-        """
+        """A collection of Buildings and ContextShades for an entire model."""
         self.name = name
         self.north_angle = north_angle
         self.units = units
@@ -119,7 +120,7 @@ class Model(_BaseGeometry):
         # assign extension properties to the model
         model.properties.apply_properties_from_dict(data)
         return model
-    
+
     @property
     def north_angle(self):
         """Get or set a number between 0 and 360 for the north direction in degrees."""
@@ -157,7 +158,7 @@ class Model(_BaseGeometry):
     @property
     def tolerance(self):
         """Get or set a number for the max meaningful difference between x, y, z values.
-        
+
         This value should be in the Model's units. Zero indicates cases where
         no tolerance checks should be performed.
         """
@@ -170,7 +171,7 @@ class Model(_BaseGeometry):
     @property
     def angle_tolerance(self):
         """Get or set a number for the max meaningful angle difference in degrees.
-        
+
         Face3D normal vectors differing by this amount are not considered parallel
         and Face3D segments that differ from 180 by this amount are not considered
         colinear. Zero indicates cases where no angle_tolerance checks should be
@@ -191,7 +192,7 @@ class Model(_BaseGeometry):
     def context_shades(self):
         """Get a tuple of all ContextShade objects in the model."""
         return tuple(self._context_shades)
-    
+
     @property
     def stories(self):
         """Get a tuple of all unique Story objects in the model."""
@@ -208,16 +209,16 @@ class Model(_BaseGeometry):
     @property
     def min(self):
         """Get a Point2D for the min bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Model is in proximity
         to other objects.
         """
         return self._calculate_min(self._buildings + self._context_shades)
-    
+
     @property
     def max(self):
         """Get a Point2D for the max bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Model is in proximity
         to other objects.
         """
@@ -327,11 +328,12 @@ class Model(_BaseGeometry):
         Args:
             units: Text for the units to which the Model geometry should be
                 converted. Default: Meters. Choose from the following:
-                    * Meters
-                    * Millimeters
-                    * Feet
-                    * Inches
-                    * Centimeters
+
+                * Meters
+                * Millimeters
+                * Feet
+                * Inches
+                * Centimeters
         """
         if self.units != units:
             scale_fac1 = hb_model.conversion_factor_to_meters(self.units)
@@ -385,7 +387,7 @@ class Model(_BaseGeometry):
                                  'the Model:\n{}'.format('\n'.join(bldg_names)))
             return False
         return True
-    
+
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
                     use_multiplier=True, tolerance=None):
         """Convert Dragonfly Mdel to an array of Honeybee Models.
@@ -394,14 +396,16 @@ class Model(_BaseGeometry):
             object_per_model: Text to describe how the input Buildings should be
                 divided across the output Models. Default: 'Building'. Choose from
                 the following options:
-                    * District - All buildings will be added to a single Honeybee Model.
-                        Such a Model can take a long time to simulate so this is only
-                        recommended for small numbers of buildings or cases where
-                        exchange of data between Buildings is necessary.
-                    * Building - Each input building will be exported into its own Model.
-                        For each Model, the other buildings input to this component will
-                        appear as context shade geometry. Thus, each Model is its own
-                        simulate-able unit.
+
+                * District - All buildings will be added to a single Honeybee Model.
+                  Such a Model can take a long time to simulate so this is only
+                  recommended for small numbers of buildings or cases where
+                  exchange of data between Buildings is necessary.
+                * Building - Each input building will be exported into its own Model.
+                  For each Model, the other buildings input to this component will
+                  appear as context shade geometry. Thus, each Model is its own
+                  simulate-able unit.
+
             shade_distance: An optional number to note the distance beyond which other
                 objects' shade should not be exported into a given Model. This is
                 helpful for reducing the simulation run time of each Model when other
@@ -444,12 +448,12 @@ class Model(_BaseGeometry):
         else:
             raise ValueError('Unrecognized object_per_model input: '
                             '{}'.format(object_per_model))
-        
+
         # change the north if the one on this model is not the default
         if self._north_angle != 0 and self._north_angle != 360:
             for model in models:
                 model.north_angle = self._north_angle
-        
+
         # change the tolerance and untis systems to match the dragonfly model
         for model in models:
             model.units = self.units
@@ -459,7 +463,7 @@ class Model(_BaseGeometry):
         # transfer Model extension attributes to the honeybee models
         for hb_model in models:
             hb_model._properties = self.properties.to_honeybee(hb_model)
-        
+
         return models
 
     def to_dict(self, included_prop=None):

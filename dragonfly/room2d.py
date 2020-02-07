@@ -28,6 +28,34 @@ import math
 class Room2D(_BaseGeometry):
     """A volume defined by an extruded floor plate, representing a single room or space.
 
+    Args:
+        name: Room2D name. Must be < 100 characters.
+        floor_geometry: A single horizontal Face3D object representing the
+            floor plate of the Room. Note that this Face3D must be horiztional
+            to be valid.
+        floor_to_ceiling_height: A number for the height above the floor where the
+            ceiling begins. Typical values range from 3 to 5 meters.
+        boundary_conditions: A list of boundary conditions that match the number of
+            segments in the input floor_geometry. These will be used to assign
+            boundary conditions to each of the walls of the Room in the resulting
+            model. If None, all boundary conditions will be Outdoors or Ground
+            depending on whether ceiling of the room is below 0 (the assumed
+            ground plane). Default: None.
+        window_parameters: A list of WindowParameter objects that dictate how the
+            window geometries will be generated for each of the walls. If None,
+            no windows will exist over the entire Room2D. Default: None.
+        shading_parameters: A list of ShadingParameter objects that dictate how the
+            shade geometries will be generated for each of the walls. If None,
+            no shades will exist over the entire Room2D. Default: None.
+        is_ground_contact: A boolean noting whether this Room2D has its floor
+            in contact with the ground. Default: False.
+        is_top_exposed: A boolean noting whether this Room2D has its ceiling
+            exposed to the outdoors. Default: False.
+        tolerance: The maximum difference between z values at which point vertices
+            are considered to be in the same horizontal plane. This is used to check
+            that all vertices of the input floor_geometry lie in the same horizontal
+            floor plane. Default is 0, which will not perform any check.
+
     Properties:
         * name
         * display_name
@@ -61,36 +89,7 @@ class Room2D(_BaseGeometry):
                  boundary_conditions=None, window_parameters=None,
                  shading_parameters=None, is_ground_contact=False, is_top_exposed=False,
                  tolerance=0):
-        """A volume defined by an extruded floor plate, representing a single room.
-
-        Args:
-            name: Room2D name. Must be < 100 characters.
-            floor_geometry: A single horizontal Face3D object representing the
-                floor plate of the Room. Note that this Face3D must be horiztional
-                to be valid.
-            floor_to_ceiling_height: A number for the height above the floor where the
-                ceiling begins. Typical values range from 3 to 5 meters.
-            boundary_conditions: A list of boundary conditions that match the number of
-                segments in the input floor_geometry. These will be used to assign
-                boundary conditions to each of the walls of the Room in the resulting
-                model. If None, all boundary conditions will be Outdoors or Ground
-                depending on whether ceiling of the room is below 0 (the assumed
-                ground plane). Default: None.
-            window_parameters: A list of WindowParameter objects that dictate how the
-                window geometries will be generated for each of the walls. If None,
-                no windows will exist over the entire Room2D. Default: None.
-            shading_parameters: A list of ShadingParameter objects that dictate how the
-                shade geometries will be generated for each of the walls. If None,
-                no shades will exist over the entire Room2D. Default: None.
-            is_ground_contact: A boolean noting whether this Room2D has its floor
-                in contact with the ground. Default: False.
-            is_top_exposed: A boolean noting whether this Room2D has its ceiling
-                exposed to the outdoors. Default: False.
-            tolerance: The maximum difference between z values at which point vertices
-                are considered to be in the same horizontal plane. This is used to check
-                that all vertices of the input floor_geometry lie in the same horizontal
-                floor plane. Default is 0, which will not perform any check.
-        """
+        """A volume defined by an extruded floor plate, representing a single room."""
         _BaseGeometry.__init__(self, name)  # process the name
 
         # process the floor_geometry
@@ -132,7 +131,7 @@ class Room2D(_BaseGeometry):
 
         # ensure all wall-asigned objects align with the geometry if it has been flipped
         if floor_geometry.normal.z < 0:
-            
+
             new_bcs, new_win_pars, new_shd_pars = Room2D._flip_wall_assigned_objects(
                 floor_geometry, self._boundary_conditions, self._window_parameters,
                 self._shading_parameters)
@@ -219,7 +218,7 @@ class Room2D(_BaseGeometry):
                     shd_pars.append(None)
         else:
             shd_pars = None
-        
+
         # get the top and bottom exposure properties
         grnd = data['is_ground_contact'] if 'is_ground_contact' in data else False
         top = data['is_top_exposed'] if 'is_top_exposed' in data else False
@@ -501,20 +500,20 @@ class Room2D(_BaseGeometry):
                 area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
                 glz_areas.append(area)
         return sum(glz_areas)
-    
+
     @property
     def min(self):
         """Get a Point2D for the min bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Room2D is in proximity
         to other Room2Ds.
         """
         return self._floor_geometry.boundary_polygon2d.min
-    
+
     @property
     def max(self):
         """Get a Point2D for the max bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Room2D is in proximity
         to other Room2Ds.
         """
@@ -554,7 +553,7 @@ class Room2D(_BaseGeometry):
 
     def add_prefix(self, prefix):
         """Change the name of this object and all child segments by inserting a prefix.
-        
+
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeated rooms) since all objects
@@ -693,11 +692,12 @@ class Room2D(_BaseGeometry):
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horiztonal within a tolerance.
 
-        tolerance: tolerance: The maximum difference between z values at which
-            face vertices are considered at different heights. Default: 0.01,
-            suitable for objects in meters.
-        raise_exception: Boolean to note whether a ValueError should be raised
-            if the room floor geometry is not horizontal.
+        Args:
+            tolerance: The maximum difference between z values at which
+                face vertices are considered at different heights. Default: 0.01,
+                suitable for objects in meters.
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if the room floor geometry is not horizontal.
         """
         z_vals = tuple(pt.z for pt in self._floor_geometry.vertices)
         if max(z_vals) - min(z_vals) <= tolerance:
@@ -925,7 +925,7 @@ class Room2D(_BaseGeometry):
     @staticmethod
     def _flip_wall_assigned_objects(original_geo, bcs, win_pars, shd_pars):
         """Get arrays of wall-assigned parameters that are flipped/reversed.
-        
+
         This method accounts for the case that a floor geometry has holes in it.
         """
         # go through the boundary and ensure detailed parameters are flipped
@@ -940,7 +940,7 @@ class Room2D(_BaseGeometry):
             else:
                 new_win_pars.append(win_par)
             new_shd_pars.append(shd_pars[i])
-        
+
         # reverse the lists of wall-assigned objects on the floor boundary
         new_bcs.reverse()
         new_win_pars.reverse()
@@ -952,7 +952,7 @@ class Room2D(_BaseGeometry):
             new_bcs = new_bcs + bcs[bound_len:]
             new_win_pars = new_win_pars + win_pars[bound_len:]
             new_shd_pars = new_shd_pars + shd_pars[bound_len:]
-        
+
         # retrun the flipped lists
         return new_bcs, new_win_pars, new_shd_pars
 

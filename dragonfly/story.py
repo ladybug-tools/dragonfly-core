@@ -15,6 +15,17 @@ from ladybug_geometry.geometry3d.polyface import Polyface3D
 class Story(_BaseGeometry):
     """A Story of a building defined by an extruded Room2Ds.
 
+    Args:
+        name: Story name. Must be < 100 characters.
+        room_2ds: An array of dragonfly Room2D objects that together form an
+            entire story of a building.
+        floor_to_floor_height: A number for the distance from the floor plate of
+            this Story to the floor of the story above this one (if it exists).
+            If None, this value will be the maximum floor_to_ceiling_height of the
+            input room_2ds.
+        multiplier: An integer that denotes the number of times that this
+            Story is repeated over the height of the building. Default: 1.
+
     Properties:
         * name
         * display_name
@@ -34,19 +45,7 @@ class Story(_BaseGeometry):
     __slots__ = ('_room_2ds', '_floor_to_floor_height', '_multiplier', '_parent')
 
     def __init__(self, name, room_2ds, floor_to_floor_height=None, multiplier=1):
-        """A Story of a building defined by an extruded Floor2Ds.
-
-        Args:
-            name: Story name. Must be < 100 characters.
-            room_2ds: An array of dragonfly Room2D objects that together form an
-                entire story of a building.
-            floor_to_floor_height: A number for the distance from the floor plate of
-                this Story to the floor of the story above this one (if it exists).
-                If None, this value will be the maximum floor_to_ceiling_height of the
-                input room_2ds.
-            multiplier: An integer that denotes the number of times that this
-                Story is repeated over the height of the building. Default: 1.
-        """
+        """A Story of a building defined by an extruded Floor2Ds."""
         _BaseGeometry.__init__(self, name)  # process the name
 
         # process the story geometry
@@ -121,8 +120,8 @@ class Story(_BaseGeometry):
         greatly speed up the calculation.
 
         For more information on multipliers in EnergyPlus see EnergyPlus Tips and Tricks:
-        https://bigladdersoftware.com/epx/docs/9-1/tips-and-tricks-using-energyplus/
-        using-multipliers-zone-and-or-window.html
+        https://bigladdersoftware.com/epx/docs/9-1/tips-and-tricks-using-energyplus/\
+using-multipliers-zone-and-or-window.html
         """
         return self._multiplier
 
@@ -180,20 +179,20 @@ class Story(_BaseGeometry):
         Note that this property is for one story and does NOT use the multiplier.
         """
         return sum([room.exterior_aperture_area for room in self._room_2ds])
-    
+
     @property
     def min(self):
         """Get a Point2D for the min bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Story is in proximity
         to others.
         """
         return self._calculate_min(self._room_2ds)
-    
+
     @property
     def max(self):
         """Get a Point2D for the max bounding rectangle vertex in the XY plane.
-        
+
         This is useful in calculations to determine if this Story is in proximity
         to others.
         """
@@ -245,10 +244,10 @@ class Story(_BaseGeometry):
         else:
             raise ValueError('Room2D "{}" was not found in the story "{}"'
                              '.'.format(room_name, self.name))
-    
+
     def rooms_by_name(self, room_names):
         """Get a list of Room2D objects in this story given Room2D names.
-        
+
         Args:
             room_name: Array of strings for the names of the Room2D to be retrieved
                 from this Story.
@@ -266,7 +265,7 @@ class Story(_BaseGeometry):
 
     def add_prefix(self, prefix):
         """Change the name of this object and all child Room2Ds by inserting a prefix.
-        
+
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeated stories) since all objects
@@ -340,10 +339,10 @@ class Story(_BaseGeometry):
         """Set all of the outdoor walls to have the same shading parameters."""
         for room in self._room_2ds:
             room.set_outdoor_shading_parameters(shading_parameter)
-    
+
     def set_ground_contact(self, is_ground_contact=True):
         """Set all child Room2Ds of this object to have floors in contact with the ground.
-        
+
         Args:
             is_ground_contact: A boolean noting whether all the Story's room_2ds
                 have floors in contact with the ground. Default: True.
@@ -353,7 +352,7 @@ class Story(_BaseGeometry):
 
     def set_top_exposed(self, is_top_exposed=True):
         """Set all child Room2Ds of this object to have ceilings exposed to the outdoors.
-        
+
         Args:
             is_top_exposed: A boolean noting whether all the Story's room_2ds
                 have ceilings exposed to the outdoors. Default: True.

@@ -22,9 +22,12 @@ def interpret_floor_height_subdivide(floor_to_floor_heights, max_height,
         first_floor_height: The z-value of the first floor.
 
     Returns:
-        floor_heights -- An array of float values for the floor heights, which
+        A tuple with two elements
+
+        -   floor_heights -- An array of float values for the floor heights, which
             can be used to generate planes that subdivide a building mass.
-        interpreted_f2f -- An array of float values noting the distance between
+
+        -   interpreted_f2f -- An array of float values noting the distance between
             each floor. Note that, unlike the input floor_to_floor_heights,
             this array always has float values and is the same length as the
             floor_heights.
@@ -85,7 +88,7 @@ def interpret_core_perimeter_subdivide(perimeter_depths, floor_count):
 
     Returns:
         An array of float values for perimeter depths, which can be used to offset
-            perimeters over a building's stories.
+        perimeters over a building's stories.
     """
     # generate the list of depth float values
     interpreted_depths = []
