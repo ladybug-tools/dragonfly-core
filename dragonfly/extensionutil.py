@@ -2,8 +2,8 @@
 """A series of utility functions that are useful across several dragonfly extensions."""
 
 
-def model_extension_dicts(data, extension_key, building_ext_dicts=[], story_ext_dicts=[],
-                          room2d_ext_dicts=[], context_shade_ext_dicts=[]):
+def model_extension_dicts(data, extension_key, building_ext_dicts, story_ext_dicts,
+                          room2d_ext_dicts, context_shade_ext_dicts):
     """Get all Model property dictionaries of an extension organized by geometry type.
 
     Note that the order in which dictionaries appear in the output lists is the
@@ -44,8 +44,8 @@ def model_extension_dicts(data, extension_key, building_ext_dicts=[], story_ext_
     return building_ext_dicts, story_ext_dicts, room2d_ext_dicts, context_shade_ext_dicts
 
 
-def building_extension_dicts(building_list, extension_key, building_ext_dicts=[],
-                             story_ext_dicts=[], room2d_ext_dicts=[]):
+def building_extension_dicts(building_list, extension_key, building_ext_dicts,
+                             story_ext_dicts, room2d_ext_dicts):
     """Get all Building property dictionaires of an extension organized by geometry type.
 
     Args:
@@ -68,8 +68,8 @@ def building_extension_dicts(building_list, extension_key, building_ext_dicts=[]
     return building_ext_dicts, story_ext_dicts, room2d_ext_dicts
 
 
-def story_extension_dicts(story_list, extension_key, story_ext_dicts=[],
-                          room2d_ext_dicts=[]):
+def story_extension_dicts(story_list, extension_key, story_ext_dicts,
+                          room2d_ext_dicts):
     """Get all Building property dictionaires of an extension organized by geometry type.
 
     Args:
@@ -90,7 +90,7 @@ def story_extension_dicts(story_list, extension_key, story_ext_dicts=[],
     return story_ext_dicts, room2d_ext_dicts
 
 
-def room2d_extension_dicts(room2d_list, extension_key, room2d_ext_dicts=[]):
+def room2d_extension_dicts(room2d_list, extension_key, room2d_ext_dicts):
     """Get all Room2D property dictionaires of an extension.
 
     Args:
@@ -106,7 +106,7 @@ def room2d_extension_dicts(room2d_list, extension_key, room2d_ext_dicts=[]):
 
 
 def context_shade_extension_dicts(context_shade_list, extension_key,
-                                  context_shade_ext_dicts=[]):
+                                  context_shade_ext_dicts):
     """Get all ContextShade property dictionaires of an extension.
 
     Args:
