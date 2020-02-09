@@ -8,7 +8,6 @@ from .context import ContextShade
 from honeybee.model import Model as hb_model
 from honeybee.shade import Shade
 from honeybee.boundarycondition import Surface
-from honeybee.facetype import AirWall
 from honeybee.typing import float_in_range, float_positive
 
 from ladybug_geometry.geometry2d.pointvector import Vector2D
