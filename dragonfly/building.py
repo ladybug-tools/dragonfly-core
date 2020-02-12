@@ -323,9 +323,12 @@ class Building(_BaseGeometry):
         for story in self.unique_stories:
             extru_vec = Vector3D(0, 0, story.floor_to_floor_height * story.multiplier)
             for i, seg in enumerate(story.outline_segments(tolerance)):
-                extru_geo = Face3D.from_extrusion(seg, extru_vec)
-                shd_name = '{}_{}_{}'.format(self.name, story.name, i)
-                context_shades.append(Shade(shd_name, extru_geo))
+                try:
+                    extru_geo = Face3D.from_extrusion(seg, extru_vec)
+                    shd_name = '{}_{}_{}'.format(self.name, story.name, i)
+                    context_shades.append(Shade(shd_name, extru_geo))
+                except ZeroDivisionError:
+                    pass  # duplicate vertex resulting in a segment of length 0
             # TODO: add a Shade object to cap the extrusion once lb_geometry has polyline
         return context_shades
 
