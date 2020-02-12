@@ -27,7 +27,7 @@ If you want to also include the command line interface try:
 `pip install -U dragonfly-core[cli]`
 
 To check if Dragonfly command line is installed correctly try `dragonfly viz` and you
-should get a `viiiiiiiiiiiiizzzzzzzzz!` back in response! :bee:
+should get a `viiiiiiiiiiiiizzzzzzzzz!` back in response!
 
 ## [API Documentation](https://www.ladybug.tools/dragonfly-core/docs/)
 
