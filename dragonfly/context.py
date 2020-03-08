@@ -1,5 +1,7 @@
 # coding: utf-8
 """Dragonfly Context Shade."""
+from __future__ import division
+
 from ._base import _BaseGeometry
 from .properties import ContextShadeProperties
 

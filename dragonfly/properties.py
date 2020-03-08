@@ -5,6 +5,8 @@ These objects hold all attributes assigned by extensions like dragonfly-radiance
 and dragonfly-energy.  Note that these Property objects are not intended to exist
 on their own but should have a host object.
 """
+from __future__ import division
+
 import honeybee.properties as hb_properties
 
 

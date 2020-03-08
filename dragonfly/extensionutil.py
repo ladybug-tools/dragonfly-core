@@ -1,5 +1,6 @@
 # coding: utf-8
 """A series of utility functions that are useful across several dragonfly extensions."""
+from __future__ import division
 
 
 def model_extension_dicts(data, extension_key, building_ext_dicts, story_ext_dicts,

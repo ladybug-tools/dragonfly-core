@@ -1,5 +1,7 @@
 # coding: utf-8
 """Dragonfly Building."""
+from __future__ import division
+
 from ._base import _BaseGeometry
 from .properties import BuildingProperties
 from .story import Story
@@ -11,6 +13,7 @@ from honeybee.boundarycondition import Surface
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
 
 try:
@@ -39,6 +42,7 @@ class Building(_BaseGeometry):
         * unique_room_2ds
         * height
         * height_from_first_floor
+        * story_count
         * volume
         * floor_area
         * exterior_wall_area
@@ -225,6 +229,11 @@ class Building(_BaseGeometry):
         return self.height - self._unique_stories[0].floor_height
 
     @property
+    def story_count(self):
+        """Get an integer for the number of stories in the building."""
+        return sum((story.multiplier for story in self._unique_stories))
+
+    @property
     def volume(self):
         """Get a number for the volume of all the Rooms in the Building.
 
@@ -308,6 +317,45 @@ class Building(_BaseGeometry):
             rooms.extend(story.room_2ds)
         return rooms
 
+    def footprint(self, tolerance=0.01):
+        """A list of Face3D objects representing the footprint of the building.
+
+        The footprint is derived from the lowest story of the building and, if
+        all Room2Ds of this story can be joined into a single continuous polyface,
+        then only one Face3D will be contined in the list output from this method.
+        Otherwise, several Face3Ds may be output.
+
+        Args:
+            tolerance: The minimum distance between points at which they are
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
+        """
+        ground_story = self._unique_stories[0]
+        if len(ground_story.room_2ds) == 1:  # no need to create any new geometry
+            return [ground_story.room_2ds[0].floor_geometry]
+        else:  # need a single list of Face3Ds for the whole footprint
+            plines = ground_story.outline_polylines(tolerance)
+            if len(plines) == 1:  # can be represented with a single boundary
+                return [Face3D(plines[0].vertices[:-1], Plane(n=Vector3D(0, 0, 1)))]
+            else:  # need to separate holes from distinct Face3Ds
+                faces = [Face3D(pl.vertices[:-1], Plane(n=Vector3D(0, 0, 1)))
+                         for pl in plines]
+                faces.sort(key=lambda x: x.area, reverse=True)
+                base_face = faces[0]
+                remain_faces = list(faces[1:])
+
+                all_face3ds = []
+                while len(remain_faces) > 0:
+                    all_face3ds.append(self._match_holes_to_face(
+                        base_face, remain_faces, tolerance))
+                    if len(remain_faces) > 1:
+                        base_face = remain_faces[0]
+                        del remain_faces[0]
+                    elif len(remain_faces) == 1:  # lone last Face3D
+                        all_face3ds.append(remain_faces[0])
+                        del remain_faces[0]
+                return all_face3ds
+
     def shade_representation(self, tolerance=0.01):
         """A list of honeybee Shade objects representing the building geometry.
 
@@ -329,7 +377,7 @@ class Building(_BaseGeometry):
                     context_shades.append(Shade(shd_name, extru_geo))
                 except ZeroDivisionError:
                     pass  # duplicate vertex resulting in a segment of length 0
-            # TODO: add a Shade object to cap the extrusion once lb_geometry has polyline
+            # TODO: consider adding a Shade object to cap the extrusion
         return context_shades
 
     def add_prefix(self, prefix):
@@ -675,6 +723,37 @@ class Building(_BaseGeometry):
         top.multiplier = 1
         top.add_prefix('Top')
         return top
+
+    @staticmethod
+    def _match_holes_to_face(base_face, other_faces, tol):
+        """Attempt to merge other faces into a bese face as holes.
+        
+        Args:
+            base_face: A Face3D to serve as the base.
+            other_segs: A list of other Face3D objects to attempt to merge into
+                the base_face as a hole. This method will delete any faces
+                that are successfully merged into the output from this list. 
+            tol: The tolerance to be used for evaluating sub-faces.
+        
+        Returns:
+            A Face3D which has holes in it if any of the other_faces is a valid
+            sub face.
+        """
+        holes = []
+        more_to_check = True
+        while more_to_check:
+            for i, r_face in enumerate(other_faces):
+                if base_face.is_sub_face(r_face, tol, 1):
+                    holes.append(r_face)
+                    del other_faces[i]
+                    break
+            else:
+                more_to_check = False
+        if len(holes) == 0:
+            return base_face
+        else:
+            hole_verts = [hole.vertices for hole in holes]
+            return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
 
     def __copy__(self):
         new_b = Building(self.name,

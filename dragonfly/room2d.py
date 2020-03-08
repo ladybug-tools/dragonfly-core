@@ -1,5 +1,7 @@
 # coding: utf-8
 """Dragonfly Room2D."""
+from __future__ import division
+
 from ._base import _BaseGeometry
 from .properties import Room2DProperties
 import dragonfly.windowparameter as glzpar

@@ -52,6 +52,7 @@ def test_building_init():
         assert room.has_parent
     assert building.height == 15
     assert building.height_from_first_floor == 12
+    assert building.story_count == 4
     assert building.volume == 100 * 3 * 4 * 4
     assert building.floor_area == 100 * 4 * 4
     assert building.exterior_wall_area == 60 * 4 * 4
@@ -93,6 +94,88 @@ def test_building_init_from_all_story_geometry():
     assert len(building.all_stories()) == 4
     assert len(building.unique_room_2ds) == 2
     assert len(building.all_room_2ds()) == 4
+
+
+def test_building_footprint_simple():
+    """Test the building footprint method with simple geometry."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
+    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office Building', [story])
+
+    footprint = building.footprint(0.01)
+    assert len(footprint) == 1
+    assert isinstance(footprint[0], Face3D)
+    assert footprint[0].holes is None
+    assert len(footprint[0].vertices) == 8
+    assert footprint[0].min == Point3D(0, 0, 3)
+    assert footprint[0].max == Point3D(20, 20, 3)
+
+
+def test_building_footprint_courtyard():
+    """Test the building footprint method with courtyard geometry."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 5, 3), Point3D(15, 5, 3), Point3D(15, 0, 3))
+    pts_2 = (Point3D(15, 0, 3), Point3D(15, 15, 3), Point3D(20, 15, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 5, 3), Point3D(0, 20, 3), Point3D(5, 20, 3), Point3D(5, 5, 3))
+    pts_4 = (Point3D(5, 15, 3), Point3D(5, 20, 3), Point3D(20, 20, 3), Point3D(20, 15, 3))
+    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
+    int_rms = Room2D.intersect_adjacency([room2d_1, room2d_2, room2d_3, room2d_4], 0.01)
+    story = Story('Office Floor', int_rms)
+    story.rotate_xy(5, Point3D(0, 0, 0))
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office Building', [story])
+
+    footprint = building.footprint(0.01)
+    assert len(footprint) == 1
+    assert isinstance(footprint[0], Face3D)
+    assert len(footprint[0].boundary) == 8
+    assert len(footprint[0].holes) == 1
+    assert len(footprint[0].holes[0]) == 4
+
+
+def test_building_footprint_disconnect():
+    """Test the building footprint method with disconnected geometry."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 5, 3), Point3D(15, 5, 3), Point3D(15, 0, 3))
+    pts_2 = (Point3D(15, 0, 3), Point3D(15, 15, 3), Point3D(20, 15, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 5, 3), Point3D(0, 20, 3), Point3D(5, 20, 3), Point3D(5, 5, 3))
+    pts_4 = (Point3D(5, 15, 3), Point3D(5, 20, 3), Point3D(20, 20, 3), Point3D(20, 15, 3))
+    pts_5 = (Point3D(-5, -5, 3), Point3D(-10, -5, 3), Point3D(-10, -10, 3), Point3D(-5, -10, 3))
+    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
+    room2d_5 = Room2D('Office 5', Face3D(pts_5), 3)
+    int_rms = Room2D.intersect_adjacency(
+        [room2d_1, room2d_2, room2d_3, room2d_4, room2d_5], 0.01)
+    story = Story('Office Floor', int_rms)
+    story.rotate_xy(5, Point3D(0, 0, 0))
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office Building', [story])
+
+    footprint = building.footprint(0.01)
+    assert len(footprint) == 2
+    assert isinstance(footprint[0], Face3D)
+    assert len(footprint[0].boundary) == 8
+    assert len(footprint[0].holes) == 1
+    assert len(footprint[0].holes[0]) == 4
+    assert isinstance(footprint[1], Face3D)
+    assert len(footprint[1].boundary) == 4
 
 
 def test_building_shade_representation():
