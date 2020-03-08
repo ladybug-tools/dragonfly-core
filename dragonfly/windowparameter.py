@@ -1,5 +1,7 @@
 # coding: utf-8
 """Window Parameters with instructions for generating windows."""
+from __future__ import division
+
 from honeybee.typing import float_in_range, float_positive
 from honeybee.boundarycondition import Surface
 from honeybee.aperture import Aperture

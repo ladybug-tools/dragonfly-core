@@ -1,5 +1,7 @@
 # coding: utf-8
 """Base class for all geometry objects."""
+from __future__ import division
+
 from honeybee.typing import valid_string
 
 from ladybug_geometry.geometry2d.pointvector import Point2D

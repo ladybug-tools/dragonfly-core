@@ -1,18 +1,25 @@
 # coding: utf-8
 """Dragonfly Model."""
+from __future__ import division
+
 from ._base import _BaseGeometry
 from .properties import ModelProperties
 from .building import Building
 from .context import ContextShade
+from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
+    origin_long_lat_from_location
 
 from honeybee.model import Model as hb_model
 from honeybee.shade import Shade
 from honeybee.boundarycondition import Surface
 from honeybee.typing import float_in_range, float_positive
+from honeybee.config import folders
 
-from ladybug_geometry.geometry2d.pointvector import Vector2D
+from ladybug_geometry.geometry2d.pointvector import Vector2D, Point2D
 
 import math
+import os
+import json
 
 
 class Model(_BaseGeometry):
@@ -389,7 +396,7 @@ class Model(_BaseGeometry):
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
                     use_multiplier=True, tolerance=None):
-        """Convert Dragonfly Mdel to an array of Honeybee Models.
+        """Convert Dragonfly Model to an array of Honeybee Models.
 
         Args:
             object_per_model: Text to describe how the input Buildings should be
@@ -464,6 +471,86 @@ class Model(_BaseGeometry):
             hb_model._properties = self.properties.to_honeybee(hb_model)
 
         return models
+    
+    def to_geojson(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
+        """Convert Dragonfly Model to a geoJSON of buildings footprints.
+
+        This geoJSON will be in a format that is compatible with the URBANopt SDK,
+        including properties for floor_area, footprint_area, and detailed_model_filename,
+        which will align with the paths to OpenStudio model (.osm) files output
+        from honeybee Models translated to OSM.
+
+        Args:
+            location: A ladybug Location object possessing longitude and lattiude data.
+            point: A ladybug_geometry Point2D for where the location object exists
+                within the space of a scene. The coordinates of this point are
+                expected to be in the units of this Model. (Default: (0, 0)).
+            folder: Text for the full path to the folder where the OpenStudio
+                model files for each building are written. This is also the location
+                where the geojson will be written.
+            tolerance: The minimum distance between points at which they are
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
+        """
+        # set up the base dictionary for the geoJSON and default folder
+        geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
+        if folder is None:
+            folder = folders.default_simulation_folder
+        else:
+            assert os.path.isdir(folder), \
+                'No such directory has been found on this machine: {}'.format(folder)
+
+        # ensure that the Model we are working with is in meters with a north_angle of 0
+        model = self
+        if self.north_angle != 0:
+            model = self.duplicate()
+            model.rotate_xy(self.north_angle)
+        if self.units != 'Meters':
+            model = self.duplicate()
+            model.convert_to_units('Meters')
+
+        # get the conversion factors over to (longitude, latitude)
+        origin_lon_lat = origin_long_lat_from_location(location, point)
+        convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+
+        # export each building as a feature in the file
+        for i, bldg in enumerate(model.buildings):
+            # create the base dictionary
+            feature_dict = {'geometry':{}, 'properties': {}, 'type': 'Feature'}
+
+            # add the geometry including coordinates
+            footprint = bldg.footprint(tolerance)
+            if len(footprint) == 1:
+                feature_dict['geometry']['type'] = 'Polygon'
+                feature_dict['geometry']['coordinates'] = \
+                    self._geojson_coordinates(footprint[0], origin_lon_lat, convert_facs)
+            else:
+                feature_dict['geometry']['type'] = 'MultiPolygon'
+                all_coords = []
+                for floor in footprint:
+                    all_coords.append(
+                        self._geojson_coordinates(floor, origin_lon_lat, convert_facs))
+                feature_dict['geometry']['coordinates'] = all_coords
+
+            # add several of the properties to the geoJSON
+            feature_dict['properties']['building_type'] = 'Mixed use'
+            feature_dict['properties']['floor_area'] = bldg.floor_area
+            feature_dict['properties']['footprint_area'] = \
+                sum((face.area for face in footprint))
+            feature_dict['properties']['id'] = i
+            feature_dict['properties']['name'] = bldg.name
+            feature_dict['properties']['number_of_stories'] = bldg.story_count
+            feature_dict['properties']['type'] = 'Building'
+            feature_dict['properties']['detailed_model_filename'] = \
+                os.path.join(folder, bldg.name, 'OpenStudio', 'run', 'in.osm')
+
+            # append the feature to the global dictionary
+            geojson_dict['features'].append(feature_dict)
+
+        # write out the dictionary to a geojson file
+        file_path = os.path.join(folder, '{}.geojson'.format(self.name))
+        with open(file_path, 'w') as fp:
+            json.dump(geojson_dict, fp, indent=4)
 
     def to_dict(self, included_prop=None):
         """Return Model as a dictionary.
@@ -488,6 +575,20 @@ class Model(_BaseGeometry):
             base['north_angle'] = self.north_angle
 
         return base
+
+    @staticmethod
+    def _geojson_coordinates(face3d, origin_lon_lat, convert_facs):
+        """Convert a horzontal Face3D to geoJSON coordinates."""
+        coords = [polygon_to_lon_lat(
+            [(pt.x, pt.y) for pt in face3d.boundary], origin_lon_lat, convert_facs)]
+        coords[0].append(coords[0][0])
+        if face3d.has_holes:
+            for hole in face3d.holes:
+                hole_verts = polygon_to_lon_lat(
+                    [(pt.x, pt.y) for pt in hole], origin_lon_lat, convert_facs)
+                hole_verts.append(hole_verts[0])
+                coords.append(hole_verts)
+        return coords
 
     def __add__(self, other):
         new_model = self.duplicate()

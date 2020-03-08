@@ -1,5 +1,7 @@
 # coding: utf-8
 """Shading Parameters with instructions for generating shades."""
+from __future__ import division
+
 from honeybee.typing import float_in_range, float_positive, int_positive
 
 from ladybug_geometry.geometry2d.pointvector import Vector2D

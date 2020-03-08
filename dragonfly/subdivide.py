@@ -1,4 +1,5 @@
 """Utilities to interpret parameters for subdividing biulding masses."""
+from __future__ import division
 
 
 def interpret_floor_height_subdivide(floor_to_floor_heights, max_height,

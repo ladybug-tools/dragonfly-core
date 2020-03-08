@@ -1,5 +1,7 @@
 # coding: utf-8
 """Dragonfly Story."""
+from __future__ import division
+
 from ._base import _BaseGeometry
 from .properties import StoryProperties
 from .room2d import Room2D
@@ -9,6 +11,7 @@ from honeybee.boundarycondition import Surface
 from honeybee.model import Model
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry3d.polyline import Polyline3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 
 
@@ -229,6 +232,19 @@ using-multipliers-zone-and-or-window.html
                 in meters.
         """
         return self.floor_geometry(tolerance).naked_edges
+
+    def outline_polylines(self, tolerance=0.01):
+        """Get a list of Polyline3D objects for the outline of the floor plate.
+
+        Note that these segments include both the boundary surrounding the floor
+        and any holes for courtyards that exist within the floor.
+
+        Args:
+            tolerance: The minimum distance between points at which they are
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
+        """
+        return Polyline3D.join_segments(self.outline_segments(tolerance), tolerance)
 
     def room_by_name(self, room_name):
         """Get a Room2D from this Story using its name.
