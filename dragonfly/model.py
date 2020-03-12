@@ -491,6 +491,14 @@ class Model(_BaseGeometry):
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
+        
+        Returns:
+            The path to a geoJSON file that contains polygons for all of the
+            Buildings within the dragonfly model along with their properties
+            (floor area, number of stories, etc.). The polygons will also possess
+            detailed_model_filename keys that align with where OpenStudio models
+            would be written, assuming the input folder matches that used to
+            export OpenStudio models.
         """
         # set up the base dictionary for the geoJSON and default folder
         geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
@@ -551,6 +559,7 @@ class Model(_BaseGeometry):
         file_path = os.path.join(folder, '{}.geojson'.format(self.name))
         with open(file_path, 'w') as fp:
             json.dump(geojson_dict, fp, indent=4)
+        return file_path
 
     def to_dict(self, included_prop=None):
         """Return Model as a dictionary.
