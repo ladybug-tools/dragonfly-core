@@ -820,7 +820,15 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered centered adjacent. Default: 0.01,
                 suitable for objects in meters.
+        Returns:
+            A list of tuples with each tuple containing 2 sub-tuples for wall
+            segments paired in the process of solving adjacency. Sub-tuples have
+            the Room2D as the first item and the index of the adjacent wall as the
+            second item. This data can be used to assign custom properties to the
+            new adjacent walls (like assigning custom window parameters for
+            interior windows).
         """
+        adj_info = []
         for i, room_1 in enumerate(room_2ds):
             try:
                 for room_2 in room_2ds[i + 1:]:
@@ -835,9 +843,11 @@ class Room2D(_BaseGeometry):
                                         seg_1.distance_to_point(seg_2.p2) <= tolerance:
                                     # set the boundary conditions of the segments
                                     room_1.set_adjacency(room_2, j, k)
+                                    adj_info.append(((room_1, k), (room_2, k)))
                                     break
             except IndexError:
                 pass  # we have reached the end of the list of zones
+        return adj_info
 
     @staticmethod
     def intersect_adjacency(room_2ds, tolerance=0.01):
@@ -862,7 +872,9 @@ class Room2D(_BaseGeometry):
         Returns:
             An array of Room2Ds that have been intersected with one another. Note
             that these Room2Ds lack all assigned boundary conditions, window parameters
-            and shading parameters of the original Room2Ds.
+            and shading parameters of the original Room2Ds. Other properties like
+            extension attributes, floor_to_ceiling_height, and top_exposed/ground_contact
+            are preserved.
         """
         # keep track of all data needed to map between 2D and 3D space
         master_plane = room_2ds[0].floor_geometry.plane
@@ -910,6 +922,9 @@ class Room2D(_BaseGeometry):
                 room_2ds[i].display_name, new_geo, room_2ds[i].floor_to_ceiling_height,
                 is_ground_contact=room_2ds[i].is_ground_contact,
                 is_top_exposed=room_2ds[i].is_top_exposed)
+            rebuilt_room._display_name = room_2ds[i].display_name
+            rebuilt_room._parent = room_2ds[i]._parent
+            rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
         return intersected_rooms
 
