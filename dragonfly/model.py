@@ -472,13 +472,8 @@ class Model(_BaseGeometry):
 
         return models
     
-    def to_geojson(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
-        """Convert Dragonfly Model to a geoJSON of buildings footprints.
-
-        This geoJSON will be in a format that is compatible with the URBANopt SDK,
-        including properties for floor_area, footprint_area, and detailed_model_filename,
-        which will align with the paths to OpenStudio model (.osm) files output
-        from honeybee Models translated to OSM.
+    def to_geojson_dict(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
+        """Convert Dragonfly Model to a geoJSON-style Python dictionary.
 
         Args:
             location: A ladybug Location object possessing longitude and lattiude data.
@@ -486,22 +481,20 @@ class Model(_BaseGeometry):
                 within the space of a scene. The coordinates of this point are
                 expected to be in the units of this Model. (Default: (0, 0)).
             folder: Text for the full path to the folder where the OpenStudio
-                model files for each building are written. This is also the location
-                where the geojson will be written.
+                model files for each building are written. This will be used
+                to specify URBANopt detailed_model_filename keys for each feature
+                within the dictionary.
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
-        
+
         Returns:
-            The path to a geoJSON file that contains polygons for all of the
-            Buildings within the dragonfly model along with their properties
-            (floor area, number of stories, etc.). The polygons will also possess
-            detailed_model_filename keys that align with where OpenStudio models
-            would be written, assuming the input folder matches that used to
-            export OpenStudio models.
+            A Python dictionary in a geoJSON style with each Building in the Model
+            as a separate feature.
         """
         # set up the base dictionary for the geoJSON and default folder
         geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
+        geojson_dict['project'] = {'name': self.display_name, 'id': self.name}
         if folder is None:
             folder = folders.default_simulation_folder
         else:
@@ -554,6 +547,40 @@ class Model(_BaseGeometry):
 
             # append the feature to the global dictionary
             geojson_dict['features'].append(feature_dict)
+        
+        return geojson_dict
+
+
+    def to_geojson(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
+        """Convert Dragonfly Model to a geoJSON of buildings footprints.
+
+        This geoJSON will be in a format that is compatible with the URBANopt SDK,
+        including properties for floor_area, footprint_area, and detailed_model_filename,
+        which will align with the paths to OpenStudio model (.osm) files output
+        from honeybee Models translated to OSM.
+
+        Args:
+            location: A ladybug Location object possessing longitude and lattiude data.
+            point: A ladybug_geometry Point2D for where the location object exists
+                within the space of a scene. The coordinates of this point are
+                expected to be in the units of this Model. (Default: (0, 0)).
+            folder: Text for the full path to the folder where the OpenStudio
+                model files for each building are written. This is also the location
+                where the geojson will be written.
+            tolerance: The minimum distance between points at which they are
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
+
+        Returns:
+            The path to a geoJSON file that contains polygons for all of the
+            Buildings within the dragonfly model along with their properties
+            (floor area, number of stories, etc.). The polygons will also possess
+            detailed_model_filename keys that align with where OpenStudio models
+            would be written, assuming the input folder matches that used to
+            export OpenStudio models.
+        """
+        # get the geojson dictionary
+        geojson_dict = self.to_geojson_dict(location, point, folder, tolerance)
 
         # write out the dictionary to a geojson file
         file_path = os.path.join(folder, '{}.geojson'.format(self.name))
