@@ -194,5 +194,9 @@
             "type": "Feature"
         }
     ],
-    "mappers": []
+    "mappers": [],
+    "project": {
+        "name": "TestGeoJSON",
+        "id": "TestGeoJSON"
+    }
 }

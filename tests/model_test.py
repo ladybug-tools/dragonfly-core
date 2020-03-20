@@ -17,6 +17,7 @@ from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
+from ladybug.futil import nukedir
 
 import os
 
@@ -562,6 +563,6 @@ def test_to_geojson():
     geojson_folder = './tests/geojson/'
     model.to_geojson(location, folder=geojson_folder)
 
-    geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
+    geo_fp = os.path.join(geojson_folder, model.name, '{}.geojson'.format(model.name))
     assert os.path.isfile(geo_fp)
-    os.remove(geo_fp)
+    nukedir(os.path.join(geojson_folder, model.name), True)

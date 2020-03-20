@@ -16,6 +16,7 @@ from honeybee.typing import float_in_range, float_positive
 from honeybee.config import folders
 
 from ladybug_geometry.geometry2d.pointvector import Vector2D, Point2D
+from ladybug.futil import preparedir
 
 import math
 import os
@@ -483,7 +484,8 @@ class Model(_BaseGeometry):
             folder: Text for the full path to the folder where the OpenStudio
                 model files for each building are written. This will be used
                 to specify URBANopt detailed_model_filename keys for each feature
-                within the dictionary.
+                within the dictionary. If None, the honeybee default simulation
+                folder will be used (Default: None).
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
@@ -492,14 +494,16 @@ class Model(_BaseGeometry):
             A Python dictionary in a geoJSON style with each Building in the Model
             as a separate feature.
         """
-        # set up the base dictionary for the geoJSON and default folder
-        geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
-        geojson_dict['project'] = {'name': self.display_name, 'id': self.name}
+        # set the default simulation folder
         if folder is None:
             folder = folders.default_simulation_folder
         else:
             assert os.path.isdir(folder), \
                 'No such directory has been found on this machine: {}'.format(folder)
+
+        # set up the base dictionary for the geoJSON and default folder
+        geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
+        geojson_dict['project'] = {'name': self.display_name, 'id': self.name}
 
         # ensure that the Model we are working with is in meters with a north_angle of 0
         model = self
@@ -547,9 +551,8 @@ class Model(_BaseGeometry):
 
             # append the feature to the global dictionary
             geojson_dict['features'].append(feature_dict)
-        
-        return geojson_dict
 
+        return geojson_dict
 
     def to_geojson(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
         """Convert Dragonfly Model to a geoJSON of buildings footprints.
@@ -566,7 +569,8 @@ class Model(_BaseGeometry):
                 expected to be in the units of this Model. (Default: (0, 0)).
             folder: Text for the full path to the folder where the OpenStudio
                 model files for each building are written. This is also the location
-                where the geojson will be written.
+                where the geojson will be written. If None, the honeybee default
+                simulation folder will be used (Default: None).
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
@@ -579,11 +583,19 @@ class Model(_BaseGeometry):
             would be written, assuming the input folder matches that used to
             export OpenStudio models.
         """
+        # set the default simulation folder
+        if folder is None:
+            folder = folders.default_simulation_folder
+        else:
+            preparedir(folder, remove_content=False)
+
         # get the geojson dictionary
         geojson_dict = self.to_geojson_dict(location, point, folder, tolerance)
 
         # write out the dictionary to a geojson file
-        file_path = os.path.join(folder, '{}.geojson'.format(self.name))
+        project_folder = os.path.join(folder, self.name)
+        preparedir(project_folder, remove_content=False)
+        file_path = os.path.join(project_folder, '{}.geojson'.format(self.name))
         with open(file_path, 'w') as fp:
             json.dump(geojson_dict, fp, indent=4)
         return file_path
