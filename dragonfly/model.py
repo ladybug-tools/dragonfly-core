@@ -542,8 +542,8 @@ class Model(_BaseGeometry):
             feature_dict['properties']['floor_area'] = bldg.floor_area
             feature_dict['properties']['footprint_area'] = \
                 sum((face.area for face in footprint))
-            feature_dict['properties']['id'] = str(i + 1)
-            feature_dict['properties']['name'] = bldg.name
+            feature_dict['properties']['id'] = bldg.name
+            feature_dict['properties']['name'] = bldg.display_name
             feature_dict['properties']['number_of_stories'] = bldg.story_count
             feature_dict['properties']['type'] = 'Building'
             feature_dict['properties']['detailed_model_filename'] = \
