@@ -1,0 +1,546 @@
+{
+    "type": "Model",
+    "name": "SampleModel",
+    "display_name": "Sample Model",
+    "properties": {
+        "type": "ModelProperties"
+    },
+    "buildings": [
+        {
+            "type": "Building",
+            "name": "SampleBuilding",
+            "display_name": "Sample Building",
+            "unique_stories": [
+                {
+                    "type": "Story",
+                    "name": "GroundFloor",
+                    "display_name": "Ground Floor",
+                    "room_2ds": [
+                        {
+                            "type": "Room2D",
+                            "name": "KitchenDining",
+                            "display_name": "Kitchen & Dining 101",
+                            "properties": {
+                                "type": "Room2DPropertiesAbridged"
+                            },
+                            "floor_boundary": [
+                                [
+                                    22.89347610707884,
+                                    -2.441417252564399
+                                ],
+                                [
+                                    22.89347610707885,
+                                    4.0630118812932645
+                                ],
+                                [
+                                    22.506336999467308,
+                                    4.063011881293265
+                                ],
+                                [
+                                    22.506336999467308,
+                                    4.565011881293264
+                                ],
+                                [
+                                    22.506336999467308,
+                                    9.010486946911806
+                                ],
+                                [
+                                    22.506336999467308,
+                                    9.512486946911878
+                                ],
+                                [
+                                    -16.201012081897545,
+                                    9.512486946917903
+                                ],
+                                [
+                                    -16.201012081897584,
+                                    -10.503917252564468
+                                ],
+                                [
+                                    22.89347610707883,
+                                    -10.503917252564593
+                                ],
+                                [
+                                    22.89347610707883,
+                                    -10.963234837866429
+                                ],
+                                [
+                                    25.0737582593098,
+                                    -10.963234837866437
+                                ],
+                                [
+                                    25.073758259309813,
+                                    -2.441417252564406
+                                ]
+                            ],
+                            "floor_holes": [
+                                [
+                                    [
+                                        0.20318739316808276,
+                                        -0.6613975675253417
+                                    ],
+                                    [
+                                        -0.2772804854629076,
+                                        -1.8213496364009123
+                                    ],
+                                    [
+                                        -1.4372325543384774,
+                                        -2.301817515031905
+                                    ],
+                                    [
+                                        -2.597184623214048,
+                                        -1.8213496364009145
+                                    ],
+                                    [
+                                        -3.0776525018450407,
+                                        -0.6613975675253477
+                                    ],
+                                    [
+                                        -2.597184623214053,
+                                        0.4985545013502233
+                                    ],
+                                    [
+                                        -1.4372325543384852,
+                                        0.9790223799812185
+                                    ],
+                                    [
+                                        -0.2772804854629143,
+                                        0.4985545013502324
+                                    ]
+                                ]
+                            ],
+                            "floor_height": 0.0,
+                            "floor_to_ceiling_height": 8.858267716535433,
+                            "is_ground_contact": false,
+                            "is_top_exposed": false,
+                            "boundary_conditions": [
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Room2D",
+                            "name": "Laundry",
+                            "display_name": "Laundry 104",
+                            "properties": {
+                                "type": "Room2DPropertiesAbridged"
+                            },
+                            "floor_boundary": [
+                                [
+                                    32.758961671383304,
+                                    -2.4414172525644307
+                                ],
+                                [
+                                    27.19823203528922,
+                                    -2.4414172525644124
+                                ],
+                                [
+                                    25.073758259309813,
+                                    -2.441417252564406
+                                ],
+                                [
+                                    25.0737582593098,
+                                    -10.963234837866437
+                                ],
+                                [
+                                    32.75896167138329,
+                                    -10.96323483786646
+                                ],
+                                [
+                                    32.75896167138329,
+                                    -8.213891005844893
+                                ]
+                            ],
+                            "floor_holes": [],
+                            "floor_height": 0.0,
+                            "floor_to_ceiling_height": 8.758267716535434,
+                            "is_ground_contact": false,
+                            "is_top_exposed": false,
+                            "boundary_conditions": [
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Room2D",
+                            "name": "Bath",
+                            "display_name": "Bath 103",
+                            "properties": {
+                                "type": "Room2DPropertiesAbridged"
+                            },
+                            "floor_boundary": [
+                                [
+                                    32.75896167138331,
+                                    4.007237603078009
+                                ],
+                                [
+                                    27.19823203528923,
+                                    4.0072376030780275
+                                ],
+                                [
+                                    27.19823203528922,
+                                    -2.4414172525644124
+                                ],
+                                [
+                                    32.758961671383304,
+                                    -2.4414172525644307
+                                ]
+                            ],
+                            "floor_holes": [],
+                            "floor_height": 0.0,
+                            "floor_to_ceiling_height": 8.758267716535434,
+                            "is_ground_contact": false,
+                            "is_top_exposed": false,
+                            "boundary_conditions": [
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Room2D",
+                            "name": "Hall",
+                            "display_name": "Hall 105",
+                            "properties": {
+                                "type": "Room2DPropertiesAbridged"
+                            },
+                            "floor_boundary": [
+                                [
+                                    33.0115863432995,
+                                    9.345164112265023
+                                ],
+                                [
+                                    33.011586343299314,
+                                    9.456712668695019
+                                ],
+                                [
+                                    22.506336999467308,
+                                    9.456712668696655
+                                ],
+                                [
+                                    22.506336999467308,
+                                    4.007237603078043
+                                ],
+                                [
+                                    27.19823203528923,
+                                    4.0072376030780275
+                                ],
+                                [
+                                    32.75896167138331,
+                                    4.007237603078009
+                                ],
+                                [
+                                    32.758961671383304,
+                                    -2.4414172525644293
+                                ],
+                                [
+                                    32.75896167138329,
+                                    -8.213891005844893
+                                ],
+                                [
+                                    32.75896167138329,
+                                    -11.422552423168298
+                                ],
+                                [
+                                    43.129696579519766,
+                                    -11.422552423168334
+                                ],
+                                [
+                                    43.129696579519766,
+                                    -10.503917252566115
+                                ],
+                                [
+                                    43.12969657951979,
+                                    4.653563062395563
+                                ],
+                                [
+                                    43.06736062151455,
+                                    4.653563062395771
+                                ],
+                                [
+                                    43.06736062151456,
+                                    9.345164112264989
+                                ]
+                            ],
+                            "floor_holes": [],
+                            "floor_height": 0.0,
+                            "floor_to_ceiling_height": 8.758267716535434,
+                            "is_ground_contact": false,
+                            "is_top_exposed": false,
+                            "boundary_conditions": [
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Room2D",
+                            "name": "Living",
+                            "display_name": "Living 106",
+                            "properties": {
+                                "type": "Room2DPropertiesAbridged"
+                            },
+                            "floor_boundary": [
+                                [
+                                    43.1296965795197,
+                                    -49.87399599272257
+                                ],
+                                [
+                                    43.129696579519766,
+                                    -11.422552423168334
+                                ],
+                                [
+                                    32.814735949598514,
+                                    -11.422552423168298
+                                ],
+                                [
+                                    32.814735949598514,
+                                    -10.96323483786646
+                                ],
+                                [
+                                    25.34982542543813,
+                                    -10.963234837866437
+                                ],
+                                [
+                                    24.797691093181466,
+                                    -10.963234837866436
+                                ],
+                                [
+                                    22.893476107078826,
+                                    -10.963234837866429
+                                ],
+                                [
+                                    22.89347610707876,
+                                    -49.873995992722506
+                                ]
+                            ],
+                            "floor_holes": [],
+                            "floor_height": 0.0,
+                            "floor_to_ceiling_height": 7.053805774278215,
+                            "is_ground_contact": false,
+                            "is_top_exposed": false,
+                            "boundary_conditions": [
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                }
+                            ]
+                        },
+                        {
+                            "type": "Room2D",
+                            "name": "Mech.",
+                            "display_name": "Mech. 102",
+                            "properties": {
+                                "type": "Room2DPropertiesAbridged"
+                            },
+                            "floor_boundary": [
+                                [
+                                    22.89347610707885,
+                                    4.007237603078042
+                                ],
+                                [
+                                    22.89347610707884,
+                                    -2.4414172525643987
+                                ],
+                                [
+                                    25.073758259309813,
+                                    -2.441417252564406
+                                ],
+                                [
+                                    27.19823203528922,
+                                    -2.4414172525644116
+                                ],
+                                [
+                                    27.19823203528923,
+                                    4.0072376030780275
+                                ],
+                                [
+                                    22.958336999467306,
+                                    4.007237603078042
+                                ]
+                            ],
+                            "floor_holes": [],
+                            "floor_height": 0.0,
+                            "floor_to_ceiling_height": 8.758267716535434,
+                            "is_ground_contact": false,
+                            "is_top_exposed": false,
+                            "boundary_conditions": [
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                },
+                                {
+                                    "type": "Outdoors"
+                                }
+                            ]
+                        }
+                    ],
+                    "floor_to_floor_height": 8.858267716535433,
+                    "multiplier": 1,
+                    "properties": {
+                        "type": "StoryPropertiesAbridged"
+                    }
+                }
+            ],
+            "properties": {
+                "type": "BuildingPropertiesAbridged"
+            }
+        }
+    ],
+    "units": "Feet",
+    "tolerance": 0.01,
+    "angle_tolerance": 1.0
+}
