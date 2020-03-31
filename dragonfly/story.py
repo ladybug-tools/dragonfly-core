@@ -83,6 +83,8 @@ class Story(_BaseGeometry):
         assert data['type'] == 'Story', 'Expected Story dictionary. ' \
             'Got {}.'.format(data['type'])
 
+        # TODO: Ensure Surface boundary conditions are updated if the serialization of
+        # Room2Ds automatically flips the Room bounday polygon.
         rooms = [Room2D.from_dict(r_dict, tolerance) for r_dict in data['room_2ds']]
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
         mult = data['multiplier'] if 'multiplier' in data else 1
@@ -326,7 +328,7 @@ using-multipliers-zone-and-or-window.html
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent. Default: 0.01,
+                faces at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
         """
         Room2D.solve_adjacency(self._room_2ds, tolerance)
@@ -341,10 +343,26 @@ using-multipliers-zone-and-or-window.html
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent. Default: 0.01,
+                at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
         """
         self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
+
+    def remove_room_2d_colinear_vertices(self, tolerance=0.01):
+        """Automatically remove colinear or duplicate vertices for the Story's Room2Ds.
+
+        Note that this method effectively erases all assigned boundary conditions,
+        window parameters and shading parameters as many of the original segments
+        may be deleted. As such, it is recommended that this method be used before
+        all other steps when creating a Story.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. Default: 0.01,
+                suitable for objects in meters.
+        """
+        self._room_2ds = tuple(room.remove_colinear_vertices(tolerance)
+                               for room in self._room_2ds)
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""

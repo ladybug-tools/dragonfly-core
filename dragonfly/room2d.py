@@ -628,6 +628,18 @@ class Room2D(_BaseGeometry):
                 'Room2Ds "{}" and "{}" with interior windows.'.format(
                     self.name, other_room_2d.name)
 
+    def set_boundary_condition(self, self_seg_index, boundary_condition):
+        """Set a single segment of this Room2D to have a certain boundary condition.
+
+        Args:
+            seg_index: An integer for the wall segment of this Room2D for which
+                the boundary condition will be set.
+            boundary_condition: A boundary condition object.
+        """
+        assert boundary_condition in bcs, \
+            'Expected boundary condition. Got {}.'.format(type(boundary_condition))
+        self._boundary_conditions[self_seg_index] = boundary_condition
+
     def move(self, moving_vec):
         """Move this Room2D along a vector.
 
@@ -709,6 +721,29 @@ class Room2D(_BaseGeometry):
                 'Room "{}" is not horizontal to within {} tolerance.'.format(
                     self.display_name, tolerance))
         return False
+
+    def remove_colinear_vertices(self, tolerance=0.01):
+        """Get a version of this Room2D without colinear or duplicate vertices.
+
+        Note that this method effectively erases all assigned boundary conditions,
+        window parameters and shading parameters as many of the original segments
+        may be deleted. As such, it is recommended that this method be used before
+        all other steps when creating a Story.
+
+        Args:
+            tolerance: The minimum distance between a vertex and the line it lies
+                upon at which point the vertex is considered colinear. Default: 0.01,
+                suitable for objects in meters.
+        """
+        new_geo = self.floor_geometry.remove_colinear_vertices(tolerance)
+        rebuilt_room = Room2D(
+                self.name, new_geo, self.floor_to_ceiling_height,
+                is_ground_contact=self.is_ground_contact,
+                is_top_exposed=self.is_top_exposed)
+        rebuilt_room._display_name = self.display_name
+        rebuilt_room._parent = self._parent
+        rebuilt_room._properties._duplicate_extension_attr(self._properties)
+        return rebuilt_room
 
     def to_honeybee(self, multiplier=1, tolerance=0.01):
         """Convert Dragonfly Room2D to a Honeybee Room.
@@ -818,8 +853,9 @@ class Room2D(_BaseGeometry):
         Args:
             room_2ds: A list of Room2Ds for which adjacencies will be solved.
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent. Default: 0.01,
+                faces at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
+
         Returns:
             A list of tuples with each tuple containing 2 sub-tuples for wall
             segments paired in the process of solving adjacency. Sub-tuples have
@@ -866,7 +902,7 @@ class Room2D(_BaseGeometry):
             room_2ds: A list of Room2Ds for which adjacencent segments will be
                 intersected.
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered centered adjacent. Default: 0.01,
+                faces at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
 
         Returns:
@@ -919,14 +955,14 @@ class Room2D(_BaseGeometry):
                 new_geo = Face3D(face_loops[0], room_2ds[i].floor_geometry.plane,
                                  face_loops[1])
             rebuilt_room = Room2D(
-                room_2ds[i].display_name, new_geo, room_2ds[i].floor_to_ceiling_height,
+                room_2ds[i].name, new_geo, room_2ds[i].floor_to_ceiling_height,
                 is_ground_contact=room_2ds[i].is_ground_contact,
                 is_top_exposed=room_2ds[i].is_top_exposed)
             rebuilt_room._display_name = room_2ds[i].display_name
             rebuilt_room._parent = room_2ds[i]._parent
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
-        return intersected_rooms
+        return tuple(intersected_rooms)
 
     def _check_wall_assinged_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""

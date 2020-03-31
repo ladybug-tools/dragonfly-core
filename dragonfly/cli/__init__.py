@@ -53,6 +53,7 @@ except ImportError:
     )
 
 from dragonfly.cli.validate import validate
+from dragonfly.cli.edit import edit
 
 
 @click.group()
@@ -68,6 +69,7 @@ def viz():
 
 
 main.add_command(validate)
+main.add_command(edit)
 
 
 if __name__ == "__main__":

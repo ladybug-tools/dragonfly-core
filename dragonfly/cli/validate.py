@@ -32,7 +32,7 @@ def validate():
 @click.argument('model-json')
 def validate_model(model_json):
     """Validate a Model JSON file against the Dragonfly schema.
-    \b
+    \n
     Args:
         model_json: Full path to a Model JSON file.
     """

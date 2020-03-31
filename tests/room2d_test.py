@@ -305,6 +305,17 @@ def test_generate_grid():
     assert len(mesh_grid.faces) == 200
 
 
+def test_room2d_set_boundary_condition():
+    """Test the Room2D set_boundary_condition method."""
+    pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    room2d = Room2D('Square Shoebox', Face3D(pts), 3)
+    room2d.set_boundary_condition(1, bcs.ground)
+    room2d.set_boundary_condition(3, bcs.ground)
+
+    assert isinstance(room2d.boundary_conditions[1], Ground)
+    assert isinstance(room2d.boundary_conditions[3], Ground)
+
+
 def test_move():
     """Test the Room2D move method."""
     pts_1 = (Point3D(0, 2, 0), Point3D(2, 2, 0), Point3D(2, 0, 0), Point3D(0, 0, 0))
@@ -410,6 +421,20 @@ def test_reflect():
     assert test_2.floor_geometry[1].x == pytest.approx(-1, rel=1e-3)
     assert test_2.floor_geometry[1].y == pytest.approx(-1, rel=1e-3)
     assert test_2.floor_geometry[1].z == pytest.approx(2, rel=1e-3)
+
+
+def test_room2d_remove_colinear_vertices():
+    """Test the Room2D remove_colinear_vertices method."""
+    pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3),
+           Point3D(0, 10, 3))
+    room2d = Room2D('Square Shoebox', Face3D(pts), 3)
+
+    assert len(room2d) == 5
+    new_room = room2d.remove_colinear_vertices(0.01)
+    assert len(new_room) == 4
+    assert len(new_room.boundary_conditions) == 4
+    assert len(new_room.window_parameters) == 4
+    assert len(new_room.shading_parameters) == 4
 
 
 def test_room2d_solve_adjacency():

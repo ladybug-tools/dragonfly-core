@@ -473,6 +473,8 @@ def test_to_dict():
 
     model = Model('New Development', [building], [tree_canopy])
     model.north_angle = 15
+    model.tolerance = 0.01
+    model.angle_tolerance = 1
 
     model_dict = model.to_dict()
     assert model_dict['type'] == 'Model'
@@ -484,6 +486,10 @@ def test_to_dict():
     assert len(model_dict['context_shades']) == 1
     assert 'north_angle' in model_dict
     assert model_dict['north_angle'] == 15
+    assert 'tolerance' in model_dict
+    assert model_dict['tolerance'] == 0.01
+    assert 'angle_tolerance' in model_dict
+    assert model_dict['angle_tolerance'] == 1
     assert 'properties' in model_dict
     assert model_dict['properties']['type'] == 'ModelProperties'
 

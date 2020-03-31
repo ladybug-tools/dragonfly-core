@@ -621,6 +621,12 @@ class Model(_BaseGeometry):
                 [shd.to_dict(True, included_prop) for shd in self._context_shades]
         if self.north_angle != 0:
             base['north_angle'] = self.north_angle
+        if self.units != 'Meters':
+            base['units'] = self.units
+        if self.tolerance != 0:
+            base['tolerance'] = self.tolerance
+        if self.angle_tolerance != 0:
+            base['angle_tolerance'] = self.angle_tolerance
 
         return base
 
