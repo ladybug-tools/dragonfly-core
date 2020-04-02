@@ -19,6 +19,7 @@ from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug.futil import nukedir
 
+import json
 import os
 
 
@@ -520,6 +521,16 @@ def test_to_from_dict_methods():
     model_dict = model.to_dict()
     new_model = Model.from_dict(model_dict)
     assert model_dict == new_model.to_dict()
+
+
+def test_from_dict_nulls():
+    """Test the re-serialization of a Model with null extension properties."""
+    test_json = './tests/json/model_with_nulls.json'
+    with open(test_json) as json_file:
+        data = json.load(json_file)
+    model = Model.from_dict(data)
+
+    assert isinstance(model, Model)
 
 
 def test_to_geojson():

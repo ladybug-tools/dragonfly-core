@@ -243,7 +243,7 @@ class ModelProperties(_Properties):
                 if not atr.startswith('_') and atr not in self._do_not_duplicate]
 
         for atr in attr:
-            if atr not in data['properties']:
+            if atr not in data['properties'] or data['properties'][atr] is None:
                 continue
             var = getattr(self, atr)
             if not hasattr(var, 'apply_properties_from_dict'):
