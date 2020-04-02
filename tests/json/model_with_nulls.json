@@ -1,0 +1,1503 @@
+{
+  "units": "Meters",
+  "name": "Model_14e27252-22a3-4b51-b476-4e49634e3ef7",
+  "buildings": [
+    {
+      "name": "Building_59048489-606f-486e-819c-f3604a334bba",
+      "unique_stories": [
+        {
+          "name": "Story_508f925a-c593-4128-a6f0-ce4b7962d7e7",
+          "room_2ds": [
+            {
+              "name": "Room_31294ad6-26bd-4e5e-b6a3-3038586dc83a",
+              "floor_boundary": [
+                [
+                  22.89347610707884,
+                  -2.4414172525643991
+                ],
+                [
+                  22.89347610707885,
+                  4.0630118812932645
+                ],
+                [
+                  22.506336999467308,
+                  4.0630118812932654
+                ],
+                [
+                  22.506336999467308,
+                  4.5650118812932643
+                ],
+                [
+                  22.506336999467308,
+                  9.0104869469118061
+                ],
+                [
+                  22.506336999467308,
+                  9.5124869469118778
+                ],
+                [
+                  -16.201012081897545,
+                  9.5124869469179032
+                ],
+                [
+                  -16.201012081897584,
+                  -10.503917252564468
+                ],
+                [
+                  22.893476107078829,
+                  -10.503917252564593
+                ],
+                [
+                  22.893476107078829,
+                  -10.963234837866429
+                ],
+                [
+                  25.0737582593098,
+                  -10.963234837866437
+                ],
+                [
+                  25.073758259309813,
+                  -2.4414172525644058
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 8.8582677165354333,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Kitchen & Dining 101",
+              "type": "Room2D",
+              "floor_holes": [
+                [
+                  [
+                    0.20318739316808276,
+                    -0.66139756752534173
+                  ],
+                  [
+                    -0.27728048546290762,
+                    -1.8213496364009123
+                  ],
+                  [
+                    -1.4372325543384774,
+                    -2.3018175150319049
+                  ],
+                  [
+                    -2.5971846232140479,
+                    -1.8213496364009145
+                  ],
+                  [
+                    -3.0776525018450407,
+                    -0.66139756752534773
+                  ],
+                  [
+                    -2.5971846232140532,
+                    0.49855450135022328
+                  ],
+                  [
+                    -1.4372325543384852,
+                    0.97902237998121855
+                  ],
+                  [
+                    -0.27728048546291428,
+                    0.49855450135023238
+                  ]
+                ]
+              ],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26..Face3",
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137..Face2",
+                    "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26",
+              "floor_boundary": [
+                [
+                  32.758961671383304,
+                  -2.4414172525644307
+                ],
+                [
+                  27.19823203528922,
+                  -2.4414172525644124
+                ],
+                [
+                  25.073758259309813,
+                  -2.4414172525644058
+                ],
+                [
+                  25.0737582593098,
+                  -10.963234837866437
+                ],
+                [
+                  32.75896167138329,
+                  -10.963234837866461
+                ],
+                [
+                  32.75896167138329,
+                  -8.2138910058448928
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 8.7582677165354337,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Laundry 104",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "boundary_condition_objects": [
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b..Face3",
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137..Face3",
+                    "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_31294ad6-26bd-4e5e-b6a3-3038586dc83a..Face11",
+                    "Room_31294ad6-26bd-4e5e-b6a3-3038586dc83a"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_a53a02ad-7d90-4729-9804-3db0f1617a21..Face7",
+                    "Room_a53a02ad-7d90-4729-9804-3db0f1617a21"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b",
+              "floor_boundary": [
+                [
+                  32.758961671383311,
+                  4.0072376030780088
+                ],
+                [
+                  27.19823203528923,
+                  4.0072376030780275
+                ],
+                [
+                  27.19823203528922,
+                  -2.4414172525644124
+                ],
+                [
+                  32.758961671383304,
+                  -2.4414172525644307
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 8.7582677165354337,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Bath 103",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "boundary_condition_objects": [
+                    "Room_a53a02ad-7d90-4729-9804-3db0f1617a21..Face5",
+                    "Room_a53a02ad-7d90-4729-9804-3db0f1617a21"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137..Face4",
+                    "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26..Face1",
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_a53a02ad-7d90-4729-9804-3db0f1617a21..Face6",
+                    "Room_a53a02ad-7d90-4729-9804-3db0f1617a21"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_a53a02ad-7d90-4729-9804-3db0f1617a21",
+              "floor_boundary": [
+                [
+                  33.0115863432995,
+                  9.3451641122650226
+                ],
+                [
+                  33.011586343299314,
+                  9.4567126686950189
+                ],
+                [
+                  22.506336999467308,
+                  9.4567126686966549
+                ],
+                [
+                  22.506336999467308,
+                  4.0072376030780434
+                ],
+                [
+                  27.19823203528923,
+                  4.0072376030780275
+                ],
+                [
+                  32.758961671383311,
+                  4.0072376030780088
+                ],
+                [
+                  32.758961671383304,
+                  -2.4414172525644293
+                ],
+                [
+                  32.75896167138329,
+                  -8.2138910058448928
+                ],
+                [
+                  32.75896167138329,
+                  -11.422552423168298
+                ],
+                [
+                  43.129696579519766,
+                  -11.422552423168334
+                ],
+                [
+                  43.129696579519766,
+                  -10.503917252566115
+                ],
+                [
+                  43.129696579519788,
+                  4.6535630623955626
+                ],
+                [
+                  43.067360621514553,
+                  4.6535630623957713
+                ],
+                [
+                  43.06736062151456,
+                  9.3451641122649889
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 8.7582677165354337,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Hall 105",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b..Face1",
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b..Face4",
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26..Face6",
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_ef6f1295-ebe9-44a2-b600-3d8edd7472ea",
+              "floor_boundary": [
+                [
+                  43.1296965795197,
+                  -49.87399599272257
+                ],
+                [
+                  43.129696579519766,
+                  -11.422552423168334
+                ],
+                [
+                  32.814735949598514,
+                  -11.422552423168298
+                ],
+                [
+                  32.814735949598514,
+                  -10.963234837866461
+                ],
+                [
+                  25.34982542543813,
+                  -10.963234837866437
+                ],
+                [
+                  24.797691093181466,
+                  -10.963234837866436
+                ],
+                [
+                  22.893476107078826,
+                  -10.963234837866429
+                ],
+                [
+                  22.893476107078762,
+                  -49.873995992722506
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 7.0538057742782154,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Living 106",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137",
+              "floor_boundary": [
+                [
+                  22.89347610707885,
+                  4.0072376030780417
+                ],
+                [
+                  22.89347610707884,
+                  -2.4414172525643987
+                ],
+                [
+                  25.073758259309813,
+                  -2.4414172525644058
+                ],
+                [
+                  27.19823203528922,
+                  -2.4414172525644116
+                ],
+                [
+                  27.19823203528923,
+                  4.0072376030780275
+                ],
+                [
+                  22.958336999467306,
+                  4.0072376030780417
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 8.7582677165354337,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Mech. 102",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Ground"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_31294ad6-26bd-4e5e-b6a3-3038586dc83a..Face12",
+                    "Room_31294ad6-26bd-4e5e-b6a3-3038586dc83a"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26..Face2",
+                    "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b..Face2",
+                    "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Ground"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            }
+          ],
+          "properties": {
+            "type": "StoryPropertiesAbridged",
+            "energy": null
+          },
+          "display_name": "Level 1",
+          "type": "Story",
+          "floor_to_floor_height": 0.0,
+          "multiplier": 1
+        },
+        {
+          "name": "Story_dfdaf24d-239d-48dc-8d06-8dcf925fe2c5",
+          "room_2ds": [
+            {
+              "name": "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5",
+              "floor_boundary": [
+                [
+                  3.4840272881812209,
+                  9.4567126686951131
+                ],
+                [
+                  -16.036970087146962,
+                  9.4567126686951752
+                ],
+                [
+                  -16.036970087146926,
+                  -10.779507803745071
+                ],
+                [
+                  -4.5212220556508589,
+                  -10.779507803745108
+                ],
+                [
+                  -4.5212220556508411,
+                  0.12600400727760563
+                ],
+                [
+                  -0.617022580585223,
+                  0.12600400727759303
+                ],
+                [
+                  3.4840272881812058,
+                  0.12600400727757943
+                ],
+                [
+                  3.4840272881812129,
+                  4.4567126686949017
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 17.696144143757948,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Master Bedroom 206",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211..Face5",
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211..Face4",
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211..Face3",
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88..Face8",
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301..Face7",
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211",
+              "floor_boundary": [
+                [
+                  -4.5212220556508589,
+                  -10.779507803745108
+                ],
+                [
+                  3.484027288181188,
+                  -10.779507803745135
+                ],
+                [
+                  3.4840272881812067,
+                  0.12600400727757979
+                ],
+                [
+                  -0.617022580585223,
+                  0.12600400727759306
+                ],
+                [
+                  -4.5212220556508411,
+                  0.12600400727760608
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 13.740518398987264,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Master Bath 207",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88..Face9",
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5..Face6",
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5..Face5",
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5..Face4",
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88",
+              "floor_boundary": [
+                [
+                  3.484027288181188,
+                  -10.779507803745135
+                ],
+                [
+                  14.782301833712436,
+                  -10.779507803745172
+                ],
+                [
+                  14.782301833712445,
+                  -4.8083791948218568
+                ],
+                [
+                  13.523397366921355,
+                  -4.8083791948218524
+                ],
+                [
+                  13.523397366921357,
+                  -3.7585104284176536
+                ],
+                [
+                  13.523397366921365,
+                  2.1338780230258472
+                ],
+                [
+                  13.523397366921371,
+                  4.4567126686948706
+                ],
+                [
+                  3.4840272881812129,
+                  4.4567126686949017
+                ],
+                [
+                  3.4840272881812058,
+                  0.12600400727757943
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 15.614590575092409,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Bedroom 204",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_ffeb608c-14f1-4502-b85a-4133a6e3ef4f..Face4",
+                    "Room_ffeb608c-14f1-4502-b85a-4133a6e3ef4f"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_8aac3fce-03e0-4307-becc-6f45343ccae2..Face1",
+                    "Room_8aac3fce-03e0-4307-becc-6f45343ccae2"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3..Face2",
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301..Face8",
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5..Face7",
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211..Face2",
+                    "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_ffeb608c-14f1-4502-b85a-4133a6e3ef4f",
+              "floor_boundary": [
+                [
+                  14.782301833712436,
+                  -10.779507803745172
+                ],
+                [
+                  22.97221626455914,
+                  -10.779507803745199
+                ],
+                [
+                  22.972216264559147,
+                  -4.8083791948218835
+                ],
+                [
+                  14.782301833712445,
+                  -4.8083791948218595
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 12.295136119124487,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Bath 203",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133..Face8",
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88..Face2",
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_8aac3fce-03e0-4307-becc-6f45343ccae2",
+              "floor_boundary": [
+                [
+                  13.523397366921365,
+                  2.1338780230258472
+                ],
+                [
+                  13.523397366921353,
+                  -3.7585104284176536
+                ],
+                [
+                  21.708764820989821,
+                  -3.7585104284176802
+                ],
+                [
+                  21.708764820989831,
+                  2.1338780230258205
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 18.859230511601915,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Bath 205",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "boundary_condition_objects": [
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88..Face5",
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133..Face5",
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3..Face3",
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_04f41209-05ed-4580-8ccb-011a0bdba133",
+              "floor_boundary": [
+                [
+                  32.75896167138329,
+                  -10.779507803745231
+                ],
+                [
+                  32.75896167138329,
+                  -10.717171845736226
+                ],
+                [
+                  32.758961671383311,
+                  4.4567126686948084
+                ],
+                [
+                  21.708764820989835,
+                  4.4567126686948439
+                ],
+                [
+                  21.708764820989831,
+                  2.1338780230258205
+                ],
+                [
+                  21.708764820989821,
+                  -3.7585104284176802
+                ],
+                [
+                  22.972216264559151,
+                  -3.7585104284176847
+                ],
+                [
+                  22.972216264559151,
+                  -4.8083791948218835
+                ],
+                [
+                  22.97221626455914,
+                  -10.779507803745199
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 15.82207196765288,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Bedroom 202",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Ground"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301..Face1",
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301..Face10",
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3..Face4",
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_8aac3fce-03e0-4307-becc-6f45343ccae2..Face3",
+                    "Room_8aac3fce-03e0-4307-becc-6f45343ccae2"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_ffeb608c-14f1-4502-b85a-4133a6e3ef4f..Face2",
+                    "Room_ffeb608c-14f1-4502-b85a-4133a6e3ef4f"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301",
+              "floor_boundary": [
+                [
+                  32.758961671383311,
+                  4.4567126686948084
+                ],
+                [
+                  32.75896167138329,
+                  -10.717171845736226
+                ],
+                [
+                  42.739276632013215,
+                  -10.717171845736258
+                ],
+                [
+                  42.739276632013251,
+                  9.34516411226499
+                ],
+                [
+                  33.0115863432995,
+                  9.3451641122650226
+                ],
+                [
+                  33.0115863432995,
+                  9.4567126686950189
+                ],
+                [
+                  3.4840272881812209,
+                  9.4567126686951131
+                ],
+                [
+                  3.4840272881812133,
+                  4.4567126686949035
+                ],
+                [
+                  13.523397366921371,
+                  4.4567126686948706
+                ],
+                [
+                  21.708764820989828,
+                  4.4567126686948439
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 13.054263744699087,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Entry Hall 201",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "boundary_condition_objects": [
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133..Face2",
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Ground"
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": false,
+                  "wind_exposure": false,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5..Face8",
+                    "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88..Face7",
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3..Face1",
+                    "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133..Face3",
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            },
+            {
+              "name": "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3",
+              "floor_boundary": [
+                [
+                  21.708764820989828,
+                  4.4567126686948439
+                ],
+                [
+                  13.523397366921369,
+                  4.4567126686948706
+                ],
+                [
+                  13.523397366921365,
+                  2.1338780230258472
+                ],
+                [
+                  21.708764820989831,
+                  2.1338780230258205
+                ]
+              ],
+              "floor_height": 9.84251968503937,
+              "floor_to_ceiling_height": 15.755623010640059,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": null
+              },
+              "display_name": "Linen 208",
+              "type": "Room2D",
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "boundary_condition_objects": [
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301..Face9",
+                    "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88..Face6",
+                    "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_8aac3fce-03e0-4307-becc-6f45343ccae2..Face4",
+                    "Room_8aac3fce-03e0-4307-becc-6f45343ccae2"
+                  ],
+                  "type": "Surface"
+                },
+                {
+                  "boundary_condition_objects": [
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133..Face4",
+                    "Room_04f41209-05ed-4580-8ccb-011a0bdba133"
+                  ],
+                  "type": "Surface"
+                }
+              ],
+              "window_parameters": null,
+              "shading_parameters": null
+            }
+          ],
+          "properties": {
+            "type": "StoryPropertiesAbridged",
+            "energy": null
+          },
+          "display_name": "Level 2",
+          "type": "Story",
+          "floor_to_floor_height": 0.0,
+          "multiplier": 1
+        }
+      ],
+      "properties": {
+        "type": "BuildingPropertiesAbridged",
+        "energy": null
+      },
+      "display_name": "Building 1",
+      "type": "Building"
+    }
+  ],
+  "properties": {
+    "type": "ModelProperties",
+    "energy": null
+  },
+  "display_name": "Sample Model",
+  "type": "Model",
+  "context_shades": [],
+  "north_angle": 0.0,
+  "tolerance": 0.0,
+  "angle_tolerance": 0.0
+}
