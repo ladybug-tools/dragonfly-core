@@ -56,7 +56,7 @@ def test_extruded_border_add_shading_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face_1 = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face_1 = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     face_2 = face_1.duplicate()
     face_2.apertures_by_ratio(0.4)
     simple_border.add_shading_to_face(face_1, 0.01)
@@ -116,7 +116,7 @@ def test_overhang_add_shading_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     simple_awning.add_shading_to_face(face, 0.01)
 
     assert len(face.outdoor_shades) == 1
@@ -175,7 +175,7 @@ def test_louvers_by_distance_add_shading_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     louvers.add_shading_to_face(face, 0.01)
 
     assert len(face.outdoor_shades) == 6
@@ -233,7 +233,7 @@ def test_louvers_by_count_add_shading_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
 
     louvers.add_shading_to_face(face, 0.01)
 

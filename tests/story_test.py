@@ -22,17 +22,17 @@ def test_story_init():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
     str(story)  # test the string representation
-    assert story.name == 'OfficeFloor'
-    assert story.display_name == 'Office Floor'
+    assert story.identifier == 'OfficeFloor'
+    assert story.display_name == 'OfficeFloor'
     assert len(story.room_2ds) == 4
     for room in story.room_2ds:
         assert isinstance(room, Room2D)
@@ -54,11 +54,11 @@ def test_story_floor_geometry():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
 
     floor_geo = story.floor_geometry(0.01)
     outline_segs = story.outline_segments(0.01)
@@ -75,24 +75,24 @@ def test_story_add_rooms():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1])
 
     assert story.floor_area == 100
-    assert isinstance(story.room_by_name('Office1'), Room2D) 
+    assert isinstance(story.room_by_identifier('Office1'), Room2D) 
     with pytest.raises(ValueError):
-        story.room_by_name('Office2')
+        story.room_by_identifier('Office2')
     story.add_room_2d(room2d_2)
     assert story.floor_area == 200
-    assert isinstance(story.room_by_name('Office2'), Room2D)
+    assert isinstance(story.room_by_identifier('Office2'), Room2D)
     with pytest.raises(ValueError):
-        story.room_by_name('Office3')
+        story.room_by_identifier('Office3')
     story.add_room_2ds([room2d_3, room2d_4])
     assert story.floor_area == 400
-    assert isinstance(story.room_by_name('Office3'), Room2D)
+    assert isinstance(story.room_by_identifier('Office3'), Room2D)
 
 
 def test_room2d_set_outdoor_window_shading_parameters():
@@ -101,11 +101,11 @@ def test_room2d_set_outdoor_window_shading_parameters():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
 
     ashrae_base = SimpleWindowRatio(0.4)
@@ -126,9 +126,9 @@ def test_generate_grid():
     """Test the generate_grid method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
 
     mesh_grid = story.generate_grid(1)
     assert len(mesh_grid) == 2
@@ -142,9 +142,9 @@ def test_move():
     """Test the Story move method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
 
     vec_1 = Vector3D(2, 2, 2)
     new_s = story.duplicate()
@@ -165,9 +165,9 @@ def test_scale():
     """Test the Room2D scale method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
 
     new_s = story.duplicate()
     new_s.scale(2)
@@ -187,8 +187,8 @@ def test_rotate_xy():
     """Test the Story rotate_xy method."""
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
-    room = Room2D('Square Shoebox', Face3D(pts, plane), 3)
-    story = Story('Office Floor', [room])
+    room = Room2D('SquareShoebox', Face3D(pts, plane), 3)
+    story = Story('OfficeFloor', [room])
     origin_1 = Point3D(1, 1, 0)
 
     test_1 = story.duplicate()
@@ -214,8 +214,8 @@ def test_reflect():
     """Test the Story reflect method."""
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
-    room = Room2D('Square Shoebox', Face3D(pts, plane), 3)
-    story = Story('Office Floor', [room])
+    room = Room2D('SquareShoebox', Face3D(pts, plane), 3)
+    story = Story('OfficeFloor', [room])
 
     origin_1 = Point3D(1, 0, 2)
     normal_1 = Vector3D(1, 0, 0)
@@ -235,9 +235,9 @@ def test_to_honeybee():
     """Test the to_honeybee method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
@@ -255,7 +255,7 @@ def test_to_honeybee():
     assert isinstance(hb_model.rooms[0][1].boundary_condition, Outdoors)
     assert isinstance(hb_model.rooms[0][2].boundary_condition, Surface)
     assert hb_model.rooms[0][2].boundary_condition.boundary_condition_object == \
-        hb_model.rooms[1][4].name
+        hb_model.rooms[1][4].identifier
     assert len(hb_model.rooms[0][1].apertures) == 1
     assert len(hb_model.rooms[0][2].apertures) == 0
 
@@ -264,9 +264,9 @@ def test_to_honeybee_different_heights():
     """Test the to_honeybee method with different floor and ceiling heights."""
     pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 5)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
@@ -291,17 +291,17 @@ def test_to_dict():
     """Test the Story to_dict method."""
     pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 5)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
 
     sd = story.to_dict()
     assert sd['type'] == 'Story'
-    assert sd['name'] == 'OfficeFloor'
-    assert sd['display_name'] == 'Office Floor'
+    assert sd['identifier'] == 'OfficeFloor'
+    assert sd['display_name'] == 'OfficeFloor'
     assert 'room_2ds' in sd
     assert len(sd['room_2ds']) == 2
     assert sd['floor_to_floor_height'] == 5
@@ -314,9 +314,9 @@ def test_to_from_dict():
     """Test the to/from dict of Story objects."""
     pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 5)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))

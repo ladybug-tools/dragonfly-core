@@ -9,7 +9,7 @@ from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 
-from honeybee.typing import float_positive
+from honeybee.typing import float_positive, clean_string
 import honeybee.boundarycondition as hbc
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface
@@ -31,7 +31,8 @@ class Room2D(_BaseGeometry):
     """A volume defined by an extruded floor plate, representing a single room or space.
 
     Args:
-        name: Room2D name. Must be < 100 characters.
+        identifier: Text string for a unique Room2D ID. Must be < 100 characters and
+            not contain any spaces or special characters.
         floor_geometry: A single horizontal Face3D object representing the
             floor plate of the Room. Note that this Face3D must be horiztional
             to be valid.
@@ -59,7 +60,7 @@ class Room2D(_BaseGeometry):
             floor plane. Default is 0, which will not perform any check.
 
     Properties:
-        * name
+        * identifier
         * display_name
         * floor_geometry
         * floor_to_ceiling_height
@@ -82,17 +83,18 @@ class Room2D(_BaseGeometry):
         * exterior_aperture_area
         * min
         * max
+        * user_data
     """
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
                  '_boundary_conditions', '_window_parameters', '_shading_parameters',
                  '_is_ground_contact', '_is_top_exposed', '_parent')
 
-    def __init__(self, name, floor_geometry, floor_to_ceiling_height,
+    def __init__(self, identifier, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
                  shading_parameters=None, is_ground_contact=False, is_top_exposed=False,
                  tolerance=0):
         """A volume defined by an extruded floor plate, representing a single room."""
-        _BaseGeometry.__init__(self, name)  # process the name
+        _BaseGeometry.__init__(self, identifier)  # process the identifier
 
         # process the floor_geometry
         assert isinstance(floor_geometry, Face3D), \
@@ -109,7 +111,7 @@ class Room2D(_BaseGeometry):
         if tolerance != 0:
             z_vals = tuple(pt.z for pt in self._floor_geometry.vertices)
             assert max(z_vals) - min(z_vals) <= tolerance, 'Not all of Room2D ' \
-                '"{}" vertices lie within the same horizontal plane.'.format(name)
+                '"{}" vertices lie within the same horizontal plane.'.format(identifier)
 
         # process segment count and floor-to-ceiling height
         self._segment_count = len(self.floor_segments)
@@ -225,17 +227,19 @@ class Room2D(_BaseGeometry):
         grnd = data['is_ground_contact'] if 'is_ground_contact' in data else False
         top = data['is_top_exposed'] if 'is_top_exposed' in data else False
 
-        room = Room2D(data['name'], floor_geometry, data['floor_to_ceiling_height'],
+        room = Room2D(data['identifier'], floor_geometry, data['floor_to_ceiling_height'],
                       b_conditions, glz_pars, shd_pars, grnd, top, tolerance)
         if 'display_name' in data and data['display_name'] is not None:
             room._display_name = data['display_name']
+        if 'user_data' in data and data['user_data'] is not None:
+            room.user_data = data['user_data']
 
         if data['properties']['type'] == 'Room2DProperties':
             room.properties._load_extension_attr_from_dict(data['properties'])
         return room
 
     @classmethod
-    def from_polygon(cls, name, polygon, floor_height, floor_to_ceiling_height,
+    def from_polygon(cls, identifier, polygon, floor_height, floor_to_ceiling_height,
                      boundary_conditions=None, window_parameters=None,
                      shading_parameters=None, is_ground_contact=False,
                      is_top_exposed=False):
@@ -245,7 +249,8 @@ class Room2D(_BaseGeometry):
         (like a courtyard) since polygons cannot have holes within them.
 
         Args:
-            name: Room2D name. Must be < 100 characters.
+            identifier: Text string for a unique Room2D ID. Must be < 100 characters
+                and not contain any spaces or special characters.
             polygon: A single Polygon2D object representing the floor plate of the Room.
             floor_height: A float value to place the polygon within 3D space.
             floor_to_ceiling_height: A number for the height above the floor where the
@@ -290,12 +295,12 @@ class Room2D(_BaseGeometry):
         vert3d = tuple(base_plane.xy_to_xyz(_v) for _v in polygon.vertices)
         floor_geometry = Face3D(vert3d, base_plane, enforce_right_hand=False)
 
-        return cls(name, floor_geometry, floor_to_ceiling_height, boundary_conditions,
-                   window_parameters, shading_parameters, is_ground_contact,
-                   is_top_exposed)
+        return cls(identifier, floor_geometry, floor_to_ceiling_height,
+                   boundary_conditions, window_parameters, shading_parameters,
+                   is_ground_contact, is_top_exposed)
 
     @classmethod
-    def from_vertices(cls, name, vertices, floor_height, floor_to_ceiling_height,
+    def from_vertices(cls, identifier, vertices, floor_height, floor_to_ceiling_height,
                       boundary_conditions=None, window_parameters=None,
                       shading_parameters=None, is_ground_contact=False,
                       is_top_exposed=False):
@@ -306,7 +311,8 @@ class Room2D(_BaseGeometry):
         vertices cannot be derived from a single list of vertices.
 
         Args:
-            name: Room2D name. Must be < 100 characters.
+            identifier: Text string for a unique Room2D ID. Must be < 100 characters
+                and not contain any spaces or special characters.
             vertices: A flattened list of 2 or more vertices as (x, y) that trace
                 the outline of the floor plate.
             floor_height: A float value to place the polygon within 3D space.
@@ -331,7 +337,7 @@ class Room2D(_BaseGeometry):
         """
         polygon = Polygon2D(tuple(Point2D(*v) for v in vertices))
         return cls.from_polygon(
-            name, polygon, floor_height, floor_to_ceiling_height,
+            identifier, polygon, floor_height, floor_to_ceiling_height,
             boundary_conditions, window_parameters, shading_parameters,
             is_ground_contact, is_top_exposed)
 
@@ -554,27 +560,28 @@ class Room2D(_BaseGeometry):
         self._shading_parameters = shd_ps
 
     def add_prefix(self, prefix):
-        """Change the name of this object and all child segments by inserting a prefix.
+        """Change the identifier of this object by inserting a prefix.
 
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeated rooms) since all objects
-        within a Model must have unique names.
+        within a Model must have unique identifiers.
 
         Args:
             prefix: Text that will be inserted at the start of this object's
-                (and child segments') name and display_name. It is recommended
-                that this name be short to avoid maxing out the 100 allowable
-                characters for honeybee names.
+                (and child segments') identifier and display_name. It is recommended
+                that this prefix be short to avoid maxing out the 100 allowable
+                characters for dragonfly identifiers.
         """
-        self.name = '{}_{}'.format(prefix, self.display_name)
+        self._identifier = clean_string('{}_{}'.format(prefix, self.identifier))
+        self.display_name = '{}_{}'.format(prefix, self.display_name)
         self.properties.add_prefix(prefix)
         for i, bc in enumerate(self._boundary_conditions):
             if isinstance(bc, Surface):
-                new_face_name = '{}_{}'.format(prefix, bc.boundary_condition_objects[0])
-                new_room_name = '{}_{}'.format(prefix, bc.boundary_condition_objects[1])
+                new_face_id = '{}_{}'.format(prefix, bc.boundary_condition_objects[0])
+                new_room_id = '{}_{}'.format(prefix, bc.boundary_condition_objects[1])
                 self._boundary_conditions[i] = \
-                    Surface((new_face_name, new_room_name))
+                    Surface((new_face_id, new_room_id))
 
     def generate_grid(self, x_dim, y_dim=None, offset=1.0):
         """Get a gridded Mesh3D object offset from the floor of this room.
@@ -606,27 +613,27 @@ class Room2D(_BaseGeometry):
         assert isinstance(other_room_2d, Room2D), \
             'Expected dragonfly Room2D. Got {}.'.format(type(other_room_2d))
         # set the boundary conditions of the segments
-        names_1 = ('{}..Face{}'.format(self.name, self_seg_index + 1),
-                   self.name)
-        names_2 = ('{}..Face{}'.format(other_room_2d.name, other_seg_index + 1),
-                   other_room_2d.name)
-        self._boundary_conditions[self_seg_index] = Surface(names_2)
-        other_room_2d._boundary_conditions[other_seg_index] = Surface(names_1)
+        ids_1 = ('{}..Face{}'.format(self.identifier, self_seg_index + 1),
+                 self.identifier)
+        ids_2 = ('{}..Face{}'.format(other_room_2d.identifier, other_seg_index + 1),
+                 other_room_2d.identifier)
+        self._boundary_conditions[self_seg_index] = Surface(ids_2)
+        other_room_2d._boundary_conditions[other_seg_index] = Surface(ids_1)
         # check that the window parameters match
         if self._window_parameters[self_seg_index] is not None or \
                 other_room_2d._window_parameters[other_seg_index] is not None:
             assert self._window_parameters[self_seg_index] == \
                 other_room_2d._window_parameters[other_seg_index], \
                 'Window parameters do not match between adjacent Room2Ds "{}" and ' \
-                '"{}".'.format(self.name, other_room_2d.name)
+                '"{}".'.format(self.identifier, other_room_2d.identifier)
             assert self.floor_to_ceiling_height == \
                 other_room_2d.floor_to_ceiling_height, 'floor_to_ceiling_height does '\
                 'not match between Room2Ds "{}" and "{}" with interior windows.'.format(
-                    self.name, other_room_2d.name)
+                    self.identifier, other_room_2d.identifier)
             assert self.floor_height == \
                 other_room_2d.floor_height, 'floor_height does not match between '\
                 'Room2Ds "{}" and "{}" with interior windows.'.format(
-                    self.name, other_room_2d.name)
+                    self.identifier, other_room_2d.identifier)
 
     def set_boundary_condition(self, self_seg_index, boundary_condition):
         """Set a single segment of this Room2D to have a certain boundary condition.
@@ -737,10 +744,11 @@ class Room2D(_BaseGeometry):
         """
         new_geo = self.floor_geometry.remove_colinear_vertices(tolerance)
         rebuilt_room = Room2D(
-                self.name, new_geo, self.floor_to_ceiling_height,
+                self.identifier, new_geo, self.floor_to_ceiling_height,
                 is_ground_contact=self.is_ground_contact,
                 is_top_exposed=self.is_top_exposed)
         rebuilt_room._display_name = self.display_name
+        rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
@@ -762,7 +770,7 @@ class Room2D(_BaseGeometry):
         # create the honeybee Room
         room_polyface = Polyface3D.from_offset_face(
             self._floor_geometry, self.floor_to_ceiling_height)
-        hb_room = Room.from_polyface3d(self.display_name, room_polyface)
+        hb_room = Room.from_polyface3d(self.identifier, room_polyface)
 
         # assign boundary conditions, window and shading to walls
         for i, bc in enumerate(self._boundary_conditions):
@@ -778,10 +786,12 @@ class Room2D(_BaseGeometry):
         if self._parent is not None:
             new_faces = self._split_walls_along_height(hb_room, tolerance)
             if len(new_faces) != len(hb_room):  # rebuild the room with split surfaces
-                hb_room = Room(self.name, new_faces, tolerance, 0.1)
+                hb_room = Room(self.identifier, new_faces, tolerance, 0.1)
 
-        # set the multiplier
+        # set the multiplier, display_name, and user_data
         hb_room.multiplier = multiplier
+        hb_room._display_name = self._display_name
+        hb_room._user_data = self._user_data
 
         # assign boundary conditions for the roof and floor
         try:
@@ -805,14 +815,14 @@ class Room2D(_BaseGeometry):
         Args:
             abridged: Boolean to note whether the extension properties of the
                 object (ie. program_type, construciton_set) should be included in detail
-                (False) or just referenced by name (True). Default: False.
+                (False) or just referenced by identifier (True). Default: False.
             included_prop: List of properties to filter keys that must be included in
                 output dictionary. For example ['energy'] will include 'energy' key if
                 available in properties to_dict. By default all the keys will be
                 included. To exclude all the keys from extensions use an empty list.
         """
         base = {'type': 'Room2D'}
-        base['name'] = self.name
+        base['identifier'] = self.identifier
         base['display_name'] = self.display_name
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         base['floor_boundary'] = [(pt.x, pt.y) for pt in self._floor_geometry.boundary]
@@ -843,6 +853,9 @@ class Room2D(_BaseGeometry):
             for shd in self._shading_parameters:
                 val = shd.to_dict() if shd is not None else None
                 base['shading_parameters'].append(val)
+
+        if self.user_data is not None:
+            base['user_data'] = self.user_data
 
         return base
 
@@ -955,10 +968,12 @@ class Room2D(_BaseGeometry):
                 new_geo = Face3D(face_loops[0], room_2ds[i].floor_geometry.plane,
                                  face_loops[1])
             rebuilt_room = Room2D(
-                room_2ds[i].name, new_geo, room_2ds[i].floor_to_ceiling_height,
+                room_2ds[i].identifier, new_geo, room_2ds[i].floor_to_ceiling_height,
                 is_ground_contact=room_2ds[i].is_ground_contact,
                 is_top_exposed=room_2ds[i].is_top_exposed)
             rebuilt_room._display_name = room_2ds[i].display_name
+            rebuilt_room._user_data = None if room_2ds[i].user_data is None else \
+                room_2ds[i].user_data.copy()
             rebuilt_room._parent = room_2ds[i]._parent
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
@@ -1023,7 +1038,7 @@ class Room2D(_BaseGeometry):
             if not isinstance(bc, Surface):
                 new_faces.append(face)
             else:
-                adj_rm = self._parent.room_by_name(bc.boundary_condition_objects[-1])
+                adj_rm = self._parent.room_by_identifier(bc.boundary_condition_objects[-1])
                 flr_diff = adj_rm.floor_height - self.floor_height
                 ciel_diff = self.ceiling_height - adj_rm.ceiling_height
                 if flr_diff <= tolerance and ciel_diff <= tolerance:
@@ -1041,8 +1056,8 @@ class Room2D(_BaseGeometry):
                     above = Face3D.from_extrusion(lseg.move(vec2), Vector3D(0, 0, ciel_diff))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
-                    below_face = Face('{}_Below'.format(face.name), below)
-                    above_face = Face('{}_Above'.format(face.name), above)
+                    below_face = Face('{}_Below'.format(face.identifier), below)
+                    above_face = Face('{}_Above'.format(face.identifier), above)
                     try:
                         below_face.boundary_condition = bcs.adiabatic
                         above_face.boundary_condition = bcs.adiabatic
@@ -1059,7 +1074,7 @@ class Room2D(_BaseGeometry):
                     mid = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, mid_dist))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
-                    below_face = Face('{}_Below'.format(face.name), below)
+                    below_face = Face('{}_Below'.format(face.identifier), below)
                     try:
                         below_face.boundary_condition = bcs.adiabatic
                     except AttributeError:
@@ -1075,7 +1090,7 @@ class Room2D(_BaseGeometry):
                     above = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, ciel_diff))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
-                    above_face = Face('{}_Above'.format(face.name), above)
+                    above_face = Face('{}_Above'.format(face.identifier), above)
                     try:
                         above_face.boundary_condition = bcs.adiabatic
                     except AttributeError:
@@ -1085,9 +1100,11 @@ class Room2D(_BaseGeometry):
         return new_faces
 
     def __copy__(self):
-        new_r = Room2D(self.name, self._floor_geometry, self.floor_to_ceiling_height,
+        new_r = Room2D(self.identifier, self._floor_geometry,
+                       self.floor_to_ceiling_height,
                        self._boundary_conditions[:])  # copy boundary condition list
         new_r._display_name = self.display_name
+        new_r._user_data = None if self.user_data is None else self.user_data.copy()
         new_r._parent = self._parent
         new_r._window_parameters = self._window_parameters[:]  # copy window list
         new_r._shading_parameters = self._shading_parameters[:]  # copy shading list

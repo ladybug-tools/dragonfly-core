@@ -64,7 +64,7 @@ def test_single_window_add_window_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     simple_window.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 1
@@ -111,7 +111,7 @@ def test_simple_window_ratio_add_window_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     ashrae_base.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 1
@@ -173,7 +173,7 @@ def test_repeating_window_ratio_add_window_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     ashrae_base.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 3
@@ -235,7 +235,7 @@ def test_repeating_window_width_height_add_window_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     bod_windows.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 4
@@ -323,7 +323,7 @@ def test_single_window_add_window_to_face():
     height = 3
     width = 10
     seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
-    face = Face('test face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
     detailed_window.add_window_to_face(face, 0.01)
 
     assert len(face.apertures) == 2

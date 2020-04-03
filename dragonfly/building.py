@@ -10,6 +10,7 @@ from .room2d import Room2D
 from honeybee.model import Model
 from honeybee.shade import Shade
 from honeybee.boundarycondition import Surface
+from honeybee.typing import clean_string
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D
@@ -26,7 +27,8 @@ class Building(_BaseGeometry):
     """A complete Building defined by Stories.
 
     Args:
-        name: Building name. Must be < 100 characters.
+        identifier: Text string for a unique Building ID. Must be < 100 characters
+            and not contain any spaces or special characters.
         unique_stories: An array of unique Dragonfly Story objects that
             together form the entire building. Stories should be ordered
             from lowest floor to highest floor and they will be automatically
@@ -36,7 +38,7 @@ class Building(_BaseGeometry):
             should be the first (lowest) Story of the repeated floors.
 
     Properties:
-        * name
+        * identifier
         * display_name
         * unique_stories
         * unique_room_2ds
@@ -49,12 +51,13 @@ class Building(_BaseGeometry):
         * exterior_aperture_area
         * min
         * max
+        * user_data
     """
     __slots__ = ('_unique_stories',)
 
-    def __init__(self, name, unique_stories):
+    def __init__(self, identifier, unique_stories):
         """A complete Building defined by Stories."""
-        _BaseGeometry.__init__(self, name)  # process the name
+        _BaseGeometry.__init__(self, identifier)  # process the identifier
 
         # process the story geometry
         assert len(unique_stories) > 0, 'Building must have at least one Story.'
@@ -69,7 +72,7 @@ class Building(_BaseGeometry):
         self._properties = BuildingProperties(self)  # properties for extensions
 
     @classmethod
-    def from_footprint(cls, name, footprint, floor_to_floor_heights, tolerance=0):
+    def from_footprint(cls, identifier, footprint, floor_to_floor_heights, tolerance=0):
         """Initialize a Building from an array of Face3Ds representing a footprint.
 
         All of the resulting Room2Ds will have a floor-to-ceiling height equal to the
@@ -79,7 +82,8 @@ class Building(_BaseGeometry):
         representation and assign these proeprties.
 
         Args:
-            name: Building name. Must be < 100 characters.
+            identifier: Text string for a unique Building ID. Must be < 100 characters
+                and not contain any spaces or special characters.
             footprint: An array of horizontal ladybug-geometry Face3Ds that together
                 represent the the footprint of the Building.
             floor_to_floor_heights: An array of float values with a length equal
@@ -93,7 +97,7 @@ class Building(_BaseGeometry):
         """
         # generate the unique Room2Ds from the footprint
         room_2ds = cls._generate_room_2ds(footprint, floor_to_floor_heights[0],
-                                          name, 1, tolerance)
+                                          identifier, 1, tolerance)
 
         # generate the unique stories from the floor_to_floor_heights
         # TODO: Add an input for core_perimeter_offsets once we have straight skeletons
@@ -108,20 +112,22 @@ class Building(_BaseGeometry):
                     for j, room in enumerate(rooms):
                         room.move(move_vec)
                         room.floor_to_ceiling_height = flr_hgt
-                        room.name = '{}_Floor{}_Room{}'.format(name, i + 1, j + 1)
+                        room._identifier = \
+                            '{}_Floor{}_Room{}'.format(identifier, i + 1, j + 1)
                 else:
                     rooms = room_2ds
-                stories.append(Story('{}_Floor{}'.format(name, i + 1), rooms, flr_hgt))
+                stories.append(Story(
+                    '{}_Floor{}'.format(identifier, i + 1), rooms, flr_hgt))
             else:
                 stories[-1].multiplier += 1
             total_height += flr_hgt
             prev_flr_to_flr = flr_hgt
 
-        return cls(name, stories)
+        return cls(identifier, stories)
 
     @classmethod
-    def from_all_story_geometry(cls, name, all_story_geometry, floor_to_floor_heights,
-                                tolerance=0.01):
+    def from_all_story_geometry(cls, identifier, all_story_geometry,
+                                floor_to_floor_heights, tolerance=0.01):
         """Initialize a Building from an array of Face3Ds arrays representing all floors.
 
         This method will test to see which of the stories are geometrically unique
@@ -132,7 +138,8 @@ class Building(_BaseGeometry):
         Story floor-to-floor height.
 
         Args:
-            name: Building name. Must be < 100 characters.
+            identifier: Text string for a unique Building ID. Must be < 100 characters
+                and not contain any spaces or special characters.
             all_story_geometry: An array of arrays with each sub-array possessing
                 horizontal ladybug-geometry Face3Ds that representing the floor
                 plates of the building. Together, these Face3Ds should represent
@@ -150,8 +157,9 @@ class Building(_BaseGeometry):
         """
         # generate the first story of the building
         room_2ds = cls._generate_room_2ds(
-            all_story_geometry[0], floor_to_floor_heights[0], name, 1, tolerance)
-        stories = [Story('{}_Floor1'.format(name), room_2ds, floor_to_floor_heights[0])]
+            all_story_geometry[0], floor_to_floor_heights[0], identifier, 1, tolerance)
+        stories = [Story('{}_Floor1'.format(identifier), room_2ds,
+                         floor_to_floor_heights[0])]
 
         # generate the remaining unique stories from the floor_to_floor_heights
         # TODO: Add an input for core_perimeter_offsets once we have straight skeletons
@@ -165,14 +173,15 @@ class Building(_BaseGeometry):
                     not all(cls._is_story_equivalent(rm1, rm2, tolerance)
                             for rm1, rm2 in zip(room_geo, prev_geo)):
                 room_2ds = cls._generate_room_2ds(
-                    room_geo, flr_hgt, name, i + 2, tolerance)
-                stories.append(Story('{}_Floor{}'.format(name, i + 2), room_2ds, flr_hgt))
+                    room_geo, flr_hgt, identifier, i + 2, tolerance)
+                stories.append(Story(
+                    '{}_Floor{}'.format(identifier, i + 2), room_2ds, flr_hgt))
             else:  # geometry is the same as the floor below
                 stories[-1].multiplier += 1
             prev_geo = room_geo
             prev_flr_to_flr = flr_hgt
 
-        return cls(name, stories)
+        return cls(identifier, stories)
 
     @classmethod
     def from_dict(cls, data, tolerance=0):
@@ -192,9 +201,11 @@ class Building(_BaseGeometry):
         stories = [Story.from_dict(s_dict, tolerance)
                    for s_dict in data['unique_stories']]
 
-        building = Building(data['name'], stories)
+        building = Building(data['identifier'], stories)
         if 'display_name' in data and data['display_name'] is not None:
-            building._display_name = data['display_name']
+            building.display_name = data['display_name']
+        if 'user_data' in data and data['user_data'] is not None:
+            building.user_data = data['user_data']
 
         if data['properties']['type'] == 'BuildingProperties':
             building.properties._load_extension_attr_from_dict(data['properties'])
@@ -373,28 +384,29 @@ class Building(_BaseGeometry):
             for i, seg in enumerate(story.outline_segments(tolerance)):
                 try:
                     extru_geo = Face3D.from_extrusion(seg, extru_vec)
-                    shd_name = '{}_{}_{}'.format(self.name, story.name, i)
-                    context_shades.append(Shade(shd_name, extru_geo))
+                    shd_id = '{}_{}_{}'.format(self.identifier, story.identifier, i)
+                    context_shades.append(Shade(shd_id, extru_geo))
                 except ZeroDivisionError:
                     pass  # duplicate vertex resulting in a segment of length 0
             # TODO: consider adding a Shade object to cap the extrusion
         return context_shades
 
     def add_prefix(self, prefix):
-        """Change the name of this object and all child objects by inserting a prefix.
+        """Change the object identifier and all child objects by inserting a prefix.
 
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeating buildings) since all objects
-        within a Model must have unique names.
+        within a Model must have unique identifiers.
 
         Args:
             prefix: Text that will be inserted at the start of this object's
-                (and child segments') name and display_name. It is recommended
-                that this name be short to avoid maxing out the 100 allowable
-                characters for honeybee names.
+                (and child objects') identifier and display_name. It is recommended
+                that this prefix be short to avoid maxing out the 100 allowable
+                characters for dragonfly identifiers.
         """
-        self.name = '{}_{}'.format(prefix, self.display_name)
+        self._identifier = clean_string('{}_{}'.format(prefix, self.identifier))
+        self.display_name = '{}_{}'.format(prefix, self.display_name)
         self.properties.add_prefix(prefix)
         for story in self.unique_stories:
             story.add_prefix(prefix)
@@ -503,7 +515,10 @@ class Building(_BaseGeometry):
                         for story in self._unique_stories for room in story]
         else:
             hb_rooms = [room.to_honeybee(1, tolerance) for room in self.all_room_2ds()]
-        return Model(self.display_name, hb_rooms)
+        hb_mod = Model(self.identifier, hb_rooms)
+        hb_mod._display_name = self._display_name
+        hb_mod._user_data = self._user_data
+        return hb_mod
 
     def to_dict(self, abridged=False, included_prop=None):
         """Return Building as a dictionary.
@@ -511,18 +526,20 @@ class Building(_BaseGeometry):
         Args:
             abridged: Boolean to note whether the extension properties of the
                 object (ie. construciton sets) should be included in detail
-                (False) or just referenced by name (True). Default: False.
+                (False) or just referenced by identifier (True). Default: False.
             included_prop: List of properties to filter keys that must be included in
                 output dictionary. For example ['energy'] will include 'energy' key if
                 available in properties to_dict. By default all the keys will be
                 included. To exclude all the keys from extensions use an empty list.
         """
         base = {'type': 'Building'}
-        base['name'] = self.name
+        base['identifier'] = self.identifier
         base['display_name'] = self.display_name
         base['unique_stories'] = [s.to_dict(abridged, included_prop)
                                   for s in self._unique_stories]
         base['properties'] = self.properties.to_dict(abridged, included_prop)
+        if self.user_data is not None:
+            base['user_data'] = self.user_data
         return base
 
     @staticmethod
@@ -638,11 +655,11 @@ class Building(_BaseGeometry):
         return models
 
     @staticmethod
-    def _generate_room_2ds(face3d_array, flr_to_flr, bldg_name, flr_count, tolerance):
+    def _generate_room_2ds(face3d_array, flr_to_flr, bldg_id, flr_count, tolerance):
         """Generate Room2D objects given geometry and information about their parent."""
         room_2ds = []
         for i, room_geo in enumerate(face3d_array):
-            room = Room2D('{}_Floor{}_Room{}'.format(bldg_name, flr_count, i + 1),
+            room = Room2D('{}_Floor{}_Room{}'.format(bldg_id, flr_count, i + 1),
                           room_geo, flr_to_flr, tolerance=tolerance)
             room_2ds.append(room)
         return room_2ds
@@ -756,9 +773,10 @@ class Building(_BaseGeometry):
             return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
 
     def __copy__(self):
-        new_b = Building(self.name,
+        new_b = Building(self.identifier,
                          tuple(story.duplicate() for story in self._unique_stories))
         new_b._display_name = self.display_name
+        new_b._user_data = None if self.user_data is None else self.user_data.copy()
         new_b._properties._duplicate_extension_attr(self._properties)
         return new_b
 
