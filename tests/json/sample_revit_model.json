@@ -1,6 +1,6 @@
 {
     "type": "Model",
-    "name": "SampleModel",
+    "identifier": "SampleModel",
     "display_name": "Sample Model",
     "properties": {
         "type": "ModelProperties"
@@ -8,17 +8,17 @@
     "buildings": [
         {
             "type": "Building",
-            "name": "SampleBuilding",
+            "identifier": "SampleBuilding",
             "display_name": "Sample Building",
             "unique_stories": [
                 {
                     "type": "Story",
-                    "name": "GroundFloor",
+                    "identifier": "GroundFloor",
                     "display_name": "Ground Floor",
                     "room_2ds": [
                         {
                             "type": "Room2D",
-                            "name": "KitchenDining",
+                            "identifier": "KitchenDining",
                             "display_name": "Kitchen & Dining 101",
                             "properties": {
                                 "type": "Room2DPropertiesAbridged"
@@ -178,7 +178,7 @@
                         },
                         {
                             "type": "Room2D",
-                            "name": "Laundry",
+                            "identifier": "Laundry",
                             "display_name": "Laundry 104",
                             "properties": {
                                 "type": "Room2DPropertiesAbridged"
@@ -237,7 +237,7 @@
                         },
                         {
                             "type": "Room2D",
-                            "name": "Bath",
+                            "identifier": "Bath",
                             "display_name": "Bath 103",
                             "properties": {
                                 "type": "Room2DPropertiesAbridged"
@@ -282,7 +282,7 @@
                         },
                         {
                             "type": "Room2D",
-                            "name": "Hall",
+                            "identifier": "Hall",
                             "display_name": "Hall 105",
                             "properties": {
                                 "type": "Room2DPropertiesAbridged"
@@ -397,7 +397,7 @@
                         },
                         {
                             "type": "Room2D",
-                            "name": "Living",
+                            "identifier": "Living",
                             "display_name": "Living 106",
                             "properties": {
                                 "type": "Room2DPropertiesAbridged"
@@ -470,7 +470,7 @@
                         },
                         {
                             "type": "Room2D",
-                            "name": "Mech.",
+                            "identifier": "Mech.",
                             "display_name": "Mech. 102",
                             "properties": {
                                 "type": "Room2DPropertiesAbridged"

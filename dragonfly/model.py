@@ -27,7 +27,8 @@ class Model(_BaseGeometry):
     """A collection of Buildings and ContextShades for an entire model.
 
     Args:
-        name: Model name. Must be < 100 characters.
+        identifier: Text string for a unique Model ID. Must be < 100 characters
+            and not contain any spaces or special characters.
         buildings: A list of Building objects in the model.
         context_shades: A list of ContextShade objects in the model.
         north_angle: An number between 0 and 360 to set the clockwise north
@@ -51,7 +52,7 @@ class Model(_BaseGeometry):
             Default: 0.
 
     Properties:
-        * name
+        * identifier
         * display_name
         * north_angle
         * north_vector
@@ -64,16 +65,18 @@ class Model(_BaseGeometry):
         * room_2ds
         * min
         * max
+        * user_data
     """
     __slots__ = ('_buildings', '_context_shades', '_north_angle', '_north_vector',
                  '_units', '_tolerance', '_angle_tolerance')
 
     UNITS = hb_model.UNITS
 
-    def __init__(self, name, buildings=None, context_shades=None, north_angle=0,
+    def __init__(self, identifier, buildings=None, context_shades=None, north_angle=0,
                  units='Meters', tolerance=0, angle_tolerance=0):
         """A collection of Buildings and ContextShades for an entire model."""
-        self.name = name
+        self._identifier = identifier
+        self._display_name = self._identifier
         self.north_angle = north_angle
         self.units = units
         self.tolerance = tolerance
@@ -89,6 +92,7 @@ class Model(_BaseGeometry):
                 self.add_context_shade(shade)
 
         self._properties = ModelProperties(self)
+        self._user_data = None
 
     @classmethod
     def from_dict(cls, data):
@@ -117,12 +121,12 @@ class Model(_BaseGeometry):
         units = 'Meters' if 'units' not in data else data['units']
 
         # build the model object
-        model = Model(data['name'], buildings, context_shades, north_angle,
+        model = Model(data['identifier'], buildings, context_shades, north_angle,
                       units, tol, angle_tol)
-        assert model.display_name == model.name, \
-            'Model name "{}" has invalid characters.'.format(data['name'])
         if 'display_name' in data and data['display_name'] is not None:
-            model._display_name = data['display_name']
+            model.display_name = data['display_name']
+        if 'user_data' in data and data['user_data'] is not None:
+            model.user_data = data['user_data']
 
         # assign extension properties to the model
         model.properties.apply_properties_from_dict(data)
@@ -249,31 +253,31 @@ class Model(_BaseGeometry):
                 'Expected ContextShade. Got {}.'.format(type(obj))
         self._context_shades.append(obj)
 
-    def buildings_by_name(self, names):
-        """Get a list of Building objects in the model given Building names."""
+    def buildings_by_identifier(self, identifiers):
+        """Get a list of Building objects in the model given Building identifiers."""
         buildings = []
-        for name in names:
+        for identifier in identifiers:
             for bldg in self._buildings:
-                if bldg.name == name:
+                if bldg.identifier == identifier:
                     buildings.append(bldg)
                     break
             else:
                 raise ValueError(
-                    'Building "{}" was not found in the model.'.format(name))
+                    'Building "{}" was not found in the model.'.format(identifier))
         return buildings
 
-    def context_shade_by_name(self, names):
-        """Get a list of ContextShade objects in the model given ContextShade names.
+    def context_shade_by_identifier(self, identifiers):
+        """Get a list of ContextShade objects in the model given ContextShade identifiers.
         """
         context_shades = []
-        for name in names:
+        for identifier in identifiers:
             for shd in self._context_shades:
-                if shd.name == name:
+                if shd.identifier == identifier:
                     context_shades.append(shd)
                     break
             else:
                 raise ValueError(
-                    'ContextShade "{}" was not found in the model.'.format(name))
+                    'ContextShade "{}" was not found in the model.'.format(identifier))
         return context_shades
 
     def move(self, moving_vec):
@@ -349,49 +353,51 @@ class Model(_BaseGeometry):
             self.scale(scale_fac)
             self.units = units
 
-    def check_duplicate_building_names(self, raise_exception=True):
-        """Check that there are no duplicate Building names in the model."""
-        bldg_names = set()
-        duplicate_names = set()
+    def check_duplicate_building_identifiers(self, raise_exception=True):
+        """Check that there are no duplicate Building identifiers in the model."""
+        bldg_identifiers = set()
+        duplicate_identifiers = set()
         for bldg in self._buildings:
-            if bldg.name not in bldg_names:
-                bldg_names.add(bldg.name)
+            if bldg.identifier not in bldg_identifiers:
+                bldg_identifiers.add(bldg.identifier)
             else:
-                duplicate_names.add(bldg.name)
-        if len(duplicate_names) != 0:
+                duplicate_identifiers.add(bldg.identifier)
+        if len(duplicate_identifiers) != 0:
             if raise_exception:
-                raise ValueError('The model has the following duplicated '
-                                 'Building names:\n{}'.format('\n'.join(duplicate_names)))
+                raise ValueError('The model has the following duplicated Building '
+                                 'identifiers:\n{}'.format(
+                                     '\n'.join(duplicate_identifiers)))
             return False
         return True
 
-    def check_duplicate_context_shade_names(self, raise_exception=True):
-        """Check that there are no duplicate ContextShade names in the model."""
-        shade_names = set()
-        duplicate_names = set()
+    def check_duplicate_context_shade_identifiers(self, raise_exception=True):
+        """Check that there are no duplicate ContextShade identifiers in the model."""
+        shade_identifiers = set()
+        duplicate_identifiers = set()
         for shade in self._context_shades:
-            if shade.name not in shade_names:
-                shade_names.add(shade.name)
+            if shade.identifier not in shade_identifiers:
+                shade_identifiers.add(shade.identifier)
             else:
-                duplicate_names.add(shade.name)
-        if len(duplicate_names) != 0:
+                duplicate_identifiers.add(shade.identifier)
+        if len(duplicate_identifiers) != 0:
             if raise_exception:
                 raise ValueError('The model has the following duplicated ConstextShade'
-                                 ' names:\n{}'.format('\n'.join(duplicate_names)))
+                                 ' identifiers:\n{}'.format(
+                                     '\n'.join(duplicate_identifiers)))
             return False
         return True
 
     def check_missing_adjacencies(self, raise_exception=True):
         """Check that all Room2Ds have adjacent objects that exist within each Story."""
-        bldg_names = []
+        bldg_ids = []
         for bldg in self._buildings:
             for story in bldg._unique_stories:
                 if not story.check_missing_adjacencies(False):
-                    bldg_names.append(bldg.name)
-        if bldg_names != []:
+                    bldg_ids.append(bldg.identifier)
+        if bldg_ids != []:
             if raise_exception:
                 raise ValueError('The following buildings have missing adjacencies in '
-                                 'the Model:\n{}'.format('\n'.join(bldg_names)))
+                                 'the Model:\n{}'.format('\n'.join(bldg_ids)))
             return False
         return True
 
@@ -503,7 +509,7 @@ class Model(_BaseGeometry):
 
         # set up the base dictionary for the geoJSON and default folder
         geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
-        geojson_dict['project'] = {'name': self.display_name, 'id': self.name}
+        geojson_dict['project'] = {'name': self.display_name, 'id': self.identifier}
 
         # ensure that the Model we are working with is in meters with a north_angle of 0
         model = self
@@ -542,12 +548,12 @@ class Model(_BaseGeometry):
             feature_dict['properties']['floor_area'] = bldg.floor_area
             feature_dict['properties']['footprint_area'] = \
                 sum((face.area for face in footprint))
-            feature_dict['properties']['id'] = bldg.name
+            feature_dict['properties']['id'] = bldg.identifier
             feature_dict['properties']['name'] = bldg.display_name
             feature_dict['properties']['number_of_stories'] = bldg.story_count
             feature_dict['properties']['type'] = 'Building'
             feature_dict['properties']['detailed_model_filename'] = \
-                os.path.join(folder, bldg.name, 'OpenStudio', 'run', 'in.osm')
+                os.path.join(folder, bldg.identifier, 'OpenStudio', 'run', 'in.osm')
 
             # append the feature to the global dictionary
             geojson_dict['features'].append(feature_dict)
@@ -593,9 +599,9 @@ class Model(_BaseGeometry):
         geojson_dict = self.to_geojson_dict(location, point, folder, tolerance)
 
         # write out the dictionary to a geojson file
-        project_folder = os.path.join(folder, self.name)
+        project_folder = os.path.join(folder, self.identifier)
         preparedir(project_folder, remove_content=False)
-        file_path = os.path.join(project_folder, '{}.geojson'.format(self.name))
+        file_path = os.path.join(project_folder, '{}.geojson'.format(self.identifier))
         with open(file_path, 'w') as fp:
             json.dump(geojson_dict, fp, indent=4)
         return file_path
@@ -610,7 +616,7 @@ class Model(_BaseGeometry):
                 included. To exclude all the keys from extensions use an empty list.
         """
         base = {'type': 'Model'}
-        base['name'] = self.name
+        base['identifier'] = self.identifier
         base['display_name'] = self.display_name
         base['properties'] = self.properties.to_dict(included_prop)
         if self._buildings != []:
@@ -627,6 +633,9 @@ class Model(_BaseGeometry):
             base['tolerance'] = self.tolerance
         if self.angle_tolerance != 0:
             base['angle_tolerance'] = self.angle_tolerance
+
+        if self.user_data is not None:
+            base['user_data'] = self.user_data
 
         return base
 
@@ -655,11 +664,12 @@ class Model(_BaseGeometry):
 
     def __copy__(self):
         new_model = Model(
-            self.name,
+            self.identifier,
             [bldg.duplicate() for bldg in self._buildings],
             [shade.duplicate() for shade in self._context_shades],
             self.north_angle)
         new_model._display_name = self.display_name
+        new_model._user_data = None if self.user_data is None else self.user_data.copy()
         new_model._properties._duplicate_extension_attr(self._properties)
         return new_model
 

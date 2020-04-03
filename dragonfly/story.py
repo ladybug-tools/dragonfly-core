@@ -6,7 +6,7 @@ from ._base import _BaseGeometry
 from .properties import StoryProperties
 from .room2d import Room2D
 
-from honeybee.typing import float_positive, int_in_range
+from honeybee.typing import float_positive, int_in_range, clean_string
 from honeybee.boundarycondition import Surface
 from honeybee.model import Model
 
@@ -19,7 +19,8 @@ class Story(_BaseGeometry):
     """A Story of a building defined by an extruded Room2Ds.
 
     Args:
-        name: Story name. Must be < 100 characters.
+        identifier: Text string for a unique Story ID. Must be < 100 characters
+            and not contain any spaces or special characters.
         room_2ds: An array of dragonfly Room2D objects that together form an
             entire story of a building.
         floor_to_floor_height: A number for the distance from the floor plate of
@@ -30,7 +31,7 @@ class Story(_BaseGeometry):
             Story is repeated over the height of the building. Default: 1.
 
     Properties:
-        * name
+        * identifier
         * display_name
         * room_2ds
         * floor_to_floor_height
@@ -44,12 +45,13 @@ class Story(_BaseGeometry):
         * exterior_aperture_area
         * min
         * max
+        * user_data
     """
     __slots__ = ('_room_2ds', '_floor_to_floor_height', '_multiplier', '_parent')
 
-    def __init__(self, name, room_2ds, floor_to_floor_height=None, multiplier=1):
+    def __init__(self, identifier, room_2ds, floor_to_floor_height=None, multiplier=1):
         """A Story of a building defined by an extruded Floor2Ds."""
-        _BaseGeometry.__init__(self, name)  # process the name
+        _BaseGeometry.__init__(self, identifier)  # process the identifier
 
         # process the story geometry
         if not isinstance(room_2ds, tuple):
@@ -89,9 +91,11 @@ class Story(_BaseGeometry):
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
         mult = data['multiplier'] if 'multiplier' in data else 1
 
-        story = Story(data['name'], rooms, f2fh, mult)
+        story = Story(data['identifier'], rooms, f2fh, mult)
         if 'display_name' in data and data['display_name'] is not None:
             story._display_name = data['display_name']
+        if 'user_data' in data and data['user_data'] is not None:
+            room.user_data = data['user_data']
 
         if data['properties']['type'] == 'StoryProperties':
             story.properties._load_extension_attr_from_dict(data['properties'])
@@ -248,57 +252,59 @@ using-multipliers-zone-and-or-window.html
         """
         return Polyline3D.join_segments(self.outline_segments(tolerance), tolerance)
 
-    def room_by_name(self, room_name):
-        """Get a Room2D from this Story using its name.
+    def room_by_identifier(self, room_identifier):
+        """Get a Room2D from this Story using its identifier.
 
         Result will be None if the Room2D is not found in the Story.
 
         Args:
-            room_name: String for the name of the Room2D to be retrieved from this model.
+            room_identifier: String for the identifier of the Room2D to be
+                retrieved from this story.
         """
         for room in self._room_2ds:
-            if room.name == room_name:
+            if room.identifier == room_identifier:
                 return room
         else:
             raise ValueError('Room2D "{}" was not found in the story "{}"'
-                             '.'.format(room_name, self.name))
+                             '.'.format(room_identifier, self.identifier))
 
-    def rooms_by_name(self, room_names):
-        """Get a list of Room2D objects in this story given Room2D names.
+    def rooms_by_identifier(self, room_identifiers):
+        """Get a list of Room2D objects in this story given Room2D identifiers.
 
         Args:
-            room_name: Array of strings for the names of the Room2D to be retrieved
-                from this Story.
+            room_identifier: Array of strings for the identifiers of the Room2D
+                to be retrieved from this Story.
         """
         room_2ds = []
-        for name in room_names:
+        for identifier in room_identifiers:
             for room in self._room_2ds:
-                if room.name == name:
+                if room.identifier == identifier:
                     room_2ds.append(room)
                     break
             else:
                 raise ValueError('Room2D "{}" was not found in the story '
-                                 '"{}".'.format(name, self.name))
+                                 '"{}".'.format(identifier, self.identifier))
         return room_2ds
 
     def add_prefix(self, prefix):
-        """Change the name of this object and all child Room2Ds by inserting a prefix.
+        """Change the identifier and all child Room2D ids by inserting a prefix.
 
         This is particularly useful in workflows where you duplicate and edit
         a starting object and then want to combine it with the original object
         into one Model (like making a model of repeated stories) since all objects
-        within a Model must have unique names.
+        within a Model must have unique identifiers.
 
         This method is used internally to convert from a Story with a mutliplier
-        to fully-detailed Stories with unique names.
+        to fully-detailed Stories with unique identifiers.
 
         Args:
             prefix: Text that will be inserted at the start of this object's
-                (and child segments') name and display_name. It is recommended
-                that this name be short to avoid maxing out the 100 allowable
-                characters for honeybee names.
+                (and child segments') identifier and display_name. It is recommended
+                that this prefix be short to avoid maxing out the 100 allowable
+                characters for dragonfly identifiers.
         """
-        self.name = '{}_{}'.format(prefix, self.display_name)
+        self._identifier = clean_string('{}_{}'.format(prefix, self.identifier))
+        self.display_name = '{}_{}'.format(prefix, self.display_name)
         self.properties.add_prefix(prefix)
         for room in self.room_2ds:
             room.add_prefix(prefix)
@@ -451,13 +457,13 @@ using-multipliers-zone-and-or-window.html
 
     def check_missing_adjacencies(self, raise_exception=True):
         """Check that all Room2Ds have adjacent objects that exist within this Story."""
-        bc_obj_names = []
+        bc_obj_ids = []
         for room in self._room_2ds:
             for bc in room._boundary_conditions:
                 if isinstance(bc, Surface):
-                    bc_obj_names.append(bc.boundary_condition_objects[-1])
+                    bc_obj_ids.append(bc.boundary_condition_objects[-1])
         try:
-            self.rooms_by_name(bc_obj_names)
+            self.rooms_by_identifier(bc_obj_ids)
         except ValueError as e:
             if raise_exception:
                 raise ValueError('A Room2D has an adjacent object that is missing '
@@ -481,7 +487,10 @@ using-multipliers-zone-and-or-window.html
         """
         mult = self.multiplier if use_multiplier else 1
         hb_rooms = [room.to_honeybee(mult, tolerance) for room in self._room_2ds]
-        return Model(self.display_name, hb_rooms)
+        hb_mod = Model(self.identifier, hb_rooms)
+        hb_mod._display_name = self._display_name
+        hb_mod._user_data = self._user_data
+        return hb_mod
 
     def to_dict(self, abridged=False, included_prop=None):
         """Return Story as a dictionary.
@@ -489,25 +498,28 @@ using-multipliers-zone-and-or-window.html
         Args:
             abridged: Boolean to note whether the extension properties of the
                 object (ie. construciton sets) should be included in detail
-                (False) or just referenced by name (True). Default: False.
+                (False) or just referenced by identifier (True). Default: False.
             included_prop: List of properties to filter keys that must be included in
                 output dictionary. For example ['energy'] will include 'energy' key if
                 available in properties to_dict. By default all the keys will be
                 included. To exclude all the keys from extensions use an empty list.
         """
         base = {'type': 'Story'}
-        base['name'] = self.name
+        base['identifier'] = self.identifier
         base['display_name'] = self.display_name
         base['room_2ds'] = [r.to_dict(abridged, included_prop) for r in self._room_2ds]
         base['floor_to_floor_height'] = self.floor_to_floor_height
         base['multiplier'] = self.multiplier
         base['properties'] = self.properties.to_dict(abridged, included_prop)
+        if self.user_data is not None:
+            base['user_data'] = self.user_data
         return base
 
     def __copy__(self):
-        new_s = Story(self.name, tuple(room.duplicate() for room in self._room_2ds),
+        new_s = Story(self.identifier, tuple(room.duplicate() for room in self._room_2ds),
                       self._floor_to_floor_height, self._multiplier)
         new_s._display_name = self.display_name
+        new_s._user_data = None if self.user_data is None else self.user_data.copy()
         new_s._parent = self._parent
         new_s._properties._duplicate_extension_attr(self._properties)
         return new_s

@@ -14,11 +14,11 @@ def test_context_shade_init():
     """Test the initialization of ContextShade objects."""
     tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
     tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
-    tree_canopy = ContextShade('Tree Canopy', [tree_canopy_geo1, tree_canopy_geo2])
+    tree_canopy = ContextShade('Tree_Canopy', [tree_canopy_geo1, tree_canopy_geo2])
     str(tree_canopy)  # test the string representation
 
-    assert tree_canopy.name == 'TreeCanopy'
-    assert tree_canopy.display_name == 'Tree Canopy'
+    assert tree_canopy.identifier == 'Tree_Canopy'
+    assert tree_canopy.display_name == 'Tree_Canopy'
     assert len(tree_canopy) == len(tree_canopy.geometry) == 2
     for geo in tree_canopy:
         assert isinstance(geo, Face3D)
@@ -29,7 +29,7 @@ def test_context_shade_min_max():
     """Test the min and max properties of ContextShade objects."""
     awning_geo1 = Face3D.from_rectangle(6, 6, Plane(o=Point3D(5, -10, 6)))
     awning_geo2 = Face3D.from_rectangle(2, 2, Plane(o=Point3D(-5, -10, 3)))
-    awning_canopy = ContextShade('Awning Canopy', [awning_geo1, awning_geo2])
+    awning_canopy = ContextShade('Awning_Canopy', [awning_geo1, awning_geo2])
 
     assert awning_canopy.area == 40
     assert awning_canopy.min == Point2D(-5, -10)
@@ -40,7 +40,7 @@ def test_move():
     """Test the ContextShade move method."""
     pts_1 = (Point3D(0, 2, 3), Point3D(2, 2, 3), Point3D(2, 0, 3), Point3D(0, 0, 3))
     plane_1 = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 0))
-    awning_canopy = ContextShade('Awning Canopy', [Face3D(pts_1, plane_1)])
+    awning_canopy = ContextShade('Awning_Canopy', [Face3D(pts_1, plane_1)])
 
     vec_1 = Vector3D(2, 2, 2)
     new_a = awning_canopy.duplicate()
@@ -56,7 +56,7 @@ def test_scale():
     """Test the ContextShade scale method."""
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane_1 = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 0))
-    awning_canopy = ContextShade('Awning Canopy', [Face3D(pts, plane_1)])
+    awning_canopy = ContextShade('Awning_Canopy', [Face3D(pts, plane_1)])
 
     new_a = awning_canopy.duplicate()
     new_a.scale(2)
@@ -71,7 +71,7 @@ def test_rotate_xy():
     """Test the ContextShade rotate_xy method."""
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
-    awning_canopy = ContextShade('Awning Canopy', [Face3D(pts, plane)])
+    awning_canopy = ContextShade('Awning_Canopy', [Face3D(pts, plane)])
     origin_1 = Point3D(1, 1, 0)
 
     test_1 = awning_canopy.duplicate()
@@ -88,7 +88,7 @@ def test_reflect():
     """Test the ContextShade reflect method."""
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
-    awning_canopy = ContextShade('Awning Canopy', [Face3D(pts, plane)])
+    awning_canopy = ContextShade('Awning_Canopy', [Face3D(pts, plane)])
 
     origin_1 = Point3D(1, 0, 2)
     normal_1 = Vector3D(1, 0, 0)
@@ -108,14 +108,14 @@ def test_to_honeybee():
     """Test the to_honeybee method."""
     tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
     tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
-    tree_canopy = ContextShade('Tree Canopy', [tree_canopy_geo1, tree_canopy_geo2])
+    tree_canopy = ContextShade('Tree_Canopy', [tree_canopy_geo1, tree_canopy_geo2])
     hb_tree_canopies = tree_canopy.to_honeybee()
 
     assert len(hb_tree_canopies) == 2
     for shd in hb_tree_canopies:
         assert isinstance(shd, Shade)
-        assert shd.name.startswith('TreeCanopy')
-    assert hb_tree_canopies[0].name != hb_tree_canopies[1].name
+        assert shd.identifier.startswith('Tree_Canopy')
+    assert hb_tree_canopies[0].identifier != hb_tree_canopies[1].identifier
     assert tree_canopy.area == sum([shd.area for shd in hb_tree_canopies])
 
 
@@ -123,12 +123,12 @@ def test_to_dict():
     """Test the ContextShade to_dict method."""
     tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
     tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
-    tree_canopy = ContextShade('Tree Canopy', [tree_canopy_geo1, tree_canopy_geo2])
+    tree_canopy = ContextShade('Tree_Canopy', [tree_canopy_geo1, tree_canopy_geo2])
 
     sd = tree_canopy.to_dict()
     assert sd['type'] == 'ContextShade'
-    assert sd['name'] == 'TreeCanopy'
-    assert sd['display_name'] == 'Tree Canopy'
+    assert sd['identifier'] == 'Tree_Canopy'
+    assert sd['display_name'] == 'Tree_Canopy'
     assert len(sd['geometry']) == 2
 
 
@@ -136,7 +136,7 @@ def test_to_from_dict():
     """Test the to/from dict of ContextShade objects."""
     tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
     tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
-    tree_canopy = ContextShade('Tree Canopy', [tree_canopy_geo1, tree_canopy_geo2])
+    tree_canopy = ContextShade('Tree_Canopy', [tree_canopy_geo1, tree_canopy_geo2])
 
     context_dict = tree_canopy.to_dict()
     new_context = ContextShade.from_dict(context_dict)

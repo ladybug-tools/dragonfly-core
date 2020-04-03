@@ -155,10 +155,10 @@ class SingleWindow(_WindowParameterBase):
             face.aperture_by_width_height(final_width, final_height, self.sill_height)
             # if the Aperture is interior, set adjacent boundary condition
             if isinstance(face._boundary_condition, Surface):
-                names = face._boundary_condition.boundary_condition_objects
-                adj_ap_name = '{}_Glz1'.format(names[0])
-                final_names = (adj_ap_name,) + names
-                face.apertures[0].boundary_condition = Surface(final_names, True)
+                ids = face._boundary_condition.boundary_condition_objects
+                adj_ap_id = '{}_Glz1'.format(ids[0])
+                final_ids = (adj_ap_id,) + ids
+                face.apertures[0].boundary_condition = Surface(final_ids, True)
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
@@ -258,15 +258,15 @@ class SimpleWindowRatio(_WindowParameterBase):
         """
         scale_factor = self.window_ratio ** .5
         ap_face = face.geometry.scale(scale_factor, face.geometry.center)
-        aperture = Aperture('{}_Glz1'.format(face.display_name), ap_face)
+        aperture = Aperture('{}_Glz1'.format(face.identifier), ap_face)
         aperture._parent = face
         face.add_aperture(aperture)
         # if the Aperture is interior, set adjacent boundary condition
         if isinstance(face._boundary_condition, Surface):
-            names = face._boundary_condition.boundary_condition_objects
-            adj_ap_name = '{}_Glz1'.format(names[0])
-            final_names = (adj_ap_name,) + names
-            aperture.boundary_condition = Surface(final_names, True)
+            ids = face._boundary_condition.boundary_condition_objects
+            adj_ap_id = '{}_Glz1'.format(ids[0])
+            final_ids = (adj_ap_id,) + ids
+            aperture.boundary_condition = Surface(final_ids, True)
 
     @classmethod
     def from_dict(cls, data):
@@ -385,10 +385,10 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         if isinstance(face._boundary_condition, Surface):
             num_aps = face.apertures
             for i, ap in enumerate(face.apertures):
-                names = face._boundary_condition.boundary_condition_objects
-                adj_ap_name = '{}_Glz{}'.format(names[0], num_aps - i - 1)
-                final_names = (adj_ap_name,) + names
-                ap.boundary_condition = Surface(final_names, True)
+                ids = face._boundary_condition.boundary_condition_objects
+                adj_ap_id = '{}_Glz{}'.format(ids[0], num_aps - i - 1)
+                final_ids = (adj_ap_id,) + ids
+                ap.boundary_condition = Surface(final_ids, True)
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
@@ -536,10 +536,10 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
         if isinstance(face._boundary_condition, Surface):
             num_aps = face.apertures
             for i, ap in enumerate(face.apertures):
-                names = face._boundary_condition.boundary_condition_objects
-                adj_ap_name = '{}_Glz{}'.format(names[0], num_aps - i - 1)
-                final_names = (adj_ap_name,) + names
-                ap.boundary_condition = Surface(final_names, True)
+                ids = face._boundary_condition.boundary_condition_objects
+                adj_ap_id = '{}_Glz{}'.format(ids[0], num_aps - i - 1)
+                final_ids = (adj_ap_id,) + ids
+                ap.boundary_condition = Surface(final_ids, True)
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
@@ -727,15 +727,15 @@ class RectangularWindows(_AsymmetricBase):
             if final_height > 0 and final_height > 0:  # inside wall boundary
                 base_plane = Plane(wall_plane.n, wall_plane.xy_to_xyz(o), wall_plane.x)
                 ap_face = Face3D.from_rectangle(final_width, final_height, base_plane)
-                aperture = Aperture('{}_Glz{}'.format(face.display_name, i + 1), ap_face)
+                aperture = Aperture('{}_Glz{}'.format(face.identifier, i + 1), ap_face)
                 aperture._parent = face
                 face.add_aperture(aperture)
                 # if the Aperture is interior, set adjacent boundary condition
                 if isinstance(face._boundary_condition, Surface):
-                    names = face._boundary_condition.boundary_condition_objects
-                    adj_ap_name = '{}_Glz{}'.format(names[0], i + 1)
-                    final_names = (adj_ap_name,) + names
-                    aperture.boundary_condition = Surface(final_names, True)
+                    ids = face._boundary_condition.boundary_condition_objects
+                    adj_ap_id = '{}_Glz{}'.format(ids[0], i + 1)
+                    final_ids = (adj_ap_id,) + ids
+                    aperture.boundary_condition = Surface(final_ids, True)
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.
@@ -911,15 +911,15 @@ class DetailedWindows(_AsymmetricBase):
         # loop through each window and create its geometry
         for i, polygon in enumerate(self.polygons):
             pt3d = tuple(wall_plane.xy_to_xyz(pt) for pt in polygon)
-            aperture = Aperture('{}_Glz{}'.format(face.display_name, i + 1), Face3D(pt3d))
+            aperture = Aperture('{}_Glz{}'.format(face.identifier, i + 1), Face3D(pt3d))
             aperture._parent = face
             face.add_aperture(aperture)
             # if the Aperture is interior, set adjacent boundary condition
             if isinstance(face._boundary_condition, Surface):
-                names = face._boundary_condition.boundary_condition_objects
-                adj_ap_name = '{}_Glz{}'.format(names[0], i + 1)
-                final_names = (adj_ap_name,) + names
-                aperture.boundary_condition = Surface(final_names, True)
+                ids = face._boundary_condition.boundary_condition_objects
+                adj_ap_id = '{}_Glz{}'.format(ids[0], i + 1)
+                final_ids = (adj_ap_id,) + ids
+                aperture.boundary_condition = Surface(final_ids, True)
 
     def scale(self, factor):
         """Get a scaled version of these WindowParameters.

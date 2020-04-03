@@ -1,15 +1,15 @@
 {
   "units": "Meters",
-  "name": "Model_14e27252-22a3-4b51-b476-4e49634e3ef7",
+  "identifier": "Model_14e27252-22a3-4b51-b476-4e49634e3ef7",
   "buildings": [
     {
-      "name": "Building_59048489-606f-486e-819c-f3604a334bba",
+      "identifier": "Building_59048489-606f-486e-819c-f3604a334bba",
       "unique_stories": [
         {
-          "name": "Story_508f925a-c593-4128-a6f0-ce4b7962d7e7",
+          "identifier": "Story_508f925a-c593-4128-a6f0-ce4b7962d7e7",
           "room_2ds": [
             {
-              "name": "Room_31294ad6-26bd-4e5e-b6a3-3038586dc83a",
+              "identifier": "Room_31294ad6-26bd-4e5e-b6a3-3038586dc83a",
               "floor_boundary": [
                 [
                   22.89347610707884,
@@ -250,7 +250,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26",
+              "identifier": "Room_cdd07fc6-a3c0-4be7-915f-a860a6979d26",
               "floor_boundary": [
                 [
                   32.758961671383304,
@@ -328,7 +328,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b",
+              "identifier": "Room_0719dc34-9610-4926-aaac-cc3d03e1d44b",
               "floor_boundary": [
                 [
                   32.758961671383311,
@@ -392,7 +392,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_a53a02ad-7d90-4729-9804-3db0f1617a21",
+              "identifier": "Room_a53a02ad-7d90-4729-9804-3db0f1617a21",
               "floor_boundary": [
                 [
                   33.0115863432995,
@@ -557,7 +557,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_ef6f1295-ebe9-44a2-b600-3d8edd7472ea",
+              "identifier": "Room_ef6f1295-ebe9-44a2-b600-3d8edd7472ea",
               "floor_boundary": [
                 [
                   43.1296965795197,
@@ -653,7 +653,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137",
+              "identifier": "Room_8c1b0474-5910-4e80-b93c-29bf1e02a137",
               "floor_boundary": [
                 [
                   22.89347610707885,
@@ -737,10 +737,10 @@
           "multiplier": 1
         },
         {
-          "name": "Story_dfdaf24d-239d-48dc-8d06-8dcf925fe2c5",
+          "identifier": "Story_dfdaf24d-239d-48dc-8d06-8dcf925fe2c5",
           "room_2ds": [
             {
-              "name": "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5",
+              "identifier": "Room_5846931a-4832-4551-9d0a-1f75ef6bb4b5",
               "floor_boundary": [
                 [
                   3.4840272881812209,
@@ -851,7 +851,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211",
+              "identifier": "Room_7b85a04e-bf60-4a53-a8a1-a083bf153211",
               "floor_boundary": [
                 [
                   -4.5212220556508589,
@@ -927,7 +927,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88",
+              "identifier": "Room_e9f3ea3f-9f38-489c-ad6a-c95892942e88",
               "floor_boundary": [
                 [
                   3.484027288181188,
@@ -1044,7 +1044,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_ffeb608c-14f1-4502-b85a-4133a6e3ef4f",
+              "identifier": "Room_ffeb608c-14f1-4502-b85a-4133a6e3ef4f",
               "floor_boundary": [
                 [
                   14.782301833712436,
@@ -1105,7 +1105,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_8aac3fce-03e0-4307-becc-6f45343ccae2",
+              "identifier": "Room_8aac3fce-03e0-4307-becc-6f45343ccae2",
               "floor_boundary": [
                 [
                   13.523397366921365,
@@ -1165,7 +1165,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_04f41209-05ed-4580-8ccb-011a0bdba133",
+              "identifier": "Room_04f41209-05ed-4580-8ccb-011a0bdba133",
               "floor_boundary": [
                 [
                   32.75896167138329,
@@ -1278,7 +1278,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301",
+              "identifier": "Room_d9c41d2c-8d1f-4f53-94ff-29e56c4a2301",
               "floor_boundary": [
                 [
                   32.758961671383311,
@@ -1408,7 +1408,7 @@
               "shading_parameters": null
             },
             {
-              "name": "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3",
+              "identifier": "Room_c71ae0c1-83f2-4f8c-852d-4d047c1d84d3",
               "floor_boundary": [
                 [
                   21.708764820989828,

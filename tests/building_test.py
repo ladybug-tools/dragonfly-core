@@ -21,18 +21,19 @@ def test_building_init():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building_1234', [story])
+    building.display_name = 'Office Building'
 
     str(building)  # test the string representation
-    assert building.name == 'OfficeBuilding'
+    assert building.identifier == 'Office_Building_1234'
     assert building.display_name == 'Office Building'
     assert len(building.unique_stories) == 1
     assert len(building.all_stories()) == 4
@@ -63,12 +64,12 @@ def test_building_init_from_footprint():
     """Test the initalization of Building objects from_footprint."""
     pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
     pts_2 = (Point3D(0, 10, 0), Point3D(0, 20, 0), Point3D(10, 20, 0), Point3D(10, 10, 0))
-    building = Building.from_footprint('Office Tower', [Face3D(pts_1), Face3D(pts_2)],
+    building = Building.from_footprint('Office_Tower', [Face3D(pts_1), Face3D(pts_2)],
                                        [5, 4, 4, 3, 3, 3, 3, 3])
     building.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
-    assert building.name == 'OfficeTower'
-    assert building.display_name == 'Office Tower'
+    assert building.identifier == 'Office_Tower'
+    assert building.display_name == 'Office_Tower'
     assert len(building.unique_stories) == 3
     assert len(building.all_stories()) == 8
     assert len(building.unique_room_2ds) == 6
@@ -83,13 +84,13 @@ def test_building_init_from_all_story_geometry():
     pts_4 = (Point3D(0, 0, 11), Point3D(0, 10, 11), Point3D(5, 10, 11), Point3D(5, 0, 11))
     story_geo = [[Face3D(pts_1)], [Face3D(pts_2)], [Face3D(pts_3)], [Face3D(pts_4)]]
     building = Building.from_all_story_geometry(
-        'Office Tower', story_geo, [4, 4, 3, 3], 0.01)
+        'Office_Tower', story_geo, [4, 4, 3, 3], 0.01)
     building.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
     print(Building._is_story_equivalent(story_geo[0][0], story_geo[1][0], 0.1))
 
-    assert building.name == 'OfficeTower'
-    assert building.display_name == 'Office Tower'
+    assert building.identifier == 'Office_Tower'
+    assert building.display_name == 'Office_Tower'
     assert len(building.unique_stories) == 2
     assert len(building.all_stories()) == 4
     assert len(building.unique_room_2ds) == 2
@@ -102,15 +103,15 @@ def test_building_footprint_simple():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     footprint = building.footprint(0.01)
     assert len(footprint) == 1
@@ -127,17 +128,17 @@ def test_building_footprint_courtyard():
     pts_2 = (Point3D(15, 0, 3), Point3D(15, 15, 3), Point3D(20, 15, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 5, 3), Point3D(0, 20, 3), Point3D(5, 20, 3), Point3D(5, 5, 3))
     pts_4 = (Point3D(5, 15, 3), Point3D(5, 20, 3), Point3D(20, 20, 3), Point3D(20, 15, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
     int_rms = Room2D.intersect_adjacency([room2d_1, room2d_2, room2d_3, room2d_4], 0.01)
-    story = Story('Office Floor', int_rms)
+    story = Story('Office_Floor', int_rms)
     story.rotate_xy(5, Point3D(0, 0, 0))
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     footprint = building.footprint(0.01)
     assert len(footprint) == 1
@@ -154,19 +155,19 @@ def test_building_footprint_disconnect():
     pts_3 = (Point3D(0, 5, 3), Point3D(0, 20, 3), Point3D(5, 20, 3), Point3D(5, 5, 3))
     pts_4 = (Point3D(5, 15, 3), Point3D(5, 20, 3), Point3D(20, 20, 3), Point3D(20, 15, 3))
     pts_5 = (Point3D(-5, -5, 3), Point3D(-10, -5, 3), Point3D(-10, -10, 3), Point3D(-5, -10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    room2d_5 = Room2D('Office 5', Face3D(pts_5), 3)
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    room2d_5 = Room2D('Office5', Face3D(pts_5), 3)
     int_rms = Room2D.intersect_adjacency(
         [room2d_1, room2d_2, room2d_3, room2d_4, room2d_5], 0.01)
-    story = Story('Office Floor', int_rms)
+    story = Story('Office_Floor', int_rms)
     story.rotate_xy(5, Point3D(0, 0, 0))
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     footprint = building.footprint(0.01)
     assert len(footprint) == 2
@@ -184,14 +185,14 @@ def test_building_shade_representation():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     shade_rep = building.shade_representation(0.01)
     assert len(shade_rep) == 8
@@ -205,14 +206,14 @@ def test_building_window_shading_parameters():
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
     pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office 4', Face3D(pts_4), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
     story.solve_room_2d_adjacency(0.01)
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     assert building.exterior_aperture_area == 0
     assert building.unique_room_2ds[0].window_parameters[2] is None
@@ -231,7 +232,7 @@ def test_building_window_shading_parameters():
     assert len(building.unique_room_2ds) == 4
     building.separate_top_bottom_floors()
     assert len(building.unique_stories) == 3
-    assert len(set(story.name for story in building.unique_stories)) == 3
+    assert len(set(story.identifier for story in building.unique_stories)) == 3
     assert len(building.all_stories()) == 4
     assert len(building.unique_room_2ds) == 12
 
@@ -240,12 +241,12 @@ def test_move():
     """Test the Building move method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office_1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office_2', Face3D(pts_2), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     vec_1 = Vector3D(2, 2, 2)
     new_b = building.duplicate()
@@ -268,12 +269,12 @@ def test_scale():
     """Test the Building scale method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     new_b = building.duplicate()
     new_b.scale(2)
@@ -295,10 +296,10 @@ def test_rotate_xy():
     """Test the Building rotate_xy method."""
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
-    room = Room2D('Square Shoebox', Face3D(pts, plane), 3)
-    story = Story('Office Floor', [room])
+    room = Room2D('Square_Shoebox', Face3D(pts, plane), 3)
+    story = Story('Office_Floor', [room])
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
     origin_1 = Point3D(1, 1, 0)
 
     test_1 = building.duplicate()
@@ -329,10 +330,10 @@ def test_reflect():
     """Test the Building reflect method."""
     pts = (Point3D(1, 1, 2), Point3D(2, 1, 2), Point3D(2, 2, 2), Point3D(1, 2, 2))
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
-    room = Room2D('Square Shoebox', Face3D(pts, plane), 3)
-    story = Story('Office Floor', [room])
+    room = Room2D('Square_Shoebox', Face3D(pts, plane), 3)
+    story = Story('Office_Floor', [room])
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     origin_1 = Point3D(1, 0, 2)
     normal_1 = Vector3D(1, 0, 0)
@@ -352,13 +353,13 @@ def test_to_honeybee():
     """Test the to_honeybee method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
 
     hb_model = building.to_honeybee(False, 0.01)
     assert isinstance(hb_model, Model)
@@ -374,13 +375,13 @@ def test_to_honeybee():
     assert isinstance(hb_model.rooms[0][1].boundary_condition, Outdoors)
     assert isinstance(hb_model.rooms[0][2].boundary_condition, Surface)
     assert hb_model.rooms[0][2].boundary_condition.boundary_condition_object == \
-        hb_model.rooms[1][4].name
+        hb_model.rooms[1][4].identifier
     assert len(hb_model.rooms[0][1].apertures) == 1
     assert len(hb_model.rooms[0][2].apertures) == 0
 
-    assert hb_model.check_duplicate_room_names()
-    assert hb_model.check_duplicate_face_names()
-    assert hb_model.check_duplicate_sub_face_names()
+    assert hb_model.check_duplicate_room_identifiers()
+    assert hb_model.check_duplicate_face_identifiers()
+    assert hb_model.check_duplicate_sub_face_identifiers()
     assert hb_model.check_missing_adjacencies()
 
     hb_model = building.to_honeybee(True, 0.01)
@@ -388,9 +389,9 @@ def test_to_honeybee():
     for room in hb_model.rooms:
         assert room.multiplier == 4
 
-    assert hb_model.check_duplicate_room_names()
-    assert hb_model.check_duplicate_face_names()
-    assert hb_model.check_duplicate_sub_face_names()
+    assert hb_model.check_duplicate_room_identifiers()
+    assert hb_model.check_duplicate_face_identifiers()
+    assert hb_model.check_duplicate_sub_face_identifiers()
     assert hb_model.check_missing_adjacencies()
 
 
@@ -399,18 +400,18 @@ def test_buildings_to_honeybee():
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
     pts_3 = (Point3D(0, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(0, 30, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    story_big = Story('Office Floor Big', [room2d_3])
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    story_big = Story('Office_Floor_Big', [room2d_3])
+    story = Story('Office_Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
     story_big.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story_big.multiplier = 4
-    building_big = Building('Office Building Big', [story_big])
+    building_big = Building('Office_Building_Big', [story_big])
 
     hb_model = Building.buildings_to_honeybee([building, building_big], False, 0.01)
     assert isinstance(hb_model, Model)
@@ -432,18 +433,18 @@ def test_buildings_to_honeybee_self_shade():
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
     pts_3 = (Point3D(0, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(0, 30, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office 3', Face3D(pts_3), 3)
-    story_big = Story('Office Floor Big', [room2d_3])
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    story_big = Story('Office_Floor_Big', [room2d_3])
+    story = Story('Office_Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
     story_big.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story_big.multiplier = 4
-    building_big = Building('Office Building Big', [story_big])
+    building_big = Building('Office_Building_Big', [story_big])
 
     hb_models = Building.buildings_to_honeybee_self_shade(
         [building, building_big], None, None, False, 0.01)
@@ -471,20 +472,20 @@ def test_to_dict():
     """Test the Building to_dict method."""
     pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 5)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
     building.separate_top_bottom_floors()
 
     bd = building.to_dict()
     assert bd['type'] == 'Building'
-    assert bd['name'] == 'OfficeBuilding'
-    assert bd['display_name'] == 'Office Building'
+    assert bd['identifier'] == 'Office_Building'
+    assert bd['display_name'] == 'Office_Building'
     assert 'unique_stories' in bd
     assert len(bd['unique_stories']) == 3
     assert 'properties' in bd
@@ -495,14 +496,14 @@ def test_to_from_dict():
     """Test the to/from dict of Story objects."""
     pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    room2d_1 = Room2D('Office 1', Face3D(pts_1), 5)
-    room2d_2 = Room2D('Office 2', Face3D(pts_2), 3)
-    story = Story('Office Floor', [room2d_1, room2d_2])
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2])
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.set_outdoor_shading_parameters(Overhang(1))
     story.multiplier = 4
-    building = Building('Office Building', [story])
+    building = Building('Office_Building', [story])
     building.separate_top_bottom_floors()
 
     building_dict = building.to_dict()
