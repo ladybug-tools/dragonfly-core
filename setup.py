@@ -1,6 +1,4 @@
-import re
 import setuptools
-import sys
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -21,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     install_requires=requirements,
     extras_require={
-        'cli': ['click>=5.1', 'dragonfly-schema>=1.2.0']
+        'cli': ['click==7.1.1', "dragonfly-schema==1.5.6;python_version>='3.6'"]
     },
     entry_points={
         "console_scripts": ["dragonfly = dragonfly.cli:main"]
@@ -29,6 +27,7 @@ setuptools.setup(
     classifiers=[
         "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: Implementation :: CPython",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Operating System :: OS Independent"
