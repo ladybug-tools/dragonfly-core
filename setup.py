@@ -19,7 +19,7 @@ setuptools.setup(
     packages=setuptools.find_packages(exclude=["tests"]),
     install_requires=requirements,
     extras_require={
-        'cli': ['click==7.1.1', "dragonfly-schema==1.5.6;python_version>='3.6'"]
+        'cli': ['click==7.1.1', "dragonfly-schema==1.5.8;python_version>='3.6'"]
     },
     entry_points={
         "console_scripts": ["dragonfly = dragonfly.cli:main"]
