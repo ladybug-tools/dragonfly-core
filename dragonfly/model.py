@@ -467,7 +467,7 @@ class Model(_BaseGeometry):
             for model in models:
                 model.north_angle = self._north_angle
 
-        # change the tolerance and untis systems to match the dragonfly model
+        # change the tolerance and units systems to match the dragonfly model
         for model in models:
             model.units = self.units
             model.tolerance = tolerance
@@ -483,7 +483,7 @@ class Model(_BaseGeometry):
         """Convert Dragonfly Model to a geoJSON-style Python dictionary.
 
         Args:
-            location: A ladybug Location object possessing longitude and lattiude data.
+            location: A ladybug Location object possessing longitude and latitude data.
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
                 expected to be in the units of this Model. (Default: (0, 0)).
@@ -569,7 +569,7 @@ class Model(_BaseGeometry):
         from honeybee Models translated to OSM.
 
         Args:
-            location: A ladybug Location object possessing longitude and lattiude data.
+            location: A ladybug Location object possessing longitude and latitude data.
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
                 expected to be in the units of this Model. (Default: (0, 0)).
@@ -641,7 +641,7 @@ class Model(_BaseGeometry):
 
     @staticmethod
     def _geojson_coordinates(face3d, origin_lon_lat, convert_facs):
-        """Convert a horzontal Face3D to geoJSON coordinates."""
+        """Convert a horizontal Face3D to geoJSON coordinates."""
         coords = [polygon_to_lon_lat(
             [(pt.x, pt.y) for pt in face3d.boundary], origin_lon_lat, convert_facs)]
         coords[0].append(coords[0][0])

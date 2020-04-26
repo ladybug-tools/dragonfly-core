@@ -34,7 +34,7 @@ class Room2D(_BaseGeometry):
         identifier: Text string for a unique Room2D ID. Must be < 100 characters and
             not contain any spaces or special characters.
         floor_geometry: A single horizontal Face3D object representing the
-            floor plate of the Room. Note that this Face3D must be horiztional
+            floor plate of the Room. Note that this Face3D must be horizontal
             to be valid.
         floor_to_ceiling_height: A number for the height above the floor where the
             ceiling begins. Typical values range from 3 to 5 meters.
@@ -122,7 +122,7 @@ class Room2D(_BaseGeometry):
             bc = bcs.outdoors if self.ceiling_height > 0 else bcs.ground
             self._boundary_conditions = [bc for i in range(len(self))]
         else:
-            value = self._check_wall_assinged_object(
+            value = self._check_wall_assigned_object(
                 boundary_conditions, 'boundary_conditions')
             for val in value:
                 assert isinstance(val, _BoundaryCondition), \
@@ -133,7 +133,7 @@ class Room2D(_BaseGeometry):
         self.window_parameters = window_parameters
         self.shading_parameters = shading_parameters
 
-        # ensure all wall-asigned objects align with the geometry if it has been flipped
+        # ensure all wall-assigned objects align with the geometry if it has been flipped
         if floor_geometry.normal.z < 0:
 
             new_bcs, new_win_pars, new_shd_pars = Room2D._flip_wall_assigned_objects(
@@ -183,7 +183,7 @@ class Room2D(_BaseGeometry):
                     bc_class = getattr(hbc, bc_dict['type'])
                 except AttributeError:
                     raise ValueError(
-                        'Boundary condition "{}" is not supported in this honyebee '
+                        'Boundary condition "{}" is not supported in this honeybee '
                         'installation.'.format(bc_dict['type']))
                 b_conditions.append(bc_class.from_dict(bc_dict))
         else:
@@ -198,7 +198,7 @@ class Room2D(_BaseGeometry):
                         glz_class = getattr(glzpar, glz_dict['type'])
                     except AttributeError:
                         raise ValueError(
-                            'Window parameter "{}" is not supported in this honyebee '
+                            'Window parameter "{}" is not supported in this honeybee '
                             'installation.'.format(glz_dict['type']))
                     glz_pars.append(glz_class.from_dict(glz_dict))
                 else:
@@ -215,7 +215,7 @@ class Room2D(_BaseGeometry):
                         shd_class = getattr(shdpar, shd_dict['type'])
                     except AttributeError:
                         raise ValueError(
-                            'Shading parameter "{}" is not supported in this honyebee '
+                            'Shading parameter "{}" is not supported in this honeybee '
                             'installation.'.format(shd_dict['type']))
                     shd_pars.append(shd_class.from_dict(shd_dict))
                 else:
@@ -362,7 +362,7 @@ class Room2D(_BaseGeometry):
 
     @boundary_conditions.setter
     def boundary_conditions(self, value):
-        value = self._check_wall_assinged_object(value, 'boundary conditions')
+        value = self._check_wall_assigned_object(value, 'boundary conditions')
         for val, glz in zip(value, self._window_parameters):
             assert val in bcs, 'Expected BoundaryCondition. Got {}'.format(type(value))
             if glz is not None:
@@ -379,7 +379,7 @@ class Room2D(_BaseGeometry):
     @window_parameters.setter
     def window_parameters(self, value):
         if value is not None:
-            value = self._check_wall_assinged_object(value, 'window_parameters')
+            value = self._check_wall_assigned_object(value, 'window_parameters')
             for val, bc in zip(value, self._boundary_conditions):
                 if val is not None:
                     assert isinstance(val, _WindowParameterBase), \
@@ -399,7 +399,7 @@ class Room2D(_BaseGeometry):
     @shading_parameters.setter
     def shading_parameters(self, value):
         if value is not None:
-            value = self._check_wall_assinged_object(value, 'shading_parameters')
+            value = self._check_wall_assigned_object(value, 'shading_parameters')
             for val in value:
                 if val is not None:
                     assert isinstance(val, _ShadingParameterBase), \
@@ -711,7 +711,7 @@ class Room2D(_BaseGeometry):
                 self._shading_parameters[i] = shd_par.scale(factor)
 
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
-        """Check whether the Room2D's floor geometry is horiztonal within a tolerance.
+        """Check whether the Room2D's floor geometry is horizontal within a tolerance.
 
         Args:
             tolerance: The maximum difference between z values at which
@@ -814,7 +814,7 @@ class Room2D(_BaseGeometry):
 
         Args:
             abridged: Boolean to note whether the extension properties of the
-                object (ie. program_type, construciton_set) should be included in detail
+                object (ie. program_type, construction_set) should be included in detail
                 (False) or just referenced by identifier (True). Default: False.
             included_prop: List of properties to filter keys that must be included in
                 output dictionary. For example ['energy'] will include 'energy' key if
@@ -912,7 +912,7 @@ class Room2D(_BaseGeometry):
         runing this method.
 
         Args:
-            room_2ds: A list of Room2Ds for which adjacencent segments will be
+            room_2ds: A list of Room2Ds for which adjacent segments will be
                 intersected.
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered adjacent. Default: 0.01,
@@ -979,7 +979,7 @@ class Room2D(_BaseGeometry):
             intersected_rooms.append(rebuilt_room)
         return tuple(intersected_rooms)
 
-    def _check_wall_assinged_object(self, value, obj_name=''):
+    def _check_wall_assigned_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""
         try:
             value = list(value) if not isinstance(value, list) else value
@@ -1025,7 +1025,7 @@ class Room2D(_BaseGeometry):
         return new_bcs, new_win_pars, new_shd_pars
 
     def _split_walls_along_height(self, hb_room, tolerance):
-        """Split adjacent walls to ensure matching surface areas in to_honyebee workflow.
+        """Split adjacent walls to ensure matching surface areas in to_honeybee workflow.
 
         Args:
             hb_room: A non-split Honeybee Room representation of this Room2D.

@@ -32,7 +32,7 @@ class Building(_BaseGeometry):
         unique_stories: An array of unique Dragonfly Story objects that
             together form the entire building. Stories should be ordered
             from lowest floor to highest floor and they will be automatically
-            sorted besed on floor height when they are added to a Building.
+            sorted based on floor height when they are added to a Building.
             Note that, if a given Story is repeated several times over the
             height of the Building, the unique Story included in this list
             should be the first (lowest) Story of the repeated floors.
@@ -79,7 +79,7 @@ class Building(_BaseGeometry):
         Story floor-to-floor height. Also, none of the Room2Ds will have contact
         with the ground or top exposure but the separate_top_bottom_floors method
         can be used to automatically break these floors out from the multiplier
-        representation and assign these proeprties.
+        representation and assign these properties.
 
         Args:
             identifier: Text string for a unique Building ID. Must be < 100 characters
@@ -421,7 +421,7 @@ class Building(_BaseGeometry):
 
         This is particularly helpful when using to_honeybee workflows with
         multipliers but one wants to account for the heat exchange of the top
-        or bottom floors with the gound or outdoors.
+        or bottom floors with the ground or outdoors.
         """
         new_ground_floor = ()
         new_top_floor = ()
@@ -525,7 +525,7 @@ class Building(_BaseGeometry):
 
         Args:
             abridged: Boolean to note whether the extension properties of the
-                object (ie. construciton sets) should be included in detail
+                object (ie. construction sets) should be included in detail
                 (False) or just referenced by identifier (True). Default: False.
             included_prop: List of properties to filter keys that must be included in
                 output dictionary. For example ['energy'] will include 'energy' key if
@@ -651,7 +651,7 @@ class Building(_BaseGeometry):
                                                     shade_distance):
                         for shd in con_shades[s]:
                             model.add_shade(shd)
-            models.append(model)  # apend to the final list of Models
+            models.append(model)  # append to the final list of Models
         return models
 
     @staticmethod
@@ -743,11 +743,11 @@ class Building(_BaseGeometry):
 
     @staticmethod
     def _match_holes_to_face(base_face, other_faces, tol):
-        """Attempt to merge other faces into a bese face as holes.
+        """Attempt to merge other faces into a base face as holes.
         
         Args:
             base_face: A Face3D to serve as the base.
-            other_segs: A list of other Face3D objects to attempt to merge into
+            other_faces: A list of other Face3D objects to attempt to merge into
                 the base_face as a hole. This method will delete any faces
                 that are successfully merged into the output from this list. 
             tol: The tolerance to be used for evaluating sub-faces.

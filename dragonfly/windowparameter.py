@@ -85,7 +85,7 @@ class SingleWindow(_WindowParameterBase):
     or too narrow for the input width and/or height, the generated window will
     automatically be shortened when it is applied to the face. In this way,
     setting the width to be `float('inf')` will create parameters that always
-    generate a ribboin window of the input height.
+    generate a ribbon window of the input height.
 
     Args:
         width: A number for the window width.
@@ -579,7 +579,6 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
                 'window_width': self.window_width,
                 'sill_height': self.sill_height,
                 'horizontal_separation': self.horizontal_separation}
-        return base
 
     def __copy__(self):
         return RepeatingWindowWidthHeight(
@@ -615,7 +614,7 @@ class _AsymmetricBase(_WindowParameterBase):
     def flip(self, seg_length):
         """Flip the direction of the windows along a wall segment.
 
-        This is needed since windows can exist asymmetically across the wall
+        This is needed since windows can exist asymmetrically across the wall
         segment and operations like reflecting the Room2D across a plane will
         require the window parameters to be flipped. Reversing the Room2D vertices
         also requires flipping.
@@ -633,7 +632,7 @@ class RectangularWindows(_AsymmetricBase):
     Note that, if these parameters are applied to a base wall that is too short
     or too narrow such that the windows fall outside the boundary of the wall, the
     generated windows will automatically be shortened or excluded. This way, a
-    certain pattern of repating rectangular windows can be encoded in a single
+    certain pattern of repeating rectangular windows can be encoded in a single
     RectangularWindows instance and applied to multiple Room2D segments.
 
     Args:
@@ -643,9 +642,9 @@ class RectangularWindows(_AsymmetricBase):
             X-axis extending along the length of the segment. The wall plane's
             Y-axis always points upwards.  Therefore, both X and Y values of
             each origin point should be positive.
-        widths: An array of postive numbers for the window widths. The length
+        widths: An array of positive numbers for the window widths. The length
             of this list must match the length of the origins.
-        heights: An array of postive numbers for the window heights. The length
+        heights: An array of positive numbers for the window heights. The length
             of this list must match the length of the origins.
 
     Properties:
@@ -753,7 +752,7 @@ class RectangularWindows(_AsymmetricBase):
     def flip(self, seg_length):
         """Flip the direction of the windows along a segment.
 
-        This is needed since windows can exist asymmetically across the wall
+        This is needed since windows can exist asymmetrically across the wall
         segment and operations like reflecting the Room2D across a plane will
         require the window parameters to be flipped to remain in the same place.
 
@@ -935,7 +934,7 @@ class DetailedWindows(_AsymmetricBase):
     def flip(self, seg_length):
         """Flip the direction of the windows along a segment.
 
-        This is needed since windows can exist asymmetically across the wall
+        This is needed since windows can exist asymmetrically across the wall
         segment and operations like reflecting the Room2D across a plane will
         require the window parameters to be flipped to remain in the same place.
 
@@ -943,7 +942,7 @@ class DetailedWindows(_AsymmetricBase):
             seg_length: The length of the segment along which the parameters are
                 being flipped.
         """
-        # set values derived from the proeprty of the segment
+        # set values derived from the property of the segment
         normal = Vector2D(1, 0)
         origin = Point2D(seg_length / 2, 0)
 

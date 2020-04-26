@@ -31,11 +31,7 @@ def edit():
 @edit.command('solve-adjacency')
 @click.argument('model-json')
 @click.argument('adiabatic', type=bool, default=False)
-@click.option('--included-prop', help='List of properties to filter keys that must '
-              'be included in output JSON. For example ["energy"] will include '
-              '"energy" key if available. By default, all the keys will be'
-              'included. To exclude all the keys from extensions, use an empty list.',
-              type=list, default=None)
+@click.argument('included-prop', type=str, nargs=-1, default=None)
 @click.option('--log-file', help='Optional log file to output the Model JSON string'
               ' with solved adjacency. By default it will be printed out to stdout',
               type=click.File('w'), default='-')
@@ -52,11 +48,15 @@ def solve_adjacency(model_json, adiabatic, included_prop, log_file):
     Args:
         model_json: Full path to a Model JSON file.\n
         adiabatic: Boolean to note whether adjacencies should be adiabatic.
+        included_prop: List of properties to filter keys that must be included
+            in output JSON. For example ["energy"] will include "energy" key if
+            available. By default, all the keys will be included. To exclude
+            all the keys from extensions, use an empty list.
     """
     try:
         assert os.path.isfile(model_json), 'No JSON file found at {}.'.format(model_json)
 
-        # serialze the Model to Python
+        # serialize the Model to Python
         with open(model_json) as json_file:
             data = json.load(json_file)
         parsed_model = Model.from_dict(data)
