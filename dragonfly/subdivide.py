@@ -1,10 +1,10 @@
-"""Utilities to interpret parameters for subdividing biulding masses."""
+"""Utilities to interpret parameters for subdividing building masses."""
 from __future__ import division
 
 
 def interpret_floor_height_subdivide(floor_to_floor_heights, max_height,
                                      first_floor_height=0):
-    """Interpret a list of instructions for subdividng a building mass into floors.
+    """Interpret a list of instructions for subdividing a building mass into floors.
 
     Args:
         floor_to_floor_heights: An array of floor-to-floor height instructions
@@ -70,7 +70,7 @@ def interpret_floor_height_subdivide(floor_to_floor_heights, max_height,
 
 
 def interpret_core_perimeter_subdivide(perimeter_depths, floor_count):
-    """Interpret a list of instructions for subdividng a building mass into floors.
+    """Interpret a list of instructions for subdividing a building mass into floors.
 
     Args:
         perimeter_depths: An array of perimeter depth instructions that describe

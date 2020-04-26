@@ -48,7 +48,7 @@ def validate_model(model_json):
         parsed_model = Model.from_dict(data)
         parsed_model.check_missing_adjacencies(raise_exception=True)
         click.echo('Python re-serialization passed.')
-        click.echo('Congratulations! Yout Model JSON is valid!')
+        click.echo('Congratulations! Your Model JSON is valid!')
     except Exception as e:
         _logger.exception('Model validation failed.\n{}'.format(e))
         sys.exit(1)

@@ -86,7 +86,7 @@ class Story(_BaseGeometry):
             'Got {}.'.format(data['type'])
 
         # TODO: Ensure Surface boundary conditions are updated if the serialization of
-        # Room2Ds automatically flips the Room bounday polygon.
+        # Room2Ds automatically flips the Room boundary polygon.
         rooms = [Room2D.from_dict(r_dict, tolerance) for r_dict in data['room_2ds']]
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
         mult = data['multiplier'] if 'multiplier' in data else 1
@@ -497,7 +497,7 @@ using-multipliers-zone-and-or-window.html
 
         Args:
             abridged: Boolean to note whether the extension properties of the
-                object (ie. construciton sets) should be included in detail
+                object (ie. construction sets) should be included in detail
                 (False) or just referenced by identifier (True). Default: False.
             included_prop: List of properties to filter keys that must be included in
                 output dictionary. For example ['energy'] will include 'energy' key if
