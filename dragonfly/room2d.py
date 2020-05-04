@@ -598,7 +598,7 @@ class Room2D(_BaseGeometry):
                 Default is 1.0, which will not offset the grid to be 1 unit above
                 the floor.
         """
-        return self.floor_geometry.get_mesh_grid(x_dim, y_dim, offset, False)
+        return self.floor_geometry.mesh_grid(x_dim, y_dim, offset, False)
 
     def set_adjacency(self, other_room_2d, self_seg_index, other_seg_index):
         """Set this Room2D to be adjacent to another and vice versa.
