@@ -31,8 +31,6 @@ class Model(_BaseGeometry):
             and not contain any spaces or special characters.
         buildings: A list of Building objects in the model.
         context_shades: A list of ContextShade objects in the model.
-        north_angle: An number between 0 and 360 to set the clockwise north
-            direction in degrees. Default is 0.
         units: Text for the units system in which the model geometry
             exists. Default: 'Meters'. Choose from the following:
 
@@ -54,7 +52,6 @@ class Model(_BaseGeometry):
     Properties:
         * identifier
         * display_name
-        * north_angle
         * north_vector
         * units
         * tolerance
@@ -67,17 +64,16 @@ class Model(_BaseGeometry):
         * max
         * user_data
     """
-    __slots__ = ('_buildings', '_context_shades', '_north_angle', '_north_vector',
+    __slots__ = ('_buildings', '_context_shades',
                  '_units', '_tolerance', '_angle_tolerance')
 
     UNITS = hb_model.UNITS
 
-    def __init__(self, identifier, buildings=None, context_shades=None, north_angle=0,
+    def __init__(self, identifier, buildings=None, context_shades=None,
                  units='Meters', tolerance=0, angle_tolerance=0):
         """A collection of Buildings and ContextShades for an entire model."""
         self._identifier = identifier
         self._display_name = self._identifier
-        self.north_angle = north_angle
         self.units = units
         self.tolerance = tolerance
         self.angle_tolerance = angle_tolerance
@@ -116,12 +112,11 @@ class Model(_BaseGeometry):
         if 'context_shades' in data and data['context_shades'] is not None:
             context_shades = [ContextShade.from_dict(s) for s in data['context_shades']]
 
-        # import the north angle and units
-        north_angle = 0 if 'north_angle' not in data else data['north_angle']
+        # import the units
         units = 'Meters' if 'units' not in data else data['units']
 
         # build the model object
-        model = Model(data['identifier'], buildings, context_shades, north_angle,
+        model = Model(data['identifier'], buildings, context_shades,
                       units, tol, angle_tol)
         if 'display_name' in data and data['display_name'] is not None:
             model.display_name = data['display_name']
@@ -131,29 +126,6 @@ class Model(_BaseGeometry):
         # assign extension properties to the model
         model.properties.apply_properties_from_dict(data)
         return model
-
-    @property
-    def north_angle(self):
-        """Get or set a number between 0 and 360 for the north direction in degrees."""
-        return self._north_angle
-
-    @north_angle.setter
-    def north_angle(self, value):
-        self._north_angle = float_in_range(value, 0.0, 360.0, 'model north angle')
-        self._north_vector = Vector2D(0, 1).rotate(math.radians(-self._north_angle))
-
-    @property
-    def north_vector(self):
-        """Get or set a ladybug_geometry Vector2D for the north direction."""
-        return self._north_vector
-
-    @north_vector.setter
-    def north_vector(self, value):
-        assert isinstance(value, Vector2D), \
-            'Expected Vector2D for north_vector. Got {}.'.format(type(value))
-        self._north_vector = value
-        self._north_angle = \
-            math.degrees(Vector2D(0, 1).angle_clockwise(self._north_vector))
 
     @property
     def units(self):
@@ -462,11 +434,6 @@ class Model(_BaseGeometry):
             raise ValueError('Unrecognized object_per_model input: '
                             '{}'.format(object_per_model))
 
-        # change the north if the one on this model is not the default
-        if self._north_angle != 0 and self._north_angle != 360:
-            for model in models:
-                model.north_angle = self._north_angle
-
         # change the tolerance and units systems to match the dragonfly model
         for model in models:
             model.units = self.units
@@ -511,11 +478,8 @@ class Model(_BaseGeometry):
         geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
         geojson_dict['project'] = {'name': self.display_name, 'id': self.identifier}
 
-        # ensure that the Model we are working with is in meters with a north_angle of 0
+        # ensure that the Model we are working with is in meters
         model = self
-        if self.north_angle != 0:
-            model = self.duplicate()
-            model.rotate_xy(self.north_angle)
         if self.units != 'Meters':
             model = self.duplicate()
             model.convert_to_units('Meters')
@@ -625,8 +589,6 @@ class Model(_BaseGeometry):
         if self._context_shades != []:
             base['context_shades'] = \
                 [shd.to_dict(True, included_prop) for shd in self._context_shades]
-        if self.north_angle != 0:
-            base['north_angle'] = self.north_angle
         if self.units != 'Meters':
             base['units'] = self.units
         if self.tolerance != 0:
@@ -666,8 +628,7 @@ class Model(_BaseGeometry):
         new_model = Model(
             self.identifier,
             [bldg.duplicate() for bldg in self._buildings],
-            [shade.duplicate() for shade in self._context_shades],
-            self.north_angle)
+            [shade.duplicate() for shade in self._context_shades])
         new_model._display_name = self.display_name
         new_model._user_data = None if self.user_data is None else self.user_data.copy()
         new_model._properties._duplicate_extension_attr(self._properties)
