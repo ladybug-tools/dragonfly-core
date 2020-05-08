@@ -19,7 +19,7 @@ from ladybug_geometry.geometry3d.polyface import Polyface3D
 
 
 def test_room2d_init():
-    """Test the initalization of Room2D objects and basic properties."""
+    """Test the initialization of Room2D objects and basic properties."""
     pts = (Point3D(1, 1, 2), Point3D(1, 2, 2), Point3D(2, 2, 2), Point3D(2, 1, 2))
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
     room2d = Room2D('ZoneCLOSET920980', Face3D(pts, plane), 3)
@@ -53,7 +53,7 @@ def test_room2d_init():
 
 
 def test_room2d_init_with_windows():
-    """Test the initalization of Room2D objects with windows."""
+    """Test the initialization of Room2D objects with windows."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
@@ -82,7 +82,7 @@ def test_room2d_init_with_windows():
 
 
 def test_room_init_with_hole():
-    """Test the initalization of Room2D with a hole."""
+    """Test the initialization of Room2D with a hole."""
     bound_pts = [Point3D(0, 0), Point3D(3, 0), Point3D(3, 3), Point3D(0, 3)]
     hole_pts = [Point3D(1, 1, 0), Point3D(2, 1, 0), Point3D(2, 2, 0), Point3D(1, 2, 0)]
     face = Face3D(bound_pts, None, [hole_pts])
@@ -104,7 +104,7 @@ def test_room_init_with_hole():
 
 
 def test_room2d_init_invalid():
-    """Test the initalization of Room2D objects with invalid inputs."""
+    """Test the initialization of Room2D objects with invalid inputs."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
@@ -138,7 +138,7 @@ def test_room2d_init_invalid():
 
 
 def test_room2d_init_clockwise():
-    """Test the initalization of Room2D objects with clockwise vertices."""
+    """Test the initialization of Room2D objects with clockwise vertices."""
     pts = (Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3), Point3D(0, 0, 3))
     ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)
@@ -171,7 +171,7 @@ def test_room2d_init_clockwise():
 
 
 def test_room2d_init_from_polygon():
-    """Test the initalization of Room2D objects from a Polygon2D."""
+    """Test the initialization of Room2D objects from a Polygon2D."""
     pts = (Point2D(0, 0), Point2D(10, 0), Point2D(10, 10), Point2D(0, 10))
     polygon = Polygon2D(pts)
     ashrae_base = SimpleWindowRatio(0.4)
@@ -201,7 +201,7 @@ def test_room2d_init_from_polygon():
 
 
 def test_room2d_init_from_polygon_clockwise():
-    """Test the initalization of Room2D objects from a clockwise Polygon2D."""
+    """Test the initialization of Room2D objects from a clockwise Polygon2D."""
     pts_3d = (Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3), Point3D(0, 0, 3))
     pts = (Point2D(0, 10), Point2D(10, 10), Point2D(10, 0), Point2D(0, 0))
     polygon = Polygon2D(pts)
@@ -220,7 +220,7 @@ def test_room2d_init_from_polygon_clockwise():
 
 
 def test_room2d_init_from_vertices():
-    """Test the initalization of Room2D objects from 2D vertices."""
+    """Test the initialization of Room2D objects from 2D vertices."""
     pts = (Point2D(0, 0), Point2D(10, 0), Point2D(10, 10), Point2D(0, 10))
     ashrae_base = SimpleWindowRatio(0.4)
     overhang = Overhang(1)

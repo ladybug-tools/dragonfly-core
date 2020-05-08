@@ -24,7 +24,7 @@ import os
 
 
 def test_model_init():
-    """Test the initalization of Model objects and basic properties."""
+    """Test the initialization of Model objects and basic properties."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
@@ -48,8 +48,6 @@ def test_model_init():
 
     assert model.identifier == 'New_Development'
     assert model.display_name == 'New_Development'
-    assert model.north_angle == 0
-    assert model.north_vector == Vector2D(0, 1)
     assert model.units == 'Meters'
     assert model.tolerance == 0
     assert model.angle_tolerance == 0
@@ -82,8 +80,6 @@ def test_model_properties_setability():
 
     model.display_name = 'TestBuilding'
     assert model.display_name == 'TestBuilding'
-    model.north_angle = 20
-    assert model.north_angle == 20
     model.units = 'Feet'
     assert model.units == 'Feet'
     model.tolerance = 0.01
@@ -118,10 +114,9 @@ def test_model_add_objects():
     tree_canopy_1 = ContextShade('TreeCanopy1', [tree_canopy_geo1])
     tree_canopy_2 = ContextShade('TreeCanopy2', [tree_canopy_geo2])
 
-    model = Model('NewDevelopment', [building_1], [tree_canopy_1], 15)
+    model = Model('NewDevelopment', [building_1], [tree_canopy_1])
     assert len(model.buildings) == 1
     assert len(model.context_shades) == 1
-    assert model.north_angle == 15
     with pytest.raises(AssertionError):
         model.add_building(tree_canopy_2)
     model.add_building(building_2)
@@ -165,8 +160,8 @@ def test_model_add_model():
     tree_canopy_1 = ContextShade('TreeCanopy1', [tree_canopy_geo1])
     tree_canopy_2 = ContextShade('TreeCanopy2', [tree_canopy_geo2])
 
-    model_1 = Model('NewDevelopment1', [building_1], [tree_canopy_1], 15)
-    model_2 = Model('NewDevelopment2', [building_2], [tree_canopy_2], 15)
+    model_1 = Model('NewDevelopment1', [building_1], [tree_canopy_1])
+    model_2 = Model('NewDevelopment2', [building_2], [tree_canopy_2])
 
     assert len(model_1.buildings) == 1
     assert len(model_1.context_shades) == 1
@@ -364,8 +359,8 @@ def test_check_duplicate_identifiers():
     tree_canopy_1 = ContextShade('TreeCanopy', [tree_canopy_geo1])
     tree_canopy_2 = ContextShade('TreeCanopy', [tree_canopy_geo2])
 
-    model_1 = Model('NewDevelopment1', [building_1], [tree_canopy_1], 15)
-    model_2 = Model('NewDevelopment2', [building_2], [tree_canopy_2], 15)
+    model_1 = Model('NewDevelopment1', [building_1], [tree_canopy_1])
+    model_2 = Model('NewDevelopment2', [building_2], [tree_canopy_2])
 
     assert model_1.check_duplicate_building_identifiers(False)
     assert model_1.check_duplicate_context_shade_identifiers(False)
@@ -473,7 +468,6 @@ def test_to_dict():
     tree_canopy = ContextShade('TreeCanopy', [tree_canopy_geo1, tree_canopy_geo2])
 
     model = Model('NewDevelopment', [building], [tree_canopy])
-    model.north_angle = 15
     model.tolerance = 0.01
     model.angle_tolerance = 1
 
@@ -485,8 +479,6 @@ def test_to_dict():
     assert len(model_dict['buildings']) == 1
     assert 'context_shades' in model_dict
     assert len(model_dict['context_shades']) == 1
-    assert 'north_angle' in model_dict
-    assert model_dict['north_angle'] == 15
     assert 'tolerance' in model_dict
     assert model_dict['tolerance'] == 0.01
     assert 'angle_tolerance' in model_dict
@@ -516,7 +508,6 @@ def test_to_from_dict_methods():
     tree_canopy = ContextShade('TreeCanopy', [tree_canopy_geo1, tree_canopy_geo2])
 
     model = Model('NewDevelopment', [building], [tree_canopy])
-    model.north_angle = 15
 
     model_dict = model.to_dict()
     new_model = Model.from_dict(model_dict)
