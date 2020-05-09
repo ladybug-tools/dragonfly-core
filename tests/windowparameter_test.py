@@ -314,7 +314,7 @@ def test_detailed_rectangular_flip():
     assert new_detailed_window.heights == heights
 
 
-def test_single_window_add_window_to_face():
+def test_detailed_window_add_window_to_face():
     """Test the add_window_to_face method."""
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
