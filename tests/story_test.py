@@ -331,3 +331,35 @@ def test_to_from_dict():
     new_story = Story.from_dict(story_dict)
     assert isinstance(new_story, Story)
     assert new_story.to_dict() == story_dict
+
+
+def test_from_dict_reversed_surface_bcs():
+    """Test the from_dict of Story objects with reversed Surface boundary conditions."""
+    pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story_dict_original = story.to_dict()
+
+    # reverse the order of vertices in one of the rooms
+    story_dict = story.to_dict()
+    room2 = story_dict['room_2ds'][1]
+    room2['floor_boundary'] = list(reversed(room2['floor_boundary']))
+    room2['boundary_conditions'] = list(reversed(room2['boundary_conditions']))
+    room1_bc = story_dict['room_2ds'][0]['boundary_conditions'][1]
+    room1_bc['boundary_condition_objects'] = ('Office2..Face1', 'Office2')
+
+    new_story = Story.from_dict(story_dict)
+    assert new_story.to_dict() == story_dict_original
+
+    # reverse the order of vertices in both of the rooms
+    room1 = story_dict['room_2ds'][0]
+    room1['floor_boundary'] = list(reversed(room1['floor_boundary']))
+    room1['boundary_conditions'] = list(reversed(room1['boundary_conditions']))
+    room2_bc = story_dict['room_2ds'][1]['boundary_conditions'][0]
+    room2_bc['boundary_condition_objects'] = ('Office1..Face3', 'Office1')
+
+    new_story = Story.from_dict(story_dict)
+    assert new_story.to_dict() == story_dict_original

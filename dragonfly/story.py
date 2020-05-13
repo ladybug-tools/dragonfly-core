@@ -85,9 +85,35 @@ class Story(_BaseGeometry):
         assert data['type'] == 'Story', 'Expected Story dictionary. ' \
             'Got {}.'.format(data['type'])
 
-        # TODO: Ensure Surface boundary conditions are updated if the serialization of
-        # Room2Ds automatically flips the Room boundary polygon.
+        # serialize the rooms
         rooms = [Room2D.from_dict(r_dict, tolerance) for r_dict in data['room_2ds']]
+
+        # check if any room boundaries were reversed
+        dict_pts = [tuple(room['floor_boundary'][0]) for room in data['room_2ds']]
+        room_pts = [(rm.floor_geometry[0].x, rm.floor_geometry[0].y) for rm in rooms]
+        not_reversed = [dpt == rpt for dpt, rpt in zip(dict_pts, room_pts)]
+
+        # ensure Surface boundary conditions are correct if floors were reversed
+        if not all(not_reversed):  # some room floors have been reversed
+            bcs_to_update = []
+            for not_revd, room in zip(not_reversed, rooms):
+                if not not_revd:  # double negative! reversed room boundary
+                    for i, bc in enumerate(room._boundary_conditions):
+                        if isinstance(bc, Surface):  # segment must be updated
+                            new_id = '{}..Face{}'.format(room.identifier, i + 1)
+                            bc_room = bc.boundary_condition_objects[1]
+                            bc_f_i = bc.boundary_condition_objects[0].split('..Face')[-1]
+                            bc_tup = (bc_room, int(bc_f_i) - 1, (new_id, room.identifier))
+                            bcs_to_update.append(bc_tup)
+            for bc_tup in bcs_to_update:  # update any reversed boundary conditions
+                adj_room = bc_tup[0]
+                for not_revd, room in zip(not_reversed, rooms):  # find adjacent room
+                    if room.identifier == adj_room:
+                        bc_to_update = room._boundary_conditions[bc_tup[1]] if not_revd \
+                            else room._boundary_conditions[-1 - bc_tup[1]]
+                        bc_to_update._boundary_condition_objects = bc_tup[2]
+
+        # process the floor_to_floor_height and the multiplier
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
         mult = data['multiplier'] if 'multiplier' in data else 1
 
