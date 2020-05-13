@@ -472,7 +472,7 @@ using-multipliers-zone-and-or-window.html
         return True
 
     def to_honeybee(self, use_multiplier=True, tolerance=0.01):
-        """Convert Dragonfly Story to a Honeybee Model.
+        """Convert Dragonfly Story to a list of Honeybee Rooms.
 
         Args:
             use_multiplier: If True, this Story's multiplier will be passed along
@@ -484,13 +484,37 @@ using-multipliers-zone-and-or-window.html
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 If None, no splitting will occur. Default: 0.01, suitable for
                 objects in meters.
+        
+        Returns:
+            A list of honeybee Rooms that represent the Story.
         """
+        # set up the multiplier
         mult = self.multiplier if use_multiplier else 1
-        hb_rooms = [room.to_honeybee(mult, tolerance) for room in self._room_2ds]
-        hb_mod = Model(self.identifier, hb_rooms)
-        hb_mod._display_name = self._display_name
-        hb_mod._user_data = self._user_data
-        return hb_mod
+
+        # convert all of the Room2Ds to honeybee Rooms
+        hb_rooms = []
+        adjacencies = []
+        for room in self._room_2ds:
+            hb_room, adj = room.to_honeybee(mult, tolerance)
+            hb_rooms.append(hb_room)
+            adjacencies.extend(adj)
+
+        # assign adjacent boundary conditions that could not be set on the room level
+        if len(adjacencies) != 0:
+            adj_set = set()
+            for adj in adjacencies:
+                if adj[0].identifier not in adj_set:
+                    for room in hb_rooms:
+                        adj_room = adj[1][-1]
+                        if room.identifier == adj_room:
+                            for face in room.faces:
+                                adj_face = adj[1][-2]
+                                if face.identifier == adj_face:
+                                    adj[0].set_adjacency(face, tolerance)
+                                    adj_set.add(face.identifier)
+                                    break
+                            break
+        return hb_rooms
 
     def to_dict(self, abridged=False, included_prop=None):
         """Return Story as a dictionary.

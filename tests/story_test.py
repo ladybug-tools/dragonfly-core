@@ -241,23 +241,22 @@ def test_to_honeybee():
     story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
 
-    hb_model = story.to_honeybee(0.01)
-    assert isinstance(hb_model, Model)
-    assert len(hb_model.rooms) == 2
-    assert len(hb_model.rooms[0]) == 6
-    assert hb_model.rooms[0].volume == 300
-    assert hb_model.rooms[0].floor_area == 100
-    assert hb_model.rooms[0].exterior_wall_area == 90
-    assert hb_model.rooms[0].exterior_aperture_area == pytest.approx(90 * 0.4, rel=1e-3)
-    assert hb_model.rooms[0].average_floor_height == 3
-    assert hb_model.rooms[0].check_solid(0.01, 1)
+    rooms = story.to_honeybee(0.01)
+    assert len(rooms) == 2
+    assert len(rooms[0]) == 6
+    assert rooms[0].volume == 300
+    assert rooms[0].floor_area == 100
+    assert rooms[0].exterior_wall_area == 90
+    assert rooms[0].exterior_aperture_area == pytest.approx(90 * 0.4, rel=1e-3)
+    assert rooms[0].average_floor_height == 3
+    assert rooms[0].check_solid(0.01, 1)
 
-    assert isinstance(hb_model.rooms[0][1].boundary_condition, Outdoors)
-    assert isinstance(hb_model.rooms[0][2].boundary_condition, Surface)
-    assert hb_model.rooms[0][2].boundary_condition.boundary_condition_object == \
-        hb_model.rooms[1][4].identifier
-    assert len(hb_model.rooms[0][1].apertures) == 1
-    assert len(hb_model.rooms[0][2].apertures) == 0
+    assert isinstance(rooms[0][1].boundary_condition, Outdoors)
+    assert isinstance(rooms[0][2].boundary_condition, Surface)
+    assert rooms[0][2].boundary_condition.boundary_condition_object == \
+        rooms[1][4].identifier
+    assert len(rooms[0][1].apertures) == 1
+    assert len(rooms[0][2].apertures) == 0
 
 
 def test_to_honeybee_different_heights():
@@ -267,24 +266,31 @@ def test_to_honeybee_different_heights():
     room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
     room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
     story = Story('OfficeFloor', [room2d_1, room2d_2])
-    story.solve_room_2d_adjacency(0.01)
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.solve_room_2d_adjacency(0.01)
 
-    hb_model = story.to_honeybee(True, 0.01)
-    assert isinstance(hb_model, Model)
-    assert len(hb_model.rooms) == 2
-    assert len(hb_model.rooms[0]) == 8
-    assert hb_model.rooms[0].volume == 500
-    assert hb_model.rooms[0].floor_area == 100
-    assert hb_model.rooms[0].exterior_wall_area >= 150
-    assert hb_model.rooms[0].exterior_aperture_area == pytest.approx(150 * 0.4, rel=1e-3)
-    assert hb_model.rooms[0].average_floor_height == 2
-    assert hb_model.rooms[0].check_solid(0.01, 1)
+    rooms = story.to_honeybee(True, 0.01)
+    assert len(rooms) == 2
+    assert len(rooms[0]) == 8
+    assert rooms[0].volume == 500
+    assert rooms[0].floor_area == 100
+    assert rooms[0].exterior_wall_area >= 150
+    assert rooms[0].exterior_aperture_area == pytest.approx(150 * 0.4, rel=1e-3)
+    assert rooms[0].average_floor_height == 2
+    assert rooms[0].check_solid(0.01, 1)
 
-    assert isinstance(hb_model.rooms[0][1].boundary_condition, Outdoors)
-    assert not isinstance(hb_model.rooms[0][2].boundary_condition, Surface)  # bottom
-    assert isinstance(hb_model.rooms[0][3].boundary_condition, Surface)  # middle
-    assert not isinstance(hb_model.rooms[0][4].boundary_condition, Surface)  # top
+    assert isinstance(rooms[0][1].boundary_condition, Outdoors)
+    assert not isinstance(rooms[0][2].boundary_condition, Surface)  # bottom
+    assert isinstance(rooms[0][3].boundary_condition, Surface)  # middle
+    assert not isinstance(rooms[0][4].boundary_condition, Surface)  # top
+
+    assert len(rooms[0][3].apertures) == 1
+    assert len(rooms[1][4].apertures) == 1
+    rm1_ap = rooms[0][3].apertures[0]
+    rm2_ap = rooms[1][4].apertures[0]
+    assert isinstance(rm1_ap.boundary_condition, Surface)
+    assert isinstance(rm2_ap.boundary_condition, Surface)
+    assert rm1_ap.area == pytest.approx(rm2_ap.area, rel=1e-3)
 
 
 def test_to_dict():

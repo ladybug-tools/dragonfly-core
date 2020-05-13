@@ -505,7 +505,7 @@ def test_to_honeybee():
     window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
     room2d = Room2D('ZoneSHOE_BOX920980', Face3D(pts), 3, boundarycs, window, shading)
-    room = room2d.to_honeybee(1, 0.1)
+    room, adj = room2d.to_honeybee(1, 0.1)
 
     assert room.identifier == 'ZoneSHOE_BOX920980'
     assert room.display_name == 'ZoneSHOE_BOX920980'
