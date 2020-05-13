@@ -601,7 +601,10 @@ class Room2D(_BaseGeometry):
         return self.floor_geometry.mesh_grid(x_dim, y_dim, offset, False)
 
     def set_adjacency(self, other_room_2d, self_seg_index, other_seg_index):
-        """Set this Room2D to be adjacent to another and vice versa.
+        """Set a segment of this Room2D to be adjacent to another and vice versa.
+
+        Note that, adjacent segments must possess matching WindowParameters in
+        order to be valid.
 
         Args:
             other_room_2d: Another Room2D object to be set adjacent to this one.
@@ -619,21 +622,13 @@ class Room2D(_BaseGeometry):
                  other_room_2d.identifier)
         self._boundary_conditions[self_seg_index] = Surface(ids_2)
         other_room_2d._boundary_conditions[other_seg_index] = Surface(ids_1)
-        # check that the window parameters match
+        # check that the window parameters match between segments
         if self._window_parameters[self_seg_index] is not None or \
                 other_room_2d._window_parameters[other_seg_index] is not None:
             assert self._window_parameters[self_seg_index] == \
                 other_room_2d._window_parameters[other_seg_index], \
                 'Window parameters do not match between adjacent Room2Ds "{}" and ' \
                 '"{}".'.format(self.identifier, other_room_2d.identifier)
-            assert self.floor_to_ceiling_height == \
-                other_room_2d.floor_to_ceiling_height, 'floor_to_ceiling_height does '\
-                'not match between Room2Ds "{}" and "{}" with interior windows.'.format(
-                    self.identifier, other_room_2d.identifier)
-            assert self.floor_height == \
-                other_room_2d.floor_height, 'floor_height does not match between '\
-                'Room2Ds "{}" and "{}" with interior windows.'.format(
-                    self.identifier, other_room_2d.identifier)
 
     def set_boundary_condition(self, self_seg_index, boundary_condition):
         """Set a single segment of this Room2D to have a certain boundary condition.
@@ -766,15 +761,31 @@ class Room2D(_BaseGeometry):
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. Default: 0.01,
                 suitable for objects in meters.
+        
+        Returns:
+            A tuple with the two items below.
+
+            * hb_room -- A honeybee-core Room representing the dragonfly Room2D
+
+            * adjacencies -- A list of tuples that record any adjacencies that
+                should be set on the level of the Story to which the Room2D belongs.
+                Each tuple will have a honeybee Face as the first item and a
+                tuple of Surface.boundary_condition_objects as the second item.
         """
         # create the honeybee Room
         room_polyface = Polyface3D.from_offset_face(
             self._floor_geometry, self.floor_to_ceiling_height)
         hb_room = Room.from_polyface3d(self.identifier, room_polyface)
 
-        # assign boundary conditions, window and shading to walls
+        # assign BCs and record any Surface conditions to be set on the story level
+        adjacencies = []
         for i, bc in enumerate(self._boundary_conditions):
-            hb_room[i + 1]._boundary_condition = bc
+            if not isinstance(bc, Surface):
+                hb_room[i + 1]._boundary_condition = bc
+            else:
+                adjacencies.append((hb_room[i + 1], bc.boundary_condition_objects))
+
+        # assign windows and shading to walls
         for i, glz_par in enumerate(self._window_parameters):
             if glz_par is not None:
                 glz_par.add_window_to_face(hb_room[i + 1], tolerance)
@@ -785,8 +796,16 @@ class Room2D(_BaseGeometry):
         # ensure matching adjacent Faces across the Story if tolerance is input
         if self._parent is not None:
             new_faces = self._split_walls_along_height(hb_room, tolerance)
-            if len(new_faces) != len(hb_room):  # rebuild the room with split surfaces
+            if len(new_faces) != len(hb_room):
+                # rebuild the room with split surfaces
                 hb_room = Room(self.identifier, new_faces, tolerance, 0.1)
+                # update adjacencies with the new split face
+                for i, adj in enumerate(adjacencies):
+                    face_id = adj[0].identifier
+                    for face in hb_room.faces:
+                        if face.identifier == face_id:
+                            adjacencies[i] = (face, adj[1])
+                            break
 
         # set the multiplier, display_name, and user_data
         hb_room.multiplier = multiplier
@@ -807,7 +826,7 @@ class Room2D(_BaseGeometry):
         # transfer any extension properties assigned to the Room2D
         hb_room._properties = self.properties.to_honeybee(hb_room)
 
-        return hb_room
+        return hb_room, adjacencies
 
     def to_dict(self, abridged=False, included_prop=None):
         """Return Room2D as a dictionary.
@@ -1056,6 +1075,7 @@ class Room2D(_BaseGeometry):
                     above = Face3D.from_extrusion(lseg.move(vec2), Vector3D(0, 0, ciel_diff))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
+                    self._reassign_split_windows(mid_face, i, tolerance)
                     below_face = Face('{}_Below'.format(face.identifier), below)
                     above_face = Face('{}_Above'.format(face.identifier), above)
                     try:
@@ -1074,6 +1094,7 @@ class Room2D(_BaseGeometry):
                     mid = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, mid_dist))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
+                    self._reassign_split_windows(mid_face, i, tolerance)
                     below_face = Face('{}_Below'.format(face.identifier), below)
                     try:
                         below_face.boundary_condition = bcs.adiabatic
@@ -1090,6 +1111,7 @@ class Room2D(_BaseGeometry):
                     above = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, ciel_diff))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
+                    self._reassign_split_windows(mid_face, i, tolerance)
                     above_face = Face('{}_Above'.format(face.identifier), above)
                     try:
                         above_face.boundary_condition = bcs.adiabatic
@@ -1098,6 +1120,19 @@ class Room2D(_BaseGeometry):
                     new_faces.extend([mid_face, above_face])
         new_faces.append(hb_room[-1])
         return new_faces
+
+    def _reassign_split_windows(self, face, i, tolerance):
+        """Re-assign WindowParamters to any base surface that has been split.
+
+        Args:
+            face: Honeybee Face to which windows will be re-assigned.
+            i: The index of the window_parameters that correspond to the face
+            tolerance: The tolerance, which will be used to re-assign windows.
+        """
+        glz_par = self._window_parameters[i]
+        if glz_par is not None:
+            face.remove_apertures()
+            glz_par.add_window_to_face(face, tolerance)
 
     def __copy__(self):
         new_r = Room2D(self.identifier, self._floor_geometry,

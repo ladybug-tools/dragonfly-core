@@ -510,11 +510,13 @@ class Building(_BaseGeometry):
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
         """
+        hb_rooms = []
         if use_multiplier:
-            hb_rooms = [room.to_honeybee(story.multiplier, tolerance)
-                        for story in self._unique_stories for room in story]
+            for story in self._unique_stories:
+                hb_rooms.extend(story.to_honeybee(True, tolerance))
         else:
-            hb_rooms = [room.to_honeybee(1, tolerance) for room in self.all_room_2ds()]
+            for story in self.all_stories():
+                hb_rooms.extend(story.to_honeybee(False, tolerance))
         hb_mod = Model(self.identifier, hb_rooms)
         hb_mod._display_name = self._display_name
         hb_mod._user_data = self._user_data
