@@ -135,7 +135,6 @@ class Room2D(_BaseGeometry):
 
         # ensure all wall-assigned objects align with the geometry if it has been flipped
         if floor_geometry.normal.z < 0:
-
             new_bcs, new_win_pars, new_shd_pars = Room2D._flip_wall_assigned_objects(
                 floor_geometry, self._boundary_conditions, self._window_parameters,
                 self._shading_parameters)
