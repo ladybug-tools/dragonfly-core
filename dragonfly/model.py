@@ -263,6 +263,7 @@ class Model(_BaseGeometry):
             bldg.move(moving_vec)
         for shade in self._context_shades:
             shade.move(moving_vec)
+        self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
         """Rotate this Model counterclockwise in the world XY plane by a certain angle.
@@ -276,6 +277,7 @@ class Model(_BaseGeometry):
             bldg.rotate_xy(angle, origin)
         for shade in self._context_shades:
             shade.rotate_xy(angle, origin)
+        self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
         """Reflect this Model across a plane with the input normal vector and origin.
@@ -288,6 +290,7 @@ class Model(_BaseGeometry):
             bldg.reflect(plane)
         for shade in self._context_shades:
             shade.reflect(plane)
+        self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
         """Scale this Model by a factor from an origin point.
@@ -301,6 +304,7 @@ class Model(_BaseGeometry):
             bldg.scale(factor, origin)
         for shade in self._context_shades:
             shade.scale(factor, origin)
+        self.properties.scale(factor, origin)
 
     def convert_to_units(self, units='Meters'):
         """Convert all of the geometry in this model to certain units.

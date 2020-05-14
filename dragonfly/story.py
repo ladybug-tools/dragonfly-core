@@ -448,6 +448,7 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.move(moving_vec)
+        self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
         """Rotate this Story counterclockwise in the XY plane by a certain angle.
@@ -459,6 +460,7 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.rotate_xy(angle, origin)
+        self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
         """Reflect this Story across a plane.
@@ -468,6 +470,7 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.reflect(plane)
+        self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
         """Scale this Story by a factor from an origin point.
@@ -480,6 +483,7 @@ using-multipliers-zone-and-or-window.html
         for room in self._room_2ds:
             room.scale(factor, origin)
         self._floor_to_floor_height = self._floor_to_floor_height * factor
+        self.properties.scale(factor, origin)
 
     def check_missing_adjacencies(self, raise_exception=True):
         """Check that all Room2Ds have adjacent objects that exist within this Story."""
