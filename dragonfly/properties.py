@@ -21,8 +21,8 @@ class _Properties(object):
         * host
 
     """
-    _exclude = ('host', 'add_prefix', 'reset_to_default', 'to_dict', 'to_honeybee',
-                'ToString')
+    _exclude = ('host', 'move', 'rotate_xy', 'reflect', 'scale', 'add_prefix',
+                'reset_to_default', 'to_dict', 'to_honeybee', 'ToString')
 
     def __init__(self, host):
         """Initialize properties."""
@@ -37,6 +37,92 @@ class _Properties(object):
     def _extension_attributes(self):
         return (atr for atr in dir(self) if not atr.startswith('_')
                 and atr not in self._exclude)
+
+    def move(self, moving_vec):
+        """Apply a move transform to extension attributes.
+
+        This is useful in cases where extension attributes possess geometric data
+        that should be moved alongside the host object.
+
+        Args:
+            moving_vec: A ladybug_geometry Vector3D with the direction and distance
+                to move the face.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'move'):
+                continue
+            try:
+                var.move(moving_vec)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception('Failed to move {}: {}'.format(var, e))
+
+    def rotate_xy(self, angle, origin):
+        """Apply a rotatation in the XY plane to extension attributes.
+
+        This is useful in cases where extension attributes possess geometric data
+        that should be rotated alongside the host object.
+
+        Args:
+            angle: An angle in degrees.
+            origin: A ladybug_geometry Point3D for the origin around which the
+                object will be rotated.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'rotate_xy'):
+                continue
+            try:
+                var.rotate_xy(angle, origin)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception('Failed to rotate {}: {}'.format(var, e))
+
+    def reflect(self, plane):
+        """Apply a reflection transform to extension attributes.
+
+        This is useful in cases where extension attributes possess geometric data
+        that should be reflected alongside the host object.
+
+        Args:
+            plane: A ladybug_geometry Plane across which the object will
+                be reflected.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'reflect'):
+                continue
+            try:
+                var.reflect(plane)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception('Failed to reflect {}: {}'.format(var, e))
+
+    def scale(self, factor, origin=None):
+        """Apply a scale transform to extension attributes.
+
+        This is useful in cases where extension attributes possess geometric data
+        that should be scaled alongside the host object.
+
+        Args:
+            factor: A number representing how much the object should be scaled.
+            origin: A ladybug_geometry Point3D representing the origin from which
+                to scale. If None, it will be scaled from the World origin (0, 0, 0).
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'scale'):
+                continue
+            try:
+                var.scale(factor, origin)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception('Failed to scale {}: {}'.format(var, e))
 
     def _duplicate_extension_attr(self, original_properties):
         """Duplicate the attributes added by extensions.

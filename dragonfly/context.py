@@ -123,6 +123,7 @@ class ContextShade(_BaseGeometry):
                 to move the object.
         """
         self._geometry = tuple(shd_geo.move(moving_vec) for shd_geo in self._geometry)
+        self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
         """Rotate this ContextShade counterclockwise in the XY plane by a certain angle.
@@ -134,6 +135,7 @@ class ContextShade(_BaseGeometry):
         """
         self._geometry = tuple(shd_geo.rotate_xy(math.radians(angle), origin)
                                for shd_geo in self._geometry)
+        self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
         """Reflect this ContextShade across a plane.
@@ -143,6 +145,7 @@ class ContextShade(_BaseGeometry):
         """
         self._geometry = tuple(shd_geo.reflect(plane.n, plane.o)
                                for shd_geo in self._geometry)
+        self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
         """Scale this ContextShade by a factor from an origin point.
@@ -154,6 +157,7 @@ class ContextShade(_BaseGeometry):
         """
         self._geometry = tuple(shd_geo.scale(factor, origin)
                                for shd_geo in self._geometry)
+        self.properties.scale(factor, origin)
 
     def to_honeybee(self):
         """Convert Dragonfly ContextShade to an array of Honeybee Shades."""

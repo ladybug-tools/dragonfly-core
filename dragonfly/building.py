@@ -464,6 +464,7 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.move(moving_vec)
+        self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
         """Rotate this Building counterclockwise in the XY plane by a certain angle.
@@ -475,6 +476,7 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.rotate_xy(angle, origin)
+        self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
         """Reflect this Building across a plane.
@@ -484,6 +486,7 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.reflect(plane)
+        self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
         """Scale this Building by a factor from an origin point.
@@ -495,6 +498,7 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.scale(factor, origin)
+        self.properties.scale(factor, origin)
 
     def to_honeybee(self, use_multiplier=True, tolerance=0.01):
         """Convert Dragonfly Building to a Honeybee Model.

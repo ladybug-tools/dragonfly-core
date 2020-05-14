@@ -649,6 +649,7 @@ class Room2D(_BaseGeometry):
                 to move the room.
         """
         self._floor_geometry = self._floor_geometry.move(moving_vec)
+        self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
         """Rotate this Room2D counterclockwise in the XY plane by a certain angle.
@@ -660,6 +661,7 @@ class Room2D(_BaseGeometry):
         """
         self._floor_geometry = self._floor_geometry.rotate_xy(
             math.radians(angle), origin)
+        self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
         """Reflect this Room2D across a plane.
@@ -678,6 +680,7 @@ class Room2D(_BaseGeometry):
             self._window_parameters = new_win_pars
             self._shading_parameters = new_shd_pars
             self._floor_geometry = self._floor_geometry.flip()
+        self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
         """Scale this Room2D by a factor from an origin point.
@@ -703,6 +706,8 @@ class Room2D(_BaseGeometry):
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
                 self._shading_parameters[i] = shd_par.scale(factor)
+
+        self.properties.scale(factor, origin)
 
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horizontal within a tolerance.
