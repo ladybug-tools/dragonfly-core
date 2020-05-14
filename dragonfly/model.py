@@ -453,6 +453,10 @@ class Model(_BaseGeometry):
     def to_geojson_dict(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
         """Convert Dragonfly Model to a geoJSON-style Python dictionary.
 
+        This dictionary can be written into a JSON, which is then a valid geoJSON
+        that can be visualized in any geoJSON viewer. Each dragonfly Building
+        will appear in the geoJSON as a single feature.
+
         Args:
             location: A ladybug Location object possessing longitude and latitude data.
             point: A ladybug_geometry Point2D for where the location object exists
