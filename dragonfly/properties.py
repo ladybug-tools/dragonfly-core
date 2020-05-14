@@ -21,7 +21,8 @@ class _Properties(object):
         * host
 
     """
-    _do_not_duplicate = ('host', 'to_dict', 'to_honeybee', 'ToString')
+    _exclude = ('host', 'add_prefix', 'reset_to_default', 'to_dict', 'to_honeybee',
+                'ToString')
 
     def __init__(self, host):
         """Initialize properties."""
@@ -31,6 +32,11 @@ class _Properties(object):
     def host(self):
         """Get the object hosting these properties."""
         return self._host
+
+    @property
+    def _extension_attributes(self):
+        return (atr for atr in dir(self) if not atr.startswith('_')
+                and atr not in self._exclude)
 
     def _duplicate_extension_attr(self, original_properties):
         """Duplicate the attributes added by extensions.
@@ -45,10 +51,7 @@ class _Properties(object):
             original_properties: The properties object of the original core
                 object from which the duplicate was derived.
         """
-        attr = [atr for atr in dir(self)
-                if not atr.startswith('_') and atr not in self._do_not_duplicate]
-
-        for atr in attr:
+        for atr in self._extension_attributes:
             var = getattr(original_properties, atr)
             if not hasattr(var, 'duplicate'):
                 continue
@@ -75,10 +78,7 @@ class _Properties(object):
                 identifier. It is recommended that this prefix be short to avoid maxing
                 out the 100 allowable characters for honeybee identifiers.
         """
-        attr = [atr for atr in dir(self)
-                if not atr.startswith('_') and atr not in self._do_not_duplicate]
-
-        for atr in attr:
+        for atr in self._extension_attributes:
             var = getattr(self, atr)
             if not hasattr(var, 'add_prefix'):
                 continue
@@ -100,10 +100,7 @@ class _Properties(object):
             honeybee_properties: A honeybee-core Properties object to which the
                 dragonfly-core extension attributes will be added.
         """
-        attr = [atr for atr in dir(self)
-                if not atr.startswith('_') and atr not in self._do_not_duplicate]
-
-        for atr in attr:
+        for atr in self._extension_attributes:
             var = getattr(self, atr)
             if not hasattr(var, 'to_honeybee'):
                 continue
@@ -138,12 +135,7 @@ class _Properties(object):
                 available in properties to_dict. By default all the keys will be
                 included. To exclude all the keys from extensions use an empty list.
         """
-        if include is not None:
-            attr = include
-        else:
-            attr = [atr for atr in dir(self)
-                    if not atr.startswith('_') and atr not in self._do_not_duplicate]
-
+        attr = include if include is not None else self._extension_attributes
         for atr in attr:
             var = getattr(self, atr)
             if not hasattr(var, 'to_dict'):
@@ -170,10 +162,7 @@ class _Properties(object):
                 attributes from the dictionary and assign them to the object on which
                 this method is called.
         """
-        attr = [atr for atr in dir(self)
-                if not atr.startswith('_') and atr not in self._do_not_duplicate]
-
-        for atr in attr:
+        for atr in self._extension_attributes:
             var = getattr(self, atr)
             if not hasattr(var, 'from_dict'):
                 continue
@@ -212,15 +201,8 @@ class ModelProperties(_Properties):
             include: A list of keys to be included in dictionary.
                 If None all the available keys will be included.
         """
-        base = {
-            'type': 'ModelProperties'
-        }
-        if include is not None:
-            attr = include
-        else:
-            attr = [atr for atr in dir(self)
-                    if not atr.startswith('_') and atr != 'host']
-
+        base = {'type': 'ModelProperties'}
+        attr = include if include is not None else self._extension_attributes
         for atr in attr:
             var = getattr(self, atr)
             if not hasattr(var, 'to_dict'):
@@ -239,10 +221,7 @@ class ModelProperties(_Properties):
         Args:
             data: A dictionary representation of an entire dragonfly-core Model.
         """
-        attr = [atr for atr in dir(self)
-                if not atr.startswith('_') and atr not in self._do_not_duplicate]
-
-        for atr in attr:
+        for atr in self._extension_attributes:
             if atr not in data['properties'] or data['properties'][atr] is None:
                 continue
             var = getattr(self, atr)
