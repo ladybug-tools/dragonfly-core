@@ -32,10 +32,10 @@ def edit():
 @click.argument('model-json')
 @click.argument('adiabatic', type=bool, default=False)
 @click.argument('included-prop', type=str, nargs=-1, default=None)
-@click.option('--log-file', help='Optional log file to output the Model JSON string'
+@click.option('--output-file', help='Optional file to output the Model JSON string'
               ' with solved adjacency. By default it will be printed out to stdout',
               type=click.File('w'), default='-')
-def solve_adjacency(model_json, adiabatic, included_prop, log_file):
+def solve_adjacency(model_json, adiabatic, included_prop, output_file):
     """Solve adjacency between Room2Ds of a Model JSON file. This includes 3 steps.\n
     1. Remove colinear vertices from the Room2D polygons.\n
     2. Intersect adjacent segments of the same Story with one another.\n
@@ -78,7 +78,7 @@ def solve_adjacency(model_json, adiabatic, included_prop, log_file):
                         face_pair[1][0].set_boundary_condition(face_pair[1][1], ad_bc)
         
         # write the new model out to the file or stdout
-        log_file.write(json.dumps(parsed_model.to_dict(included_prop)))
+        output_file.write(json.dumps(parsed_model.to_dict(included_prop)))
 
     except Exception as e:
         _logger.exception('Model solve adjacency failed.\n{}'.format(e))
