@@ -244,6 +244,8 @@ def test_to_honeybee():
     rooms = story.to_honeybee(0.01)
     assert len(rooms) == 2
     assert len(rooms[0]) == 6
+    assert rooms[0].story == story.identifier
+    assert rooms[0].multiplier == story.multiplier
     assert rooms[0].volume == 300
     assert rooms[0].floor_area == 100
     assert rooms[0].exterior_wall_area == 90
