@@ -7,7 +7,8 @@ from .properties import StoryProperties
 from .room2d import Room2D
 
 from honeybee.typing import float_positive, int_in_range, clean_string
-from honeybee.boundarycondition import Surface
+from honeybee.boundarycondition import boundary_conditions as bcs
+from honeybee.boundarycondition import Outdoors, Surface, Ground
 from honeybee.model import Model
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
@@ -39,10 +40,11 @@ class Story(_BaseGeometry):
         * parent
         * has_parent
         * floor_height
-        * volume
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * volume
+        * is_above_ground
         * min
         * max
         * user_data
@@ -184,14 +186,6 @@ using-multipliers-zone-and-or-window.html
         return min([room.floor_height for room in self._room_2ds])
 
     @property
-    def volume(self):
-        """Get a number for the volume of all the Rooms in the Story.
-
-        Note that this property is for one story and does NOT use the multiplier.
-        """
-        return sum([room.volume for room in self._room_2ds])
-
-    @property
     def floor_area(self):
         """Get a number for the total floor area in the Story.
 
@@ -214,6 +208,27 @@ using-multipliers-zone-and-or-window.html
         Note that this property is for one story and does NOT use the multiplier.
         """
         return sum([room.exterior_aperture_area for room in self._room_2ds])
+
+    @property
+    def volume(self):
+        """Get a number for the volume of all the Rooms in the Story.
+
+        Note that this property is for one story and does NOT use the multiplier.
+        """
+        return sum([room.volume for room in self._room_2ds])
+
+    @property
+    def is_above_ground(self):
+        """Get a boolean to note if this Story is above the ground.
+
+        The story is considered above the ground if at least one of its Room2Ds
+        has an outdoor boundary condition.
+        """
+        for room in self._room_2ds:
+            for bc in room._boundary_conditions:
+                if isinstance(bc, Outdoors):
+                    return True
+        return False
 
     @property
     def min(self):
@@ -397,12 +412,26 @@ using-multipliers-zone-and-or-window.html
                                for room in self._room_2ds)
 
     def set_outdoor_window_parameters(self, window_parameter):
-        """Set all of the outdoor walls to have the same window parameters."""
+        """Set all of the outdoor walls to have the same window parameters.
+        
+        Args:
+            window_parameter: A WindowParameter object that will be assigned to
+                all wall segments of this story's rooms that have an Outdoors
+                boundary conditions. This can also be None, to remove all
+                windows from the story.
+        """
         for room in self._room_2ds:
             room.set_outdoor_window_parameters(window_parameter)
 
     def set_outdoor_shading_parameters(self, shading_parameter):
-        """Set all of the outdoor walls to have the same shading parameters."""
+        """Set all of the outdoor walls to have the same shading parameters.
+        
+        Args:
+            shading_parameter: A ShadingParameter object that will be assigned to
+                all wall segments of this story's rooms that have an Outdoors
+                boundary conditions. This can also be None, to remove all
+                shades from the story.
+        """
         for room in self._room_2ds:
             room.set_outdoor_shading_parameters(shading_parameter)
 
@@ -425,6 +454,25 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.is_top_exposed = is_top_exposed
+
+    def make_underground(self):
+        """Make this Story underground by setting all Room2D segments to have Ground BCs.
+
+        Note that this method only changes the outdoor walls of the Room2Ds to have
+        Ground boundary conditions and, if the floors of the story are also in
+        contact with the ground, the set_ground_contact should be used in addition
+        to this method.
+
+        Also note that this method will throw an exception if any of the Room2Ds have
+        WindowParameters assigned to them (since Ground boundary conditions are)
+        not compatible with windows. So using the set_outdoor_window_parameters
+        method and passing None to remove all windows is often recommended
+        before running this method.
+        """
+        for room in self._room_2ds:
+            for i, bc in enumerate(room._boundary_conditions):
+                if isinstance(bc, Outdoors):
+                    room.set_boundary_condition(i, bcs.ground)
 
     def generate_grid(self, x_dim, y_dim=None, offset=1.0):
         """Get a list of gridded Mesh3D objects offset from the floors of this story.

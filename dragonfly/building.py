@@ -42,13 +42,16 @@ class Building(_BaseGeometry):
         * display_name
         * unique_stories
         * unique_room_2ds
-        * height
-        * height_from_first_floor
         * story_count
-        * volume
+        * story_count_above_ground
+        * height
+        * height_above_ground
+        * height_from_first_floor
+        * footprint_area
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * volume
         * min
         * max
         * user_data
@@ -228,16 +231,13 @@ class Building(_BaseGeometry):
         return rooms
 
     @property
-    def height(self):
-        """Get a number for the height of the top ceiling of the Building."""
-        last_flr = self._unique_stories[-1]
-        return last_flr.floor_height + \
-            (last_flr.floor_to_floor_height * last_flr.multiplier)
+    def unique_stories_above_ground(self):
+        """Get a tuple of unique Story objects that are above the ground.
 
-    @property
-    def height_from_first_floor(self):
-        """Get a the height difference between the top ceiling and bottom floor."""
-        return self.height - self._unique_stories[0].floor_height
+        A story is considered above the ground if at least one of its Room2Ds
+        has an outdoor boundary condition.
+        """
+        return [story for story in self._unique_stories if story.is_above_ground]
 
     @property
     def story_count(self):
@@ -245,13 +245,36 @@ class Building(_BaseGeometry):
         return sum((story.multiplier for story in self._unique_stories))
 
     @property
-    def volume(self):
-        """Get a number for the volume of all the Rooms in the Building.
+    def story_count_above_ground(self):
+        """Get an integer for the number of stories above the ground."""
+        return sum((story.multiplier for story in self.unique_stories_above_ground))
 
-        Note that this property uses the story multipliers.
+    @property
+    def height(self):
+        """Get a number for the roof height of the Building as an absolute Z-coordinate.
         """
-        return sum([story.volume * story.multiplier
-                    for story in self._unique_stories])
+        last_flr = self._unique_stories[-1]
+        return last_flr.floor_height + \
+            (last_flr.floor_to_floor_height * last_flr.multiplier)
+
+    @property
+    def height_above_ground(self):
+        """Get a the height difference between the roof and first floor above the ground.
+        """
+        return self.height - self.unique_stories_above_ground[0].floor_height
+
+    @property
+    def height_from_first_floor(self):
+        """Get a the height difference between the roof and bottom-most floor."""
+        return self.height - self._unique_stories[0].floor_height
+
+    @property
+    def footprint_area(self):
+        """Get a number for the total footprint area of the Building.
+
+        The footprint is derived from the lowest story of the building.
+        """
+        return self._unique_stories[0].floor_area
 
     @property
     def floor_area(self):
@@ -278,6 +301,15 @@ class Building(_BaseGeometry):
         Note that this property uses the story multipliers.
         """
         return sum([story.exterior_aperture_area * story.multiplier
+                    for story in self._unique_stories])
+
+    @property
+    def volume(self):
+        """Get a number for the volume of all the Rooms in the Building.
+
+        Note that this property uses the story multipliers.
+        """
+        return sum([story.volume * story.multiplier
                     for story in self._unique_stories])
 
     @property

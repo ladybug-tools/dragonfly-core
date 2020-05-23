@@ -17,7 +17,7 @@ from ladybug_geometry.geometry3d.polyface import Polyface3D
 
 
 def test_story_init():
-    """Test the initalization of Story objects and basic properties."""
+    """Test the initialization of Story objects and basic properties."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
@@ -46,6 +46,7 @@ def test_story_init():
     assert story.floor_area == 400
     assert story.exterior_wall_area == 60 * 4
     assert story.exterior_aperture_area == 60 * 4 * 0.4
+    assert story.is_above_ground
 
 
 def test_story_floor_geometry():
@@ -95,7 +96,7 @@ def test_story_add_rooms():
     assert isinstance(story.room_by_identifier('Office3'), Room2D)
 
 
-def test_room2d_set_outdoor_window_shading_parameters():
+def test_story_set_outdoor_window_shading_parameters():
     """Test the Story set_outdoor_window_parameters method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
@@ -120,6 +121,33 @@ def test_room2d_set_outdoor_window_shading_parameters():
 
     assert story.exterior_wall_area == 60 * 4
     assert story.exterior_aperture_area == 60 * 4 * 0.4
+
+
+def test_story_make_underground():
+    """Test the Story make_underground method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+
+    assert all(not room.is_ground_contact for room in story.room_2ds)
+    assert all(not room.is_top_exposed for room in story.room_2ds)
+    assert story.is_above_ground
+
+    story.set_ground_contact(True)
+    assert all(room.is_ground_contact for room in story.room_2ds)
+
+    story.set_top_exposed(True)
+    assert all(room.is_top_exposed for room in story.room_2ds)
+
+    story.make_underground()
+    assert not story.is_above_ground
 
 
 def test_generate_grid():

@@ -55,9 +55,50 @@ def test_model_init():
     assert isinstance(model.buildings[0], Building)
     assert len(model.context_shades) == 1
     assert isinstance(model.context_shades[0], ContextShade)
+
+    assert model.average_story_count == 4
+    assert model.average_story_count_above_ground == 4
+    assert model.average_height == 15
+    assert model.average_height_above_ground == 12
+    assert model.footprint_area == 100 * 4
+    assert model.floor_area == 100 * 4 * 4
+    assert model.exterior_wall_area == 60 * 4 * 4
+    assert model.exterior_aperture_area == 60 * 4 * 4 * 0.4
+    assert model.volume == 100 * 3 * 4 * 4
     assert model.min.x == pytest.approx(-6.73, rel=1e-2)
     assert model.min.y == pytest.approx(-16, rel=1e-2)
     assert model.max == Point2D(20, 20)
+
+
+def test_properties():
+    """Test various properties on the model."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(0, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(0, 30, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    story_big = Story('OfficeFloorBig', [room2d_3])
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('OfficeBuilding', [story])
+    story_big.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story_big.multiplier = 2
+    building_big = Building('OfficeBuildingBig', [story_big])
+
+    model = Model('NewDevelopment', [building, building_big])
+
+    assert model.average_story_count == 3
+    assert model.average_story_count_above_ground == 3
+    assert model.average_height == 12
+    assert model.average_height_above_ground == 9
+    assert model.footprint_area == 100 * 4
+    assert model.floor_area == (100 * 2 * 4) + (200 * 2)
+    assert model.exterior_wall_area == (90 * 2 * 4) + (180 * 2)
+    assert model.exterior_aperture_area == (90 * 2 * 4 * 0.4) + (180 * 2 * 0.4)
+    assert model.volume == (100 * 2 * 4 * 3) + (200 * 2 * 3)
 
 
 def test_model_properties_setability():
