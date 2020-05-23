@@ -629,7 +629,7 @@ class Room2D(_BaseGeometry):
                 'Window parameters do not match between adjacent Room2Ds "{}" and ' \
                 '"{}".'.format(self.identifier, other_room_2d.identifier)
 
-    def set_boundary_condition(self, self_seg_index, boundary_condition):
+    def set_boundary_condition(self, seg_index, boundary_condition):
         """Set a single segment of this Room2D to have a certain boundary condition.
 
         Args:
@@ -639,7 +639,10 @@ class Room2D(_BaseGeometry):
         """
         assert boundary_condition in bcs, \
             'Expected boundary condition. Got {}.'.format(type(boundary_condition))
-        self._boundary_conditions[self_seg_index] = boundary_condition
+        if self._window_parameters[seg_index] is not None:
+            assert isinstance(boundary_condition, (Outdoors, Surface)), '{} cannot be ' \
+                'assigned to a wall with windows.'.format(boundary_condition)
+        self._boundary_conditions[seg_index] = boundary_condition
 
     def move(self, moving_vec):
         """Move this Room2D along a vector.
@@ -765,7 +768,7 @@ class Room2D(_BaseGeometry):
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. Default: 0.01,
                 suitable for objects in meters.
-        
+
         Returns:
             A tuple with the two items below.
 

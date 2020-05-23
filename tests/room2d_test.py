@@ -310,10 +310,12 @@ def test_room2d_set_boundary_condition():
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     room2d = Room2D('SquareShoebox', Face3D(pts), 3)
     room2d.set_boundary_condition(1, bcs.ground)
-    room2d.set_boundary_condition(3, bcs.ground)
-
     assert isinstance(room2d.boundary_conditions[1], Ground)
-    assert isinstance(room2d.boundary_conditions[3], Ground)
+
+    room2d.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    assert room2d.window_parameters[1] is None
+    with pytest.raises(AssertionError):
+        room2d.set_boundary_condition(3, bcs.ground)
 
 
 def test_move():

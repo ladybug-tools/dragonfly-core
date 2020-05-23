@@ -52,7 +52,6 @@ class Model(_BaseGeometry):
     Properties:
         * identifier
         * display_name
-        * north_vector
         * units
         * tolerance
         * angle_tolerance
@@ -60,6 +59,15 @@ class Model(_BaseGeometry):
         * context_shades
         * stories
         * room_2ds
+        * average_story_count
+        * average_story_count_above_ground
+        * average_height
+        * average_height_above_ground
+        * footprint_area
+        * floor_area
+        * exterior_wall_area
+        * exterior_aperture_area
+        * volume
         * min
         * max
         * user_data
@@ -188,6 +196,62 @@ class Model(_BaseGeometry):
         return tuple(room2d for building in self._buildings
                      for story in building._unique_stories
                      for room2d in story._room_2ds)
+
+    @property
+    def average_story_count(self):
+        """Get the average number of stories for the buildings in the model.
+        
+        Note that this will be a float and not an integer in most cases.
+        """
+        return sum([bldg.story_count for bldg in self._buildings]) / len(self._buildings)
+
+    @property
+    def average_story_count_above_ground(self):
+        """Get the average number of above-ground stories for the buildings in the model.
+        
+        Note that this will be a float and not an integer in most cases.
+        """
+        return sum([bldg.story_count_above_ground for bldg in self._buildings]) / \
+            len(self._buildings)
+
+    @property
+    def average_height(self):
+        """Get the average height of the Buildings as an absolute Z-coordinate."""
+        return sum([bldg.height for bldg in self._buildings]) / len(self._buildings)
+
+    @property
+    def average_height_above_ground(self):
+        """Get the average building height relative to the first floor above ground."""
+        return sum([bldg.height_above_ground for bldg in self._buildings]) / \
+            len(self._buildings)
+
+    @property
+    def footprint_area(self):
+        """Get a number for the total footprint area of all Buildings in the Model."""
+        return sum([bldg.footprint_area for bldg in self._buildings])
+
+    @property
+    def floor_area(self):
+        """Get a number for the total floor area of all Buildings in the Model."""
+        return sum([bldg.floor_area for bldg in self._buildings])
+
+    @property
+    def exterior_wall_area(self):
+        """Get a number for the total exterior wall area for all Buildings in the Model.
+        """
+        return sum([bldg.exterior_wall_area for bldg in self._buildings])
+
+    @property
+    def exterior_aperture_area(self):
+        """Get a number for the total exterior aperture area for all Buildings.
+        """
+        return sum([bldg.exterior_aperture_area for bldg in self._buildings])
+
+    @property
+    def volume(self):
+        """Get a number for the volume of all the Buildings in the Model.
+        """
+        return sum([bldg.volume for bldg in self._buildings])
 
     @property
     def min(self):
@@ -482,14 +546,26 @@ class Model(_BaseGeometry):
             assert os.path.isdir(folder), \
                 'No such directory has been found on this machine: {}'.format(folder)
 
-        # set up the base dictionary for the geoJSON and default folder
+        # set up the base dictionary for the geoJSON
         geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
-        geojson_dict['project'] = {'name': self.display_name, 'id': self.identifier}
+
+        # assign the site information in the project key
+        project_dict = {
+            'id': self.identifier,
+            'name': self.display_name,
+            'city': location.city,
+            'country': location.country,
+            'elevation': location.elevation,
+            'latitude': location.latitude,
+            'longitude': location.longitude,
+            'time_zone': location.time_zone
+            }
+        geojson_dict['project'] = project_dict
 
         # ensure that the Model we are working with is in meters
         model = self
         if self.units != 'Meters':
-            model = self.duplicate()
+            model = self.duplicate()  # duplicate to avoid editing this object
             model.convert_to_units('Meters')
 
         # get the conversion factors over to (longitude, latitude)
@@ -523,6 +599,8 @@ class Model(_BaseGeometry):
             feature_dict['properties']['id'] = bldg.identifier
             feature_dict['properties']['name'] = bldg.display_name
             feature_dict['properties']['number_of_stories'] = bldg.story_count
+            feature_dict['properties']['number_of_stories_above_ground'] = \
+                bldg.story_count_above_ground
             feature_dict['properties']['type'] = 'Building'
             feature_dict['properties']['detailed_model_filename'] = \
                 os.path.join(folder, bldg.identifier, 'OpenStudio', 'run', 'in.osm')

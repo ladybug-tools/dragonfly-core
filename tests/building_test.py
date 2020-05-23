@@ -16,7 +16,7 @@ from ladybug_geometry.geometry3d.face import Face3D
 
 
 def test_building_init():
-    """Test the initalization of Building objects and basic properties."""
+    """Test the initialization of Building objects and basic properties."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
     pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
     pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
@@ -35,7 +35,7 @@ def test_building_init():
     str(building)  # test the string representation
     assert building.identifier == 'Office_Building_1234'
     assert building.display_name == 'Office Building'
-    assert len(building.unique_stories) == 1
+    assert len(building.unique_stories) == len(building.unique_stories_above_ground) == 1
     assert len(building.all_stories()) == 4
     assert len(building.unique_room_2ds) == 4
     assert len(building.all_room_2ds()) == 16
@@ -52,16 +52,17 @@ def test_building_init():
         assert isinstance(room, Room2D)
         assert room.has_parent
     assert building.height == 15
-    assert building.height_from_first_floor == 12
-    assert building.story_count == 4
-    assert building.volume == 100 * 3 * 4 * 4
+    assert building.story_count == building.story_count_above_ground == 4
+    assert building.height_from_first_floor == building.height_above_ground == 12
+    assert building.footprint_area == 100 * 4
     assert building.floor_area == 100 * 4 * 4
     assert building.exterior_wall_area == 60 * 4 * 4
     assert building.exterior_aperture_area == 60 * 4 * 4 * 0.4
+    assert building.volume == 100 * 3 * 4 * 4
 
 
 def test_building_init_from_footprint():
-    """Test the initalization of Building objects from_footprint."""
+    """Test the initialization of Building objects from_footprint."""
     pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
     pts_2 = (Point3D(0, 10, 0), Point3D(0, 20, 0), Point3D(10, 20, 0), Point3D(10, 10, 0))
     building = Building.from_footprint('Office_Tower', [Face3D(pts_1), Face3D(pts_2)],
@@ -77,7 +78,7 @@ def test_building_init_from_footprint():
 
 
 def test_building_init_from_all_story_geometry():
-    """Test the initalization of Building objects from_all_story_geometry."""
+    """Test the initialization of Building objects from_all_story_geometry."""
     pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
     pts_2 = (Point3D(0, 0, 4), Point3D(0, 10, 4), Point3D(10, 10, 4), Point3D(10, 0, 4))
     pts_3 = (Point3D(0, 0, 8), Point3D(0, 10, 8), Point3D(5, 10, 8), Point3D(5, 0, 8))
@@ -120,6 +121,35 @@ def test_building_footprint_simple():
     assert len(footprint[0].vertices) == 8
     assert footprint[0].min == Point3D(0, 0, 3)
     assert footprint[0].max == Point3D(20, 20, 3)
+
+
+def test_building_basement():
+    """Test the initialization of Building objects and the setting of a basement."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.multiplier = 4
+    building = Building('Office_Building_1234', [story])
+    building.display_name = 'Office Building'
+
+    building.separate_top_bottom_floors()  # this should yield 3 story objects
+    building.unique_stories[0].make_underground()  # make the first floor a basement
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))  # windows on top floors
+
+    assert not building.unique_stories[0].is_above_ground
+    assert building.height == 15
+    assert building.story_count == 4
+    assert building.story_count_above_ground == 3
+    assert building.height_from_first_floor == 12
+    assert building.height_above_ground == 9
+    assert building.exterior_wall_area == 60 * 4 * 3
 
 
 def test_building_footprint_courtyard():
