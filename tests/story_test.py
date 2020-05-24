@@ -393,3 +393,14 @@ def test_from_dict_reversed_surface_bcs():
 
     new_story = Story.from_dict(story_dict)
     assert new_story.to_dict() == story_dict_original
+
+
+def test_writer():
+    """Test the Story writer object."""
+    pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
+    story = Story('OfficeFloor', [room2d_1])
+
+    writers = [mod for mod in dir(story.to) if not mod.startswith('_')]
+    for writer in writers:
+        assert callable(getattr(story.to, writer))

@@ -5,6 +5,7 @@ from __future__ import division
 from ._base import _BaseGeometry
 from .properties import StoryProperties
 from .room2d import Room2D
+import dragonfly.writer.story as writer
 
 from honeybee.typing import float_positive, int_in_range, clean_string
 from honeybee.boundarycondition import boundary_conditions as bcs
@@ -616,6 +617,14 @@ using-multipliers-zone-and-or-window.html
         if self.user_data is not None:
             base['user_data'] = self.user_data
         return base
+
+    @property
+    def to(self):
+        """Story writer object.
+
+        Use this method to access Writer class to write the story in other formats.
+        """
+        return writer
 
     def __copy__(self):
         new_s = Story(self.identifier, tuple(room.duplicate() for room in self._room_2ds),

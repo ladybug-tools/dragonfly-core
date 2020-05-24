@@ -142,3 +142,14 @@ def test_to_from_dict():
     new_context = ContextShade.from_dict(context_dict)
     assert isinstance(new_context, ContextShade)
     assert new_context.to_dict() == context_dict
+
+
+def test_writer():
+    """Test the Building writer object."""
+    tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
+    tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
+    tree_canopy = ContextShade('Tree_Canopy', [tree_canopy_geo1, tree_canopy_geo2])
+
+    writers = [mod for mod in dir(tree_canopy.to) if not mod.startswith('_')]
+    for writer in writers:
+        assert callable(getattr(tree_canopy.to, writer))

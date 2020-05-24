@@ -579,3 +579,13 @@ def test_to_from_dict():
     new_room = Room2D.from_dict(room_dict)
     assert isinstance(new_room, Room2D)
     assert new_room.to_dict() == room_dict
+
+
+def test_writer():
+    """Test the Building writer object."""
+    pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
+    room2d = Room2D('Office1', Face3D(pts_1), 5)
+
+    writers = [mod for mod in dir(room2d.to) if not mod.startswith('_')]
+    for writer in writers:
+        assert callable(getattr(room2d.to, writer))

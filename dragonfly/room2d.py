@@ -8,6 +8,7 @@ import dragonfly.windowparameter as glzpar
 from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
+import dragonfly.writer.room2d as writer
 
 from honeybee.typing import float_positive, clean_string
 import honeybee.boundarycondition as hbc
@@ -886,6 +887,14 @@ class Room2D(_BaseGeometry):
             base['user_data'] = self.user_data
 
         return base
+
+    @property
+    def to(self):
+        """Room2D writer object.
+
+        Use this method to access Writer class to write the room2d in other formats.
+        """
+        return writer
 
     @staticmethod
     def solve_adjacency(room_2ds, tolerance=0.01):

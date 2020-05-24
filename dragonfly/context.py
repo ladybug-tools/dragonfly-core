@@ -4,6 +4,7 @@ from __future__ import division
 
 from ._base import _BaseGeometry
 from .properties import ContextShadeProperties
+import dragonfly.writer.context as writer
 
 from honeybee.shade import Shade
 from honeybee.typing import clean_string
@@ -193,6 +194,14 @@ class ContextShade(_BaseGeometry):
         if self.user_data is not None:
             base['user_data'] = self.user_data
         return base
+
+    @property
+    def to(self):
+        """ContextShade writer object.
+
+        Use this method to access Writer class to write the context in other formats.
+        """
+        return writer
 
     def __copy__(self):
         new_shd = ContextShade(self.identifier, self._geometry)

@@ -8,6 +8,7 @@ from .building import Building
 from .context import ContextShade
 from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
     origin_long_lat_from_location
+import dragonfly.writer.model as writer
 
 from honeybee.model import Model as hb_model
 from honeybee.shade import Shade
@@ -466,7 +467,7 @@ class Model(_BaseGeometry):
                 the results. If None, all other buildings will be included as context
                 shade in each and every Model. Set to 0 to exclude all neighboring
                 buildings from the resulting models. Default: None.
-            use_multiplier: If True, the multipliers on this Building's Stories will be
+            use_multiplier: If True, the multipliers on this Model's Stories will be
                 passed along to the generated Honeybee Room objects, indicating the
                 simulation will be run once for each unique room and then results
                 will be multiplied. If False, full geometry objects will be written
@@ -526,11 +527,11 @@ class Model(_BaseGeometry):
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
                 expected to be in the units of this Model. (Default: (0, 0)).
-            folder: Text for the full path to the folder where the OpenStudio
-                model files for each building are written. This will be used
-                to specify URBANopt detailed_model_filename keys for each feature
-                within the dictionary. If None, the honeybee default simulation
-                folder will be used (Default: None).
+            folder: Text for the full path to the folder where the geoJSON is
+                likely to be written. This will be used to specify URBANopt
+                detailed_model_filename keys for each feature within the
+                dictionary. If None, the honeybee default simulation folder will
+                be used (Default: None).
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
@@ -567,6 +568,7 @@ class Model(_BaseGeometry):
         if self.units != 'Meters':
             model = self.duplicate()  # duplicate to avoid editing this object
             model.convert_to_units('Meters')
+            point = point.scale(hb_model.conversion_factor_to_meters(self.units))
 
         # get the conversion factors over to (longitude, latitude)
         origin_lon_lat = origin_long_lat_from_location(location, point)
@@ -686,6 +688,14 @@ class Model(_BaseGeometry):
             base['user_data'] = self.user_data
 
         return base
+
+    @property
+    def to(self):
+        """Model writer object.
+
+        Use this method to access Writer class to write the model in other formats.
+        """
+        return writer
 
     @staticmethod
     def _geojson_coordinates(face3d, origin_lon_lat, convert_facs):
