@@ -6,6 +6,7 @@ from ._base import _BaseGeometry
 from .properties import BuildingProperties
 from .story import Story
 from .room2d import Room2D
+import dragonfly.writer.building as writer
 
 from honeybee.model import Model
 from honeybee.shade import Shade
@@ -579,6 +580,14 @@ class Building(_BaseGeometry):
         if self.user_data is not None:
             base['user_data'] = self.user_data
         return base
+
+    @property
+    def to(self):
+        """Building writer object.
+
+        Use this method to access Writer class to write the building in other formats.
+        """
+        return writer
 
     @staticmethod
     def buildings_to_honeybee(buildings, use_multiplier, tolerance=0.01):

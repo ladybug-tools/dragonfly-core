@@ -540,3 +540,13 @@ def test_to_from_dict():
     new_building = Building.from_dict(building_dict)
     assert isinstance(new_building, Building)
     assert new_building.to_dict() == building_dict
+
+
+def test_writer():
+    """Test the Building writer object."""
+    pts = (Point3D(50, 50, 3), Point3D(60, 50, 3), Point3D(60, 60, 3), Point3D(50, 60, 3))
+    bldg = Building.from_footprint('TestBldg', [Face3D(pts)], [5, 4, 3, 3], 0.01)
+
+    writers = [mod for mod in dir(bldg.to) if not mod.startswith('_')]
+    for writer in writers:
+        assert callable(getattr(bldg.to, writer))
