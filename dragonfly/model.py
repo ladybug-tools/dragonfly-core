@@ -604,8 +604,6 @@ class Model(_BaseGeometry):
             feature_dict['properties']['number_of_stories_above_ground'] = \
                 bldg.story_count_above_ground
             feature_dict['properties']['type'] = 'Building'
-            feature_dict['properties']['detailed_model_filename'] = \
-                os.path.join(folder, bldg.identifier, 'OpenStudio', 'run', 'in.osm')
 
             # append the feature to the global dictionary
             geojson_dict['features'].append(feature_dict)
