@@ -515,23 +515,19 @@ class Model(_BaseGeometry):
 
         return models
     
-    def to_geojson_dict(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
+    def to_geojson_dict(self, location, point=Point2D(0, 0), tolerance=0.01):
         """Convert Dragonfly Model to a geoJSON-style Python dictionary.
 
         This dictionary can be written into a JSON, which is then a valid geoJSON
         that can be visualized in any geoJSON viewer. Each dragonfly Building
-        will appear in the geoJSON as a single feature.
+        will appear in the geoJSON as a single feature (either as a Polygon or 
+        a MultiPolygon).
 
         Args:
             location: A ladybug Location object possessing longitude and latitude data.
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
                 expected to be in the units of this Model. (Default: (0, 0)).
-            folder: Text for the full path to the folder where the geoJSON is
-                likely to be written. This will be used to specify URBANopt
-                detailed_model_filename keys for each feature within the
-                dictionary. If None, the honeybee default simulation folder will
-                be used (Default: None).
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
@@ -540,13 +536,6 @@ class Model(_BaseGeometry):
             A Python dictionary in a geoJSON style with each Building in the Model
             as a separate feature.
         """
-        # set the default simulation folder
-        if folder is None:
-            folder = folders.default_simulation_folder
-        else:
-            assert os.path.isdir(folder), \
-                'No such directory has been found on this machine: {}'.format(folder)
-
         # set up the base dictionary for the geoJSON
         geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
 
@@ -646,7 +635,7 @@ class Model(_BaseGeometry):
             preparedir(folder, remove_content=False)
 
         # get the geojson dictionary
-        geojson_dict = self.to_geojson_dict(location, point, folder, tolerance)
+        geojson_dict = self.to_geojson_dict(location, point, tolerance)
 
         # write out the dictionary to a geojson file
         project_folder = os.path.join(folder, self.identifier)
