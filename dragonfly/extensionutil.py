@@ -63,7 +63,10 @@ def building_extension_dicts(building_list, extension_key, building_ext_dicts,
         -   room2d_ext_dicts: A list with Room2D extension property dictionaries.
     """
     for bldg_dict in building_list:
-        building_ext_dicts.append(bldg_dict['properties'][extension_key])
+        try:
+            building_ext_dicts.append(bldg_dict['properties'][extension_key])
+        except KeyError:
+            building_ext_dicts.append(None)
         story_extension_dicts(bldg_dict['unique_stories'], extension_key,
                               story_ext_dicts, room2d_ext_dicts)
     return building_ext_dicts, story_ext_dicts, room2d_ext_dicts
@@ -85,7 +88,10 @@ def story_extension_dicts(story_list, extension_key, story_ext_dicts,
         -   room2d_ext_dicts: A list with Room2D extension property dictionaries.
     """
     for story_dict in story_list:
-        story_ext_dicts.append(story_dict['properties'][extension_key])
+        try:
+            story_ext_dicts.append(story_dict['properties'][extension_key])
+        except KeyError:
+            story_ext_dicts.append(None)
         room2d_extension_dicts(story_dict['room_2ds'], extension_key,
                                room2d_ext_dicts)
     return story_ext_dicts, room2d_ext_dicts
@@ -102,7 +108,10 @@ def room2d_extension_dicts(room2d_list, extension_key, room2d_ext_dicts):
         room2d_ext_dict -- A list with Room2D extension property dictionaries.
     """
     for room_dict in room2d_list:
-        room2d_ext_dicts.append(room_dict['properties'][extension_key])
+        try:
+            room2d_ext_dicts.append(room_dict['properties'][extension_key])
+        except KeyError:
+            room2d_ext_dicts.append(None)
     return room2d_ext_dicts
 
 
@@ -119,5 +128,8 @@ def context_shade_extension_dicts(context_shade_list, extension_key,
         dictionaries.
     """
     for shd_dict in context_shade_list:
-        context_shade_ext_dicts.append(shd_dict['properties'][extension_key])
+        try:
+            context_shade_ext_dicts.append(shd_dict['properties'][extension_key])
+        except KeyError:
+            context_shade_ext_dicts.append(None)
     return context_shade_ext_dicts
