@@ -11,15 +11,12 @@ from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
 import dragonfly.writer.model as writer
 
 from honeybee.model import Model as hb_model
-from honeybee.shade import Shade
-from honeybee.boundarycondition import Surface
-from honeybee.typing import float_in_range, float_positive
+from honeybee.typing import float_positive
 from honeybee.config import folders
 
-from ladybug_geometry.geometry2d.pointvector import Vector2D, Point2D
+from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug.futil import preparedir
 
-import math
 import os
 import json
 
@@ -201,7 +198,7 @@ class Model(_BaseGeometry):
     @property
     def average_story_count(self):
         """Get the average number of stories for the buildings in the model.
-        
+
         Note that this will be a float and not an integer in most cases.
         """
         return sum([bldg.story_count for bldg in self._buildings]) / len(self._buildings)
@@ -209,7 +206,7 @@ class Model(_BaseGeometry):
     @property
     def average_story_count_above_ground(self):
         """Get the average number of above-ground stories for the buildings in the model.
-        
+
         Note that this will be a float and not an integer in most cases.
         """
         return sum([bldg.story_count_above_ground for bldg in self._buildings]) / \
@@ -276,7 +273,7 @@ class Model(_BaseGeometry):
         """Add another Dragonfly Model object to this one."""
         assert isinstance(other_model, Model), \
             'Expected Dragonfly Model. Got {}.'.format(type(other_model))
-        self._buildings =  self._buildings + other_model._buildings
+        self._buildings = self._buildings + other_model._buildings
         self._context_shades = self._context_shades + other_model._context_shades
 
     def add_building(self, obj):
@@ -287,7 +284,7 @@ class Model(_BaseGeometry):
     def add_context_shade(self, obj):
         """Add a ContextShade object to the model."""
         assert isinstance(obj, ContextShade), \
-                'Expected ContextShade. Got {}.'.format(type(obj))
+            'Expected ContextShade. Got {}.'.format(type(obj))
         self._context_shades.append(obj)
 
     def buildings_by_identifier(self, identifiers):
@@ -501,7 +498,7 @@ class Model(_BaseGeometry):
                         model.add_shade(shd)
         else:
             raise ValueError('Unrecognized object_per_model input: '
-                            '{}'.format(object_per_model))
+                             '{}'.format(object_per_model))
 
         # change the tolerance and units systems to match the dragonfly model
         for model in models:
@@ -510,17 +507,17 @@ class Model(_BaseGeometry):
             model.angle_tolerance = self.angle_tolerance
 
         # transfer Model extension attributes to the honeybee models
-        for hb_model in models:
-            hb_model._properties = self.properties.to_honeybee(hb_model)
+        for h_model in models:
+            h_model._properties = self.properties.to_honeybee(h_model)
 
         return models
-    
+
     def to_geojson_dict(self, location, point=Point2D(0, 0), tolerance=0.01):
         """Convert Dragonfly Model to a geoJSON-style Python dictionary.
 
         This dictionary can be written into a JSON, which is then a valid geoJSON
         that can be visualized in any geoJSON viewer. Each dragonfly Building
-        will appear in the geoJSON as a single feature (either as a Polygon or 
+        will appear in the geoJSON as a single feature (either as a Polygon or
         a MultiPolygon).
 
         Args:
@@ -549,7 +546,7 @@ class Model(_BaseGeometry):
             'latitude': location.latitude,
             'longitude': location.longitude,
             'time_zone': location.time_zone
-            }
+        }
         geojson_dict['project'] = project_dict
 
         # ensure that the Model we are working with is in meters
@@ -566,7 +563,7 @@ class Model(_BaseGeometry):
         # export each building as a feature in the file
         for i, bldg in enumerate(model.buildings):
             # create the base dictionary
-            feature_dict = {'geometry':{}, 'properties': {}, 'type': 'Feature'}
+            feature_dict = {'geometry': {}, 'properties': {}, 'type': 'Feature'}
 
             # add the geometry including coordinates
             footprint = bldg.footprint(tolerance)
@@ -592,6 +589,8 @@ class Model(_BaseGeometry):
             feature_dict['properties']['number_of_stories'] = bldg.story_count
             feature_dict['properties']['number_of_stories_above_ground'] = \
                 bldg.story_count_above_ground
+            feature_dict['properties']['maximum_roof_height'] = \
+                bldg.height_above_ground
             feature_dict['properties']['type'] = 'Building'
 
             # append the feature to the global dictionary

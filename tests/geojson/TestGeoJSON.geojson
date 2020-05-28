@@ -41,11 +41,12 @@
                 "building_type": "Mixed use",
                 "floor_area": 600.0,
                 "footprint_area": 200.0,
-                "id": "1",
+                "id": "ResidenceBuilding",
                 "name": "ResidenceBuilding",
                 "number_of_stories": 3,
-                "type": "Building",
-                "detailed_model_filename": "./tests/geojson/ResidenceBuilding\\OpenStudio\\run\\in.osm"
+                "number_of_stories_above_ground": 3,
+                "maximum_roof_height": 9.0,
+                "type": "Building"
             },
             "type": "Feature"
         },
@@ -81,11 +82,12 @@
                 "building_type": "Mixed use",
                 "floor_area": 200.0,
                 "footprint_area": 200.0,
-                "id": "2",
+                "id": "RetailBuildingBig",
                 "name": "RetailBuildingBig",
                 "number_of_stories": 1,
-                "type": "Building",
-                "detailed_model_filename": "./tests/geojson/RetailBuildingBig\\OpenStudio\\run\\in.osm"
+                "number_of_stories_above_ground": 1,
+                "maximum_roof_height": 3.0,
+                "type": "Building"
             },
             "type": "Feature"
         },
@@ -185,18 +187,25 @@
                 "building_type": "Mixed use",
                 "floor_area": 1625.0,
                 "footprint_area": 325.0,
-                "id": "3",
+                "id": "OfficeBuilding",
                 "name": "OfficeBuilding",
                 "number_of_stories": 5,
-                "type": "Building",
-                "detailed_model_filename": "./tests/geojson/OfficeBuilding\\OpenStudio\\run\\in.osm"
+                "number_of_stories_above_ground": 5,
+                "maximum_roof_height": 15.0,
+                "type": "Building"
             },
             "type": "Feature"
         }
     ],
     "mappers": [],
     "project": {
+        "id": "TestGeoJSON",
         "name": "TestGeoJSON",
-        "id": "TestGeoJSON"
+        "city": "Boston",
+        "country": "USA",
+        "elevation": 0.0,
+        "latitude": 42.366151,
+        "longitude": -71.019357,
+        "time_zone": -5
     }
 }

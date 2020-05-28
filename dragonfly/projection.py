@@ -15,7 +15,7 @@ def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
             represents the longitude of the scene origin in degrees (between -180
             and +180). The second value represents latitude of the scene origin
             in degrees (between -90 and +90). Default: (0, 0).
-    
+
     Returns:
         A tuple with two values:
 
@@ -31,8 +31,8 @@ def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     lon, lat = math.radians(origin_lon_lat[0]), math.radians(origin_lon_lat[1])
 
     # compute the conversion values
-    d = math.sqrt((equator_rad ** 2 * math.sin(lat) ** 2) +
-                  (pole_rad ** 2 * math.cos(lat) ** 2))
+    d = math.sqrt(
+        (equator_rad ** 2 * math.sin(lat) ** 2) + (pole_rad ** 2 * math.cos(lat) ** 2))
     r = (equator_rad * pole_rad) / d  # radius of the earth at the latitude
     meters_to_lat = (math.pi * r * 2) / 360  # meters in one degree of latitude
     meters_to_lon = meters_to_lat * math.cos(lat)  # meters in one degree of longitude
@@ -83,7 +83,7 @@ def origin_long_lat_from_location(location, point):
         point: A ladybug_geometry Point2D for where the location object exists
             within the space of a scene. The coordinates of this point are expected
             to be in meters.
-    
+
     Returns:
         An array of two numbers in degrees. The first value represents the longitude
         of the scene origin in degrees (between -180 and +180). The second value
@@ -92,4 +92,4 @@ def origin_long_lat_from_location(location, point):
     meters_to_lon, meters_to_lat = meters_to_long_lat_factors(
         (location.longitude, location.latitude))
     return location.longitude - point.x / meters_to_lon, \
-            location.latitude - point.y / meters_to_lat
+        location.latitude - point.y / meters_to_lat

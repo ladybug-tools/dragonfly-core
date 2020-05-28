@@ -16,7 +16,7 @@ steps:
 
 Good practice is to group all your extention commands in a command group named after
 the extension. This will make the commands organized under extension namespace. For
-instance commands for `dragonfly-energy` will be called like ``dragonfly energy [energy-command]``. 
+instance commands for `dragonfly-energy` will be called like ``dragonfly energy [energy-command]``.
 
 
 .. code-block:: python

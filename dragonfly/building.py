@@ -10,7 +10,6 @@ import dragonfly.writer.building as writer
 
 from honeybee.model import Model
 from honeybee.shade import Shade
-from honeybee.boundarycondition import Surface
 from honeybee.typing import clean_string
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
@@ -791,14 +790,14 @@ class Building(_BaseGeometry):
     @staticmethod
     def _match_holes_to_face(base_face, other_faces, tol):
         """Attempt to merge other faces into a base face as holes.
-        
+
         Args:
             base_face: A Face3D to serve as the base.
             other_faces: A list of other Face3D objects to attempt to merge into
                 the base_face as a hole. This method will delete any faces
-                that are successfully merged into the output from this list. 
+                that are successfully merged into the output from this list.
             tol: The tolerance to be used for evaluating sub-faces.
-        
+
         Returns:
             A Face3D which has holes in it if any of the other_faces is a valid
             sub face.
