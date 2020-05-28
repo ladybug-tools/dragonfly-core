@@ -9,8 +9,7 @@ import dragonfly.writer.story as writer
 
 from honeybee.typing import float_positive, int_in_range, clean_string
 from honeybee.boundarycondition import boundary_conditions as bcs
-from honeybee.boundarycondition import Outdoors, Surface, Ground
-from honeybee.model import Model
+from honeybee.boundarycondition import Outdoors, Surface
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyline import Polyline3D
@@ -414,7 +413,7 @@ using-multipliers-zone-and-or-window.html
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters.
-        
+
         Args:
             window_parameter: A WindowParameter object that will be assigned to
                 all wall segments of this story's rooms that have an Outdoors
@@ -426,7 +425,7 @@ using-multipliers-zone-and-or-window.html
 
     def set_outdoor_shading_parameters(self, shading_parameter):
         """Set all of the outdoor walls to have the same shading parameters.
-        
+
         Args:
             shading_parameter: A ShadingParameter object that will be assigned to
                 all wall segments of this story's rooms that have an Outdoors
@@ -563,7 +562,7 @@ using-multipliers-zone-and-or-window.html
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 If None, no splitting will occur. Default: 0.01, suitable for
                 objects in meters.
-        
+
         Returns:
             A list of honeybee Rooms that represent the Story.
         """

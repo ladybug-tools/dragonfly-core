@@ -11,7 +11,7 @@ from dragonfly.model import Model
 from honeybee.boundarycondition import boundary_conditions as bcs
 try:
     ad_bc = bcs.adiabatic
-except: # honeybee_energy is not loaded and adiabatic does not exist
+except AttributeError:  # honeybee_energy is not loaded and adiabatic does not exist
     ad_bc = None
 
 
@@ -76,7 +76,7 @@ def solve_adjacency(model_json, adiabatic, included_prop, output_file):
                     for face_pair in adj_info:
                         face_pair[0][0].set_boundary_condition(face_pair[0][1], ad_bc)
                         face_pair[1][0].set_boundary_condition(face_pair[1][1], ad_bc)
-        
+
         # write the new model out to the file or stdout
         output_file.write(json.dumps(parsed_model.to_dict(included_prop)))
 

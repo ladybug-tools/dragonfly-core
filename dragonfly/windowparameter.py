@@ -697,7 +697,7 @@ class RectangularWindows(_AsymmetricBase):
 
         areas = []
         for o, width, height in zip(self.origins, self.widths, self.heights):
-            final_width = max_width - o.x if width  + o.x > max_width else width
+            final_width = max_width - o.x if width + o.x > max_width else width
             final_height = max_height - o.y if height + o.y > max_height else height
             if final_height > 0 and final_height > 0:  # inside wall boundary
                 areas.append(final_width * final_height)
@@ -721,7 +721,7 @@ class RectangularWindows(_AsymmetricBase):
 
         # loop through each window and create its geometry
         for i, (o, wid, hgt) in enumerate(zip(self.origins, self.widths, self.heights)):
-            final_width = max_width - o.x if wid  + o.x > max_width else wid
+            final_width = max_width - o.x if wid + o.x > max_width else wid
             final_height = max_height - o.y if hgt + o.y > max_height else hgt
             if final_height > 0 and final_height > 0:  # inside wall boundary
                 base_plane = Plane(wall_plane.n, wall_plane.xy_to_xyz(o), wall_plane.x)

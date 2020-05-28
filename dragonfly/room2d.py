@@ -282,7 +282,7 @@ class Room2D(_BaseGeometry):
             if window_parameters is not None:
                 new_win_pars = []
                 for seg, win_par in zip(polygon.segments, reversed(window_parameters)):
-                    if isinstance (win_par, _AsymmetricBase):
+                    if isinstance(win_par, _AsymmetricBase):
                         new_win_pars.append(win_par.flip(seg.length))
                     else:
                         new_win_pars.append(win_par)
@@ -747,9 +747,9 @@ class Room2D(_BaseGeometry):
         """
         new_geo = self.floor_geometry.remove_colinear_vertices(tolerance)
         rebuilt_room = Room2D(
-                self.identifier, new_geo, self.floor_to_ceiling_height,
-                is_ground_contact=self.is_ground_contact,
-                is_top_exposed=self.is_top_exposed)
+            self.identifier, new_geo, self.floor_to_ceiling_height,
+            is_ground_contact=self.is_ground_contact,
+            is_top_exposed=self.is_top_exposed)
         rebuilt_room._display_name = self.display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
@@ -1040,7 +1040,7 @@ class Room2D(_BaseGeometry):
         for i, seg in enumerate(original_geo.boundary_segments):
             new_bcs.append(bcs[i])
             win_par = win_pars[i]
-            if isinstance (win_par, _AsymmetricBase):
+            if isinstance(win_par, _AsymmetricBase):
                 new_win_pars.append(win_par.flip(seg.length))
             else:
                 new_win_pars.append(win_par)
@@ -1051,7 +1051,7 @@ class Room2D(_BaseGeometry):
         new_win_pars.reverse()
         new_shd_pars.reverse()
 
-         # add any objects related to the holes
+        # add any objects related to the holes
         if original_geo.has_holes:
             bound_len = len(original_geo.boundary)
             new_bcs = new_bcs + bcs[bound_len:]
