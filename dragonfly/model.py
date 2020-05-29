@@ -371,8 +371,8 @@ class Model(_BaseGeometry):
     def convert_to_units(self, units='Meters'):
         """Convert all of the geometry in this model to certain units.
 
-        Thins involves both scaling the geometry and changing the Model's
-        units property.
+        This involves scaling the geometry, scaling the Model tolerance, and
+        changing the Model's units property.
 
         Args:
             units: Text for the units to which the Model geometry should be
@@ -389,6 +389,7 @@ class Model(_BaseGeometry):
             scale_fac2 = hb_model.conversion_factor_to_meters(units)
             scale_fac = scale_fac1 / scale_fac2
             self.scale(scale_fac)
+            self.tolerance = self.tolerance * scale_fac
             self.units = units
 
     def check_duplicate_building_identifiers(self, raise_exception=True):
