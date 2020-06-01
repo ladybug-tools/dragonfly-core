@@ -2,6 +2,7 @@
 from __future__ import division
 
 import math
+from ladybug_geometry.geometry2d.pointvector import Point2D
 
 def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     """Get conversion factors for translating meters to longitude, latitude.
@@ -37,6 +38,28 @@ def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     meters_to_lon = meters_to_lat * math.cos(lat)  # meters in one degree of longitude
 
     return meters_to_lon, meters_to_lat
+
+
+def long_lat_to_meters_factors(origin_lon_lat=(0, 0)):
+    """Get conversion factors for translating degrees of longitude, latitude to meters.
+
+    The resulting factors will obey the WSG84 assumptions for the radius of
+    the earth at the equator relative to the poles.
+
+    Args:
+        origin_long_lat: An array of two numbers in degrees. The first value
+            represents the longitude of the scene origin in degrees (between -180
+            and +180). The second value represents latitude of the scene origin
+            in degrees (between -90 and +90). Default: (0, 0).
+
+    Returns:
+        A tuple with two conversion factors for changing degrees longitude
+        to meters, and for changing degrees latitude to meters.
+    """
+
+    meters_to_lon, meters_to_lat = meters_to_long_lat_factors(origin_lon_lat)
+
+    return 1 / meters_to_lon, 1 / meters_to_lat
 
 
 def polygon_to_lon_lat(polygon, origin_lon_lat=(0, 0), conversion_factors=None):
