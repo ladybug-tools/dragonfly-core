@@ -7,15 +7,18 @@ from .properties import ModelProperties
 from .building import Building
 from .context import ContextShade
 from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
-    origin_long_lat_from_location
+    origin_long_lat_from_location, lon_lat_to_boundary
 import dragonfly.writer.model as writer
 
 from honeybee.model import Model as hb_model
 from honeybee.typing import float_positive
 from honeybee.config import folders
 
-from ladybug_geometry.geometry2d.pointvector import Point2D
+from ladybug_geometry.geometry2d.pointvector import Vector2D, Point2D
+from ladybug_geometry.geometry3d.pointvector import Point3D
+from ladybug_geometry.geometry3d.face import Face3D
 from ladybug.futil import preparedir
+from ladybug.location import Location
 
 import os
 import json
@@ -95,6 +98,82 @@ class Model(_BaseGeometry):
 
         self._properties = ModelProperties(self)
         self._user_data = None
+
+    @classmethod
+    def from_geojson(cls, geojson_file_path, location=None, point=Point2D(0, 0),
+                     units='Meters', tolerance=0, angle_tolerance=0):
+        """Make a Model from a geojson file.
+
+        Args:
+            geojson_file_path: Text for the full path to the geojson file to load as
+                Model.
+            location: An optional ladybug location object with longitude and
+                latitude data defining the origin of the geojson file. If nothing
+                is passed, the origin is autocalculated as the bottom-left corner
+                of the bounding box of all building footprints in the geojson file.
+            point: A ladybug_geometry Point2D for where the location object exists
+                within the space of a scene. The coordinates of this point are
+                expected to be in the units of this Model. (Default: (0, 0)).
+        """
+        # TODO: delete this
+        from pprint import pprint as pp
+
+        with open(geojson_file_path, 'r') as fp:
+            data = json.load(fp)
+
+        proj_data = data['project']
+        bldgs_data = [bldg_data for bldg_data in data['features']
+                      if bldg_data['properties']['type'] == 'Building']
+
+        # Get the equivalent (0, 0) point in the geojson file
+        if location is None:
+            if 'latitude' in proj_data and 'longitude' in proj_data:
+                origin_lon_lat = proj_data['latitude'], proj_data['longitude']
+            else:
+                origin_lon_lat = cls._bottom_left_coordinate_from_geojson(
+                    bldgs_data)
+        else:
+            origin_lon_lat = (location.longitude, location.latitude)
+
+        # Shift the longitude and latitude to account for scene origin
+        origin_lon_lat = origin_long_lat_from_location(
+            Location(longitude=origin_lon_lat[0], latitude=origin_lon_lat[1]), point)
+        convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+
+        # Extract buildings
+        bldgs = []
+        for bldg_data in bldgs_data:
+            prop = bldg_data['properties']
+
+            # TODO: Set default flrht in Building?
+            floor_to_floor_heights = [3.5 for lvl in range(prop['number_of_stories'])]
+
+            # Generate footprint
+            geojson_coordinates = bldg_data['geometry']['coordinates']
+            if bldg_data['geometry']['type'] == 'Polygon':
+                footprint = cls._geojson_coordinates_to_face3d(
+                    geojson_coordinates, origin_lon_lat, convert_facs)
+            else:
+                # If MultiPolygon, add extra lon_lat_to_polygon
+                pass
+            #footprint = [Face3D([Point3D.from_array(pts) for pts in ptmtx])]
+            #print(footprint[0].area)
+            #print(prop['name'])
+            print('---')
+        #     # TODO: Building.from_footprint should change tol > 0
+        #     bldg = Building.from_footprint(prop['id'], footprint, floor_to_floor_heights)
+        #     bldg.display_name = prop['name']
+        #     bldgs.append(bldg)
+
+        # # Make model
+        # # TODO: what to do about tolerance?
+        # model = cls(proj_data['id'], buildings=bldgs)
+        # model.display_name = proj_data['name']
+
+        # #buildings=None, context_shades=None, units='Meters', tolerance=0, angle_tolerance=0)
+
+        # return model
+
 
     @classmethod
     def from_dict(cls, data):
@@ -571,20 +650,21 @@ class Model(_BaseGeometry):
             if len(footprint) == 1:
                 feature_dict['geometry']['type'] = 'Polygon'
                 feature_dict['geometry']['coordinates'] = \
-                    self._geojson_coordinates(footprint[0], origin_lon_lat, convert_facs)
+                    self._face3d_to_geojson_coordinates(
+                        footprint[0], origin_lon_lat, convert_facs)
             else:
                 feature_dict['geometry']['type'] = 'MultiPolygon'
                 all_coords = []
                 for floor in footprint:
                     all_coords.append(
-                        self._geojson_coordinates(floor, origin_lon_lat, convert_facs))
+                        self._face3d_to_geojson_coordinates(
+                            floor, origin_lon_lat, convert_facs))
                 feature_dict['geometry']['coordinates'] = all_coords
 
             # add several of the properties to the geoJSON
             feature_dict['properties']['building_type'] = 'Mixed use'
             feature_dict['properties']['floor_area'] = bldg.floor_area
-            feature_dict['properties']['footprint_area'] = \
-                sum((face.area for face in footprint))
+            feature_dict['properties']['footprint_area'] = bldg.footprint_area
             feature_dict['properties']['id'] = bldg.identifier
             feature_dict['properties']['name'] = bldg.display_name
             feature_dict['properties']['number_of_stories'] = bldg.story_count
@@ -685,7 +765,7 @@ class Model(_BaseGeometry):
         return writer
 
     @staticmethod
-    def _geojson_coordinates(face3d, origin_lon_lat, convert_facs):
+    def _face3d_to_geojson_coordinates(face3d, origin_lon_lat, convert_facs):
         """Convert a horizontal Face3D to geoJSON coordinates."""
         coords = [polygon_to_lon_lat(
             [(pt.x, pt.y) for pt in face3d.boundary], origin_lon_lat, convert_facs)]
@@ -697,6 +777,53 @@ class Model(_BaseGeometry):
                 hole_verts.append(hole_verts[0])
                 coords.append(hole_verts)
         return coords
+
+    @staticmethod
+    def _geojson_coordinates_to_face3d(geojson_coordinates, origin_lon_lat, convert_facs):
+        """Convert a geoJSON coordinates to a horizontal Face3D."""
+        # TODO: temp. delete this
+        from pprint import pprint as pp
+        boundary, holes = [], None
+        for i, geoj_boundary_coords in enumerate(geojson_coordinates):
+            if i > 0:
+                #if holes is None: holes = []
+                pass
+            #pp(geoj_polygon_coords)
+            boundary = lon_lat_to_boundary(
+                geoj_boundary_coords, origin_lon_lat, convert_facs)
+            boundary = [Point3D(*pt2d, 0) for pt2d in boundary]
+        #pp('--')
+        # TODO: Append to footprints
+        # TODO: figure out how to check/add holes # Multipolygon?
+        # TODO: return footprints
+
+        return Face3D(boundary, holes=holes)
+
+    @staticmethod
+    def _bottom_left_coordinate_from_geojson(bldgs_data):
+        """Calculate the bottom-left bounding box coordinate from geojson building coordinates.
+
+        Args:
+            bldgs_data: Geojson feature data of buildings, as dictionary.
+
+        Returns:
+            The bottom-left most corner of the bounding box around the coordinates.
+        """
+        xs, ys = [], []
+        for bldg in bldgs_data:
+            bldg_coords = bldg['geometry']['coordinates']
+
+            if bldg['geometry']['type'] == 'Polygon':
+                for bldg_footprint in bldg_coords:
+                    xs.extend([coords[0] for coords in bldg_footprint])
+                    ys.extend([coords[1] for coords in bldg_footprint])
+            else:
+                for bldg_footprints in bldg_coords:
+                    for bldg_footprint in bldg_footprints:
+                        xs.extend([coords[0] for coords in bldg_footprint])
+                        ys.extend([coords[1] for coords in bldg_footprint])
+
+        return min(xs), min(ys)
 
     def __add__(self, other):
         new_model = self.duplicate()

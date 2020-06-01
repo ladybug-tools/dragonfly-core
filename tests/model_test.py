@@ -8,6 +8,8 @@ from dragonfly.room2d import Room2D
 from dragonfly.context import ContextShade
 from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
+from dragonfly.projection import meters_to_long_lat_factors, \
+    origin_long_lat_from_location
 
 import honeybee.model as hb_model
 from honeybee.boundarycondition import Outdoors, Surface
@@ -208,7 +210,7 @@ def test_model_add_model():
     assert len(model_1.context_shades) == 1
     assert len(model_2.buildings) == 1
     assert len(model_2.context_shades) == 1
-    
+
     combined_model = model_1 + model_2
     assert len(combined_model.buildings) == 2
     assert len(combined_model.context_shades) == 2
@@ -405,9 +407,9 @@ def test_check_duplicate_identifiers():
 
     assert model_1.check_duplicate_building_identifiers(False)
     assert model_1.check_duplicate_context_shade_identifiers(False)
-    
+
     model_1.add_model(model_2)
-    
+
     assert not model_1.check_duplicate_building_identifiers(False)
     with pytest.raises(ValueError):
         model_1.check_duplicate_building_identifiers(True)
@@ -433,7 +435,7 @@ def test_to_honeybee():
     story_big.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story_big.multiplier = 4
     building_big = Building('OfficeBuildingBig', [story_big])
-    
+
     tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
     tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
     tree_canopy = ContextShade('TreeCanopy', [tree_canopy_geo1, tree_canopy_geo2])
@@ -617,6 +619,93 @@ def test_to_geojson():
     nukedir(os.path.join(geojson_folder, model.identifier), True)
 
 
+def test_from_geojson():
+    """Test the Model from_geojson method."""
+
+    def _is_equal(v1, v2, atol=1e-10):
+        return abs(v1 - v2) < atol
+
+    # Load test geojson
+    geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
+    geo_fp=os.path.join(geojson_folder, 'TestGeoJSON.geojson')
+    location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
+    model = Model.from_geojson(geo_fp, location=location)
+
+    # Check model non-geometry properties
+    # assert model.identifier == "TestGeoJSON"
+    # assert model.display_name == "TestGeoJSON"
+    # TODO: Are there optional properties? Or is the TestGeoJSON missing data?
+    # 'city': location.city,
+    # 'country': location.country,
+    # 'elevation': location.elevation,
+    # 'latitude': location.latitude,
+    # 'longitude': location.longitude,
+    # 'time_zone': location.time_zone
+
+    # # Check model buildings (features)
+    # assert len(model.buildings) == 3, len(model.buildings)
+
+    # bldg1 = [bldg for bldg in model.buildings if bldg.identifier == "1"][0]
+
+    # # Check properties
+    # # bldg.building_type = 'Mixed use' # TODO: why is this hardcoded?
+    # assert bldg1.identifier == "1"  # TODO: confirm id != identifier
+    # assert bldg1.display_name == "ResidenceBuilding" # TODO: Are these different (_BaseGeom says no)
+    # assert _is_equal(bldg1.floor_area, 600.0)
+    # assert _is_equal(bldg1.footprint_area, 200.0)
+    # assert bldg1.story_count == 3
+    # # Does this need to be stored anywhere?
+    # #assert bldg1.detailed_model_filename == \
+    # #    "./tests/geojson/ResidenceBuilding\\OpenStudio\\run\\in.osm"
+    # #TODO: optional parameter? 'number_of_stories_above_ground'
+
+    # # Check geometry
+    # check_geojson_coordinates = [
+    #     [[-71.0187481589139, 42.36678078217724],
+    #      [-71.01850462247945, 42.36678078217724],
+    #      [-71.01850462247945, 42.3668707510597],
+    #      [-71.0187481589139, 42.3668707510597],
+    #      [-71.0187481589139, 42.36678078217724]]]
+
+    # origin_lon_lat = origin_long_lat_from_location(location, Point2D(0, 0))
+    # convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+    # for i, footprint in enumerate(bldg1.footprint()):
+    #     geojson_coordinates = model._face3d_to_geojson_coordinates(
+    #         footprint, origin_lon_lat, convert_facs)
+
+    #     # Get rid of extra list index
+    #     geojson_coordinates = geojson_coordinates[0]
+
+    #     # Check coordinates
+    #     for j in range(len(geojson_coordinates)):
+    #         for k in range(len(geojson_coordinates[j])):
+    #             print(geojson_coordinates[j][k],
+    #                   check_geojson_coordinates[i][j][k])
+    #             # Confirm equal with max precision
+    #             # assert _is_equal(geojson_coordinates[j][k],
+    #             #                  check_geojson_coordinates[i][j][k],
+    #             #                  atol=1e-13)
+    #             #break
+
+    # # TODO: check bldg 3
+
+
+def test_bottom_left_coordinate_from_geojson():
+    """Test derivation of origin from bldg geojson coordinates."""
+    geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
+    geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
+    with open(geo_fp, 'r') as fp:
+        data = json.load(fp)
+
+    bldgs_data = [bldg_data for bldg_data in data['features']
+                  if bldg_data['properties']['type'] == 'Building']
+
+    lon, lat = Model._bottom_left_coordinate_from_geojson(bldgs_data)
+
+    assert abs(lat - 42.36605353217153) < 1e-13
+    assert abs(lon - -71.01947299845268) < 1e-13
+
+
 def test_writer():
     """Test the Model writer object."""
     pts = (Point3D(50, 50, 3), Point3D(60, 50, 3), Point3D(60, 60, 3), Point3D(50, 60, 3))
@@ -626,3 +715,8 @@ def test_writer():
     writers = [mod for mod in dir(model.to) if not mod.startswith('_')]
     for writer in writers:
         assert callable(getattr(model.to, writer))
+
+
+if __name__ is '__main__':
+    test_from_geojson()
+    test_bottom_left_coordinate_from_geojson()
