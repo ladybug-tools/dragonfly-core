@@ -77,6 +77,22 @@ def test_building_init_from_footprint():
     assert len(building.all_room_2ds()) == 16
 
 
+def test_building_init_from_footprint_offset():
+    """Test Building objects from_footprint with a core/perimater offset."""
+    pts_1 = (Point3D(10, 10, 0), Point3D(10, 20, 0), Point3D(20, 20, 0), Point3D(20, 10, 0))
+    building = Building.from_footprint(
+        'Office_Tower', [Face3D(pts_1)], [5, 4, 4, 3, 3, 3, 3, 3],
+        perimeter_offset=3)
+    building.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+
+    assert building.identifier == 'Office_Tower'
+    assert building.display_name == 'Office_Tower'
+    assert len(building.unique_stories) == 3
+    assert len(building.all_stories()) == 8
+    assert len(building.unique_room_2ds) == 3 * 5
+    assert len(building.all_room_2ds()) == 8 * 5
+
+
 def test_building_init_from_all_story_geometry():
     """Test the initialization of Building objects from_all_story_geometry."""
     pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
@@ -85,10 +101,8 @@ def test_building_init_from_all_story_geometry():
     pts_4 = (Point3D(0, 0, 11), Point3D(0, 10, 11), Point3D(5, 10, 11), Point3D(5, 0, 11))
     story_geo = [[Face3D(pts_1)], [Face3D(pts_2)], [Face3D(pts_3)], [Face3D(pts_4)]]
     building = Building.from_all_story_geometry(
-        'Office_Tower', story_geo, [4, 4, 3, 3], 0.01)
+        'Office_Tower', story_geo, [4, 4, 3, 3], tolerance=0.01)
     building.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
-
-    print(Building._is_story_equivalent(story_geo[0][0], story_geo[1][0], 0.1))
 
     assert building.identifier == 'Office_Tower'
     assert building.display_name == 'Office_Tower'
@@ -96,6 +110,25 @@ def test_building_init_from_all_story_geometry():
     assert len(building.all_stories()) == 4
     assert len(building.unique_room_2ds) == 2
     assert len(building.all_room_2ds()) == 4
+
+
+def test_building_init_from_all_story_geometry_offset():
+    """Test Building objects from_all_story_geometry with a core/perimater offset."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
+    pts_2 = (Point3D(0, 0, 4), Point3D(0, 10, 4), Point3D(10, 10, 4), Point3D(10, 0, 4))
+    pts_3 = (Point3D(0, 0, 8), Point3D(0, 10, 8), Point3D(5, 10, 8), Point3D(5, 0, 8))
+    pts_4 = (Point3D(0, 0, 11), Point3D(0, 10, 11), Point3D(5, 10, 11), Point3D(5, 0, 11))
+    story_geo = [[Face3D(pts_1)], [Face3D(pts_2)], [Face3D(pts_3)], [Face3D(pts_4)]]
+    building = Building.from_all_story_geometry(
+        'Office_Tower', story_geo, [4, 4, 3, 3], perimeter_offset=3, tolerance=0.01)
+    building.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+
+    assert building.identifier == 'Office_Tower'
+    assert building.display_name == 'Office_Tower'
+    assert len(building.unique_stories) == 2
+    assert len(building.all_stories()) == 4
+    assert len(building.unique_room_2ds) == 9
+    assert len(building.all_room_2ds()) == 2 * 5 + 2 * 4
 
 
 def test_building_footprint_simple():
@@ -545,7 +578,7 @@ def test_to_from_dict():
 def test_writer():
     """Test the Building writer object."""
     pts = (Point3D(50, 50, 3), Point3D(60, 50, 3), Point3D(60, 60, 3), Point3D(50, 60, 3))
-    bldg = Building.from_footprint('TestBldg', [Face3D(pts)], [5, 4, 3, 3], 0.01)
+    bldg = Building.from_footprint('TestBldg', [Face3D(pts)], [5, 4, 3, 3], tolerance=0.01)
 
     writers = [mod for mod in dir(bldg.to) if not mod.startswith('_')]
     for writer in writers:

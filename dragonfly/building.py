@@ -13,9 +13,11 @@ from honeybee.shade import Shade
 from honeybee.typing import clean_string
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
-from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry2d.polygon import Polygon2D
+from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry_polyskel.polyskel import sub_polygons
 
 try:
     from itertools import izip as zip  # python 2
@@ -75,7 +77,8 @@ class Building(_BaseGeometry):
         self._properties = BuildingProperties(self)  # properties for extensions
 
     @classmethod
-    def from_footprint(cls, identifier, footprint, floor_to_floor_heights, tolerance=0):
+    def from_footprint(cls, identifier, footprint, floor_to_floor_heights,
+                       perimeter_offset=0, tolerance=0):
         """Initialize a Building from an array of Face3Ds representing a footprint.
 
         All of the resulting Room2Ds will have a floor-to-ceiling height equal to the
@@ -93,17 +96,21 @@ class Building(_BaseGeometry):
                 to the number of stories in the Building. Each value in the list
                 represents the floor_to_floor height of the Story starting from
                 the first floor and then moving to the top floor.
+            perimeter_offset: An optional positive number that will be used to
+                offset the perimeter of the footprint to create core/perimeter
+                zones. If this value is 0, no offset will occur and each story
+                will be represented with a single Room2D per polygon (Default: 0).
             tolerance: The maximum difference between z values at which point vertices
                 are considered to be in the same horizontal plane. This is used to check
                 that all vertices of the input floor_geometry lie in the same horizontal
                 floor plane. Default is 0, which will not perform any check.
         """
         # generate the unique Room2Ds from the footprint
-        room_2ds = cls._generate_room_2ds(footprint, floor_to_floor_heights[0],
-                                          identifier, 1, tolerance)
+        room_2ds = cls._generate_room_2ds(
+            footprint, floor_to_floor_heights[0], perimeter_offset,
+            identifier, 1, tolerance)
 
         # generate the unique stories from the floor_to_floor_heights
-        # TODO: Add an input for core_perimeter_offsets once we have straight skeletons
         stories = []
         total_height = 0
         prev_flr_to_flr = None
@@ -130,7 +137,8 @@ class Building(_BaseGeometry):
 
     @classmethod
     def from_all_story_geometry(cls, identifier, all_story_geometry,
-                                floor_to_floor_heights, tolerance=0.01):
+                                floor_to_floor_heights, perimeter_offset=0,
+                                tolerance=0.01):
         """Initialize a Building from an array of Face3Ds arrays representing all floors.
 
         This method will test to see which of the stories are geometrically unique
@@ -152,6 +160,10 @@ class Building(_BaseGeometry):
                 to the number of stories in the Building. Each value in the list
                 represents the floor_to_floor height of the Story starting from
                 the first floor and then moving to the top floor.
+            perimeter_offset: An optional positive number that will be used to offset
+                the perimeter of the all_story_geometry to create core/perimeter
+                zones. If this value is 0, no offset will occur and each story
+                will be represented with a single Room2D per polygon (Default: 0).
             tolerance: The maximum difference between x, y, and z values at which
                 point vertices are considered to be the same. This is also needed as
                 a means to determine which floor geometries are equivalent to one
@@ -160,7 +172,8 @@ class Building(_BaseGeometry):
         """
         # generate the first story of the building
         room_2ds = cls._generate_room_2ds(
-            all_story_geometry[0], floor_to_floor_heights[0], identifier, 1, tolerance)
+            all_story_geometry[0], floor_to_floor_heights[0], perimeter_offset,
+            identifier, 1, tolerance)
         stories = [Story('{}_Floor1'.format(identifier), room_2ds,
                          floor_to_floor_heights[0])]
 
@@ -176,7 +189,7 @@ class Building(_BaseGeometry):
                     not all(cls._is_story_equivalent(rm1, rm2, tolerance)
                             for rm1, rm2 in zip(room_geo, prev_geo)):
                 room_2ds = cls._generate_room_2ds(
-                    room_geo, flr_hgt, identifier, i + 2, tolerance)
+                    room_geo, flr_hgt, perimeter_offset, identifier, i + 2, tolerance)
                 stories.append(Story(
                     '{}_Floor{}'.format(identifier, i + 2), room_2ds, flr_hgt))
             else:  # geometry is the same as the floor below
@@ -701,13 +714,49 @@ class Building(_BaseGeometry):
         return models
 
     @staticmethod
-    def _generate_room_2ds(face3d_array, flr_to_flr, bldg_id, flr_count, tolerance):
-        """Generate Room2D objects given geometry and information about their parent."""
+    def _generate_room_2ds(face3d_array, flr_to_ceiling, perim_offset,
+                           bldg_id, flr_count, tolerance):
+        """Generate Room2D objects given geometry and information about their parent.
+
+        Args:
+            face3d_array: An array of Face3D objects to be turned into a Story's Room2Ds.
+            flr_to_ceiling: The floor-to-ceiling height to use for all the Room2Ds.
+            perim_offset: A perimeter offset to be used to subdivide Face3Ds
+            bldg_id: Text for the identifier to which the rooms belong.
+            flr_count: Integer for the which story the building belongs to.
+            tolerance: Tolerance to be used in the creation of the Room2Ds.
+        """
+        # if there is a non-zero perimeter offset, separate core vs. perimeter zones
+        if perim_offset != 0:
+            assert perim_offset > 0, 'perimeter_offset cannot be less than than 0.'
+            new_face3d_array = []
+            for floor_face in face3d_array:
+                if floor_face.has_holes:
+                    # TODO: Remove this once holes have been implemented in polyskel
+                    new_face3d_array.append(floor_face)
+                else:
+                    z_val = floor_face[0].z
+                    base_poly = Polygon2D(
+                        [Point2D(pt.x, pt.y) for pt in floor_face.vertices])
+                    if base_poly.is_clockwise:
+                        base_poly = base_poly.reverse()
+                    sub_polys_perim, sub_polys_core = sub_polygons(
+                        polygon=base_poly, distance=perim_offset, tol=tolerance)
+                    for s_poly in sub_polys_perim + sub_polys_core:
+                        sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in s_poly])
+                        new_face3d_array.append(sub_face)
+            face3d_array = new_face3d_array  # replace with offset core/perimeter
+
+        # create the Room2D objects
         room_2ds = []
         for i, room_geo in enumerate(face3d_array):
             room = Room2D('{}_Floor{}_Room{}'.format(bldg_id, flr_count, i + 1),
-                          room_geo, flr_to_flr, tolerance=tolerance)
+                          room_geo, flr_to_ceiling, tolerance=tolerance)
             room_2ds.append(room)
+
+        # solve for interior adjacency if there core/perimeter zoning was requested
+        if perim_offset != 0:
+            Room2D.solve_adjacency(room_2ds, tolerance)
         return room_2ds
 
     @staticmethod
