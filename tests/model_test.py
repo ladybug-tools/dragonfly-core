@@ -620,7 +620,7 @@ def test_to_geojson():
 def test_writer():
     """Test the Model writer object."""
     pts = (Point3D(50, 50, 3), Point3D(60, 50, 3), Point3D(60, 60, 3), Point3D(50, 60, 3))
-    bldg = Building.from_footprint('TestBldg', [Face3D(pts)], [5, 4, 3, 3], 0.01)
+    bldg = Building.from_footprint('TestBldg', [Face3D(pts)], [5, 4, 3, 3], tolerance=0.01)
     model = Model('TestModel', [bldg])
 
     writers = [mod for mod in dir(model.to) if not mod.startswith('_')]
