@@ -1,2 +1,2 @@
-honeybee-core==1.32.0
+honeybee-core==1.32.1
 ladybug-geometry-polyskel==1.2.0
