@@ -17,7 +17,7 @@ from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry_polyskel.polyskel import sub_polygons
+from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
 
 try:
     from itertools import izip as zip  # python 2
@@ -731,20 +731,23 @@ class Building(_BaseGeometry):
             assert perim_offset > 0, 'perimeter_offset cannot be less than than 0.'
             new_face3d_array = []
             for floor_face in face3d_array:
+                z_val = floor_face[0].z
+                base_pol = Polygon2D([Point2D(pt.x, pt.y) for pt in floor_face.boundary])
+                holes = None
                 if floor_face.has_holes:
-                    # TODO: Remove this once holes have been implemented in polyskel
-                    new_face3d_array.append(floor_face)
-                else:
-                    z_val = floor_face[0].z
-                    base_poly = Polygon2D(
-                        [Point2D(pt.x, pt.y) for pt in floor_face.vertices])
-                    if base_poly.is_clockwise:
-                        base_poly = base_poly.reverse()
-                    sub_polys_perim, sub_polys_core = sub_polygons(
-                        polygon=base_poly, distance=perim_offset, tol=tolerance)
+                    holes = []
+                    for hole in floor_face.holes:
+                        holes.append(Polygon2D([Point2D(pt.x, pt.y) for pt in hole]))
+                try:
+                    sub_polys_perim, sub_polys_core = perimeter_core_subpolygons(
+                        polygon=base_pol, holes=holes, distance=perim_offset,
+                        tol=tolerance)
                     for s_poly in sub_polys_perim + sub_polys_core:
                         sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in s_poly])
                         new_face3d_array.append(sub_face)
+                except Exception as e:
+                    print(e)  # the generation of the polyskel failed
+                    new_face3d_array.append(floor_face)  # just use existing floor
             face3d_array = new_face3d_array  # replace with offset core/perimeter
 
         # create the Room2D objects
