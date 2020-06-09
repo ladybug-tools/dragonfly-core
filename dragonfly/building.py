@@ -742,7 +742,7 @@ class Building(_BaseGeometry):
                         for s_poly in sub_polys_perim + sub_polys_core:
                             sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in s_poly])
                             new_face3d_array.append(sub_face)
-                    except Exception as e:
+                    except RuntimeError as e:
                         print(e)  # the generation of the polyskel failed
                         new_face3d_array.append(floor_face)  # just use existing floor
             face3d_array = new_face3d_array  # replace with offset core/perimeter
