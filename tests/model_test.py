@@ -622,6 +622,9 @@ def test_to_geojson():
 def test_from_geojson():
     """Test the Model from_geojson method."""
 
+    # TODO: delete this
+    from pprint import pprint as pp
+
     def _is_equal(v1, v2, atol=1e-10):
         return abs(v1 - v2) < atol
 
@@ -631,9 +634,11 @@ def test_from_geojson():
     location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
     model = Model.from_geojson(geo_fp, location=location)
 
+    pp(model)
     # Check model non-geometry properties
-    # assert model.identifier == "TestGeoJSON"
-    # assert model.display_name == "TestGeoJSON"
+    assert model.identifier == "TestGeoJSON"
+    assert model.display_name == "TestGeoJSON"
+
     # TODO: Are there optional properties? Or is the TestGeoJSON missing data?
     # 'city': location.city,
     # 'country': location.country,
@@ -642,8 +647,8 @@ def test_from_geojson():
     # 'longitude': location.longitude,
     # 'time_zone': location.time_zone
 
-    # # Check model buildings (features)
-    # assert len(model.buildings) == 3, len(model.buildings)
+    # Check model buildings (features)
+    #assert len(model.buildings) == 3, len(model.buildings)
 
     # bldg1 = [bldg for bldg in model.buildings if bldg.identifier == "1"][0]
 
@@ -689,9 +694,49 @@ def test_from_geojson():
 
     # # TODO: check bldg 3
 
+def test_lon_lat_to_boundary():
+    """Test conversion of lon lat to model units"""
+
+    #boundary_lon_lat_coords, origin_lon_lat=(0, 0),
+    #                    conversion_factors = None):
+    assert False
+
+def test_geojson_coordinates_to_face3d():
+    """Test conversion of geojson nested list to face3d."""
+
+    geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
+    geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
+    with open(geo_fp, 'r') as fp:
+        data = json.load(fp)
+
+    # Set constants
+    origin_lon_lat = (-71.019357, 42.366151)
+    convert_facs = Model.convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+
+    # Test data for Polygon
+    bldg1_data = [bldg_data for bldg_data in data['features']
+                  if bldg_data['properties']['id'] == '1'][0]
+
+    #print(bldg1_data['geometry'])
+    #Model._geojson_coordinates_to_face3d(
+    #    geojson_coordinates, origin_lon_lat, convert_facs)
+
+    # test that we get single polygon
+
+    # Compare pts with this?
+    # lon_lat_to_boundary()
+
+    # # Test data for MultiPolygon
+    # bldg3_data = [bldg_data for bldg_data in data['features']
+    #               if bldg_data['properties']['id'] == '3'][0]
+
+    # coords = bldg3_data['geometry']['coordinates']
+
+    assert False
 
 def test_bottom_left_coordinate_from_geojson():
     """Test derivation of origin from bldg geojson coordinates."""
+
     geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
     geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
     with open(geo_fp, 'r') as fp:
@@ -719,4 +764,5 @@ def test_writer():
 
 if __name__ is '__main__':
     test_from_geojson()
+    test_geojson_coordinates_to_face3d()
     test_bottom_left_coordinate_from_geojson()

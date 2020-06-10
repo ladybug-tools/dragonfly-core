@@ -121,25 +121,29 @@ class Model(_BaseGeometry):
         with open(geojson_file_path, 'r') as fp:
             data = json.load(fp)
 
+        # Get the project and list of building data
         proj_data = data['project']
         bldgs_data = [bldg_data for bldg_data in data['features']
                       if bldg_data['properties']['type'] == 'Building']
 
-        # Get the equivalent (0, 0) point in the geojson file
+        # Get the longitude and latitude point in the geojson that corresponds to the
+        # model origin (point). If location is not passed by user, the coordinates are
+        # taken or derived from the geojson file.
         if location is None:
             if 'latitude' in proj_data and 'longitude' in proj_data:
-                origin_lon_lat = proj_data['latitude'], proj_data['longitude']
+                point_lon_lat = (proj_data['latitude'], proj_data['longitude'])
             else:
-                origin_lon_lat = cls._bottom_left_coordinate_from_geojson(
+                point_lon_lat = cls._bottom_left_coordinate_from_geojson(
                     bldgs_data)
         else:
-            origin_lon_lat = (location.longitude, location.latitude)
+            point_lon_lat = (location.longitude, location.latitude)
 
-        # Shift the longitude and latitude to account for scene origin
+        # The model point may not be at (0, 0), so shift the longitude and latitude to
+        # get the equivalent point in longitude and latitude for (0, 0) in the model.
         origin_lon_lat = origin_long_lat_from_location(
-            Location(longitude=origin_lon_lat[0], latitude=origin_lon_lat[1]), point)
+            Location(longitude=point_lon_lat[0], latitude=point_lon_lat[1]), point)
         convert_facs = meters_to_long_lat_factors(origin_lon_lat)
-
+        print(origin_lon_lat)
         # Extract buildings
         bldgs = []
         for bldg_data in bldgs_data:
@@ -165,14 +169,14 @@ class Model(_BaseGeometry):
         #     bldg.display_name = prop['name']
         #     bldgs.append(bldg)
 
-        # # Make model
-        # # TODO: what to do about tolerance?
-        # model = cls(proj_data['id'], buildings=bldgs)
-        # model.display_name = proj_data['name']
+        # Make model
+        # TODO: what to do about tolerance?
+        model = cls(proj_data['id'], buildings=bldgs)
+        model.display_name = proj_data['name']
 
-        # #buildings=None, context_shades=None, units='Meters', tolerance=0, angle_tolerance=0)
+        #buildings=None, context_shades=None, units='Meters', tolerance=0, angle_tolerance=0)
 
-        # return model
+        return model
 
 
     @classmethod
@@ -780,7 +784,7 @@ class Model(_BaseGeometry):
 
     @staticmethod
     def _geojson_coordinates_to_face3d(geojson_coordinates, origin_lon_lat, convert_facs):
-        """Convert a geoJSON coordinates to a horizontal Face3D."""
+        """Convert geoJSON coordinates to a horizontal Face3D."""
         # TODO: temp. delete this
         from pprint import pprint as pp
         boundary, holes = [], None
