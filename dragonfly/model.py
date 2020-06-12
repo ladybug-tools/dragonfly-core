@@ -120,7 +120,8 @@ class Model(_BaseGeometry):
 
             # TODO: Clarification required re: correct way to handle floor heights
             floor_to_floor_height: A float value representing the floor_to_floor
-                height of the building Story objects (Default: 3.5) in model units.
+                height of the building Story objects in model units
+                (Default: 3.5 meters in equivalent model units).
             units: Text for the units system in which the model geometry
                 exists. Default: 'Meters'. Choose from the following:
 
@@ -148,9 +149,11 @@ class Model(_BaseGeometry):
         bldgs_data = [bldg_data for bldg_data in data['features']
                       if bldg_data['properties']['type'] == 'Building']
 
-        # if model units is not Meters, convert Point to meters
+        # if model units is not Meters, convert non-meter user inputs to meters
         if units != 'Meters':
-            point = point.scale(1 / hb_model.conversion_factor_to_meters(units))
+            scale_to_meters = hb_model.conversion_factor_to_meters(units)
+            point = point.scale(scale_to_meters)
+            floor_to_floor_height *= scale_to_meters
 
         # Get the longitude and latitude point in the geojson that corresponds to the
         # model origin (point). If location is not passed by user, the coordinates are
@@ -196,7 +199,7 @@ class Model(_BaseGeometry):
             bldg.display_name = prop['name']
             bldgs.append(bldg)
 
-        # Make model, in meters and then convert to user-defined units if needed
+        # Make model, in meters and then convert to user-defined units
         model = cls(proj_data['id'], buildings=bldgs, units='Meters',
                     tolerance=tolerance, angle_tolerance=angle_tolerance)
         model.display_name = proj_data['name']
@@ -829,7 +832,7 @@ class Model(_BaseGeometry):
         """
         holes = None
         coords = lon_lat_to_polygon(geojson_coordinates[0], origin_lon_lat, convert_facs)
-        coords = [Point3D(*pt2d, 0) for pt2d in coords][:-1]  # Remove redundant point
+        coords = [Point3D(pt2d[0], pt2d[1], 0) for pt2d in coords][:-1]  # Remove redundant point
 
         # If there are more then 1 polygons, then the other polygons are holes.
         if len(geojson_coordinates) > 1:
@@ -837,7 +840,7 @@ class Model(_BaseGeometry):
             for hole_geojson_coordinates in geojson_coordinates[1:]:
                 hole_coords = lon_lat_to_polygon(
                     hole_geojson_coordinates, origin_lon_lat, convert_facs)
-                hole_coords = [Point3D(*pt2d, 0) for pt2d in hole_coords][:-1]
+                hole_coords = [Point3D(pt2d[0], pt2d[1], 0) for pt2d in hole_coords][:-1]
                 holes.append(hole_coords)
 
         return Face3D(coords, plane=Plane(n=Vector3D(0, 0, 1)), holes=holes)
