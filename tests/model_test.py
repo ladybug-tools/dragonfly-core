@@ -677,7 +677,6 @@ def test_from_geojson():
     location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
     model = Model.from_geojson(geo_fp, location=location)
 
-    pp(model)
     # Check model non-geometry properties
     assert model.identifier == 'TestGeoJSON'
     assert model.display_name == 'TestGeoJSON'
