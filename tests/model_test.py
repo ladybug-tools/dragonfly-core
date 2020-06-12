@@ -16,6 +16,7 @@ from honeybee.boundarycondition import Outdoors, Surface
 
 from ladybug.location import Location
 from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
+from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
@@ -622,117 +623,199 @@ def test_to_geojson():
 def test_from_geojson():
     """Test the Model from_geojson method."""
 
-    # TODO: delete this
-    from pprint import pprint as pp
-
-    def _is_equal(v1, v2, atol=1e-10):
-        return abs(v1 - v2) < atol
-
     # Load test geojson
     geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
-    geo_fp=os.path.join(geojson_folder, 'TestGeoJSON.geojson')
+    geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
     location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
     model = Model.from_geojson(geo_fp, location=location)
 
-    pp(model)
     # Check model non-geometry properties
-    assert model.identifier == "TestGeoJSON"
-    assert model.display_name == "TestGeoJSON"
-
-    # TODO: Are there optional properties? Or is the TestGeoJSON missing data?
-    # 'city': location.city,
-    # 'country': location.country,
-    # 'elevation': location.elevation,
-    # 'latitude': location.latitude,
-    # 'longitude': location.longitude,
-    # 'time_zone': location.time_zone
+    assert model.identifier == 'TestGeoJSON'
+    assert model.display_name == 'TestGeoJSON'
 
     # Check model buildings (features)
-    #assert len(model.buildings) == 3, len(model.buildings)
+    assert len(model.buildings) == 3, len(model.buildings)
 
-    # bldg1 = [bldg for bldg in model.buildings if bldg.identifier == "1"][0]
+    # Check the first building
+    bldg1 = [bldg for bldg in model.buildings if bldg.identifier == 'ResidenceBuilding'][0]
 
-    # # Check properties
-    # # bldg.building_type = 'Mixed use' # TODO: why is this hardcoded?
-    # assert bldg1.identifier == "1"  # TODO: confirm id != identifier
-    # assert bldg1.display_name == "ResidenceBuilding" # TODO: Are these different (_BaseGeom says no)
-    # assert _is_equal(bldg1.floor_area, 600.0)
-    # assert _is_equal(bldg1.footprint_area, 200.0)
-    # assert bldg1.story_count == 3
-    # # Does this need to be stored anywhere?
-    # #assert bldg1.detailed_model_filename == \
-    # #    "./tests/geojson/ResidenceBuilding\\OpenStudio\\run\\in.osm"
-    # #TODO: optional parameter? 'number_of_stories_above_ground'
+    # Check properties
+    assert bldg1.identifier == 'ResidenceBuilding'
+    assert bldg1.display_name == 'ResidenceBuilding'
+    assert pytest.approx(bldg1.floor_area, 600.0, abs=1e-10)
+    assert pytest.approx(bldg1.footprint_area, 200.0, abs=1e-10)
+    assert bldg1.story_count == 3
 
-    # # Check geometry
-    # check_geojson_coordinates = [
-    #     [[-71.0187481589139, 42.36678078217724],
-    #      [-71.01850462247945, 42.36678078217724],
-    #      [-71.01850462247945, 42.3668707510597],
-    #      [-71.0187481589139, 42.3668707510597],
-    #      [-71.0187481589139, 42.36678078217724]]]
+    # Check the second building
+    bldg2 = [bldg for bldg in model.buildings if bldg.identifier == 'RetailBuildingBig'][0]
 
-    # origin_lon_lat = origin_long_lat_from_location(location, Point2D(0, 0))
-    # convert_facs = meters_to_long_lat_factors(origin_lon_lat)
-    # for i, footprint in enumerate(bldg1.footprint()):
-    #     geojson_coordinates = model._face3d_to_geojson_coordinates(
-    #         footprint, origin_lon_lat, convert_facs)
+    # Check properties
+    assert bldg2.identifier == 'RetailBuildingBig'
+    assert bldg2.display_name == 'RetailBuildingBig'
+    assert pytest.approx(bldg2.floor_area, 200.0, abs=1e-10)
+    assert pytest.approx(bldg2.footprint_area, 200.0, abs=1e-10)
+    assert bldg2.story_count == 1
 
-    #     # Get rid of extra list index
-    #     geojson_coordinates = geojson_coordinates[0]
+    # Check the third building
+    bldg3 = [bldg for bldg in model.buildings if bldg.identifier == 'OfficeBuilding'][0]
 
-    #     # Check coordinates
-    #     for j in range(len(geojson_coordinates)):
-    #         for k in range(len(geojson_coordinates[j])):
-    #             print(geojson_coordinates[j][k],
-    #                   check_geojson_coordinates[i][j][k])
-    #             # Confirm equal with max precision
-    #             # assert _is_equal(geojson_coordinates[j][k],
-    #             #                  check_geojson_coordinates[i][j][k],
-    #             #                  atol=1e-13)
-    #             #break
+    # Check properties
+    assert bldg3.identifier == 'OfficeBuilding'
+    assert bldg3.display_name == 'OfficeBuilding'
+    assert pytest.approx(bldg3.floor_area, 1625.0, abs=1e-10)
+    assert pytest.approx(bldg3.footprint_area, 325.0, abs=1e-10)
+    assert bldg3.story_count == 5
 
-    # # TODO: check bldg 3
 
-def test_lon_lat_to_boundary():
-    """Test conversion of lon lat to model units"""
+def test_from_geojson_coordinates_simple_location():
+    """Test the Model coordinates from_geojson method where location defines the origin.
 
-    #boundary_lon_lat_coords, origin_lon_lat=(0, 0),
-    #                    conversion_factors = None):
-    assert False
+    This test makes a model, converts it to a geojson, then uses the from_geojson method
+    to rederive the original model coordinates. The location is equal to the point (0, 0)
+    in model space.
+    """
+
+    # Construct Model
+    pts_1 = (Point3D(50, 50, 0), Point3D(60, 50, 0), Point3D(60, 60, 0), Point3D(50, 60, 0))
+    pts_2 = (Point3D(60, 50, 0), Point3D(70, 50, 0), Point3D(70, 60, 0), Point3D(60, 60, 0))
+    room2d_1 = Room2D('Residence1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Residence2', Face3D(pts_2), 3)
+    story = Story('ResidenceFloor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 3
+    test_building = Building('ResidenceBuilding', [story])
+
+    # Convert to geojson. Location defines the origin of the model space.
+    test_model = Model('TestGeoJSON_coords1', [test_building])
+    location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)  # bottom-left
+    geojson_folder = './tests/geojson/'
+    test_model.to_geojson(location, folder=geojson_folder)
+    geo_fp = os.path.join(geojson_folder, test_model.identifier,
+                          '{}.geojson'.format(test_model.identifier))
+
+    # Convert back to Model. Location defines the origin.
+    model = Model.from_geojson(geo_fp, location=location, point=Point2D(0, 0))
+
+    assert len(model.buildings) == 1
+
+    # Test geometric properties of building
+    bldg1 = model.buildings[0]
+    assert pytest.approx(bldg1.footprint_area, test_building.footprint_area, abs=1e-10)
+    vertices = bldg1.footprint()[0].vertices
+    test_vertices = test_building.footprint()[0].vertices
+    for point, test_point in zip(vertices, test_vertices):
+        assert point.is_equivalent(test_point, 1e-5)
+
+    nukedir(os.path.join(geojson_folder, test_model.identifier), True)
+
+
+def test_from_geojson_coordinates_defined_location():
+    """Test the Model coordinates from_geojson method where location is explicitly defined to
+    be different from the origin.
+
+    This test makes a model, converts it to a geojson, then uses the from_geojson method
+    to rederive the original model coordinates. The location is equal to the point (70, 60)
+    in model space, which is the top-right corner of the building footprints.
+    """
+
+    # Construct Model
+    pts_1 = (Point3D(50, 50, 0), Point3D(60, 50, 0), Point3D(60, 60, 0), Point3D(50, 60, 0))
+    pts_2 = (Point3D(60, 50, 0), Point3D(70, 50, 0), Point3D(70, 60, 0), Point3D(60, 60, 0))
+    room2d_1 = Room2D('Residence1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Residence2', Face3D(pts_2), 3)
+    story = Story('ResidenceFloor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 3
+    test_building = Building('ResidenceBuilding', [story])
+
+    # Convert to geojson. Location defines the origin of the model space.
+    test_model = Model('TestGeoJSON_coords2', [test_building])
+    location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)  # bottom-left
+    geojson_folder = './tests/geojson/'
+    test_model.to_geojson(location, folder=geojson_folder)
+    geo_fp = os.path.join(geojson_folder, test_model.identifier,
+                          '{}.geojson'.format(test_model.identifier))
+
+    # Construct model with a new location that defines the top-right corner in lon/lat degrees.
+    location2 = Location('Boston', 'MA', 'USA', 42.366690813294774, -71.01850462247945)
+    # We define the point at the top-right corner in model units.
+    model = Model.from_geojson(geo_fp, location=location2, point=Point2D(70, 60))
+
+    assert len(model.buildings) == 1
+
+    # Test geometric properties of building
+    bldg1 = model.buildings[0]
+    assert pytest.approx(bldg1.footprint_area, test_building.footprint_area, abs=1e-10)
+    vertices = bldg1.footprint()[0].vertices
+    test_vertices = test_building.footprint()[0].vertices
+    for point, test_point in zip(vertices, test_vertices):
+        assert point.is_equivalent(test_point, 1e-3) # reduce precision due to conversion
+
+    nukedir(os.path.join(geojson_folder, test_model.identifier), True)
+
 
 def test_geojson_coordinates_to_face3d():
     """Test conversion of geojson nested list to face3d."""
 
-    geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
-    geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
-    with open(geo_fp, 'r') as fp:
-        data = json.load(fp)
-
     # Set constants
-    origin_lon_lat = (-71.019357, 42.366151)
-    convert_facs = Model.convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+    origin_lon_lat = (-70.0, 42.0)
+    convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+    convert_facs = (1 / convert_facs[0], 1 / convert_facs[1])
 
-    # Test data for Polygon
-    bldg1_data = [bldg_data for bldg_data in data['features']
-                  if bldg_data['properties']['id'] == '1'][0]
+    # Test a Polygon
+    geojson_polygon_coords = {'coordinates':[
+        [[-70.0, 42.0],
+         [-69.99997578750273, 42.0],
+         [-69.99997578750273, 42.00001799339205],
+         [-70.0, 42.00001799339205],
+         [-70.0, 42.0]]]}
 
-    #print(bldg1_data['geometry'])
-    #Model._geojson_coordinates_to_face3d(
-    #    geojson_coordinates, origin_lon_lat, convert_facs)
+    face3d = Model._geojson_coordinates_to_face3d(
+        geojson_polygon_coords['coordinates'], origin_lon_lat, convert_facs)
+    poly2d = Polygon2D([Point2D(v[0], v[1]) for v in face3d.vertices])
 
-    # test that we get single polygon
+    # Test that we get single polygon
+    test_poly2d = Polygon2D(
+        [Point2D(0, 0), Point2D(2, 0), Point2D(2, 2), Point2D(0, 2)])
 
-    # Compare pts with this?
-    # lon_lat_to_boundary()
+    # Check length
+    assert len(poly2d.vertices) == len(test_poly2d.vertices)
 
-    # # Test data for MultiPolygon
-    # bldg3_data = [bldg_data for bldg_data in data['features']
-    #               if bldg_data['properties']['id'] == '3'][0]
+    # Check equivalence
+    assert poly2d.is_equivalent(test_poly2d, 1e-5)
 
-    # coords = bldg3_data['geometry']['coordinates']
+    # Test a Polygon w/ holes
+    geojson_polygon_coords = {'coordinates':[
+        [[-70.0, 42.0],
+         [-69.99997578750273, 42.0],
+         [-69.99997578750273, 42.00001799339205],
+         [-70.0, 42.00001799339205],
+         [-70.0, 42.0]],
+        [[-70.0, 42.0],
+         [-69.99997578750273, 42.00001799339205],
+         [-70.0, 42.00001799339205],
+         [-70.0, 42.0]]]}
 
-    assert False
+    face3d = Model._geojson_coordinates_to_face3d(
+        geojson_polygon_coords['coordinates'], origin_lon_lat, convert_facs)
+
+    # Check if hole exists
+    assert face3d.has_holes
+
+    # Convert to polygon
+    polyhole2d = Polygon2D([Point2D(v[0], v[1]) for v in face3d.holes[0]])
+
+    # Test that we get single polygon
+    test_polyhole2d = Polygon2D([Point2D(0, 0), Point2D(2, 2), Point2D(0, 2)])
+
+    # Check length
+    assert len(polyhole2d.vertices) == len(test_polyhole2d.vertices)
+
+    # Check equivalence
+    assert polyhole2d.is_equivalent(test_polyhole2d, 1e-5)
+
 
 def test_bottom_left_coordinate_from_geojson():
     """Test derivation of origin from bldg geojson coordinates."""
@@ -762,7 +845,4 @@ def test_writer():
         assert callable(getattr(model.to, writer))
 
 
-if __name__ is '__main__':
-    test_from_geojson()
-    test_geojson_coordinates_to_face3d()
-    test_bottom_left_coordinate_from_geojson()
+

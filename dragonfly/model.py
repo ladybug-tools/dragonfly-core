@@ -7,7 +7,7 @@ from .properties import ModelProperties
 from .building import Building
 from .context import ContextShade
 from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
-    origin_long_lat_from_location, lon_lat_to_boundary
+    origin_long_lat_from_location, lon_lat_to_polygon
 import dragonfly.writer.model as writer
 
 from honeybee.model import Model as hb_model
@@ -15,8 +15,9 @@ from honeybee.typing import float_positive
 from honeybee.config import folders
 
 from ladybug_geometry.geometry2d.pointvector import Vector2D, Point2D
-from ladybug_geometry.geometry3d.pointvector import Point3D
 from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
+from ladybug_geometry.geometry3d.plane import Plane
 from ladybug.futil import preparedir
 from ladybug.location import Location
 
@@ -101,7 +102,8 @@ class Model(_BaseGeometry):
 
     @classmethod
     def from_geojson(cls, geojson_file_path, location=None, point=Point2D(0, 0),
-                     units='Meters', tolerance=0, angle_tolerance=0):
+                     floor_to_floor_height=3.5, units='Meters', tolerance=0,
+                     angle_tolerance=0):
         """Make a Model from a geojson file.
 
         Args:
@@ -110,13 +112,33 @@ class Model(_BaseGeometry):
             location: An optional ladybug location object with longitude and
                 latitude data defining the origin of the geojson file. If nothing
                 is passed, the origin is autocalculated as the bottom-left corner
-                of the bounding box of all building footprints in the geojson file.
+                of the bounding box of all building footprints in the geojson file
+                (Default: None).
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
-                expected to be in the units of this Model. (Default: (0, 0)).
+                expected to be in the expected units of this Model (Default: (0, 0)).
+
+            # TODO: Clarification required re: correct way to handle floor heights
+            floor_to_floor_height: A float value representing the floor_to_floor
+                height of the building Story objects (Default: 3.5) in model units.
+            units: Text for the units system in which the model geometry
+                exists. Default: 'Meters'. Choose from the following:
+
+                * Meters
+                * Millimeters
+                * Feet
+                * Inches
+                * Centimeters
+
+            tolerance: The maximum difference between x, y, and z values at which
+                vertices are considered equivalent. Zero indicates that no tolerance
+                checks should be performed and certain capabilities like to_honeybee
+                will not be available. Default: 0.
+            angle_tolerance: The max angle difference in degrees that vertices are
+                allowed to differ from one another in order to consider them colinear.
+                Zero indicates that no angle tolerance checks should be performed.
+                Default: 0.
         """
-        # TODO: delete this
-        from pprint import pprint as pp
 
         with open(geojson_file_path, 'r') as fp:
             data = json.load(fp)
@@ -126,6 +148,10 @@ class Model(_BaseGeometry):
         bldgs_data = [bldg_data for bldg_data in data['features']
                       if bldg_data['properties']['type'] == 'Building']
 
+        # if model units is not Meters, convert Point to meters
+        if units != 'Meters':
+            point = point.scale(1 / hb_model.conversion_factor_to_meters(units))
+
         # Get the longitude and latitude point in the geojson that corresponds to the
         # model origin (point). If location is not passed by user, the coordinates are
         # taken or derived from the geojson file.
@@ -133,8 +159,7 @@ class Model(_BaseGeometry):
             if 'latitude' in proj_data and 'longitude' in proj_data:
                 point_lon_lat = (proj_data['latitude'], proj_data['longitude'])
             else:
-                point_lon_lat = cls._bottom_left_coordinate_from_geojson(
-                    bldgs_data)
+                point_lon_lat = cls._bottom_left_coordinate_from_geojson(bldgs_data)
         else:
             point_lon_lat = (location.longitude, location.latitude)
 
@@ -142,42 +167,44 @@ class Model(_BaseGeometry):
         # get the equivalent point in longitude and latitude for (0, 0) in the model.
         origin_lon_lat = origin_long_lat_from_location(
             Location(longitude=point_lon_lat[0], latitude=point_lon_lat[1]), point)
-        convert_facs = meters_to_long_lat_factors(origin_lon_lat)
-        print(origin_lon_lat)
+        _convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+        convert_facs = 1 / _convert_facs[0], 1 / _convert_facs[1]
+
         # Extract buildings
         bldgs = []
-        for bldg_data in bldgs_data:
-            prop = bldg_data['properties']
-
-            # TODO: Set default flrht in Building?
-            floor_to_floor_heights = [3.5 for lvl in range(prop['number_of_stories'])]
-
-            # Generate footprint
+        for i, bldg_data in enumerate(bldgs_data):
+            # Set footprints
+            footprint = []
             geojson_coordinates = bldg_data['geometry']['coordinates']
-            if bldg_data['geometry']['type'] == 'Polygon':
-                footprint = cls._geojson_coordinates_to_face3d(
-                    geojson_coordinates, origin_lon_lat, convert_facs)
-            else:
-                # If MultiPolygon, add extra lon_lat_to_polygon
-                pass
-            #footprint = [Face3D([Point3D.from_array(pts) for pts in ptmtx])]
-            #print(footprint[0].area)
-            #print(prop['name'])
-            print('---')
-        #     # TODO: Building.from_footprint should change tol > 0
-        #     bldg = Building.from_footprint(prop['id'], footprint, floor_to_floor_heights)
-        #     bldg.display_name = prop['name']
-        #     bldgs.append(bldg)
 
-        # Make model
-        # TODO: what to do about tolerance?
-        model = cls(proj_data['id'], buildings=bldgs)
+            if bldg_data['geometry']['type'] == 'Polygon':
+                face3d = cls._geojson_coordinates_to_face3d(
+                    geojson_coordinates, origin_lon_lat, convert_facs)
+                footprint.append(face3d)
+            else:
+                # If MultiPolygon account for multiple polygons
+                for _geojson_coordinates in geojson_coordinates:
+                    face3d = cls._geojson_coordinates_to_face3d(
+                        _geojson_coordinates, origin_lon_lat, convert_facs)
+                    footprint.append(face3d)
+
+            # Set other building properties
+            prop = bldg_data['properties']
+            # TODO: Clarification required re: correct way to handle floor heights
+            floor_to_floor_heights = [floor_to_floor_height] * prop['number_of_stories']
+            bldg = Building.from_footprint(prop['id'], footprint, floor_to_floor_heights)
+            bldg.display_name = prop['name']
+            bldgs.append(bldg)
+
+        # Make model, in meters and then convert to user-defined units if needed
+        model = cls(proj_data['id'], buildings=bldgs, units='Meters',
+                    tolerance=tolerance, angle_tolerance=angle_tolerance)
         model.display_name = proj_data['name']
 
-        #buildings=None, context_shades=None, units='Meters', tolerance=0, angle_tolerance=0)
+        if units != 'Meters':
+            model.convert_to_units(units)
 
         return model
-
 
     @classmethod
     def from_dict(cls, data):
@@ -784,24 +811,36 @@ class Model(_BaseGeometry):
 
     @staticmethod
     def _geojson_coordinates_to_face3d(geojson_coordinates, origin_lon_lat, convert_facs):
-        """Convert geoJSON coordinates to a horizontal Face3D."""
-        # TODO: temp. delete this
-        from pprint import pprint as pp
-        boundary, holes = [], None
-        for i, geoj_boundary_coords in enumerate(geojson_coordinates):
-            if i > 0:
-                #if holes is None: holes = []
-                pass
-            #pp(geoj_polygon_coords)
-            boundary = lon_lat_to_boundary(
-                geoj_boundary_coords, origin_lon_lat, convert_facs)
-            boundary = [Point3D(*pt2d, 0) for pt2d in boundary]
-        #pp('--')
-        # TODO: Append to footprints
-        # TODO: figure out how to check/add holes # Multipolygon?
-        # TODO: return footprints
+        """Convert geoJSON coordinates to a horizontal Face3D with zero height.
 
-        return Face3D(boundary, holes=holes)
+        Args:
+            geojson_coordinates: The coordinates from the geojson file. For 'Polygon'
+                geometries, this will be the list from the 'coordinates' key in the
+                geojson file, for 'MultiPolygon' geometries, this will be each item
+                in the list from the 'coordinates' key.
+            origin_lon_lat: An array of two numbers in degrees representing the longitude
+                and latitude of the scene origin in degrees.
+            convert_facs: A tuple with two values used to translate between longitude, latitude
+                and meters.
+
+        Returns:
+            A Face3D object in model space coordinates converted from the geojson coordinates.
+            The height of the Face3D vertices will be 0.
+        """
+        holes = None
+        coords = lon_lat_to_polygon(geojson_coordinates[0], origin_lon_lat, convert_facs)
+        coords = [Point3D(*pt2d, 0) for pt2d in coords][:-1]  # Remove redundant point
+
+        # If there are more then 1 polygons, then the other polygons are holes.
+        if len(geojson_coordinates) > 1:
+            holes = []
+            for hole_geojson_coordinates in geojson_coordinates[1:]:
+                hole_coords = lon_lat_to_polygon(
+                    hole_geojson_coordinates, origin_lon_lat, convert_facs)
+                hole_coords = [Point3D(*pt2d, 0) for pt2d in hole_coords][:-1]
+                holes.append(hole_coords)
+
+        return Face3D(coords, plane=Plane(n=Vector3D(0, 0, 1)), holes=holes)
 
     @staticmethod
     def _bottom_left_coordinate_from_geojson(bldgs_data):

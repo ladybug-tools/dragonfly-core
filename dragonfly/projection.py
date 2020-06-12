@@ -2,7 +2,6 @@
 from __future__ import division
 
 import math
-from ladybug_geometry.geometry2d.pointvector import Point2D
 
 def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     """Get conversion factors for translating meters to longitude, latitude.
@@ -40,28 +39,6 @@ def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     return meters_to_lon, meters_to_lat
 
 
-def long_lat_to_meters_factors(origin_lon_lat=(0, 0)):
-    """Get conversion factors for translating degrees of longitude, latitude to meters.
-
-    The resulting factors will obey the WSG84 assumptions for the radius of
-    the earth at the equator relative to the poles.
-
-    Args:
-        origin_long_lat: An array of two numbers in degrees. The first value
-            represents the longitude of the scene origin in degrees (between -180
-            and +180). The second value represents latitude of the scene origin
-            in degrees (between -90 and +90). Default: (0, 0).
-
-    Returns:
-        A tuple with two conversion factors for changing degrees longitude
-        to meters, and for changing degrees latitude to meters.
-    """
-
-    meters_to_lon, meters_to_lat = meters_to_long_lat_factors(origin_lon_lat)
-
-    return 1 / meters_to_lon, 1 / meters_to_lat
-
-
 def polygon_to_lon_lat(polygon, origin_lon_lat=(0, 0), conversion_factors=None):
     """Get an array of (longitude, latitude) from a ladybug_geometry Polygon2D in meters.
 
@@ -97,8 +74,8 @@ def polygon_to_lon_lat(polygon, origin_lon_lat=(0, 0), conversion_factors=None):
              origin_lon_lat[1] + pt[1] / meters_to_lat) for pt in polygon]
 
 
-def lon_lat_to_boundary(boundary_lon_lat_coords, origin_lon_lat=(0, 0),
-                        conversion_factors=None):
+def lon_lat_to_polygon(polygon_lon_lat_coords, origin_lon_lat=(0, 0),
+                       conversion_factors=None):
     """Convert an array of (longitude, latitude) coordinates to (X, Y) coordinates in meters.
 
     The resulting coordinates will obey the WSG84 assumptions for the radius of
@@ -107,28 +84,32 @@ def lon_lat_to_boundary(boundary_lon_lat_coords, origin_lon_lat=(0, 0),
     when translating polygons several kilometers long.
 
     Args:
-        boundary_lon_lat_coords: A nested array with each sub-array having 2 values for
+        polygon_lon_lat_coords: A nested array with each sub-array having 2 values for
             the (longitude, latitude) of a polygon boundary.
         origin_lon_lat: An array of two numbers in degrees. The first value
             represents the longitude of the scene origin in degrees (between -180
             and +180). The second value represents latitude of the scene origin
             in degrees (between -90 and +90). Note that the "scene origin" is the
             (0, 0) coordinate in the 2D space of the input polygon. Default: (0, 0).
-        # TODO: modify
         conversion_factors: A tuple with two values used to translate between
-            meters and longitude, latitude. If None, these values will be automatically
-            calculated from the origin_lon_lat using the meters_to_long_lat_factors
-            method.
+            longitude, latitude and meters. If None, these values will be automatically
+            calculated from the origin_lon_lat using the inverse of the
+            factors computed from the meters_to_long_lat_factors method.
     Returns:
         An array of (X, Y) values for the boundary coordinates in meters.
     """
 
-    lon_to_meters, lat_to_meters = long_lat_to_meters_factors(origin_lon_lat)
+    # Unpack or autocalculate the conversion factors
+    if not conversion_factors:
+        meters_to_lon, meters_to_lat = meters_to_long_lat_factors(origin_lon_lat)
+        lon_to_meters, lat_to_meters = 1.0 / meters_to_lon, 1.0 / meters_to_lat
+    else:
+        lon_to_meters, lat_to_meters = conversion_factors
 
     # Get the (X, Y) values for the boundary in meters
-    return [(origin_lon_lat[0] + (pt[0] / lon_to_meters),
-             origin_lon_lat[1] + (pt[1] / lat_to_meters))
-            for pt in boundary_lon_lat_coords]
+    return [((pt[0] - origin_lon_lat[0]) / lon_to_meters,
+             (pt[1] - origin_lon_lat[1]) / lat_to_meters)
+            for pt in polygon_lon_lat_coords]
 
 
 def origin_long_lat_from_location(location, point):
@@ -149,3 +130,4 @@ def origin_long_lat_from_location(location, point):
         (location.longitude, location.latitude))
     return location.longitude - point.x / meters_to_lon, \
         location.latitude - point.y / meters_to_lat
+

@@ -2,10 +2,9 @@
 import pytest
 
 from dragonfly.projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
-    origin_long_lat_from_location
+    origin_long_lat_from_location, lon_lat_to_polygon
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug.location import Location
 
 
@@ -49,3 +48,27 @@ def test_origin_long_lat_from_location():
 
     assert lat == pytest.approx(o_lat, rel=1e-5)
     assert lon == pytest.approx(o_lon, rel=1e-5)
+
+
+def test_lon_lat_to_polygon():
+    """Test conversion of lon lat to model units"""
+
+    polygon_lon_lat_coords = [
+        (-70.0, 42.0),
+        (-69.99997578750273, 42.0),
+        (-69.99997578750273, 42.00001799339205),
+        (-70.0, 42.00001799339205)]
+
+    polygon = lon_lat_to_polygon(
+        polygon_lon_lat_coords, origin_lon_lat=(-70.0, 42.0))
+
+    test_polygon = [Point2D(0, 0), Point2D(2, 0), Point2D(2, 2), Point2D(0, 2)]
+
+    # Check length
+    assert len(test_polygon) == len(polygon)
+
+    # Check coordinate values
+    for point, test_point in zip(polygon, test_polygon):
+        assert pytest.approx(point[0], test_point[1], 1e-10)
+        assert pytest.approx(point[1], test_point[1], 1e-10)
+
