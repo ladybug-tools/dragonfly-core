@@ -667,6 +667,42 @@ def test_from_geojson():
     assert bldg3.story_count == 5
 
 
+def test_from_geojson_units_test():
+    """Test the Model from_geojson method with non-meter units."""
+
+    # Load test geojson
+    geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
+    geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
+    location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
+
+    m2ft = 1 / hb_model.Model.conversion_factor_to_meters('Feet')
+
+    model = Model.from_geojson(
+        geo_fp, location=location, floor_to_floor_height=3.5 * m2ft, units='Feet')
+
+    # Check the first building
+    bldg1 = [bldg for bldg in model.buildings if bldg.identifier == 'ResidenceBuilding'][0]
+
+    # Check properties
+    assert bldg1.identifier == 'ResidenceBuilding'
+    assert bldg1.display_name == 'ResidenceBuilding'
+
+
+
+    # Check if area is in feet square
+    sm2sft = m2ft * m2ft
+    assert (600.0 * sm2sft) == pytest.approx(bldg1.floor_area, abs=1e-5)
+    assert (200.0 * sm2sft) == pytest.approx(bldg1.footprint_area, abs=1e-5)
+    assert bldg1.story_count == 3
+
+    #print(bldg1.floor_area)
+
+    # Check story height
+    ftht = 3.5 * m2ft
+    for story in bldg1.unique_stories:
+        assert ftht == pytest.approx(story.floor_to_floor_height, abs=1e-10)
+
+
 def test_from_geojson_coordinates_simple_location():
     """Test the Model coordinates from_geojson method where location defines the origin.
 

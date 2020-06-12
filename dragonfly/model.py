@@ -131,6 +131,10 @@ class Model(_BaseGeometry):
                 * Inches
                 * Centimeters
 
+                Note that if a non-meter unit is chosen, this method assumes the
+                point and floor_to_floor_height parameters are in equivalent
+                non-meter units.
+
             tolerance: The maximum difference between x, y, and z values at which
                 vertices are considered equivalent. Zero indicates that no tolerance
                 checks should be performed and certain capabilities like to_honeybee
