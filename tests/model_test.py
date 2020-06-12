@@ -642,8 +642,8 @@ def test_from_geojson():
     # Check properties
     assert bldg1.identifier == 'ResidenceBuilding'
     assert bldg1.display_name == 'ResidenceBuilding'
-    assert pytest.approx(bldg1.floor_area, 600.0, abs=1e-10)
-    assert pytest.approx(bldg1.footprint_area, 200.0, abs=1e-10)
+    assert 600.0 == pytest.approx(bldg1.floor_area, abs=1e-5)
+    assert 200.0 == pytest.approx(bldg1.footprint_area, abs=1e-5)
     assert bldg1.story_count == 3
 
     # Check the second building
@@ -652,8 +652,8 @@ def test_from_geojson():
     # Check properties
     assert bldg2.identifier == 'RetailBuildingBig'
     assert bldg2.display_name == 'RetailBuildingBig'
-    assert pytest.approx(bldg2.floor_area, 200.0, abs=1e-10)
-    assert pytest.approx(bldg2.footprint_area, 200.0, abs=1e-10)
+    assert 200.0 == pytest.approx(bldg2.floor_area, abs=1e-5)
+    assert 200.0 == pytest.approx(bldg2.footprint_area, abs=1e-5)
     assert bldg2.story_count == 1
 
     # Check the third building
@@ -662,8 +662,8 @@ def test_from_geojson():
     # Check properties
     assert bldg3.identifier == 'OfficeBuilding'
     assert bldg3.display_name == 'OfficeBuilding'
-    assert pytest.approx(bldg3.floor_area, 1625.0, abs=1e-10)
-    assert pytest.approx(bldg3.footprint_area, 325.0, abs=1e-10)
+    assert 1625.0 == pytest.approx(bldg3.floor_area, abs=1e-5)
+    assert 325.0 == pytest.approx(bldg3.footprint_area, abs=1e-5)
     assert bldg3.story_count == 5
 
 
@@ -701,6 +701,11 @@ def test_from_geojson_coordinates_simple_location():
 
     # Test geometric properties of building
     bldg1 = model.buildings[0]
+
+    # Check story height
+    for story in bldg1.unique_stories:
+        assert 3.5 == pytest.approx(story.floor_to_floor_height, abs=1e-10)
+
     assert pytest.approx(bldg1.footprint_area, test_building.footprint_area, abs=1e-10)
     vertices = bldg1.footprint()[0].vertices
     test_vertices = test_building.footprint()[0].vertices
@@ -747,7 +752,7 @@ def test_from_geojson_coordinates_defined_location():
 
     # Test geometric properties of building
     bldg1 = model.buildings[0]
-    assert pytest.approx(bldg1.footprint_area, test_building.footprint_area, abs=1e-10)
+    assert test_building.footprint_area == pytest.approx(bldg1.footprint_area, abs=1e-5)
     vertices = bldg1.footprint()[0].vertices
     test_vertices = test_building.footprint()[0].vertices
     for point, test_point in zip(vertices, test_vertices):
