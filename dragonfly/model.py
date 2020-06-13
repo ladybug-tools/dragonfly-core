@@ -102,8 +102,7 @@ class Model(_BaseGeometry):
 
     @classmethod
     def from_geojson(cls, geojson_file_path, location=None, point=Point2D(0, 0),
-                     floor_to_floor_height=3.5, units='Meters', tolerance=0,
-                     angle_tolerance=0):
+                     units='Meters', tolerance=0, angle_tolerance=0):
         """Make a Model from a geojson file.
 
         Args:
@@ -117,11 +116,6 @@ class Model(_BaseGeometry):
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
                 expected to be in the expected units of this Model (Default: (0, 0)).
-
-            # TODO: Clarification required re: correct way to handle floor heights
-            floor_to_floor_height: A float value representing the floor_to_floor
-                height of the building Story objects in model units
-                (Default: 3.5 meters in equivalent model units).
             units: Text for the units system in which the model geometry
                 exists. Default: 'Meters'. Choose from the following:
 
@@ -132,9 +126,7 @@ class Model(_BaseGeometry):
                 * Centimeters
 
                 Note that if a non-meter unit is chosen, this method assumes the
-                point and floor_to_floor_height parameters are in equivalent
-                non-meter units.
-
+                point coordinates are in equivalent non-meter units.
             tolerance: The maximum difference between x, y, and z values at which
                 vertices are considered equivalent. Zero indicates that no tolerance
                 checks should be performed and certain capabilities like to_honeybee
@@ -157,7 +149,6 @@ class Model(_BaseGeometry):
         if units != 'Meters':
             scale_to_meters = hb_model.conversion_factor_to_meters(units)
             point = point.scale(scale_to_meters)
-            floor_to_floor_height *= scale_to_meters
 
         # Get the longitude and latitude point in the geojson that corresponds to the
         # model origin (point). If location is not passed by user, the coordinates are
@@ -197,9 +188,9 @@ class Model(_BaseGeometry):
 
             # Set other building properties
             prop = bldg_data['properties']
-            # TODO: Clarification required re: correct way to handle floor heights
-            floor_to_floor_heights = [floor_to_floor_height] * prop['number_of_stories']
-            bldg = Building.from_footprint(prop['id'], footprint, floor_to_floor_heights)
+            story_height = prop["maximum_roof_height"] / prop['number_of_stories']
+            story_heights = [story_height] * prop['number_of_stories']
+            bldg = Building.from_footprint(prop['id'], footprint, story_heights)
             bldg.display_name = prop['name']
             bldgs.append(bldg)
 

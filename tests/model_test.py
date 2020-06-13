@@ -615,7 +615,8 @@ def test_to_geojson():
     geojson_folder = './tests/geojson/'
     model.to_geojson(location, folder=geojson_folder)
 
-    geo_fp = os.path.join(geojson_folder, model.identifier, '{}.geojson'.format(model.identifier))
+    geo_fp = os.path.join(
+        geojson_folder, model.identifier, '{}.geojson'.format(model.identifier))
     assert os.path.isfile(geo_fp)
     nukedir(os.path.join(geojson_folder, model.identifier), True)
 
@@ -637,7 +638,8 @@ def test_from_geojson():
     assert len(model.buildings) == 3, len(model.buildings)
 
     # Check the first building
-    bldg1 = [bldg for bldg in model.buildings if bldg.identifier == 'ResidenceBuilding'][0]
+    bldg1 = [bldg for bldg in model.buildings
+             if bldg.identifier == 'ResidenceBuilding'][0]
 
     # Check properties
     assert bldg1.identifier == 'ResidenceBuilding'
@@ -645,9 +647,11 @@ def test_from_geojson():
     assert 600.0 == pytest.approx(bldg1.floor_area, abs=1e-5)
     assert 200.0 == pytest.approx(bldg1.footprint_area, abs=1e-5)
     assert bldg1.story_count == 3
+    assert bldg1.unique_stories[0].floor_to_floor_height == pytest.approx(3.0, abs=1e-10)
 
     # Check the second building
-    bldg2 = [bldg for bldg in model.buildings if bldg.identifier == 'RetailBuildingBig'][0]
+    bldg2 = [bldg for bldg in model.buildings
+             if bldg.identifier == 'RetailBuildingBig'][0]
 
     # Check properties
     assert bldg2.identifier == 'RetailBuildingBig'
@@ -655,9 +659,11 @@ def test_from_geojson():
     assert 200.0 == pytest.approx(bldg2.floor_area, abs=1e-5)
     assert 200.0 == pytest.approx(bldg2.footprint_area, abs=1e-5)
     assert bldg2.story_count == 1
+    assert bldg2.unique_stories[0].floor_to_floor_height == pytest.approx(3.0, abs=1e-10)
 
     # Check the third building
-    bldg3 = [bldg for bldg in model.buildings if bldg.identifier == 'OfficeBuilding'][0]
+    bldg3 = [bldg for bldg in model.buildings
+             if bldg.identifier == 'OfficeBuilding'][0]
 
     # Check properties
     assert bldg3.identifier == 'OfficeBuilding'
@@ -665,6 +671,7 @@ def test_from_geojson():
     assert 1625.0 == pytest.approx(bldg3.floor_area, abs=1e-5)
     assert 325.0 == pytest.approx(bldg3.footprint_area, abs=1e-5)
     assert bldg3.story_count == 5
+    assert bldg3.unique_stories[0].floor_to_floor_height == pytest.approx(3.0, abs=1e-10)
 
 
 def test_from_geojson_units_test():
@@ -675,41 +682,35 @@ def test_from_geojson_units_test():
     geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
     location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
 
-    m2ft = 1 / hb_model.Model.conversion_factor_to_meters('Feet')
-
-    model = Model.from_geojson(
-        geo_fp, location=location, floor_to_floor_height=3.5 * m2ft, units='Feet')
+    model = Model.from_geojson(geo_fp, location=location, units='Feet')
 
     # Check the first building
-    bldg1 = [bldg for bldg in model.buildings if bldg.identifier == 'ResidenceBuilding'][0]
+    bldg1 = [bldg for bldg in model.buildings
+             if bldg.identifier == 'ResidenceBuilding'][0]
 
     # Check properties
     assert bldg1.identifier == 'ResidenceBuilding'
     assert bldg1.display_name == 'ResidenceBuilding'
 
-
-
     # Check if area is in feet square
+    m2ft = 1 / hb_model.Model.conversion_factor_to_meters('Feet')
     sm2sft = m2ft * m2ft
     assert (600.0 * sm2sft) == pytest.approx(bldg1.floor_area, abs=1e-5)
     assert (200.0 * sm2sft) == pytest.approx(bldg1.footprint_area, abs=1e-5)
     assert bldg1.story_count == 3
 
-    #print(bldg1.floor_area)
-
-    # Check story height
-    ftht = 3.5 * m2ft
+    # Check story
+    assert bldg1.story_count == 3
+    assert len(bldg1.unique_stories) == 1
     for story in bldg1.unique_stories:
-        assert ftht == pytest.approx(story.floor_to_floor_height, abs=1e-10)
+        assert (3.0 * m2ft) == pytest.approx(story.floor_to_floor_height, abs=1e-10)
 
 
 def test_from_geojson_coordinates_simple_location():
-    """Test the Model coordinates from_geojson method where location defines the origin.
-
-    This test makes a model, converts it to a geojson, then uses the from_geojson method
-    to rederive the original model coordinates. The location is equal to the point (0, 0)
-    in model space.
+    """Test the Model coordinates from_geojson method with different location inputs.
     """
+
+    # Test 1: The location is equal to the point (0, 0) in model space.
 
     # Construct Model
     pts_1 = (Point3D(50, 50, 0), Point3D(60, 50, 0), Point3D(60, 60, 0), Point3D(50, 60, 0))
@@ -740,7 +741,7 @@ def test_from_geojson_coordinates_simple_location():
 
     # Check story height
     for story in bldg1.unique_stories:
-        assert 3.5 == pytest.approx(story.floor_to_floor_height, abs=1e-10)
+        assert 3.0 == pytest.approx(story.floor_to_floor_height, abs=1e-10)
 
     assert pytest.approx(bldg1.footprint_area, test_building.footprint_area, abs=1e-10)
     vertices = bldg1.footprint()[0].vertices
@@ -748,36 +749,8 @@ def test_from_geojson_coordinates_simple_location():
     for point, test_point in zip(vertices, test_vertices):
         assert point.is_equivalent(test_point, 1e-5)
 
-    nukedir(os.path.join(geojson_folder, test_model.identifier), True)
-
-
-def test_from_geojson_coordinates_defined_location():
-    """Test the Model coordinates from_geojson method where location is explicitly defined to
-    be different from the origin.
-
-    This test makes a model, converts it to a geojson, then uses the from_geojson method
-    to rederive the original model coordinates. The location is equal to the point (70, 60)
-    in model space, which is the top-right corner of the building footprints.
-    """
-
-    # Construct Model
-    pts_1 = (Point3D(50, 50, 0), Point3D(60, 50, 0), Point3D(60, 60, 0), Point3D(50, 60, 0))
-    pts_2 = (Point3D(60, 50, 0), Point3D(70, 50, 0), Point3D(70, 60, 0), Point3D(60, 60, 0))
-    room2d_1 = Room2D('Residence1', Face3D(pts_1), 3)
-    room2d_2 = Room2D('Residence2', Face3D(pts_2), 3)
-    story = Story('ResidenceFloor', [room2d_1, room2d_2])
-    story.solve_room_2d_adjacency(0.01)
-    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
-    story.multiplier = 3
-    test_building = Building('ResidenceBuilding', [story])
-
-    # Convert to geojson. Location defines the origin of the model space.
-    test_model = Model('TestGeoJSON_coords2', [test_building])
-    location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)  # bottom-left
-    geojson_folder = './tests/geojson/'
-    test_model.to_geojson(location, folder=geojson_folder)
-    geo_fp = os.path.join(geojson_folder, test_model.identifier,
-                          '{}.geojson'.format(test_model.identifier))
+    # Test 2: Change the location to equal to the point (70, 60) in model space, which is
+    # the top-right corner of the building footprints.
 
     # Construct model with a new location that defines the top-right corner in lon/lat degrees.
     location2 = Location('Boston', 'MA', 'USA', 42.366690813294774, -71.01850462247945)
