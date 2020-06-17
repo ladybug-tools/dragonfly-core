@@ -527,34 +527,6 @@ def test_to_honeybee():
     assert len(room[3].outdoor_shades) == 0
 
 
-def test_honeybee_plenum():
-    """Test the to_honeybee method."""
-
-    """
-    Add a hidden method to the dragonfly-core Room2D that auto-generates floor and
-    ceiling plenum Rooms as an option on the to_honeybee method. These plenums use
-    adiabatic conditions for all faces except outdoor walls and the ceiling/floor
-    between the room and its plenum.
-    """
-
-    # Geometry
-    pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
-    floor = Face3D(pts)
-
-    # Walls
-    ashrae_base = SimpleWindowRatio(0.5)
-    overhang = Overhang(1)
-    boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
-    window = (ashrae_base, None, ashrae_base, None)
-    shading = (overhang, None, None, None)
-
-    # Make room
-    room2d = Room2D('ZoneSHOE_BOX920980', floor, 3, boundarycs, window, shading)
-    room, adj = room2d.to_honeybee(1, 0.1)
-
-    assert False
-
-
 def test_to_dict():
     """Test the Room2D to_dict method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
