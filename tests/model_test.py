@@ -621,6 +621,53 @@ def test_to_geojson():
     nukedir(os.path.join(geojson_folder, model.identifier), True)
 
 
+def test_from_minimal_geojson():
+    """Test the Model from_geojson method with a minimal geojson file."""
+
+    # Load test geojson
+    geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
+    geo_fp = os.path.join(geojson_folder, 'TestGeoJSON_minimal.geojson')
+    location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
+    model = Model.from_geojson(geo_fp, all_polygons_to_buildings=True, location=location)
+
+    # Check model non-geometry properties
+    assert model.identifier == 'Model_1'
+    assert model.display_name == 'Model_1'
+
+    # Check model buildings (features)
+    assert len(model.buildings) == 3, len(model.buildings)
+
+    bldgs = []
+    for bldg in model.buildings:
+        if abs(bldg.floor_area - 200.0) < 1e-5:
+            # Formerly ResidentialBuilding, or RetailBuildingBig
+            bldgs.append(bldg)
+        else:
+            # Formerly OfficeBuilding
+            bldgs.append(bldg)
+
+    # Check properties
+    assert 200.0 == pytest.approx(bldgs[0].floor_area, abs=1e-5)
+    assert 200.0 == pytest.approx(bldgs[0].footprint_area, abs=1e-5)
+    assert bldgs[0].story_count == 1
+    assert bldgs[0].unique_stories[0].floor_to_floor_height == \
+        pytest.approx(3.5, abs=1e-10)
+
+    # Check properties
+    assert 200.0 == pytest.approx(bldgs[1].floor_area, abs=1e-5)
+    assert 200.0 == pytest.approx(bldgs[1].footprint_area, abs=1e-5)
+    assert bldgs[1].story_count == 1
+    assert bldgs[1].unique_stories[0].floor_to_floor_height == \
+        pytest.approx(3.5, abs=1e-10)
+
+    # Check properties
+    assert 325.0 == pytest.approx(bldgs[2].floor_area, abs=1e-5)
+    assert 325.0 == pytest.approx(bldgs[2].footprint_area, abs=1e-5)
+    assert bldgs[2].story_count == 1
+    assert bldgs[2].unique_stories[0].floor_to_floor_height == \
+        pytest.approx(3.5, abs=1e-10)
+
+
 def test_from_geojson():
     """Test the Model from_geojson method."""
 

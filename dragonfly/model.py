@@ -102,7 +102,8 @@ class Model(_BaseGeometry):
 
     @classmethod
     def from_geojson(cls, geojson_file_path, location=None, point=Point2D(0, 0),
-                     units='Meters', tolerance=0, angle_tolerance=0):
+                     all_polygons_to_buildings=False, units='Meters', tolerance=0,
+                     angle_tolerance=0):
         """Make a Model from a geojson file.
 
         Args:
@@ -125,8 +126,13 @@ class Model(_BaseGeometry):
                 * Inches
                 * Centimeters
 
-                Note that if a non-meter unit is chosen, this method assumes the
-                point coordinates are in equivalent non-meter units.
+                Note that this method assumes the point coordinates are in the same
+                units.
+            all_polygons_to_buildings: Boolean to indicate if all geometries in the
+                geojson file should be considered buildings. If False, this method
+                will only generate footprints from geometries that are defined as a
+                'Building' in the type field of its corresponding properties
+                (Default: False).
             tolerance: The maximum difference between x, y, and z values at which
                 vertices are considered equivalent. Zero indicates that no tolerance
                 checks should be performed and certain capabilities like to_honeybee
@@ -140,10 +146,21 @@ class Model(_BaseGeometry):
         with open(geojson_file_path, 'r') as fp:
             data = json.load(fp)
 
-        # Get the project and list of building data
-        proj_data = data['project']
-        bldgs_data = [bldg_data for bldg_data in data['features']
-                      if bldg_data['properties']['type'] == 'Building']
+        # Get the list of building data
+        if all_polygons_to_buildings:
+            bldgs_data = [bldg_data for bldg_data in data['features']
+                          if 'geometry' in bldg_data]
+        else:
+            bldgs_data = []
+            for bldg_data in data['features']:
+                if 'type' in bldg_data['properties']:
+                    if bldg_data['properties']['type'] == 'Building':
+                        bldgs_data.append(bldg_data)
+
+        # Check if buildings exist
+        assert len(bldgs_data) > 0, 'No building footprints were found in {}. Check the ' \
+            'geometry coordinates in the file and if the "all_polygons_to_buildings" ' \
+            'argument is set correctly.'.format(geojson_file_path)
 
         # if model units is not Meters, convert non-meter user inputs to meters
         if units != 'Meters':
@@ -154,8 +171,10 @@ class Model(_BaseGeometry):
         # model origin (point). If location is not passed by user, the coordinates are
         # taken or derived from the geojson file.
         if location is None:
-            if 'latitude' in proj_data and 'longitude' in proj_data:
-                point_lon_lat = (proj_data['latitude'], proj_data['longitude'])
+            if 'project' in data:
+                proj_data = data['project']
+                if 'latitude' in proj_data and 'longitude' in proj_data:
+                    point_lon_lat = (proj_data['latitude'], proj_data['longitude'])
             else:
                 point_lon_lat = cls._bottom_left_coordinate_from_geojson(bldgs_data)
         else:
@@ -188,16 +207,35 @@ class Model(_BaseGeometry):
 
             # Set other building properties
             prop = bldg_data['properties']
-            story_height = prop["maximum_roof_height"] / prop['number_of_stories']
-            story_heights = [story_height] * prop['number_of_stories']
-            bldg = Building.from_footprint(prop['id'], footprint, story_heights)
-            bldg.display_name = prop['name']
+
+            # Define building heights from file or assign default single-storey building
+            if 'maximum_roof_height' in prop and 'number_of_stories' in prop:
+                story_height = prop["maximum_roof_height"] / prop['number_of_stories']
+                story_heights = [story_height] * prop['number_of_stories']
+            else:
+                story_heights = [3.5]
+
+            # Make Building object
+            bldg_id = 'Building_{}'.format(i) if 'id' not in prop else prop['id']
+            bldg = Building.from_footprint(bldg_id, footprint, story_heights)
+            if 'name' in prop:
+                bldg.display_name = prop['name']
             bldgs.append(bldg)
 
+        # Define model id and name from file or assign defaults
+        model_id, model_name = 'Model_1', False
+        if 'project' in data:
+            if 'id' in data['project']:
+                model_id = data['project']['id']
+            if 'name' in data['project']:
+                model_name = data['project']['name']
+
         # Make model, in meters and then convert to user-defined units
-        model = cls(proj_data['id'], buildings=bldgs, units='Meters',
+        model = cls(model_id, buildings=bldgs, units='Meters',
                     tolerance=tolerance, angle_tolerance=angle_tolerance)
-        model.display_name = proj_data['name']
+
+        if model_name:
+            model.display_name = model_name
 
         if units != 'Meters':
             model.convert_to_units(units)
@@ -845,7 +883,8 @@ class Model(_BaseGeometry):
         """Calculate the bottom-left bounding box coordinate from geojson building coordinates.
 
         Args:
-            bldgs_data: Geojson feature data of buildings, as dictionary.
+            bldgs_data: a list of dictionaries containing geojson geometries that
+                represent building footprints.
 
         Returns:
             The bottom-left most corner of the bounding box around the coordinates.
