@@ -756,7 +756,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
 
-    def to_honeybee(self, multiplier=1, tolerance=0.01):
+    def to_honeybee(self, multiplier=1, add_plenums=True, tolerance=0.01):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -765,11 +765,14 @@ class Room2D(_BaseGeometry):
                 on whether you are exporting each room as its own geometry (in which
                 case, this should be 1) or you only want to simulate the "unique" room
                 once and have the results multiplied. Default: 1.
+            add_plenums: Boolean to auto-generate floor and ceiling plenums for the Room
+                (Default: True).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. Default: 0.01,
                 suitable for objects in meters.
 
+        # TODO: Modify return with plenums
         Returns:
             A tuple with the two items below.
 
@@ -835,6 +838,12 @@ class Room2D(_BaseGeometry):
 
         # transfer any extension properties assigned to the Room2D
         hb_room._properties = self.properties.to_honeybee(hb_room)
+
+        # Generate floor and ceiling plenums to the Room
+        # TODO: Figure out how to account for plenum adjacencies.
+        if add_plenums:
+            hb_plenums = self._honeybee_plenum(hb_room)
+            return hb_room, hb_plenums, adjacencies
 
         return hb_room, adjacencies
 
@@ -1015,6 +1024,37 @@ class Room2D(_BaseGeometry):
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
         return tuple(intersected_rooms)
+
+    @staticmethod
+    def _honeybee_plenum(hb_room):
+        """
+        Auto-generate floor and ceiling plenums when converting to a Honeybee Room.
+
+        The boundary condition for all plenum faces is adiabatic except for the
+        ceiling and floor surfaces between the room, and any outdoor walls. Note that the
+        floor and ceiling plenums are modeled individually in this method, so the bottom
+        surface of the floor plenum is not the ceiling of the zone below, and the top
+        surface of the ceiling plenum is not the floor of the zone above.
+
+        Args:
+            hb_room: A honeybee Room representing the dragonfly Room2D.
+
+        Returns:
+            # TODO: Revise this.
+            A honeybee Room mutated to include floor and ceiling plenums.
+        """
+        plenums = []
+
+        # Generate ceiling plenum geometry
+        # ...
+
+        # Generate floor plenum geometry
+        # ...
+
+        # Solve adjacencies
+        # ...
+
+        return plenums
 
     def _check_wall_assigned_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""
