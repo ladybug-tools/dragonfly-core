@@ -3,7 +3,6 @@ from __future__ import division
 
 import math
 
-
 def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     """Get conversion factors for translating meters to longitude, latitude.
 
@@ -50,7 +49,7 @@ def polygon_to_lon_lat(polygon, origin_lon_lat=(0, 0), conversion_factors=None):
 
     Args:
         polygon: An array of (X, Y) values for coordinates in meters.
-        origin_long_lat: An array of two numbers in degrees. The first value
+        origin_lon_lat: An array of two numbers in degrees. The first value
             represents the longitude of the scene origin in degrees (between -180
             and +180). The second value represents latitude of the scene origin
             in degrees (between -90 and +90). Note that the "scene origin" is the
@@ -75,6 +74,44 @@ def polygon_to_lon_lat(polygon, origin_lon_lat=(0, 0), conversion_factors=None):
              origin_lon_lat[1] + pt[1] / meters_to_lat) for pt in polygon]
 
 
+def lon_lat_to_polygon(polygon_lon_lat_coords, origin_lon_lat=(0, 0),
+                       conversion_factors=None):
+    """Convert an array of (longitude, latitude) coordinates to (X, Y) coordinates in meters.
+
+    The resulting coordinates will obey the WSG84 assumptions for the radius of
+    the earth at the equator relative to the poles.
+    Note that this function uses a simple formula and some distortion is possible
+    when translating polygons several kilometers long.
+
+    Args:
+        polygon_lon_lat_coords: A nested array with each sub-array having 2 values for
+            the (longitude, latitude) of a polygon boundary.
+        origin_lon_lat: An array of two numbers in degrees. The first value
+            represents the longitude of the scene origin in degrees (between -180
+            and +180). The second value represents latitude of the scene origin
+            in degrees (between -90 and +90). Note that the "scene origin" is the
+            (0, 0) coordinate in the 2D space of the input polygon. Default: (0, 0).
+        conversion_factors: A tuple with two values used to translate between
+            longitude, latitude and meters. If None, these values will be automatically
+            calculated from the origin_lon_lat using the inverse of the
+            factors computed from the meters_to_long_lat_factors method.
+    Returns:
+        An array of (X, Y) values for the boundary coordinates in meters.
+    """
+
+    # Unpack or autocalculate the conversion factors
+    if not conversion_factors:
+        meters_to_lon, meters_to_lat = meters_to_long_lat_factors(origin_lon_lat)
+        lon_to_meters, lat_to_meters = 1.0 / meters_to_lon, 1.0 / meters_to_lat
+    else:
+        lon_to_meters, lat_to_meters = conversion_factors
+
+    # Get the (X, Y) values for the boundary in meters
+    return [((pt[0] - origin_lon_lat[0]) / lon_to_meters,
+             (pt[1] - origin_lon_lat[1]) / lat_to_meters)
+            for pt in polygon_lon_lat_coords]
+
+
 def origin_long_lat_from_location(location, point):
     """Get the (longitude, latitude) of the scene origin from a location and a point.
 
@@ -93,3 +130,4 @@ def origin_long_lat_from_location(location, point):
         (location.longitude, location.latitude))
     return location.longitude - point.x / meters_to_lon, \
         location.latitude - point.y / meters_to_lat
+
