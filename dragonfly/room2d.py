@@ -929,7 +929,7 @@ class Room2D(_BaseGeometry):
                                         seg_1.distance_to_point(seg_2.p2) <= tolerance:
                                     # set the boundary conditions of the segments
                                     room_1.set_adjacency(room_2, j, k)
-                                    adj_info.append(((room_1, k), (room_2, k)))
+                                    adj_info.append(((room_1, j), (room_2, k)))
                                     break
             except IndexError:
                 pass  # we have reached the end of the list of zones
