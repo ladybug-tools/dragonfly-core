@@ -756,7 +756,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
 
-    def to_honeybee(self, multiplier=1, tolerance=0.01):
+    def to_honeybee(self, multiplier=1, tolerance=0.01, add_plenums=False, plenum_ht=1.0):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -769,7 +769,10 @@ class Room2D(_BaseGeometry):
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. Default: 0.01,
                 suitable for objects in meters.
+            add_plenums: Boolean to auto-generate floor and ceiling plenums for the Room
+                (Default: False).
 
+        # TODO: Modify return with plenums
         Returns:
             A tuple with the two items below.
 
@@ -835,6 +838,20 @@ class Room2D(_BaseGeometry):
 
         # transfer any extension properties assigned to the Room2D
         hb_room._properties = self.properties.to_honeybee(hb_room)
+
+        # Generate floor and ceiling plenums to the Room
+        if add_plenums:
+            hb_plenums = self._honeybee_plenum(plenum_ht, tolerance)
+
+            if len(hb_plenums) > 0:
+                # Ceiling plenum
+                ceil_plenum = hb_plenums[0]
+                ids_hb_room_ceil = (hb_room[-1].identifier, hb_room.identifier)
+                ids_plenum_floor = (ceil_plenum[0].identifier, ceil_plenum.identifier)
+                hb_room[-1].boundary_condition = Surface(ids_plenum_floor)
+                ceil_plenum[0].boundary_condition = Surface(ids_hb_room_ceil)
+
+            return [hb_room] + hb_plenums, adjacencies
 
         return hb_room, adjacencies
 
@@ -1016,6 +1033,62 @@ class Room2D(_BaseGeometry):
             intersected_rooms.append(rebuilt_room)
         return tuple(intersected_rooms)
 
+    def _honeybee_plenum(self, plenum_ht, tolerance=0.01):
+        """
+        Auto-generate floor and ceiling plenums when converting to a Honeybee Room.
+
+        The boundary condition for all plenum faces is adiabatic except for the
+        ceiling and floor surfaces between the room, and any outdoor walls. Note that the
+        floor and ceiling plenums are modeled individually in this method, so the bottom
+        surface of the floor plenum is not the ceiling of the zone below, and the top
+        surface of the ceiling plenum is not the floor of the zone above.
+
+        Args:
+            hb_room: A honeybee Room representing the dragonfly Room2D.
+
+        Returns:
+            # TODO: Revise this.
+            A honeybee Room mutated to include floor and ceiling plenums.
+        """
+
+        plenums = []
+        plenum_id = self.identifier + '_ceil_plenum'
+        # Create reference 2d geometry for plenums
+        ref_face3d = self.floor_geometry.duplicate()
+        ref_face3d = ref_face3d.move(Vector3D(0, 0, self.floor_to_ceiling_height))
+        # create the honeybee Room
+        ceil_polyface = Polyface3D.from_offset_face(ref_face3d, plenum_ht)
+        plenum_hb_room = Room.from_polyface3d(plenum_id, ceil_polyface)
+
+        # assign BCs and record any Surface conditions to be set on the story level
+        #adjacencies = []
+        for i, bc in enumerate(self._boundary_conditions):
+            if not isinstance(bc, Surface):
+                plenum_hb_room[i + 1].boundary_condition = bc
+            # else:
+            #     adjacencies.append(
+            #         (plenum_hb_room[i + 1], bc.boundary_condition_objects))
+
+        # Split plenum walls if intersect with adjacent room wall, and set
+        # the room adjacency portion to adiabatic BC
+        new_faces = self._split_plenum_walls_along_height(
+            plenum_hb_room, tolerance, self.ceiling_height, plenum_ht)
+
+        if len(new_faces) != len(plenum_hb_room):
+            # rebuild the room with split surfaces
+            plenum_hb_room = Room(plenum_id, new_faces, tolerance, 0.1)
+            # update adjacencies with the new split face
+            # for i, adj in enumerate(adjacencies):
+            #     face_id = adj[0].identifier
+            #     for face in hb_room.faces:
+            #         if face.identifier == face_id:
+            #             adjacencies[i] = (face, adj[1])
+            #             break
+
+        plenums.append(plenum_hb_room)
+
+        return plenums
+
     def _check_wall_assigned_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""
         try:
@@ -1060,6 +1133,90 @@ class Room2D(_BaseGeometry):
 
         # retrun the flipped lists
         return new_bcs, new_win_pars, new_shd_pars
+
+    def _split_plenum_walls_along_height(self, hb_room, tolerance, floor_height,
+                                         floor_to_ceiling_height):
+        """
+        Args:
+            plenum_hb_room: A plenum represented as a Honeybee Room.
+        """
+        # Set ceiling height
+        ceiling_height = floor_height + floor_to_ceiling_height
+
+        # Iterate through bc of parent room
+        new_faces = [hb_room[0]]
+        for i, bc in enumerate(self._boundary_conditions):
+            face = hb_room[i + 1]
+            if not isinstance(bc, Surface):
+                new_faces.append(face)
+            else:
+                adj_rm = self._parent.room_by_identifier(
+                    bc.boundary_condition_objects[-1])
+                flr_diff = adj_rm.floor_height - floor_height
+                ciel_diff = ceiling_height - adj_rm.ceiling_height
+
+                # Use diffs to split the wall
+                if flr_diff <= tolerance and ciel_diff <= tolerance:
+                    # No need to split the surface along its height
+                    new_faces.append(face)
+                elif flr_diff > tolerance and ciel_diff > tolerance:
+                    # split the face into to 3 smaller faces along its height
+                    lseg = LineSegment3D.from_end_points(face.geometry[0],
+                                                         face.geometry[1])
+                    mid_dist = floor_to_ceiling_height - ciel_diff - flr_diff
+                    vec1 = Vector3D(0, 0, flr_diff)
+                    vec2 = Vector3D(0, 0, floor_to_ceiling_height - ciel_diff)
+                    below = Face3D.from_extrusion(lseg, vec1)
+                    mid = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, mid_dist))
+                    above = Face3D.from_extrusion(lseg.move(vec2), Vector3D(0, 0, ciel_diff))
+                    mid_face = face.duplicate()
+                    mid_face._geometry = mid
+                    below_face = Face('{}_Below'.format(face.identifier), below)
+                    above_face = Face('{}_Above'.format(face.identifier), above)
+                    try:
+                        below_face.boundary_condition = bcs.adiabatic
+                        above_face.boundary_condition = bcs.adiabatic
+                        mid_face.boundary_condition = bcs.adiabatic
+                    except AttributeError:
+                        pass  # honeybee_energy is not loaded
+                    new_faces.extend([below_face, mid_face, above_face])
+                elif flr_diff > tolerance:
+                    # split the face into to 2 smaller faces along its height
+                    lseg = LineSegment3D.from_end_points(face.geometry[0],
+                                                         face.geometry[1])
+                    mid_dist = floor_to_ceiling_height - flr_diff
+                    vec1 = Vector3D(0, 0, flr_diff)
+                    below = Face3D.from_extrusion(lseg, vec1)
+                    mid = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, mid_dist))
+                    mid_face = face.duplicate()
+                    mid_face._geometry = mid
+                    below_face = Face('{}_Below'.format(face.identifier), below)
+                    try:
+                        below_face.boundary_condition = bcs.adiabatic
+                        mid_face.boundary_condition = bcs.adiabatic
+                    except AttributeError:
+                        pass  # honeybee_energy is not loaded
+                    new_faces.extend([below_face, mid_face])
+                elif ciel_diff > tolerance:
+                    # split the face into to 2 smaller faces along its height
+                    lseg = LineSegment3D.from_end_points(face.geometry[0],
+                                                         face.geometry[1])
+                    mid_dist = floor_to_ceiling_height - ciel_diff
+                    vec1 = Vector3D(0, 0, mid_dist)
+                    mid = Face3D.from_extrusion(lseg, vec1)
+                    above = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, ciel_diff))
+                    mid_face = face.duplicate()
+                    mid_face._geometry = mid
+                    above_face = Face('{}_Above'.format(face.identifier), above)
+                    try:
+                        mid_face.boundary_condition = bcs.adiabatic
+                        above_face.boundary_condition = bcs.adiabatic
+                    except AttributeError:
+                        pass  # honeybee_energy is not loaded
+                    new_faces.extend([mid_face, above_face])
+        new_faces.append(hb_room[-1])
+
+        return new_faces
 
     def _split_walls_along_height(self, hb_room, tolerance):
         """Split adjacent walls to ensure matching surface areas in to_honeybee workflow.
