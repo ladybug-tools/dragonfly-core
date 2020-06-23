@@ -6,7 +6,7 @@ from dragonfly.story import Story
 from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow
 from dragonfly.shadingparameter import Overhang
 
-from honeybee.boundarycondition import Outdoors, Ground, Surface, Adiabatic
+from honeybee.boundarycondition import Outdoors, Ground, Surface
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.room import Room
 
@@ -529,159 +529,76 @@ def test_to_honeybee():
     assert len(room[3].outdoor_shades) == 0
 
 
-def test_split_plenum_walls_along_height():
-    """Test splitting walls along plenum height by adjacent rooms"""
-
-    # Simple 10 x 10 room
-    tol = 0.01
-    pts1 = (Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(0, 10, 0), Point3D(0, 0, 0))
-
-    # Rooms
-    room2d_2m = Room2D('R1-2m', Face3D(pts1), 3)
-
-    # Test no split
-    hb_room_2m, _ = room2d_2m.to_honeybee(add_plenums=False, tolerance=tol)
-    new_faces = room2d_2m._split_plenum_walls_along_height(
-        hb_room_2m, tol, room2d_2m.ceiling_height, 2)
-    assert len(new_faces) == 6
-
-
-    # Test w/ split
-
-    # Simple 10 x 10 room
-    tol = 0.01
-    pts1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(0, 10, 0))
-    pts2 = (Point3D(10, 0, 0), Point3D(20, 0, 0), Point3D(20, 10, 0), Point3D(10, 10, 0))
-
-    # Two rooms with different hegihts
-    room2d_3m = Room2D('R1-3m', Face3D(pts1), 3)
-    room2d_2m = Room2D('R2-2m', Face3D(pts2), 2)
-
-    # Intersection at:
-    #   ((10, 0, 0), (10, 10, 0)) # room2d_3m adj idx @ 1
-    #   ((10, 10, 0), (10, 0, 0)) # room2d_2m adj idx @ 3
-
-    # Story sets room2d._boundary_condition[i] to Surface BC of
-    # adjacent room.floor_segments. Internally this function applies:
-    # Room2D.solve_adjacency([room2d_3m, room2d_2m], 0.01) and the
-    # parent properties of the rooms to the Story
-    story = Story('S1', [room2d_3m, room2d_2m])
-    story.solve_room_2d_adjacency(0.01)
-
-    # Get the adjacent seg
-    r3m_idx = [i for i, bc in enumerate(room2d_3m.boundary_conditions)
-               if isinstance(bc, Surface)][0]
-    r2m_idx = [i for i, bc in enumerate(room2d_2m.boundary_conditions)
-               if isinstance(bc, Surface)][0]
-    r3m_seg = room2d_3m.floor_segments_2d[r3m_idx]
-    r2m_seg = room2d_2m.floor_segments_2d[r2m_idx]
-
-    # Test adjacencies are just to be safe
-    test_r3m_seg = LineSegment2D.from_array(((10, 0), (10, 10)))
-    assert r3m_seg.p1.is_equivalent(test_r3m_seg.p1, 1e-10) and \
-        r3m_seg.p2.is_equivalent(test_r3m_seg.p2, 1e-10)
-
-    test_r2m_seg = LineSegment2D.from_array(((10, 10), (10, 0)))
-    assert r2m_seg.p1.is_equivalent(test_r2m_seg.p1, 1e-10) and \
-        r2m_seg.p2.is_equivalent(test_r2m_seg.p2, 1e-10)
-
-    # Make HB room which and BCs of adjacencis we just solved
-    hb_room_2m, adj_2m = room2d_2m.to_honeybee(tolerance=tol, add_plenums=False)
-
-    # adj_3m has the adjacency information for hb_room_3m
-    # [(Face: R2-2m..Face4,           // The face in room2d_3m
-    #  ('R1-3m..Face2', 'R1-3m'))]
-
-    # Create Room for plenum, w/ 2m height (so it overlaps neighboring R3 by 1m)
-    plenum_ht = 2
-    plenum_face = room2d_2m.floor_geometry.duplicate().move(
-        Vector3D(0, 0, room2d_2m.ceiling_height))
-    plenum_polyface = Polyface3D.from_offset_face(plenum_face, plenum_ht)
-    plenum_room = Room.from_polyface3d('plenum_2m', plenum_polyface)
-    test_faces = plenum_room.duplicate()[:]
-
-    # Split using room2d_2m as basis for BCs, and parent
-    new_faces = room2d_2m._split_plenum_walls_along_height(
-        plenum_room, tol, room2d_2m.ceiling_height, plenum_ht)
-
-    assert len(new_faces) == 7, len(new_faces)
-
-    # Index 3 in room2d_2m is the adjacent seg, which translates to
-    # Index 4, 5 as new split faces. Test the faces that were not split
-    assert new_faces[0].geometry.is_geometrically_equivalent(
-        test_faces[0].geometry, tol)
-    assert new_faces[1].geometry.is_geometrically_equivalent(
-        test_faces[1].geometry, tol)
-    assert new_faces[2].geometry.is_geometrically_equivalent(
-        test_faces[2].geometry, tol)
-    assert new_faces[3].geometry.is_geometrically_equivalent(
-        test_faces[3].geometry, tol)
-    assert new_faces[6].geometry.is_geometrically_equivalent(
-        test_faces[5].geometry, tol)
-
-    # Index 4 is split into 4, 5 is split
-    bottom_boundary = (
-        Point3D(10, 10, 2), Point3D(10, 0, 2), Point3D(10, 0, 3), Point3D(10, 10, 3))
-    top_boundary = (
-        Point3D(10, 10, 3), Point3D(10, 0, 3), Point3D(10, 0, 4), Point3D(10, 10, 4))
-
-    assert new_faces[4].geometry.is_geometrically_equivalent(
-        Face3D(bottom_boundary), tol)
-    assert new_faces[5].geometry.is_geometrically_equivalent(
-        Face3D(top_boundary), tol)
-
 def test_honeybee_plenum():
-    """Test the to_honeybee method."""
+    """Test the add_plenum functionality in the to_honeybee method.
 
-    """
-    Add a hidden method to the dragonfly-core Room2D that auto-generates floor and
+    Adds a hidden method to the dragonfly-core Room2D that auto-generates floor and
     ceiling plenum Rooms as an option on the to_honeybee method. These plenums use
     adiabatic conditions for all faces except outdoor walls and the ceiling/floor
     between the room and its plenum.
     """
+
     # Simple 10 x 10 room
     tol = 0.01
     pts1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(0, 10, 0))
     pts2 = (Point3D(10, 0, 0), Point3D(20, 0, 0), Point3D(20, 10, 0), Point3D(10, 10, 0))
 
-    # Two rooms with different hegihts
-    room2d_3m = Room2D('R1-3m', Face3D(pts1), 3)
-    room2d_2m = Room2D('R2-2m', Face3D(pts2), 2)
+    # Two rooms with different heights
+    room2d_3m = Room2D('R1-3m', floor_geometry=Face3D(pts1), floor_to_ceiling_height=3,
+                       is_ground_contact=True, is_top_exposed=True)
+    room2d_2m = Room2D('R2-2m', floor_geometry=Face3D(pts2), floor_to_ceiling_height=2,
+                       is_ground_contact=True, is_top_exposed=True)
+
+    # Check raise exception when no Story is set
+    with pytest.raises(AttributeError):
+        _ = room2d_2m.duplicate().to_honeybee(tolerance=tol, add_plenum=True)
 
     # Intersection at:
     #   ((10, 0, 0), (10, 10, 0)) # room2d_3m adj idx @ 1
     #   ((10, 10, 0), (10, 0, 0)) # room2d_2m adj idx @ 3
 
-    story = Story('S1', [room2d_3m, room2d_2m])
+    story = Story('S1', [room2d_3m, room2d_2m], floor_to_floor_height=3.0)
     story.solve_room_2d_adjacency(0.01)
 
+    # Check default ceiling condition w/o plenum for 2m
+    _hb_room_2m, _ = room2d_2m.duplicate().to_honeybee(tolerance=tol, add_plenum=False)
+    assert isinstance(_hb_room_2m[-1].boundary_condition, Outdoors)
 
-    # Make HB room which and BCs of adjacencis we just solved
-    hb_room_2m, adj_2m = room2d_2m.to_honeybee(
-        tolerance=tol, add_plenums=True, plenum_ht=2.0)
+    # Make HB room w/ plenum for 2m
+    hb_room_2m, _ = room2d_2m.to_honeybee(tolerance=tol, add_plenum=True)
+    assert hb_room_2m[0][-1].boundary_condition.name == 'Adiabatic'
 
     plenum_2m = hb_room_2m[1]
+    assert len(plenum_2m[:]) == 6
 
     for i, face in enumerate(plenum_2m.faces):
-
         #print(face.identifier, '-', face.boundary_condition)
-
-        if face.identifier == 'R2-2m_ceil_plenum..Face0':
-            assert isinstance(face.boundary_condition, Surface)
-        elif face.identifier == 'R2-2m_ceil_plenum..Face1':
+        if face.identifier == 'R2-2m_ceiling_plenum..Face0':
+            assert face.boundary_condition.name == 'Adiabatic'
+        elif face.identifier == 'R2-2m_ceiling_plenum..Face1':
             assert isinstance(face.boundary_condition, Outdoors)
-        elif face.identifier == 'R2-2m_ceil_plenum..Face2':
+        elif face.identifier == 'R2-2m_ceiling_plenum..Face2':
             assert isinstance(face.boundary_condition, Outdoors)
-        elif face.identifier == 'R2-2m_ceil_plenum..Face3':
+        elif face.identifier == 'R2-2m_ceiling_plenum..Face3':
             assert isinstance(face.boundary_condition, Outdoors)
-        elif face.identifier == 'R2-2m_ceil_plenum..Face4':
-            assert isinstance(face.boundary_condition, Adiabatic)
-        elif face.identifier == 'R2-2m_ceil_plenum..Face4_Above':
-            assert isinstance(face.boundary_condition, Adiabatic)
-        elif face.identifier == 'R2-2m_ceil_plenum..Face5':
-            assert isinstance(face.boundary_condition, Surface)
+        elif face.identifier == 'R2-2m_ceiling_plenum..Face4':
+            assert face.boundary_condition.name == 'Adiabatic'
+        elif face.identifier == 'R2-2m_ceiling_plenum..Face5':
+            assert isinstance(face.boundary_condition, Outdoors) # Roof
         else:
             assert False
+
+    # Check height of plenum
+    test_vert_face = (Point3D(10, 0, 2), Point3D(20, 0, 2),
+                      Point3D(20, 0, 3), Point3D(10, 0, 3))
+    for test_vert, vert in zip(test_vert_face, plenum_2m[1].vertices):
+        assert test_vert.is_equivalent(vert, tol)
+
+
+    # Make HB room w/ plenum for 3m, no plenum produced
+    hb_room_3m, _ = room2d_3m.to_honeybee(tolerance=tol, add_plenum=True)
+    assert isinstance(hb_room_3m, Room)
+    assert isinstance(hb_room_3m[-1].boundary_condition, Outdoors)
 
 
 def test_to_dict():
