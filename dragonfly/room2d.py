@@ -13,7 +13,7 @@ import dragonfly.writer.room2d as writer
 from honeybee.typing import float_positive, clean_string
 import honeybee.boundarycondition as hbc
 from honeybee.boundarycondition import boundary_conditions as bcs
-from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Ground
+from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface
 from honeybee.face import Face
 from honeybee.room import Room
 
@@ -756,7 +756,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
 
-    def to_honeybee(self, multiplier=1, tolerance=0.01, add_plenum=False):
+    def to_honeybee(self, multiplier=1, add_plenum=False, tolerance=0.01):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -765,22 +765,26 @@ class Room2D(_BaseGeometry):
                 on whether you are exporting each room as its own geometry (in which
                 case, this should be 1) or you only want to simulate the "unique" room
                 once and have the results multiplied. Default: 1.
+            add_plenum: Boolean to indicate whether ceiling/floor plenums should
+                be auto-generated for the Room in which case this output will
+                be a list instead of a single Room. The height of the ceiling plenum
+                will be autocalculated as the difference between the Room2D
+                ceiling height and Story ceiling height. The height of the floor
+                plenum will be autocalculated as the difference between the Room2D
+                floor height and Story floor height. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows, and to check if the
                 Room ceiling is adjacent to the upper floor of the Story before
                 generating a plenum. Default: 0.01, suitable for objects in meters.
-            add_plenum: Boolean to auto-generate a ceiling plenum for the Room. The
-                height of the ceiling plenum will be autocalculated as the difference
-                between the Room2D floor_to_ceiling_height and Story
-                floor_to_floor_height (Default: False).
 
         Returns:
             A tuple with the two items below.
 
-            * hb_room -- A honeybee-core Room representing the dragonfly Room2D. If the
-                add_plenum argument is True this item will be a list of honeybee-core
-                Rooms, with the hb_room as the first item, and two additional items:
+            * hb_room -- If add_plenum is False, this will be honeybee-core Room
+                representing the dragonfly Room2D. If the add_plenum argument is True,
+                this item will be a list of honeybee-core Rooms, with the hb_room as
+                the first item, and up to two additional items:
 
                     * ceil_plenum -- A honeybee-core Room representing the ceiling
                         plenum. If there isn't enough space between the Story
@@ -849,14 +853,23 @@ class Room2D(_BaseGeometry):
         if self._is_top_exposed:
             hb_room[-1].boundary_condition = bcs.outdoors
 
-        # transfer any extension properties assigned to the Room2D
+        # transfer any extension properties assigned to the Room2D and return result
         hb_room._properties = self.properties.to_honeybee(hb_room)
+        if not add_plenum:
+            return hb_room, adjacencies
 
-        if add_plenum:
-            hb_plenums = self._honeybee_plenums(hb_room, tolerance=tolerance)
-            return [hb_room] + hb_plenums, adjacencies
-
-        return hb_room, adjacencies
+        # add plenums if requested and return results
+        hb_plenums = self._honeybee_plenums(hb_room, tolerance=tolerance)
+        for hb_plenum in hb_plenums:  # transfer the parent's construction set
+            hb_plenum._properties = self.properties.to_honeybee(hb_plenum)
+            try:  # set the program to unconditioned plenum and assign infiltration
+                hb_plenum.properties.energy.program_type = None
+                hb_plenum.properties.energy.hvac = None
+                hb_plenum.properties.energy.infiltration = \
+                    hb_room.properties.energy.infiltration
+            except AttributeError:
+                pass  # honeybee-energy is not loaded; ignore all these energy properties
+        return [hb_room] + hb_plenums, adjacencies
 
     def to_dict(self, abridged=False, included_prop=None):
         """Return Room2D as a dictionary.
@@ -1063,40 +1076,36 @@ class Room2D(_BaseGeometry):
                     If there isn't enough space between the Story floor_height and
                     the Room2D floor_height, this item will be None.
         """
+        # check to be sure that the room2d has a parent story
+        hb_rooms = []
+        if not self.has_parent:
+            raise AttributeError(
+                'Cannot add plenums to the "{}" Room because the parent Story has '
+                'not been set. This is required to derive the plenum '
+                'height.'.format(self.identifier))
 
-        hb_rooms = [None, None]
-
-        try:
-            parent = self.parent
-        except AttributeError:
-            print('Cannot add plenums to the {} Room because the parent Story has '
-                  'not been set. This is required to derive the plenum '
-                  'height.'.format(self.identifier))
-            raise
-
-        ceil_plenum_height = \
-            parent.floor_to_floor_height - self.floor_to_ceiling_height
+        parent = self.parent
+        parent_ceiling = parent.floor_height + parent.floor_to_floor_height
+        ceil_plenum_height = parent_ceiling - self.ceiling_height
         floor_plenum_height = self.floor_height - parent.floor_height
 
         if ceil_plenum_height > tolerance:
             ceil_plenum = self._honeybee_plenum(
                 ceil_plenum_height, plenum_type="ceiling")
-            # Overwrite the previous hb_room ceiling BC
-            try:
-                hb_room[-1].boundary_condition = bcs.adiabatic
-            except AttributeError:
-                pass
-            hb_rooms[0] = ceil_plenum
+            # Set the plenum and the rooms to be adjacent to one another
+            hb_room[-1].set_adjacency(ceil_plenum[0], tolerance)
+            hb_rooms.append(ceil_plenum)
 
         if floor_plenum_height > tolerance:
             floor_plenum = self._honeybee_plenum(
                 floor_plenum_height, plenum_type="floor")
-            # Overwrite the previous hb_room ceiling BC
+            # Set the plenum and the rooms to be adjacent to one another
+            hb_room[0].set_adjacency(floor_plenum[-1], tolerance)
             try:
                 hb_room[0].boundary_condition = bcs.adiabatic
             except AttributeError:
                 pass
-            hb_rooms[1] = floor_plenum
+            hb_rooms.append(floor_plenum)
 
         return hb_rooms
 
@@ -1109,71 +1118,51 @@ class Room2D(_BaseGeometry):
         Args:
             hb_room: A honeybee Room representing the dragonfly Room2D.
             plenum_height: The height of the plenum Room.
-            plenum_type: Text for the type of plenum to be constructed. (Default:
-                'ceiling').
+            plenum_type: Text for the type of plenum to be constructed.
                 Choose from the following:
 
-                * 'ceiling'
-                * 'floor'
+                * ceiling
+                * floor
 
         Returns:
             A honeybee Room representing a plenum zone.
         """
-        assert plenum_type == 'ceiling' or plenum_type == 'floor', 'plenum_type' \
-            ' must be a string spelling "ceiling" or "floor". ' \
-            'Got: {}.'.format(plenum_type)
-
         plenum_id = self.identifier + '_{}_plenum'.format(plenum_type)
 
-        # Create reference 2d geometry for plenums
+        # create reference 2d geometry for plenums
         ref_face3d = self.floor_geometry.duplicate()
-
         if plenum_type == 'ceiling':
             ref_face3d = ref_face3d.move(Vector3D(0, 0, self.floor_to_ceiling_height))
         else:
-            ref_face3d = ref_face3d.move(
-                Vector3D(0, 0, -plenum_height))
+            ref_face3d = ref_face3d.move(Vector3D(0, 0, -plenum_height))
 
-        # Create the honeybee Room
+        # create the honeybee Room
         plenum_hb_room = Room.from_polyface3d(
             plenum_id, Polyface3D.from_offset_face(ref_face3d, plenum_height))
 
-        # Assign wall BCs based on self
+        # get the boundary condition that will be used for interior surfaces
+        try:
+            interior_bc = bcs.adiabatic
+        except AttributeError:  # honeybee_energy is not loaded; no Adiabatic BC
+            interior_bc = bcs.outdoors
+
+        # assign wall BCs based on self
         for i, bc in enumerate(self._boundary_conditions):
             if not isinstance(bc, Surface):
                 plenum_hb_room[i + 1].boundary_condition = bc
             else:  # assign boundary conditions for the roof and floor
-                try:
-                    plenum_hb_room[i + 1].boundary_condition = bcs.adiabatic
-                except AttributeError:
-                    pass  # honeybee_energy is not loaded
+                plenum_hb_room[i + 1].boundary_condition = interior_bc
 
-        if plenum_type == 'ceiling':
-            # Assign ceiling BCs
+        if plenum_type == 'ceiling':  # assign ceiling BCs
             if self._is_top_exposed:
                 plenum_hb_room[-1].boundary_condition = bcs.outdoors
             else:
-                try:
-                    plenum_hb_room[-1].boundary_condition = bcs.adiabatic
-                except AttributeError:
-                    pass  # honeybee_energy is not loaded
-            try:
-                plenum_hb_room[0].boundary_condition = bcs.adiabatic
-            except AttributeError:
-                pass  # honeybee_energy is not loaded
-        else:
-            # Assign floor BCs
+                plenum_hb_room[-1].boundary_condition = interior_bc
+        else:  # assign floor BCss
             if self._is_ground_contact:
                 plenum_hb_room[0].boundary_condition = bcs.ground
             else:
-                try:
-                    plenum_hb_room[0].boundary_condition = bcs.adiabatic
-                except AttributeError:
-                    pass  # honeybee_energy is not loaded
-            try:
-                plenum_hb_room[-1].boundary_condition = bcs.adiabatic
-            except AttributeError:
-                pass  # honeybee_energy is not loaded
+                plenum_hb_room[0].boundary_condition = interior_bc
 
         return plenum_hb_room
 

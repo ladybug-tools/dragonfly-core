@@ -545,7 +545,7 @@ class Building(_BaseGeometry):
             story.scale(factor, origin)
         self.properties.scale(factor, origin)
 
-    def to_honeybee(self, use_multiplier=True, tolerance=0.01):
+    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01):
         """Convert Dragonfly Building to a Honeybee Model.
 
         Args:
@@ -554,7 +554,9 @@ class Building(_BaseGeometry):
                 simulation will be run once for each unique room and then results
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
-                multipliers and all resulting multipliers will be 1. Default: True
+                multipliers and all resulting multipliers will be 1. (Default: True).
+            add_plenum: Boolean to indicate whether ceiling/floor plenums should
+                be auto-generated for the Rooms. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
@@ -562,10 +564,12 @@ class Building(_BaseGeometry):
         hb_rooms = []
         if use_multiplier:
             for story in self._unique_stories:
-                hb_rooms.extend(story.to_honeybee(True, tolerance))
+                hb_rooms.extend(story.to_honeybee(
+                    True, add_plenum=add_plenum, tolerance=tolerance))
         else:
             for story in self.all_stories():
-                hb_rooms.extend(story.to_honeybee(False, tolerance))
+                hb_rooms.extend(story.to_honeybee(
+                    False, add_plenum=add_plenum, tolerance=tolerance))
         hb_mod = Model(self.identifier, hb_rooms)
         hb_mod._display_name = self._display_name
         hb_mod._user_data = self._user_data
@@ -602,7 +606,8 @@ class Building(_BaseGeometry):
         return writer
 
     @staticmethod
-    def buildings_to_honeybee(buildings, use_multiplier, tolerance=0.01):
+    def buildings_to_honeybee(
+            buildings, use_multiplier=True, add_plenum=False, tolerance=0.01):
         """Convert an array of Building objects into a single honeybee Model.
 
         Args:
@@ -613,22 +618,26 @@ class Building(_BaseGeometry):
                 simulation will be run once for each unique room and then results
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
-                multipliers and all resulting multipliers will be 1.
+                multipliers and all resulting multipliers will be 1. (Default: True).
+            add_plenum: Boolean to indicate whether ceiling/floor plenums should
+                be auto-generated for the Rooms. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
         """
         # create a base model to which everything will be added
-        base_model = buildings[0].to_honeybee(use_multiplier, tolerance)
+        base_model = buildings[0].to_honeybee(
+            use_multiplier, add_plenum=add_plenum, tolerance=tolerance)
         # loop through each Building, create a model, and add it to the base one
         for bldg in buildings[1:]:
-            base_model.add_model(bldg.to_honeybee(use_multiplier, tolerance))
+            base_model.add_model(bldg.to_honeybee(
+                use_multiplier, add_plenum=add_plenum, tolerance=tolerance))
         return base_model
 
     @staticmethod
     def buildings_to_honeybee_self_shade(
-            buildings, context_shades=None, shade_distance=None, use_multiplier=True,
-            tolerance=0.01):
+            buildings, context_shades=None, shade_distance=None,
+            use_multiplier=True, add_plenum=False, tolerance=0.01):
         """Convert an array of Buildings into several honeybee Models with self-shading.
 
         Each input Building will be exported into its own Model. For each Model,
@@ -654,7 +663,9 @@ class Building(_BaseGeometry):
                 simulation will be run once for each unique room and then results
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
-                multipliers and all resulting multipliers will be 1. Default: True
+                multipliers and all resulting multipliers will be 1. (Default: True).
+            add_plenum: Boolean to indicate whether ceiling/floor plenums should
+                be auto-generated for the Rooms. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
@@ -682,7 +693,8 @@ class Building(_BaseGeometry):
         # loop through each Building and create a model
         num_bldg = len(buildings)
         for i, bldg in enumerate(buildings):
-            model = bldg.to_honeybee(use_multiplier, tolerance)
+            model = bldg.to_honeybee(
+                use_multiplier, add_plenum=add_plenum, tolerance=tolerance)
 
             if shade_distance is None:  # add all other bldg shades to the model
                 for j in xrange(i + 1, num_bldg):  # buildings before this one

@@ -14,7 +14,7 @@ from honeybee.model import Model as hb_model
 from honeybee.typing import float_positive
 from honeybee.config import folders
 
-from ladybug_geometry.geometry2d.pointvector import Vector2D, Point2D
+from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
@@ -587,7 +587,7 @@ class Model(_BaseGeometry):
         return True
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
-                    use_multiplier=True, tolerance=None):
+                    use_multiplier=True, add_plenum=False, tolerance=None):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
         Args:
@@ -610,13 +610,15 @@ class Model(_BaseGeometry):
                 connected buildings are too far away to have a meaningful impact on
                 the results. If None, all other buildings will be included as context
                 shade in each and every Model. Set to 0 to exclude all neighboring
-                buildings from the resulting models. Default: None.
+                buildings from the resulting models. (Default: None).
             use_multiplier: If True, the multipliers on this Model's Stories will be
                 passed along to the generated Honeybee Room objects, indicating the
                 simulation will be run once for each unique room and then results
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
-                multipliers and all resulting multipliers will be 1. Default: True
+                multipliers and all resulting multipliers will be 1. (Default: True).
+            add_plenum: Boolean to indicate whether ceiling/floor plenums should
+                be auto-generated for the Rooms. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. This must be a
@@ -634,11 +636,11 @@ class Model(_BaseGeometry):
         # create the model objects
         if object_per_model is None or object_per_model.title() == 'Building':
             models = Building.buildings_to_honeybee_self_shade(
-                self._buildings, self._context_shades, shade_distance, use_multiplier,
-                tolerance)
+                self._buildings, self._context_shades, shade_distance,
+                use_multiplier, add_plenum, tolerance=tolerance)
         elif object_per_model.title() == 'District':
             models = [Building.buildings_to_honeybee(
-                self._buildings, use_multiplier, tolerance)]
+                self._buildings, use_multiplier, add_plenum, tolerance=tolerance)]
             for shd_group in self._context_shades:
                 for shd in shd_group.to_honeybee():
                     for model in models:

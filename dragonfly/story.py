@@ -10,6 +10,7 @@ import dragonfly.writer.story as writer
 from honeybee.typing import float_positive, int_in_range, clean_string
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.room import Room
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyline import Polyline3D
@@ -27,7 +28,12 @@ class Story(_BaseGeometry):
         floor_to_floor_height: A number for the distance from the floor plate of
             this Story to the floor of the story above this one (if it exists).
             If None, this value will be the maximum floor_to_ceiling_height of the
-            input room_2ds.
+            input room_2ds plus any difference between the Story floor height
+            and the room floor heights. (Default: None)
+        floor_height: A number for the absolute floor height of the Story.
+            If None, this will be the minimum floor height of all the Story's
+            room_2ds, which is suitable for cases where there are no floor
+            plenums. (Default: None).
         multiplier: An integer that denotes the number of times that this
             Story is repeated over the height of the building. Default: 1.
 
@@ -49,9 +55,11 @@ class Story(_BaseGeometry):
         * max
         * user_data
     """
-    __slots__ = ('_room_2ds', '_floor_to_floor_height', '_multiplier', '_parent')
+    __slots__ = ('_room_2ds', '_floor_to_floor_height', '_floor_height',
+                 '_multiplier', '_parent')
 
-    def __init__(self, identifier, room_2ds, floor_to_floor_height=None, multiplier=1):
+    def __init__(self, identifier, room_2ds, floor_to_floor_height=None,
+                 floor_height=None, multiplier=1):
         """A Story of a building defined by an extruded Floor2Ds."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
 
@@ -66,6 +74,7 @@ class Story(_BaseGeometry):
         self._room_2ds = room_2ds
 
         # process the input properties
+        self.floor_height = floor_height
         self.floor_to_floor_height = floor_to_floor_height
         self.multiplier = multiplier
 
@@ -117,9 +126,10 @@ class Story(_BaseGeometry):
 
         # process the floor_to_floor_height and the multiplier
         f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
+        fh = data['floor_height'] if 'floor_height' in data else None
         mult = data['multiplier'] if 'multiplier' in data else 1
 
-        story = Story(data['identifier'], rooms, f2fh, mult)
+        story = Story(data['identifier'], rooms, f2fh, fh, mult)
         if 'display_name' in data and data['display_name'] is not None:
             story._display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -142,8 +152,24 @@ class Story(_BaseGeometry):
     @floor_to_floor_height.setter
     def floor_to_floor_height(self, value):
         if value is None:
-            value = max([room.floor_to_ceiling_height for room in self._room_2ds])
+            ciel_hgt = max([room.ceiling_height for room in self._room_2ds])
+            value = ciel_hgt - self.floor_height
         self._floor_to_floor_height = float_positive(value, 'floor-to-floor height')
+
+    @property
+    def floor_height(self):
+        """Get or set a number for the abolute floor height of the Story.
+
+        This will be the minimum floor height of all the Story's room_2ds unless
+        specified otherwise.
+        """
+        return self._floor_height
+
+    @floor_height.setter
+    def floor_height(self, value):
+        if value is None:
+            value = min([room.floor_height for room in self._room_2ds])
+        self._floor_height = float(value)
 
     @property
     def multiplier(self):
@@ -175,15 +201,6 @@ using-multipliers-zone-and-or-window.html
     def has_parent(self):
         """Boolean noting whether this Story has a parent Building."""
         return self._parent is not None
-
-    @property
-    def floor_height(self):
-        """Get a number for the height of the Story above the ground.
-
-        Note that this number is always the minimum floor height of all the Story's
-        room_2ds.
-        """
-        return min([room.floor_height for room in self._room_2ds])
 
     @property
     def floor_area(self):
@@ -496,6 +513,7 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.move(moving_vec)
+        self._floor_height = self._floor_height + moving_vec.z
         self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
@@ -531,6 +549,7 @@ using-multipliers-zone-and-or-window.html
         for room in self._room_2ds:
             room.scale(factor, origin)
         self._floor_to_floor_height = self._floor_to_floor_height * factor
+        self._floor_height = self._floor_height * factor
         self.properties.scale(factor, origin)
 
     def check_missing_adjacencies(self, raise_exception=True):
@@ -549,7 +568,7 @@ using-multipliers-zone-and-or-window.html
             return False
         return True
 
-    def to_honeybee(self, use_multiplier=True, tolerance=0.01):
+    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01):
         """Convert Dragonfly Story to a list of Honeybee Rooms.
 
         Args:
@@ -558,6 +577,8 @@ using-multipliers-zone-and-or-window.html
                 will be run once for the Story and then results will be multiplied.
                 You will want to set this to False when exporting each Story as
                 full geometry.
+            add_plenum: Boolean to indicate whether ceiling/floor plenums should
+                be auto-generated for the Rooms. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 If None, no splitting will occur. Default: 0.01, suitable for
@@ -573,8 +594,12 @@ using-multipliers-zone-and-or-window.html
         hb_rooms = []
         adjacencies = []
         for room in self._room_2ds:
-            hb_room, adj = room.to_honeybee(mult, tolerance)
-            hb_rooms.append(hb_room)
+            hb_room, adj = room.to_honeybee(
+                mult, add_plenum=add_plenum, tolerance=tolerance)
+            if isinstance(hb_room, Room):
+                hb_rooms.append(hb_room)
+            else:  # list of rooms with plenums
+                hb_rooms.extend(hb_room)
             adjacencies.extend(adj)
 
         # assign adjacent boundary conditions that could not be set on the room level
@@ -611,6 +636,7 @@ using-multipliers-zone-and-or-window.html
         base['display_name'] = self.display_name
         base['room_2ds'] = [r.to_dict(abridged, included_prop) for r in self._room_2ds]
         base['floor_to_floor_height'] = self.floor_to_floor_height
+        base['floor_height'] = self.floor_height
         base['multiplier'] = self.multiplier
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         if self.user_data is not None:
@@ -627,7 +653,7 @@ using-multipliers-zone-and-or-window.html
 
     def __copy__(self):
         new_s = Story(self.identifier, tuple(room.duplicate() for room in self._room_2ds),
-                      self._floor_to_floor_height, self._multiplier)
+                      self._floor_to_floor_height, self._floor_height, self._multiplier)
         new_s._display_name = self.display_name
         new_s._user_data = None if self.user_data is None else self.user_data.copy()
         new_s._parent = self._parent
