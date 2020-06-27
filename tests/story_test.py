@@ -299,7 +299,7 @@ def test_to_honeybee_different_heights():
     story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
     story.solve_room_2d_adjacency(0.01)
 
-    rooms = story.to_honeybee(True, 0.01)
+    rooms = story.to_honeybee(True, tolerance=0.01)
     assert len(rooms) == 2
     assert len(rooms[0]) == 8
     assert rooms[0].volume == 500

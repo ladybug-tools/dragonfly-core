@@ -509,7 +509,7 @@ def test_to_honeybee():
     window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
     room2d = Room2D('ZoneSHOE_BOX920980', Face3D(pts), 3, boundarycs, window, shading)
-    room, adj = room2d.to_honeybee(1, 0.1)
+    room, adj = room2d.to_honeybee(1, tolerance=0.1)
 
     assert room.identifier == 'ZoneSHOE_BOX920980'
     assert room.display_name == 'ZoneSHOE_BOX920980'
@@ -560,16 +560,15 @@ def test_honeybee_ceiling_plenum():
 
     # Make HB room w/ plenum for 2m
     hb_room_2m, _ = room2d_2m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert _is_adiabatic(hb_room_2m[0][-1].boundary_condition)
+    assert isinstance(hb_room_2m[0][-1].boundary_condition, Surface)
     assert len([h for h in hb_room_2m if h is not None]) == 2
 
     plenum_2m = hb_room_2m[1]
     assert len(plenum_2m[:]) == 6
 
     for i, face in enumerate(plenum_2m.faces):
-        #print(face.identifier, '-', face.boundary_condition)
         if face.identifier == 'R2-2m_ceiling_plenum..Face0':
-            assert _is_adiabatic(face.boundary_condition)
+            assert isinstance(face.boundary_condition, Surface)
         elif face.identifier == 'R2-2m_ceiling_plenum..Face1':
             assert isinstance(face.boundary_condition, Outdoors)
         elif face.identifier == 'R2-2m_ceiling_plenum..Face2':
@@ -588,7 +587,6 @@ def test_honeybee_ceiling_plenum():
                       Point3D(20, 0, 3), Point3D(10, 0, 3))
     for test_vert, vert in zip(test_vert_face, plenum_2m[1].vertices):
         assert test_vert.is_equivalent(vert, tol)
-
 
     # Make HB room w/ plenum for 3m, no plenum produced
     hb_rooms_3m, _ = room2d_3m.to_honeybee(tolerance=tol, add_plenum=True)
@@ -626,7 +624,7 @@ def test_honeybee_floor_plenum():
     hb_room_5m, _ = room2d_5m.to_honeybee(tolerance=tol, add_plenum=True)
     assert len([h for h in hb_room_5m if h is not None]) == 2
 
-    plenum_5m = hb_room_5m[2]
+    plenum_5m = hb_room_5m[-1]
     assert len(plenum_5m[:]) == 6
 
     for i, face in enumerate(plenum_5m.faces):
@@ -642,7 +640,7 @@ def test_honeybee_floor_plenum():
         elif face.identifier == 'R2-5m_floor_plenum..Face4':
             assert _is_adiabatic(face.boundary_condition)
         elif face.identifier == 'R2-5m_floor_plenum..Face5':
-            assert _is_adiabatic(face.boundary_condition)
+            assert isinstance(face.boundary_condition, Surface)
         else:
             assert False
 
@@ -702,7 +700,7 @@ def test_honeybee_ceiling_and_floor_plenum():
 
     # Check height of ceil_plenum
     test_vert_face = (Point3D(10, 0, 4.5), Point3D(20, 0, 4.5),
-                      Point3D(20, 0, 5.5), Point3D(10, 0, 5.5))
+                      Point3D(20, 0, 5.0), Point3D(10, 0, 5.0))
     for test_vert, vert in zip(test_vert_face, ceil_plenum_5m[1].vertices):
         assert test_vert.is_equivalent(vert, tol)
 
