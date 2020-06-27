@@ -561,7 +561,7 @@ def test_honeybee_ceiling_plenum():
     # Make HB room w/ plenum for 2m
     hb_room_2m, _ = room2d_2m.to_honeybee(tolerance=tol, add_plenum=True)
     assert isinstance(hb_room_2m[0][-1].boundary_condition, Surface)
-    assert len([h for h in hb_room_2m if h is not None]) == 2
+    assert len(hb_room_2m) == 2
 
     plenum_2m = hb_room_2m[1]
     assert len(plenum_2m[:]) == 6
@@ -590,7 +590,7 @@ def test_honeybee_ceiling_plenum():
 
     # Make HB room w/ plenum for 3m, no plenum produced
     hb_rooms_3m, _ = room2d_3m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert len([h for h in hb_rooms_3m if h is not None]) == 1
+    assert len(hb_rooms_3m) == 1
     assert isinstance(hb_rooms_3m[0][-1].boundary_condition, Outdoors)
 
 
@@ -622,7 +622,7 @@ def test_honeybee_floor_plenum():
 
     # Make HB room w/ plenum for 2m
     hb_room_5m, _ = room2d_5m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert len([h for h in hb_room_5m if h is not None]) == 2
+    assert len(hb_room_5m) == 2
 
     plenum_5m = hb_room_5m[-1]
     assert len(plenum_5m[:]) == 6
@@ -652,7 +652,7 @@ def test_honeybee_floor_plenum():
 
     # Make HB room w/ plenum for 1m floor height, no plenum produced
     hb_rooms_1m, _ = room2d_1m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert len([h for h in hb_rooms_1m if h is not None]) == 1
+    assert len(hb_rooms_1m) == 1
     assert isinstance(hb_rooms_1m[0][0].boundary_condition, Ground)
 
 
@@ -679,11 +679,11 @@ def test_honeybee_ceiling_and_floor_plenum():
 
     # Make HB room w/ just ceiling plenum
     hb_rooms_1m, _ = room2d_1m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert len([h for h in hb_rooms_1m if h is not None]) == 2
+    assert len(hb_rooms_1m) == 2
 
     # Make HB room w/ both
     hb_rooms_5m, _ = room2d_5m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert len([h for h in hb_rooms_5m if h is not None]) == 3
+    assert len(hb_rooms_5m) == 3
 
     hb_room_5m, ceil_plenum_5m, floor_plenum_5m = hb_rooms_5m
 
