@@ -529,14 +529,8 @@ def test_to_honeybee():
     assert len(room[3].outdoor_shades) == 0
 
 
-def test_honeybee_plenum():
-    """Test the add_plenum functionality in the to_honeybee method.
-
-    Adds a hidden method to the dragonfly-core Room2D that auto-generates floor and
-    ceiling plenum Rooms as an option on the to_honeybee method. These plenums use
-    adiabatic conditions for all faces except outdoor walls and the ceiling/floor
-    between the room and its plenum.
-    """
+def test_honeybee_ceiling_plenum():
+    """Test the add_plenum functionality in the to_honeybee method with ceiling."""
 
     # Simple 10 x 10 room
     tol = 0.01
@@ -566,7 +560,8 @@ def test_honeybee_plenum():
 
     # Make HB room w/ plenum for 2m
     hb_room_2m, _ = room2d_2m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert hb_room_2m[0][-1].boundary_condition.name == 'Adiabatic'
+    assert _is_adiabatic(hb_room_2m[0][-1].boundary_condition)
+    assert len([h for h in hb_room_2m if h is not None]) == 2
 
     plenum_2m = hb_room_2m[1]
     assert len(plenum_2m[:]) == 6
@@ -574,7 +569,7 @@ def test_honeybee_plenum():
     for i, face in enumerate(plenum_2m.faces):
         #print(face.identifier, '-', face.boundary_condition)
         if face.identifier == 'R2-2m_ceiling_plenum..Face0':
-            assert face.boundary_condition.name == 'Adiabatic'
+            assert _is_adiabatic(face.boundary_condition)
         elif face.identifier == 'R2-2m_ceiling_plenum..Face1':
             assert isinstance(face.boundary_condition, Outdoors)
         elif face.identifier == 'R2-2m_ceiling_plenum..Face2':
@@ -582,9 +577,9 @@ def test_honeybee_plenum():
         elif face.identifier == 'R2-2m_ceiling_plenum..Face3':
             assert isinstance(face.boundary_condition, Outdoors)
         elif face.identifier == 'R2-2m_ceiling_plenum..Face4':
-            assert face.boundary_condition.name == 'Adiabatic'
+            assert _is_adiabatic(face.boundary_condition)
         elif face.identifier == 'R2-2m_ceiling_plenum..Face5':
-            assert isinstance(face.boundary_condition, Outdoors) # Roof
+            assert isinstance(face.boundary_condition, Outdoors) # Roof exposed outdoors
         else:
             assert False
 
@@ -596,9 +591,120 @@ def test_honeybee_plenum():
 
 
     # Make HB room w/ plenum for 3m, no plenum produced
-    hb_room_3m, _ = room2d_3m.to_honeybee(tolerance=tol, add_plenum=True)
-    assert isinstance(hb_room_3m, Room)
-    assert isinstance(hb_room_3m[-1].boundary_condition, Outdoors)
+    hb_rooms_3m, _ = room2d_3m.to_honeybee(tolerance=tol, add_plenum=True)
+    assert len([h for h in hb_rooms_3m if h is not None]) == 1
+    assert isinstance(hb_rooms_3m[0][-1].boundary_condition, Outdoors)
+
+
+def test_honeybee_floor_plenum():
+    """Test the add_plenum functionality in the to_honeybee method with floor."""
+
+    # Simple 10 x 10 room
+    tol = 0.01
+    pts1 = (Point3D(0, 0, 1), Point3D(10, 0, 1), Point3D(10, 10, 1), Point3D(0, 10, 1))
+    pts2 = (Point3D(10, 0, 1.5), Point3D(20, 0, 1.5), Point3D(20, 10, 1.5),
+            Point3D(10, 10, 1.5))
+
+    # Two rooms with different floor heights
+    room2d_1m = Room2D('R1-1m', floor_geometry=Face3D(pts1), floor_to_ceiling_height=3,
+                       is_ground_contact=True, is_top_exposed=True)
+    room2d_5m = Room2D('R2-5m', floor_geometry=Face3D(pts2), floor_to_ceiling_height=3,
+                       is_ground_contact=False, is_top_exposed=True)
+
+    story = Story('S1', [room2d_1m, room2d_5m], floor_to_floor_height=3.0)
+    story.solve_room_2d_adjacency(0.01)
+
+    # Check story floor height is minimum of room floor heights
+    assert story.floor_height == pytest.approx(1, abs=1e-10)
+
+    # Check default floor condition w/o plenum
+    _hb_room_5m, _ = room2d_5m.duplicate().to_honeybee(tolerance=tol, add_plenum=False)
+    assert isinstance(_hb_room_5m[-1].boundary_condition, Outdoors)
+    assert _is_adiabatic(_hb_room_5m[0].boundary_condition)
+
+    # Make HB room w/ plenum for 2m
+    hb_room_5m, _ = room2d_5m.to_honeybee(tolerance=tol, add_plenum=True)
+    assert len([h for h in hb_room_5m if h is not None]) == 2
+
+    plenum_5m = hb_room_5m[2]
+    assert len(plenum_5m[:]) == 6
+
+    for i, face in enumerate(plenum_5m.faces):
+        #print(face.identifier, '-', face.boundary_condition)
+        if face.identifier == 'R2-5m_floor_plenum..Face0':
+            assert _is_adiabatic(face.boundary_condition)
+        elif face.identifier == 'R2-5m_floor_plenum..Face1':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-5m_floor_plenum..Face2':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-5m_floor_plenum..Face3':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-5m_floor_plenum..Face4':
+            assert _is_adiabatic(face.boundary_condition)
+        elif face.identifier == 'R2-5m_floor_plenum..Face5':
+            assert _is_adiabatic(face.boundary_condition)
+        else:
+            assert False
+
+    # Check height of plenum
+    test_vert_face = (Point3D(10, 0, 1), Point3D(20, 0, 1),
+                      Point3D(20, 0, 1.5), Point3D(10, 0, 1.5))
+    for test_vert, vert in zip(test_vert_face, plenum_5m[1].vertices):
+        assert test_vert.is_equivalent(vert, tol)
+
+    # Make HB room w/ plenum for 1m floor height, no plenum produced
+    hb_rooms_1m, _ = room2d_1m.to_honeybee(tolerance=tol, add_plenum=True)
+    assert len([h for h in hb_rooms_1m if h is not None]) == 1
+    assert isinstance(hb_rooms_1m[0][0].boundary_condition, Ground)
+
+
+def test_honeybee_ceiling_and_floor_plenum():
+    """Test the add_plenum in the to_honeybee method with ceiling and floor."""
+
+    # Simple 10 x 10 room
+    tol = 0.01
+    pts1 = (Point3D(0, 0, 1), Point3D(10, 0, 1), Point3D(10, 10, 1), Point3D(0, 10, 1))
+    pts2 = (Point3D(10, 0, 1.5), Point3D(20, 0, 1.5), Point3D(20, 10, 1.5),
+            Point3D(10, 10, 1.5))
+
+    # Two rooms that require plenums
+
+    # floor_plenum: 0m, ceiling_plenum: 1m
+    room2d_1m = Room2D('R1-1m', floor_geometry=Face3D(pts1), floor_to_ceiling_height=3,
+                       is_ground_contact=True, is_top_exposed=False)
+    # floor_plenum: 0.5m, ceiling_plenum: 1m
+    room2d_5m = Room2D('R2-5m', floor_geometry=Face3D(pts2), floor_to_ceiling_height=3,
+                       is_ground_contact=False, is_top_exposed=False)
+
+    story = Story('S1', [room2d_1m, room2d_5m], floor_to_floor_height=4.0)
+    story.solve_room_2d_adjacency(tol)
+
+    # Make HB room w/ just ceiling plenum
+    hb_rooms_1m, _ = room2d_1m.to_honeybee(tolerance=tol, add_plenum=True)
+    assert len([h for h in hb_rooms_1m if h is not None]) == 2
+
+    # Make HB room w/ both
+    hb_rooms_5m, _ = room2d_5m.to_honeybee(tolerance=tol, add_plenum=True)
+    assert len([h for h in hb_rooms_5m if h is not None]) == 3
+
+    hb_room_5m, ceil_plenum_5m, floor_plenum_5m = hb_rooms_5m
+
+    # Check names
+    assert hb_room_5m.identifier == 'R2-5m'
+    assert ceil_plenum_5m.identifier == 'R2-5m_ceiling_plenum'
+    assert floor_plenum_5m.identifier == 'R2-5m_floor_plenum'
+
+    # Check height of floor_plenum
+    test_vert_face = (Point3D(10, 0, 1), Point3D(20, 0, 1),
+                      Point3D(20, 0, 1.5), Point3D(10, 0, 1.5))
+    for test_vert, vert in zip(test_vert_face, floor_plenum_5m[1].vertices):
+        assert test_vert.is_equivalent(vert, tol)
+
+    # Check height of ceil_plenum
+    test_vert_face = (Point3D(10, 0, 4.5), Point3D(20, 0, 4.5),
+                      Point3D(20, 0, 5.5), Point3D(10, 0, 5.5))
+    for test_vert, vert in zip(test_vert_face, ceil_plenum_5m[1].vertices):
+        assert test_vert.is_equivalent(vert, tol)
 
 
 def test_to_dict():
@@ -663,3 +769,13 @@ def test_writer():
     writers = [mod for mod in dir(room2d.to) if not mod.startswith('_')]
     for writer in writers:
         assert callable(getattr(room2d.to, writer))
+
+
+def _is_adiabatic(bc):
+    """Test if adiabatic instance, or if honeybee-energy not installed,
+    if using default Outdoors.
+    """
+    try:
+        return isinstance(bc, type(bcs.adiabatic))
+    except AttributeError:
+        return isinstance(bc, Outdoors)
