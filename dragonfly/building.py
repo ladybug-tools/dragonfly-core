@@ -10,6 +10,7 @@ import dragonfly.writer.building as writer
 
 from honeybee.model import Model
 from honeybee.shade import Shade
+from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
@@ -124,6 +125,10 @@ class Building(_BaseGeometry):
                         room.floor_to_ceiling_height = flr_hgt
                         room._identifier = \
                             '{}_Floor{}_Room{}'.format(identifier, i + 1, j + 1)
+                    if perimeter_offset != 0:  # reset all boundary conditions
+                        for room in rooms:
+                            room.boundary_conditions = [bcs.outdoors] * len(room)
+                        Room2D.solve_adjacency(rooms, tolerance)
                 else:
                     rooms = room_2ds
                 stories.append(Story(
@@ -480,6 +485,7 @@ class Building(_BaseGeometry):
 
         # ensure that the top floor is unique
         if self._unique_stories[-1].multiplier != 1:
+            story = self._unique_stories[-1]
             new_top_floor = (self._separated_top_floor(story),)
             story.multiplier = story.multiplier - 1
 
