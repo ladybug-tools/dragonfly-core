@@ -8,6 +8,7 @@ from .building import Building
 from .context import ContextShade
 from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
     origin_long_lat_from_location, lon_lat_to_polygon
+from dragonfly.config import folders as df_folders
 import dragonfly.writer.model as writer
 
 from honeybee.model import Model as hb_model
@@ -822,6 +823,8 @@ class Model(_BaseGeometry):
 
         if self.user_data is not None:
             base['user_data'] = self.user_data
+        if df_folders.dragonfly_schema_version is not None:
+            base['version'] = df_folders.dragonfly_schema_version_str
 
         return base
 
