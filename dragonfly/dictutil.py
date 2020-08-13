@@ -9,6 +9,7 @@ from dragonfly.model import Model
 from dragonfly.building import Building
 from dragonfly.story import Story
 from dragonfly.room2d import Room2D
+from dragonfly.context import ContextShade
 import dragonfly.windowparameter as dfw
 import dragonfly.shadingparameter as dfs
 
@@ -44,6 +45,8 @@ def dict_to_object(dragonfly_dict, raise_exception=True):
         return Story.from_dict(dragonfly_dict)
     elif obj_type == 'Room2D':
         return Room2D.from_dict(dragonfly_dict)
+    elif obj_type == 'ContextShade':
+        return ContextShade.from_dict(dragonfly_dict)
     elif hasattr(dfw, obj_type):
         win_class = getattr(dfw, obj_type)
         return win_class.from_dict(dragonfly_dict)
