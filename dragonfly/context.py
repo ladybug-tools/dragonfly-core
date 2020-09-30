@@ -165,7 +165,7 @@ class ContextShade(_BaseGeometry):
         shades = []
         for i, shd_geo in enumerate(self._geometry):
             # create the shade object
-            shade = Shade('{}_{}'.format(self.identifier, i), shd_geo)
+            shade = Shade('{}_{}'.format(self.identifier, i), shd_geo, is_detached=True)
             shade.display_name = '{}_{}'.format(self.display_name, i)
             # transfer any extension properties assigned to the Shade
             shade._properties = self.properties.to_honeybee(shade)
