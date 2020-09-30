@@ -2,7 +2,6 @@
 from click.testing import CliRunner
 
 from dragonfly.cli import viz
-from dragonfly.cli.validate import validate_model
 from dragonfly.cli.edit import solve_adjacency
 
 from dragonfly.model import Model
