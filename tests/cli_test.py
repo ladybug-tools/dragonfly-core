@@ -2,7 +2,7 @@
 from click.testing import CliRunner
 
 from dragonfly.cli import viz
-from dragonfly.cli.edit import solve_adjacency
+from dragonfly.cli.edit import convert_units, solve_adjacency
 
 from dragonfly.model import Model
 from honeybee.boundarycondition import Surface
@@ -18,10 +18,21 @@ def test_viz():
     assert result.output.endswith('z!\n')
 
 
-def test_edit_solve_adjacency():
-    input_model = './tests/json/sample_revit_model.json'
+def test_convert_units():
+    input_model = './tests/json/sample_revit_model.dfjson'
     runner = CliRunner()
-    result = runner.invoke(solve_adjacency, [input_model])
+    result = runner.invoke(convert_units, [input_model, 'Feet'])
+    assert result.exit_code == 0
+
+    model_dict = json.loads(result.output)
+    new_model = Model.from_dict(model_dict)
+    assert new_model.units == 'Feet'
+
+
+def test_edit_solve_adjacency():
+    input_model = './tests/json/sample_revit_model.dfjson'
+    runner = CliRunner()
+    result = runner.invoke(solve_adjacency, [input_model, '-i'])
     assert result.exit_code == 0
 
     result_model = Model.from_dict(json.loads(result.output))
