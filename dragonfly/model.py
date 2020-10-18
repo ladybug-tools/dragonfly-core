@@ -13,6 +13,7 @@ import dragonfly.writer.model as writer
 
 from honeybee.model import Model as hb_model
 from honeybee.typing import float_positive
+from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.config import folders
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
@@ -541,37 +542,12 @@ class Model(_BaseGeometry):
 
     def check_duplicate_building_identifiers(self, raise_exception=True):
         """Check that there are no duplicate Building identifiers in the model."""
-        bldg_identifiers = set()
-        duplicate_identifiers = set()
-        for bldg in self._buildings:
-            if bldg.identifier not in bldg_identifiers:
-                bldg_identifiers.add(bldg.identifier)
-            else:
-                duplicate_identifiers.add(bldg.identifier)
-        if len(duplicate_identifiers) != 0:
-            if raise_exception:
-                raise ValueError('The model has the following duplicated Building '
-                                 'identifiers:\n{}'.format(
-                                     '\n'.join(duplicate_identifiers)))
-            return False
-        return True
+        return check_duplicate_identifiers(self._buildings, raise_exception, 'Building')
 
     def check_duplicate_context_shade_identifiers(self, raise_exception=True):
         """Check that there are no duplicate ContextShade identifiers in the model."""
-        shade_identifiers = set()
-        duplicate_identifiers = set()
-        for shade in self._context_shades:
-            if shade.identifier not in shade_identifiers:
-                shade_identifiers.add(shade.identifier)
-            else:
-                duplicate_identifiers.add(shade.identifier)
-        if len(duplicate_identifiers) != 0:
-            if raise_exception:
-                raise ValueError('The model has the following duplicated ConstextShade'
-                                 ' identifiers:\n{}'.format(
-                                     '\n'.join(duplicate_identifiers)))
-            return False
-        return True
+        return check_duplicate_identifiers(
+            self._context_shades, raise_exception, 'ContextShade')
 
     def check_missing_adjacencies(self, raise_exception=True):
         """Check that all Room2Ds have adjacent objects that exist within each Story."""

@@ -30,25 +30,30 @@ def validate():
 
 
 @validate.command('model')
-@click.argument('model-json')
+@click.argument('model-json', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
 def validate_model(model_json):
     """Validate a Model JSON file against the Dragonfly schema.
-    \n
+
+    \b
     Args:
         model_json: Full path to a Model JSON file.
     """
     try:
-        assert os.path.isfile(model_json), 'No JSON file found at {}.'.format(model_json)
-
-        # validate the Model JSON
+        # first check the JSON against the OpenAPI specification
         click.echo('Validating Model JSON ...')
         schema_model.Model.parse_file(model_json)
         click.echo('Pydantic validation passed.')
+        # re-serialize the Model to make sure no errors are found in re-serialization
         with open(model_json) as json_file:
             data = json.load(json_file)
         parsed_model = Model.from_dict(data)
-        parsed_model.check_missing_adjacencies(raise_exception=True)
         click.echo('Python re-serialization passed.')
+        # perform several other checks for key dragonfly model schema rules
+        parsed_model.check_duplicate_building_identifiers(raise_exception=True)
+        parsed_model.check_duplicate_context_shade_identifiers(raise_exception=True)
+        parsed_model.check_missing_adjacencies(raise_exception=True)
+        click.echo('Unique identifier and adjacency checks passed.')
         click.echo('Congratulations! Your Model JSON is valid!')
     except Exception as e:
         _logger.exception('Model validation failed.\n{}'.format(e))
