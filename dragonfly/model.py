@@ -84,8 +84,7 @@ class Model(_BaseGeometry):
     def __init__(self, identifier, buildings=None, context_shades=None,
                  units='Meters', tolerance=0, angle_tolerance=0):
         """A collection of Buildings and ContextShades for an entire model."""
-        self._identifier = identifier
-        self._display_name = self._identifier
+        _BaseGeometry.__init__(self, identifier)  # process the identifier
         self.units = units
         self.tolerance = tolerance
         self.angle_tolerance = angle_tolerance
@@ -100,7 +99,6 @@ class Model(_BaseGeometry):
                 self.add_context_shade(shade)
 
         self._properties = ModelProperties(self)
-        self._user_data = None
 
     @classmethod
     def from_geojson(cls, geojson_file_path, location=None, point=Point2D(0, 0),
