@@ -23,20 +23,24 @@ class _BaseGeometry(object):
 
     def __init__(self, identifier):
         """Initialize base object."""
-        self._identifier = valid_string(identifier, 'dragonfly object identifier')
+        self.identifier = identifier
         self._display_name = self._identifier
         self._properties = None
         self._user_data = None
 
     @property
     def identifier(self):
-        """Get a text string for the unique object identifer.
+        """Get or set a text string for the unique object identifer.
 
         This identifier remains constant as the object is mutated, copied, and
         serialized to different formats (eg. dict, idf, rad). This property is also
         used to reference the object across a Model.
         """
         return self._identifier
+
+    @identifier.setter
+    def identifier(self, value):
+        self._identifier = valid_string(value, 'dragonfly object identifier')
 
     @property
     def display_name(self):
