@@ -3,19 +3,20 @@ Welcome to Dragonfly's documentation!
 
 .. image:: http://www.ladybug.tools/assets/img/dragonfly.png
 
-Dragonfly is collection of libraries to model and analyze urban climate, energy
-use, and daylight. It extends the capabilites of
-`honeybee-core <https://github.com/ladybug-tools/honeybee-core/>`_ for the urban scale.
+Dragonfly is a collection of Python libraries to create representations of buildings
+following `dragonfly-schema <https://github.com/ladybug-tools/dragonfly-schema/wiki>`_.
+It abstracts the capabilities of `honeybee-core <https://github.com/ladybug-tools/honeybee-core/>`_
+to make it easier to construct models on the urban scale.
 
 
 Installation
 ============
 
-To install the core library try ``pip install -U dragonfly-core``.
+To install the core library use ``pip install -U dragonfly-core``.
 
-If you want to also include the command line interface try ``pip install -U dragonfly-core[cli]``.
+If you want to also include the command line interface use ``pip install -U dragonfly-core[cli]``.
 
-To check if the Dragonfly command line is installed correctly try ``dragonfly viz`` and you
+To check if the Dragonfly command line is installed correctly use ``dragonfly viz`` and you
 should get a ``viiiiiiiiiiiiizzzzzzzzz!`` back in response!
 
 
