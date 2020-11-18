@@ -47,11 +47,13 @@ class Model(_BaseGeometry):
         tolerance: The maximum difference between x, y, and z values at which
             vertices are considered equivalent. Zero indicates that no tolerance
             checks should be performed and certain capabilities like to_honeybee
-            will not be available. Default: 0.
-        angle_tolerance: The max angle difference in degrees that vertices are
-            allowed to differ from one another in order to consider them colinear.
-            Zero indicates that no angle tolerance checks should be performed.
-            Default: 0.
+            will not be available. None indicates that the tolerance will be
+            set based on the units above, with the tolerance consistently being
+            between 1 cm and 1 mm (roughly the tolerance implicit in the OpenStudio
+            SDK). (Default: None).
+        angle_tolerance: The max angle difference in degrees that vertices are allowed
+            to differ from one another in order to consider them colinear. Zero indicates
+            that no angle tolerance checks should be performed. (Default: 1.0).
 
     Properties:
         * identifier
@@ -78,11 +80,11 @@ class Model(_BaseGeometry):
     """
     __slots__ = ('_buildings', '_context_shades',
                  '_units', '_tolerance', '_angle_tolerance')
-
     UNITS = hb_model.UNITS
+    UNITS_TOLERANCES = hb_model.UNITS_TOLERANCES
 
     def __init__(self, identifier, buildings=None, context_shades=None,
-                 units='Meters', tolerance=0, angle_tolerance=0):
+                 units='Meters', tolerance=None, angle_tolerance=1.0):
         """A collection of Buildings and ContextShades for an entire model."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
         self.units = units
@@ -301,7 +303,8 @@ class Model(_BaseGeometry):
 
     @tolerance.setter
     def tolerance(self, value):
-        self._tolerance = float_positive(value, 'model tolerance')
+        self._tolerance = float_positive(value, 'model tolerance') if value is not None \
+            else self.UNITS_TOLERANCES[self.units]
 
     @property
     def angle_tolerance(self):

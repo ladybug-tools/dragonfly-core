@@ -52,8 +52,8 @@ def test_model_init():
     assert model.identifier == 'New_Development'
     assert model.display_name == 'New_Development'
     assert model.units == 'Meters'
-    assert model.tolerance == 0
-    assert model.angle_tolerance == 0
+    assert model.tolerance == 0.01
+    assert model.angle_tolerance == 1.0
     assert len(model.buildings) == 1
     assert isinstance(model.buildings[0], Building)
     assert len(model.context_shades) == 1
@@ -126,10 +126,12 @@ def test_model_properties_setability():
     assert model.display_name == 'TestBuilding'
     model.units = 'Feet'
     assert model.units == 'Feet'
-    model.tolerance = 0.01
-    assert model.tolerance == 0.01
+    model.tolerance = 0.1
+    assert model.tolerance == 0.1
     model.angle_tolerance = 0.01
     assert model.angle_tolerance == 0.01
+    model.tolerance = 0.01
+    assert model.tolerance == 0.01
 
 
 def test_model_add_objects():
