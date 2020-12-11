@@ -14,6 +14,7 @@ from honeybee.typing import float_positive, clean_string
 import honeybee.boundarycondition as hbc
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface
+from honeybee.facetype import face_types as ftyp
 from honeybee.face import Face
 from honeybee.room import Room
 
@@ -68,6 +69,7 @@ class Room2D(_BaseGeometry):
         * boundary_conditions
         * window_parameters
         * shading_parameters
+        * air_boundaries
         * is_ground_contact
         * is_top_exposed
         * parent
@@ -88,7 +90,7 @@ class Room2D(_BaseGeometry):
     """
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
                  '_boundary_conditions', '_window_parameters', '_shading_parameters',
-                 '_is_ground_contact', '_is_top_exposed', '_parent')
+                 '_air_boundaries', '_is_ground_contact', '_is_top_exposed', '_parent')
 
     def __init__(self, identifier, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
@@ -147,6 +149,7 @@ class Room2D(_BaseGeometry):
         self.is_ground_contact = is_ground_contact
         self.is_top_exposed = is_top_exposed
 
+        self._air_boundaries = None  # will be set if it's ever used
         self._parent = None  # _parent will be set when Room2D is added to a Story
         self._properties = Room2DProperties(self)  # properties for extensions
 
@@ -229,6 +232,8 @@ class Room2D(_BaseGeometry):
 
         room = Room2D(data['identifier'], floor_geometry, data['floor_to_ceiling_height'],
                       b_conditions, glz_pars, shd_pars, grnd, top, tolerance)
+        if 'air_boundaries' in data and data['air_boundaries'] is not None:
+            room.air_boundaries = data['air_boundaries']
         if 'display_name' in data and data['display_name'] is not None:
             room._display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -357,7 +362,7 @@ class Room2D(_BaseGeometry):
 
     @property
     def boundary_conditions(self):
-        """Get or set a list of boundary conditions for the wall boundary conditions."""
+        """Get or set a tuple of boundary conditions for the wall boundary conditions."""
         return tuple(self._boundary_conditions)
 
     @boundary_conditions.setter
@@ -372,7 +377,7 @@ class Room2D(_BaseGeometry):
 
     @property
     def window_parameters(self):
-        """Get or set a list of WindowParameters describing how to generate windows.
+        """Get or set a tuple of WindowParameters describing how to generate windows.
         """
         return tuple(self._window_parameters)
 
@@ -392,7 +397,7 @@ class Room2D(_BaseGeometry):
 
     @property
     def shading_parameters(self):
-        """Get or set a list of ShadingParameters describing how to generate shades.
+        """Get or set a tuple of ShadingParameters describing how to generate shades.
         """
         return tuple(self._shading_parameters)
 
@@ -407,6 +412,33 @@ class Room2D(_BaseGeometry):
             self._shading_parameters = value
         else:
             self._shading_parameters = [None for i in range(len(self))]
+
+    @property
+    def air_boundaries(self):
+        """Get or set a tuple of booleans for whether each wall has an air boundary type.
+        
+        False values indicate a standard opaque type while True values indicate
+        an AirBoundary type. All walls will be False by default. Note that any
+        walls with a True air boundary must have a Surface boundary condition
+        without any windows.
+        """
+        if self._air_boundaries is None:
+            self._air_boundaries = [False] * len(self)
+        return tuple(self._air_boundaries)
+
+    @air_boundaries.setter
+    def air_boundaries(self, value):
+        if value is not None:
+            value = self._check_wall_assigned_object(value, 'air boundaries')
+            value = [bool(val) for val in value]
+            all_props = zip(value, self._boundary_conditions, self._window_parameters)
+            for val, bnd, glz in all_props:
+                if val:
+                    assert isinstance(bnd, Surface), 'Air boundaries must be assigned ' \
+                        'to walls with Surface boundary conditions. Not {}.'.format(bnd)
+                    assert glz is None, \
+                        'Air boundaries cannot be assigned to a wall with windows.'
+        self._air_boundaries = value
 
     @property
     def is_ground_contact(self):
@@ -645,6 +677,20 @@ class Room2D(_BaseGeometry):
                 'assigned to a wall with windows.'.format(boundary_condition)
         self._boundary_conditions[seg_index] = boundary_condition
 
+    def set_air_boundary(self, seg_index):
+        """Set a single segment of this Room2D to have an air boundary type.
+
+        Args:
+            seg_index: An integer for the wall segment of this Room2D for which
+                the boundary condition will be set.
+        """
+        self.air_boundaries  # trigger generation of values if they don't exist
+        assert self._window_parameters[seg_index] is None, \
+            'Air boundaries cannot be assigned to a wall with windows.'
+        assert isinstance(self._boundary_conditions[seg_index], Surface), \
+            'Air boundaries must be assigned to walls with Surface boundary conditions.'
+        self._air_boundaries[seg_index] = True
+
     def move(self, moving_vec):
         """Move this Room2D along a vector.
 
@@ -786,14 +832,14 @@ class Room2D(_BaseGeometry):
                 this item will be a list of honeybee-core Rooms, with the hb_room as
                 the first item, and up to two additional items:
 
-                    * ceil_plenum -- A honeybee-core Room representing the ceiling
-                        plenum. If there isn't enough space between the Story
-                        floor_to_floor_height and the Room2D floor_to_ceiling height,
-                        this item will be None.
+                * ceil_plenum -- A honeybee-core Room representing the ceiling
+                    plenum. If there isn't enough space between the Story
+                    floor_to_floor_height and the Room2D floor_to_ceiling height,
+                    this item will be None.
 
-                    * floor_plenum -- A honeybee-core Room representing the floor plenum.
-                        If there isn't enough space between the Story floor_height and
-                        the Room2D floor_height, this item will be None.
+                * floor_plenum -- A honeybee-core Room representing the floor plenum.
+                    If there isn't enough space between the Story floor_height and
+                    the Room2D floor_height, this item will be None.
 
             * adjacencies -- A list of tuples that record any adjacencies that
                 should be set on the level of the Story to which the Room2D belongs.
@@ -813,13 +859,17 @@ class Room2D(_BaseGeometry):
             else:
                 adjacencies.append((hb_room[i + 1], bc.boundary_condition_objects))
 
-        # assign windows and shading to walls
+        # assign windows, shading, and air boundary properties to walls
         for i, glz_par in enumerate(self._window_parameters):
             if glz_par is not None:
                 glz_par.add_window_to_face(hb_room[i + 1], tolerance)
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
                 shd_par.add_shading_to_face(hb_room[i + 1], tolerance)
+        if self._air_boundaries is not None:
+            for i, a_bnd in enumerate(self._air_boundaries):
+                if a_bnd:
+                    hb_room[i + 1].type = ftyp.air_boundary
 
         # ensure matching adjacent Faces across the Story if tolerance is input
         if self._parent is not None:
@@ -916,6 +966,10 @@ class Room2D(_BaseGeometry):
                 val = shd.to_dict() if shd is not None else None
                 base['shading_parameters'].append(val)
 
+        if self._air_boundaries is not None:
+            if not all((not param for param in self._air_boundaries)):
+                base['air_boundaries'] = self._air_boundaries
+
         if self.user_data is not None:
             base['user_data'] = self.user_data
 
@@ -945,7 +999,8 @@ class Room2D(_BaseGeometry):
             the Room2D as the first item and the index of the adjacent wall as the
             second item. This data can be used to assign custom properties to the
             new adjacent walls (like assigning custom window parameters for
-            interior windows).
+            interior windows, assigning air boundaries, or custom boundary
+            conditions).
         """
         adj_info = []
         for i, room_1 in enumerate(room_2ds):
@@ -1311,6 +1366,8 @@ class Room2D(_BaseGeometry):
         new_r._parent = self._parent
         new_r._window_parameters = self._window_parameters[:]  # copy window list
         new_r._shading_parameters = self._shading_parameters[:]  # copy shading list
+        new_r._air_boundaries = self._air_boundaries[:] \
+            if self._air_boundaries is not None else None
         new_r._is_ground_contact = self._is_ground_contact
         new_r._is_top_exposed = self._is_top_exposed
         new_r._properties._duplicate_extension_attr(self._properties)

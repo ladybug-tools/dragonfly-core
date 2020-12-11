@@ -8,6 +8,7 @@ from dragonfly.shadingparameter import Overhang
 
 from honeybee.boundarycondition import Outdoors, Ground, Surface
 from honeybee.boundarycondition import boundary_conditions as bcs
+from honeybee.facetype import AirBoundary
 from honeybee.room import Room
 
 from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
@@ -477,6 +478,29 @@ def test_solve_adjacency_aperture():
 
     with pytest.raises(AssertionError):
         Room2D.solve_adjacency([room2d_1, room2d_3], 0.01)
+
+
+def test_solve_adjacency_air_boundary():
+    """Test the Room2D solve_adjacency method with an air boundary."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
+    adj_info = Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
+    for room_pair in adj_info:
+        for room_adj in room_pair:
+            room, wall_i = room_adj
+            air_bnd = list(room.air_boundaries)
+            air_bnd[wall_i] = True
+            room.air_boundaries = air_bnd
+
+    assert isinstance(room2d_1.boundary_conditions[1], Surface)
+    assert isinstance(room2d_2.boundary_conditions[3], Surface)
+    assert room2d_1.air_boundaries[1]
+    assert room2d_2.air_boundaries[3]
+    hb_room_1, hb_room_2 = room2d_1.to_honeybee()[0], room2d_2.to_honeybee()[0]
+    assert isinstance(hb_room_1[2].type, AirBoundary)
+    assert isinstance(hb_room_2[4].type, AirBoundary)
 
 
 def test_room2d_intersect_adjacency():
