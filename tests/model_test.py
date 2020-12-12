@@ -455,6 +455,17 @@ def test_to_honeybee():
     assert hb_models[0].rooms[-1].exterior_wall_area == 180
     assert len(hb_models[0].orphaned_shades) == 2
 
+    hb_models = model.to_honeybee('Building', None, False, tolerance=0.01)
+    assert len(hb_models) == 2
+
+    hb_models = model.to_honeybee('Story', None, False, tolerance=0.01)
+    assert len(hb_models) == 8
+    assert all(isinstance(mod, hb_model.Model) for mod in hb_models)
+
+    hb_models = model.to_honeybee('Story', None, True, cap=True, tolerance=0.01)
+    assert len(hb_models) == 2
+    assert all(isinstance(mod, hb_model.Model) for mod in hb_models)
+
 
 def test_to_honeybee_multiple_models():
     """Test to_honeybee with multiple honeybee models."""

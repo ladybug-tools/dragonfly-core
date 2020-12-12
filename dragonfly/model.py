@@ -565,22 +565,25 @@ class Model(_BaseGeometry):
         return True
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
-                    use_multiplier=True, add_plenum=False, tolerance=None):
+                    use_multiplier=True, add_plenum=False, cap=False, tolerance=None):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
         Args:
             object_per_model: Text to describe how the input Buildings should be
-                divided across the output Models. Default: 'Building'. Choose from
+                divided across the output Models. (Default: 'Building'). Choose from
                 the following options:
 
                 * District - All buildings will be added to a single Honeybee Model.
                   Such a Model can take a long time to simulate so this is only
                   recommended for small numbers of buildings or cases where
                   exchange of data between Buildings is necessary.
-                * Building - Each input building will be exported into its own Model.
+                * Building - Each building will be exported into its own Model.
                   For each Model, the other buildings input to this component will
-                  appear as context shade geometry. Thus, each Model is its own
-                  simulate-able unit.
+                  appear as context shade geometry.
+                * Story - Each Story of each Building will be exported into its
+                  own Model. For each Honeybee Model, the other input Buildings
+                  will appear as context shade geometry as will all of the other
+                  stories of the same building.
 
             shade_distance: An optional number to note the distance beyond which other
                 objects' shade should not be exported into a given Model. This is
@@ -597,6 +600,10 @@ class Model(_BaseGeometry):
                 multipliers and all resulting multipliers will be 1. (Default: True).
             add_plenum: Boolean to indicate whether ceiling/floor plenums should
                 be auto-generated for the Rooms. (Default: False).
+            cap: Boolean to note whether building shade representations should be capped
+                with a top face. Usually, this is not necessary to account for
+                blocked sun and is only needed when it's important to account for
+                reflected sun off of roofs. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. This must be a
@@ -613,11 +620,15 @@ class Model(_BaseGeometry):
 
         # create the model objects
         if object_per_model is None or object_per_model.title() == 'Building':
-            models = Building.buildings_to_honeybee_self_shade(
+            models = Building.buildings_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
-                use_multiplier, add_plenum, tolerance=tolerance)
+                use_multiplier, add_plenum, cap, tolerance=tolerance)
+        elif object_per_model.title() == 'Story':
+            models = Building.stories_to_honeybee(
+                self._buildings, self._context_shades, shade_distance,
+                use_multiplier, add_plenum, cap, tolerance=tolerance)
         elif object_per_model.title() == 'District':
-            models = [Building.buildings_to_honeybee(
+            models = [Building.district_to_honeybee(
                 self._buildings, use_multiplier, add_plenum, tolerance=tolerance)]
             for shd_group in self._context_shades:
                 for shd in shd_group.to_honeybee():
