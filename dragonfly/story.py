@@ -10,10 +10,13 @@ import dragonfly.writer.story as writer
 from honeybee.typing import float_positive, int_in_range, clean_string
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.shade import Shade
 from honeybee.room import Room
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.polyline import Polyline3D
+from ladybug_geometry.geometry3d.plane import Plane
+from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 
 
@@ -111,10 +114,10 @@ class Story(_BaseGeometry):
                 if not not_revd:  # double negative! reversed room boundary
                     for i, bc in enumerate(room._boundary_conditions):
                         if isinstance(bc, Surface):  # segment must be updated
-                            new_id = '{}..Face{}'.format(room.identifier, i + 1)
+                            newid = '{}..Face{}'.format(room.identifier, i + 1)
                             bc_room = bc.boundary_condition_objects[1]
                             bc_f_i = bc.boundary_condition_objects[0].split('..Face')[-1]
-                            bc_tup = (bc_room, int(bc_f_i) - 1, (new_id, room.identifier))
+                            bc_tup = (bc_room, int(bc_f_i) - 1, (newid, room.identifier))
                             bcs_to_update.append(bc_tup)
             for bc_tup in bcs_to_update:  # update any reversed boundary conditions
                 adj_room = bc_tup[0]
@@ -309,6 +312,114 @@ using-multipliers-zone-and-or-window.html
                 in meters.
         """
         return Polyline3D.join_segments(self.outline_segments(tolerance), tolerance)
+
+    def footprint(self, tolerance=0.01):
+        """Get a list of Face3D objects for the minimum floor plate representation.
+
+        Args:
+            tolerance: The minimum distance between points at which they are
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
+        """
+        plines = self.outline_polylines(tolerance)
+        if len(plines) == 1:  # can be represented with a single Face3D
+            return [Face3D(plines[0].vertices[:-1], Plane(n=Vector3D(0, 0, 1)))]
+        else:  # need to separate holes from distinct Face3Ds
+            faces = [Face3D(pl.vertices[:-1], Plane(n=Vector3D(0, 0, 1)))
+                        for pl in plines]
+            faces.sort(key=lambda x: x.area, reverse=True)
+            base_face = faces[0]
+            remain_faces = list(faces[1:])
+
+            all_face3ds = []
+            while len(remain_faces) > 0:
+                all_face3ds.append(self._match_holes_to_face(
+                    base_face, remain_faces, tolerance))
+                if len(remain_faces) > 1:
+                    base_face = remain_faces[0]
+                    del remain_faces[0]
+                elif len(remain_faces) == 1:  # lone last Face3D
+                    all_face3ds.append(remain_faces[0])
+                    del remain_faces[0]
+            return all_face3ds
+
+    def shade_representation(self, cap=False, tolerance=0.01):
+        """A list of honeybee Shade objects representing the story geometry.
+
+        This accounts for the story multiplier and can be used to account for
+        this Story's shade in the simulation of another nearby Story.
+
+        Args:
+            cap: Boolean to note whether the shade representation should be capped
+                with a top face. Usually, this is not necessary to account for
+                blocked sun and is only needed when it's important to account for
+                reflected sun off of roofs. (Default: False).
+            tolerance: The minimum distance between points at which they are
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
+        """
+        context_shades = []
+        extru_vec = Vector3D(0, 0, self.floor_to_floor_height * self.multiplier)
+        for i, seg in enumerate(self.outline_segments(tolerance)):
+            try:
+                extru_geo = Face3D.from_extrusion(seg, extru_vec)
+                shd_id = '{}_{}'.format(self.identifier, i)
+                context_shades.append(Shade(shd_id, extru_geo))
+            except ZeroDivisionError:
+                pass  # duplicate vertex resulting in a segment of length 0
+        if cap:
+            for i, s in enumerate(self.footprint(tolerance)):
+                shd_id = '{}_Top_{}'.format(self.identifier, i)
+                context_shades.append(Shade(shd_id, s.move(extru_vec)))
+        return context_shades
+
+    def shade_representation_multiplier(self, exclude_index=0, cap=False, tolerance=0.01):
+        """A list of honeybee Shade objects for just the "multiplier" part of the story.
+
+        This includes all of the geometry along the height of the multiplier except
+        for one of the floors (represented by the exclude_index). This will be an
+        empty list if the story has a multiplier of 1.
+
+        Args:
+            exclude_index: An optional index for a story along the multiplier to
+                be excluded from the shade representation. For example, if 0,
+                the bottom geometry along the multiplier is excluded. (Default: 0).
+            cap: Boolean to note whether the shade representation should be capped
+                with a top face. Usually, this is not necessary to account for
+                blocked sun and is only needed when it's important to account for
+                reflected sun off of roofs. (Default: False).
+            tolerance: The minimum distance between points at which they are
+                not considered touching. Default: 0.01, suitable for objects
+                in meters.
+        """
+        if self.multiplier == 1:
+            return []
+        # get the extrusion and moving vectors
+        ftf, mult = self.floor_to_floor_height, self.multiplier
+        context_shades, ceil_vecs, extru_vecs = [], [], []
+        if exclude_index != 0:  # insert vectors for the bottom shade
+            ceil_vecs.append(Vector3D(0, 0, 0))
+            extru_vecs.append(Vector3D(0, 0, ftf * exclude_index))
+        if exclude_index < mult:  # insert vectors for the top shade
+            ceil_vecs.append(Vector3D(0, 0, ftf * (exclude_index + 1)))
+            extru_vecs.append(Vector3D(0, 0, ftf * (mult - exclude_index - 1)))
+        # loop through the segments and build up the shades
+        for i, seg in enumerate(self.outline_segments(tolerance)):
+            for ceil_vec, extru_vec in zip(ceil_vecs, extru_vecs):
+                seg = seg.move(ceil_vec)
+                try:
+                    extru_geo = Face3D.from_extrusion(seg, extru_vec)
+                    shd_id = '{}_{}'.format(self.identifier, i)
+                    context_shades.append(Shade(shd_id, extru_geo))
+                except ZeroDivisionError:
+                    pass  # duplicate vertex resulting in a segment of length 0
+        # cap the extrusions if requested
+        if cap and exclude_index < mult:
+            full_vec = Vector3D(0, 0, ftf * mult)
+            for i, s in enumerate(self.footprint(tolerance)):
+                shd_id = '{}_Top_{}'.format(self.identifier, i)
+                context_shades.append(Shade(shd_id, s.move(full_vec)))
+        return context_shades
 
     def room_by_identifier(self, room_identifier):
         """Get a Room2D from this Story using its identifier.
@@ -650,6 +761,37 @@ using-multipliers-zone-and-or-window.html
         Use this method to access Writer class to write the story in other formats.
         """
         return writer
+
+    @staticmethod
+    def _match_holes_to_face(base_face, other_faces, tol):
+        """Attempt to merge other faces into a base face as holes.
+
+        Args:
+            base_face: A Face3D to serve as the base.
+            other_faces: A list of other Face3D objects to attempt to merge into
+                the base_face as a hole. This method will delete any faces
+                that are successfully merged into the output from this list.
+            tol: The tolerance to be used for evaluating sub-faces.
+
+        Returns:
+            A Face3D which has holes in it if any of the other_faces is a valid
+            sub face.
+        """
+        holes = []
+        more_to_check = True
+        while more_to_check:
+            for i, r_face in enumerate(other_faces):
+                if base_face.is_sub_face(r_face, tol, 1):
+                    holes.append(r_face)
+                    del other_faces[i]
+                    break
+            else:
+                more_to_check = False
+        if len(holes) == 0:
+            return base_face
+        else:
+            hole_verts = [hole.vertices for hole in holes]
+            return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
 
     def __copy__(self):
         new_s = Story(self.identifier, tuple(room.duplicate() for room in self._room_2ds),

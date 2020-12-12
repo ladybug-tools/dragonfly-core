@@ -9,7 +9,6 @@ from .room2d import Room2D
 import dragonfly.writer.building as writer
 
 from honeybee.model import Model
-from honeybee.shade import Shade
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string
 
@@ -395,50 +394,38 @@ class Building(_BaseGeometry):
         if len(ground_story.room_2ds) == 1:  # no need to create any new geometry
             return [ground_story.room_2ds[0].floor_geometry]
         else:  # need a single list of Face3Ds for the whole footprint
-            plines = ground_story.outline_polylines(tolerance)
-            if len(plines) == 1:  # can be represented with a single boundary
-                return [Face3D(plines[0].vertices[:-1], Plane(n=Vector3D(0, 0, 1)))]
-            else:  # need to separate holes from distinct Face3Ds
-                faces = [Face3D(pl.vertices[:-1], Plane(n=Vector3D(0, 0, 1)))
-                         for pl in plines]
-                faces.sort(key=lambda x: x.area, reverse=True)
-                base_face = faces[0]
-                remain_faces = list(faces[1:])
+            return ground_story.footprint(tolerance)
 
-                all_face3ds = []
-                while len(remain_faces) > 0:
-                    all_face3ds.append(self._match_holes_to_face(
-                        base_face, remain_faces, tolerance))
-                    if len(remain_faces) > 1:
-                        base_face = remain_faces[0]
-                        del remain_faces[0]
-                    elif len(remain_faces) == 1:  # lone last Face3D
-                        all_face3ds.append(remain_faces[0])
-                        del remain_faces[0]
-                return all_face3ds
-
-    def shade_representation(self, tolerance=0.01):
+    def shade_representation(self, exclude_index=None, cap=False, tolerance=0.01):
         """A list of honeybee Shade objects representing the building geometry.
 
         These can be used to account for this Building's shade in the simulation of
         another nearby Building.
 
         Args:
+            exclude_index: An optional index for a unique_story to be excluded from
+                the shade representation. If None, all stories will be included
+                in the result. (Default: None).
+            cap: Boolean to note whether the shade representation should be capped
+                with a top face. Usually, this is not necessary to account for
+                blocked sun and is only needed when it's important to account for
+                reflected sun off of roofs. (Default: False).
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
         """
         context_shades = []
-        for story in self.unique_stories:
-            extru_vec = Vector3D(0, 0, story.floor_to_floor_height * story.multiplier)
-            for i, seg in enumerate(story.outline_segments(tolerance)):
-                try:
-                    extru_geo = Face3D.from_extrusion(seg, extru_vec)
-                    shd_id = '{}_{}_{}'.format(self.identifier, story.identifier, i)
-                    context_shades.append(Shade(shd_id, extru_geo))
-                except ZeroDivisionError:
-                    pass  # duplicate vertex resulting in a segment of length 0
-            # TODO: consider adding a Shade object to cap the extrusion
+        if exclude_index is None:
+            for story in self.unique_stories:
+                context_shades.extend(story.shade_representation(cap, tolerance))
+        else:
+            for i, story in enumerate(self.unique_stories):
+                if i != exclude_index:
+                    context_shades.extend(story.shade_representation(cap, tolerance))
+                else:
+                    mult_shd = story.shade_representation_multiplier(
+                        cap=cap, tolerance=tolerance)
+                    context_shades.extend(mult_shd)
         return context_shades
 
     def add_prefix(self, prefix):
@@ -612,9 +599,9 @@ class Building(_BaseGeometry):
         return writer
 
     @staticmethod
-    def buildings_to_honeybee(
+    def district_to_honeybee(
             buildings, use_multiplier=True, add_plenum=False, tolerance=0.01):
-        """Convert an array of Building objects into a single honeybee Model.
+        """Convert an array of Building objects into a single district honeybee Model.
 
         Args:
             buildings: An array of Building objects to be converted into a
@@ -641,9 +628,9 @@ class Building(_BaseGeometry):
         return base_model
 
     @staticmethod
-    def buildings_to_honeybee_self_shade(
+    def buildings_to_honeybee(
             buildings, context_shades=None, shade_distance=None,
-            use_multiplier=True, add_plenum=False, tolerance=0.01):
+            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01):
         """Convert an array of Buildings into several honeybee Models with self-shading.
 
         Each input Building will be exported into its own Model. For each Model,
@@ -669,23 +656,117 @@ class Building(_BaseGeometry):
                 simulation will be run once for each unique room and then results
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
-                multipliers and all resulting multipliers will be 1. (Default: True).
+                multipliers and all room multipliers will be 1. (Default: True).
             add_plenum: Boolean to indicate whether ceiling/floor plenums should
                 be auto-generated for the Rooms. (Default: False).
+            cap: Boolean to note whether building shade representations should be capped
+                with a top face. Usually, this is not necessary to account for
+                blocked sun and is only needed when it's important to account for
+                reflected sun off of roofs. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
         """
-        models = []  # list to be filled with Honeybee Models
-
         # create lists with all context representations of the buildings + shade
-        bldg_shades = []
-        bldg_pts = []
-        con_shades = []
-        con_pts = []
+        bldg_shades, bldg_pts, con_shades, con_pts = Building._honeybee_shades(
+            buildings, context_shades, shade_distance, cap, tolerance)
+        # loop through each Building and create a model
+        models = []  # list to be filled with Honeybee Models
+        num_bldg = len(buildings)
+        for i, bldg in enumerate(buildings):
+            model = bldg.to_honeybee(
+                use_multiplier, add_plenum=add_plenum, tolerance=tolerance)
+            Building._add_context_to_honeybee(model, bldg_shades, bldg_pts, con_shades,
+                                              con_pts, shade_distance, num_bldg, i)
+            models.append(model)  # append to the final list of Models
+        return models
+
+    @staticmethod
+    def stories_to_honeybee(
+            buildings, context_shades=None, shade_distance=None,
+            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01):
+        """Convert an array of Buildings into one honeybee Model per story.
+
+        Each Story of each input Building will be exported into its own Model. For each
+        Honeybee Model, the other input Buildings will appear as context shade geometry
+        as will all of the other stories of the same building. Thus, each Model
+        is its own simulate-able unit accounting for the total self-shading of
+        the input Buildings.
+
+        Args:
+            buildings: An array of Building objects to be converted into an array of
+                honeybee Models with one story per model.
+            context_shades: An optional array of ContextShade objects that will be
+                added to the honeybee Models if their bounding box overlaps with a
+                given building within the shade_distance.
+            shade_distance: An optional number to note the distance beyond which other
+                objects' shade should not be exported into a given Model. This is
+                helpful for reducing the simulation run time of each Model when other
+                connected buildings are too far away to have a meaningful impact on
+                the results. If None, all other buildings will be included as context
+                shade in each and every Model. Set to 0 to exclude all neighboring
+                buildings from the resulting models. Default: None.
+            use_multiplier: If True, the multipliers on this Building's Stories will be
+                passed along to the generated Honeybee Room objects, indicating the
+                simulation will be run once for each unique room and then results
+                will be multiplied. If False, full geometry objects will be written
+                for each and every floor in the building that are represented through
+                multipliers and all room multipliers will be 1. (Default: True).
+            add_plenum: Boolean to indicate whether ceiling/floor plenums should
+                be auto-generated for the Rooms. (Default: False).
+            cap: Boolean to note whether building shade representations should be capped
+                with a top face. Usually, this is not necessary to account for
+                blocked sun and is only needed when it's important to account for
+                reflected sun off of roofs. (Default: False).
+            tolerance: The minimum distance in z values of floor_height and
+                floor_to_ceiling_height at which adjacent Faces will be split.
+                Default: 0.01, suitable for objects in meters.
+        """
+        # create lists with all context representations of the buildings + shade
+        bldg_shades, bldg_pts, con_shades, con_pts = Building._honeybee_shades(
+            buildings, context_shades, shade_distance, cap, tolerance)
+        # loop through each Building and create a model
+        models = []  # list to be filled with Honeybee Models
+        num_bldg = len(buildings)
+        for i, bldg in enumerate(buildings):
+            dummy_model = Model(bldg.identifier)  # blank model to hold context shade
+            Building._add_context_to_honeybee(
+                dummy_model, bldg_shades, bldg_pts, con_shades, con_pts,
+                shade_distance, num_bldg, i)
+            bldg_con = list(dummy_model.orphaned_shades)
+            if use_multiplier:
+                for j, story in enumerate(bldg.unique_stories):
+                    hb_rooms = story.to_honeybee(True, add_plenum, tolerance=tolerance)
+                    shds = bldg_con + bldg.shade_representation(j, cap, tolerance)
+                    model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
+                    models.append(model)  # append to the final list of Models
+            else:
+                self_shds = [story.shade_representation(cap, tolerance)
+                             for story in bldg.unique_stories]
+                full_shades = []
+                for j, story in enumerate(bldg.unique_stories):
+                    for k in range(story.multiplier):
+                        mult_shd = story.shade_representation_multiplier(
+                            k, cap=cap, tolerance=tolerance)
+                        mult_shd.extend([s for s_ar in self_shds[:j] for s in s_ar])
+                        mult_shd.extend([s for s_ar in self_shds[j + 1:] for s in s_ar])
+                        full_shades.append(mult_shd)
+                for story, shades in zip(bldg.all_stories(), full_shades):
+                    hb_rooms = story.to_honeybee(True, add_plenum, tolerance=tolerance)
+                    shds = bldg_con + shades
+                    model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
+                    models.append(model)  # append to the final list of Models
+        return models
+
+    @staticmethod
+    def _honeybee_shades(buildings, context_shades, shade_distance, cap, tolerance):
+        """Get lists of Honeybee shades from Building and ContectShade objects."""
+        bldg_shades, bldg_pts = [], []
+        con_shades, con_pts= [], []
         if shade_distance is None or shade_distance > 0:
             for bldg in buildings:
-                bldg_shades.append(bldg.shade_representation(tolerance))
+                b_shades = bldg.shade_representation(cap=cap, tolerance=tolerance)
+                bldg_shades.append(b_shades)
                 b_min, b_max = bldg.min, bldg.max
                 center = Point2D((b_min.x + b_max.x) / 2, (b_min.y + b_max.y) / 2)
                 bldg_pts.append((b_min, center, b_max))
@@ -695,41 +776,38 @@ class Building(_BaseGeometry):
                     c_min, c_max = con.min, con.max
                     center = Point2D((c_min.x + c_max.x) / 2, (c_min.y + c_max.y) / 2)
                     con_pts.append((c_min, center, c_max))
+        return bldg_shades, bldg_pts, con_shades, con_pts
 
-        # loop through each Building and create a model
-        num_bldg = len(buildings)
-        for i, bldg in enumerate(buildings):
-            model = bldg.to_honeybee(
-                use_multiplier, add_plenum=add_plenum, tolerance=tolerance)
-
-            if shade_distance is None:  # add all other bldg shades to the model
-                for j in xrange(i + 1, num_bldg):  # buildings before this one
+    @staticmethod
+    def _add_context_to_honeybee(model, bldg_shades, bldg_pts, con_shades, con_pts,
+                                 shade_distance, num_bldg, i):
+        """Add context shades to a Honeybee Model based on shade distance."""
+        if shade_distance is None:  # add all other bldg shades to the model
+            for j in xrange(i + 1, num_bldg):  # buildings before this one
+                for shd in bldg_shades[j]:
+                    model.add_shade(shd)
+            for k in xrange(i):  # buildings after this one
+                for shd in bldg_shades[k]:
+                    model.add_shade(shd)
+            for c_shade in con_shades:  # context shades
+                for shd in c_shade:
+                    model.add_shade(shd)
+        elif shade_distance > 0:  # add only shade within the distance
+            for j in xrange(i + 1, num_bldg):  # buildings before this one
+                if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[j],
+                                                shade_distance):
                     for shd in bldg_shades[j]:
                         model.add_shade(shd)
-                for k in xrange(i):  # buildings after this one
+            for k in xrange(i):  # buildings after this one
+                if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[k],
+                                                shade_distance):
                     for shd in bldg_shades[k]:
                         model.add_shade(shd)
-                for c_shade in con_shades:  # context shades
-                    for shd in c_shade:
+            for s in xrange(len(con_shades)):  # context shades
+                if Building._bound_rect_in_dist(bldg_pts[i], con_pts[s],
+                                                shade_distance):
+                    for shd in con_shades[s]:
                         model.add_shade(shd)
-            elif shade_distance > 0:  # add only shade within the distance
-                for j in xrange(i + 1, num_bldg):  # buildings before this one
-                    if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[j],
-                                                    shade_distance):
-                        for shd in bldg_shades[j]:
-                            model.add_shade(shd)
-                for k in xrange(i):  # buildings after this one
-                    if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[k],
-                                                    shade_distance):
-                        for shd in bldg_shades[k]:
-                            model.add_shade(shd)
-                for s in xrange(len(con_shades)):  # context shades
-                    if Building._bound_rect_in_dist(bldg_pts[i], con_pts[s],
-                                                    shade_distance):
-                        for shd in con_shades[s]:
-                            model.add_shade(shd)
-            models.append(model)  # append to the final list of Models
-        return models
 
     @staticmethod
     def _generate_room_2ds(face3d_array, flr_to_ceiling, perim_offset,
@@ -757,8 +835,8 @@ class Building(_BaseGeometry):
                     try:
                         sub_polys_perim, sub_polys_core = perimeter_core_subpolygons(
                             polygon=base_p, distance=perim_offset, tol=tolerance)
-                        for s_poly in sub_polys_perim + sub_polys_core:
-                            sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in s_poly])
+                        for spl in sub_polys_perim + sub_polys_core:
+                            sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in spl])
                             new_face3d_array.append(sub_face)
                     except RuntimeError as e:
                         print(e)  # the generation of the polyskel failed
@@ -853,37 +931,6 @@ class Building(_BaseGeometry):
         top.multiplier = 1
         top.add_prefix('Top')
         return top
-
-    @staticmethod
-    def _match_holes_to_face(base_face, other_faces, tol):
-        """Attempt to merge other faces into a base face as holes.
-
-        Args:
-            base_face: A Face3D to serve as the base.
-            other_faces: A list of other Face3D objects to attempt to merge into
-                the base_face as a hole. This method will delete any faces
-                that are successfully merged into the output from this list.
-            tol: The tolerance to be used for evaluating sub-faces.
-
-        Returns:
-            A Face3D which has holes in it if any of the other_faces is a valid
-            sub face.
-        """
-        holes = []
-        more_to_check = True
-        while more_to_check:
-            for i, r_face in enumerate(other_faces):
-                if base_face.is_sub_face(r_face, tol, 1):
-                    holes.append(r_face)
-                    del other_faces[i]
-                    break
-            else:
-                more_to_check = False
-        if len(holes) == 0:
-            return base_face
-        else:
-            hole_verts = [hole.vertices for hole in holes]
-            return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
 
     def __copy__(self):
         new_b = Building(self.identifier,
