@@ -3,11 +3,13 @@ from click.testing import CliRunner
 
 from dragonfly.cli import viz
 from dragonfly.cli.edit import convert_units, solve_adjacency
+from dragonfly.cli.translate import model_to_honeybee
 
 from dragonfly.model import Model
 from honeybee.boundarycondition import Surface
 
 import json
+import os
 
 
 def test_viz():
@@ -38,3 +40,13 @@ def test_edit_solve_adjacency():
     result_model = Model.from_dict(json.loads(result.output))
     rooms = result_model.buildings[0].unique_room_2ds
     assert isinstance(rooms[0].boundary_conditions[0], Surface)
+
+
+def test_model_to_honeybee():
+    input_model = './tests/json/sample_revit_model.dfjson'
+    runner = CliRunner()
+    result = runner.invoke(model_to_honeybee, [input_model])
+    assert result.exit_code == 0
+
+    for model_path in json.loads(result.output):
+        assert os.path.isfile(model_path)

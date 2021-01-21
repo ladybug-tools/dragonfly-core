@@ -15,7 +15,6 @@ from honeybee.typing import clean_string
 from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
-from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
 
@@ -762,7 +761,7 @@ class Building(_BaseGeometry):
     def _honeybee_shades(buildings, context_shades, shade_distance, cap, tolerance):
         """Get lists of Honeybee shades from Building and ContectShade objects."""
         bldg_shades, bldg_pts = [], []
-        con_shades, con_pts= [], []
+        con_shades, con_pts = [], []
         if shade_distance is None or shade_distance > 0:
             for bldg in buildings:
                 b_shades = bldg.shade_representation(cap=cap, tolerance=tolerance)
