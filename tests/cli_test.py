@@ -48,5 +48,5 @@ def test_model_to_honeybee():
     result = runner.invoke(model_to_honeybee, [input_model])
     assert result.exit_code == 0
 
-    for model_path in json.loads(result.output):
-        assert os.path.isfile(model_path)
+    for model_info in json.loads(result.output):
+        assert os.path.isfile(model_info['full_path'])

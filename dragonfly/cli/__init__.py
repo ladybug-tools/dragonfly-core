@@ -53,6 +53,7 @@ except ImportError:
     )
 
 from dragonfly.cli.validate import validate
+from dragonfly.cli.translate import translate
 from dragonfly.cli.edit import edit
 
 
@@ -69,6 +70,7 @@ def viz():
 
 
 main.add_command(validate)
+main.add_command(translate)
 main.add_command(edit)
 
 
