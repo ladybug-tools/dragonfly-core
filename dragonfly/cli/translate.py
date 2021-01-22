@@ -51,10 +51,10 @@ def translate():
               'folder with the same name as the model json.',
               default=None, show_default=True,
               type=click.Path(file_okay=False, dir_okay=True, resolve_path=True))
-@click.option('--log-file', '-log', help='Optional log file to output a dictionary '
-              'with the paths of the generated files under the following keys: '
-              'osm, idf. By default the list will be printed out to stdout',
-              type=click.File('w'), default='-', show_default=True)
+@click.option('--log-file', '-log', help='Optional log file to output a JSON array of '
+              'dictionaries with information about each of the genrated HBJSONs, '
+              'including their file paths. By default the list will be printed out to '
+              'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
                       shade_dist, folder, log_file):
     """Translate a Model JSON file into an OpenStudio Model.
@@ -84,15 +84,21 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
         hb_models = model.to_honeybee(
             obj_per_model, shade_dist, multiplier, add_plenum, cap)
 
-        # write out the honeybee JSONs
+        # write out the honeybee JSONs and collect the info about them
         hb_jsons = []
         for hb_model in hb_models:
             model_dict = hb_model.to_dict(triangulate_sub_faces=True)
-            file_path = os.path.join(folder, '{}.hbjson'.format(hb_model.identifier))
+            file_name = '{}.hbjson'.format(hb_model.identifier)
+            file_path = os.path.join(folder, file_name)
             with open(file_path, 'w') as fp:
                 json.dump(model_dict, fp)
-            hb_jsons.append(file_path)
-        log_file.write(json.dumps(hb_jsons))
+            hb_info = {
+                'id': hb_model.identifier,
+                'path': file_name,
+                'full_path': os.path.abspath(file_path)
+            }
+            hb_jsons.append(hb_info)
+        log_file.write(json.dumps(hb_jsons, indent=4))
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
         sys.exit(1)
