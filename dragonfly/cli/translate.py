@@ -31,7 +31,7 @@ def translate():
               'should be divided across the output Models. Choose from: District, '
               'Building, Story.', type=str, default="Building", show_default=True)
 @click.option('--multiplier/--full-geometry', ' /-fg', help='Flag to note if the '
-              'multipliers on each Building story will be passed along to the '
+              'multipliers on each Building story should be passed along to the '
               'generated Honeybee Room objects or if full geometry objects should be '
               'written for each story in the building.', default=True, show_default=True)
 @click.option('--no-plenum/--plenum', ' /-p', help='Flag to indicate whether '
@@ -42,11 +42,12 @@ def translate():
               default=True, show_default=True)
 @click.option('--shade-dist', '-sd', help='An optional number to note the distance '
               'beyond which other buildings shade should not be exported into a Model. '
+              'This number should be in meters regardless of the input model units. '
               'If None, all other buildings will be included as context shade in '
               'each and every Model. Set to 0 to exclude all neighboring buildings '
               'from the resulting models.', type=float, default=None, show_default=True)
-@click.option('--folder', '-f', help='Folder on this computer, into which the IDF '
-              'and result files will be written. If None, the files will be output '
+@click.option('--folder', '-f', help='Folder on this computer, into which the HBJSON '
+              'files will be written. If None, the files will be output '
               'to the honeybee default simulation folder and placed in a project '
               'folder with the same name as the model json.',
               default=None, show_default=True,
@@ -57,11 +58,11 @@ def translate():
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
                       shade_dist, folder, log_file):
-    """Translate a Model JSON file into an OpenStudio Model.
+    """Translate a Dragonfly Model JSON file into several Honeybee Models.
 
     \b
     Args:
-        model_json: Full path to a Dragonfly Model JSON file.
+        model_json: Path to a Dragonfly Model JSON file.
     """
     try:
         # set the default folder to the default if it's not specified
