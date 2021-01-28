@@ -143,15 +143,25 @@ class Model(_BaseGeometry):
                 allowed to differ from one another in order to consider them colinear.
                 Zero indicates that no angle tolerance checks should be performed.
                 Default: 0.
-        """
+        
+        Returns:
+            A tuple with the two items below.
 
+            * model -- A dragonfly Model derived from the geoJSON.
+
+            * location -- A ladybug Location object, which contains latitude and
+                longitude information and can be used to re-serialize the model
+                back to geoJSON.
+        """
+        # parse the geoJSON into a dictionary
         with open(geojson_file_path, 'r') as fp:
             data = json.load(fp)
 
         # Get the list of building data
         if all_polygons_to_buildings:
-            bldgs_data = [bldg_data for bldg_data in data['features']
-                          if 'geometry' in bldg_data]
+            bldgs_data = \
+                [bldg_data for bldg_data in data['features'] if 'geometry' in bldg_data
+                 and bldg_data['geometry']['type'] in ('Polygon', 'MultiPolygon')]
         else:
             bldgs_data = []
             for bldg_data in data['features']:
@@ -173,19 +183,18 @@ class Model(_BaseGeometry):
         # model origin (point). If location is not passed by user, the coordinates are
         # taken or derived from the geojson file.
         if location is None:
+            point_lon_lat = None
             if 'project' in data:
                 proj_data = data['project']
                 if 'latitude' in proj_data and 'longitude' in proj_data:
                     point_lon_lat = (proj_data['latitude'], proj_data['longitude'])
-            else:
+            if point_lon_lat is None:
                 point_lon_lat = cls._bottom_left_coordinate_from_geojson(bldgs_data)
-        else:
-            point_lon_lat = (location.longitude, location.latitude)
+            location = Location(longitude=point_lon_lat[0], latitude=point_lon_lat[1])
 
         # The model point may not be at (0, 0), so shift the longitude and latitude to
         # get the equivalent point in longitude and latitude for (0, 0) in the model.
-        origin_lon_lat = origin_long_lat_from_location(
-            Location(longitude=point_lon_lat[0], latitude=point_lon_lat[1]), point)
+        origin_lon_lat = origin_long_lat_from_location(location, point)
         _convert_facs = meters_to_long_lat_factors(origin_lon_lat)
         convert_facs = 1 / _convert_facs[0], 1 / _convert_facs[1]
 
@@ -214,7 +223,9 @@ class Model(_BaseGeometry):
             if 'maximum_roof_height' in prop and 'number_of_stories' in prop:
                 story_height = prop["maximum_roof_height"] / prop['number_of_stories']
                 story_heights = [story_height] * prop['number_of_stories']
-            else:
+            elif 'number_of_stories' in prop:
+                story_heights = [3.5] * prop['number_of_stories']
+            else:  # just import it as one story per building
                 story_heights = [3.5]
 
             # Make Building object
@@ -235,14 +246,12 @@ class Model(_BaseGeometry):
         # Make model, in meters and then convert to user-defined units
         model = cls(model_id, buildings=bldgs, units='Meters',
                     tolerance=tolerance, angle_tolerance=angle_tolerance)
-
         if model_name:
             model.display_name = model_name
-
         if units != 'Meters':
             model.convert_to_units(units)
 
-        return model
+        return model, location
 
     @classmethod
     def from_dict(cls, data):
