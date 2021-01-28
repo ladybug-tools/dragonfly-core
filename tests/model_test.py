@@ -641,7 +641,8 @@ def test_from_minimal_geojson():
     geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
     geo_fp = os.path.join(geojson_folder, 'TestGeoJSON_minimal.geojson')
     location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
-    model = Model.from_geojson(geo_fp, all_polygons_to_buildings=True, location=location)
+    model, loc = \
+        Model.from_geojson(geo_fp, all_polygons_to_buildings=True, location=location)
 
     # Check model non-geometry properties
     assert model.identifier == 'Model_1'
@@ -688,7 +689,7 @@ def test_from_geojson():
     geojson_folder = os.path.join(os.getcwd(), 'tests', 'geojson')
     geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
     location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
-    model = Model.from_geojson(geo_fp, location=location)
+    model, loc = Model.from_geojson(geo_fp, location=location)
 
     # Check model non-geometry properties
     assert model.identifier == 'TestGeoJSON'
@@ -742,7 +743,7 @@ def test_from_geojson_units_test():
     geo_fp = os.path.join(geojson_folder, 'TestGeoJSON.geojson')
     location = Location('Boston', 'MA', 'USA', 42.366151, -71.019357)
 
-    model = Model.from_geojson(geo_fp, location=location, units='Feet')
+    model, loc = Model.from_geojson(geo_fp, location=location, units='Feet')
 
     # Check the first building
     bldg1 = [bldg for bldg in model.buildings
@@ -792,7 +793,7 @@ def test_from_geojson_coordinates_simple_location():
                           '{}.geojson'.format(test_model.identifier))
 
     # Convert back to Model. Location defines the origin.
-    model = Model.from_geojson(geo_fp, location=location, point=Point2D(0, 0))
+    model, loc = Model.from_geojson(geo_fp, location=location, point=Point2D(0, 0))
 
     assert len(model.buildings) == 1
 
@@ -815,7 +816,7 @@ def test_from_geojson_coordinates_simple_location():
     # Construct model with a new location that defines the top-right corner in lon/lat degrees.
     location2 = Location('Boston', 'MA', 'USA', 42.366690813294774, -71.01850462247945)
     # We define the point at the top-right corner in model units.
-    model = Model.from_geojson(geo_fp, location=location2, point=Point2D(70, 60))
+    model, loc = Model.from_geojson(geo_fp, location=location2, point=Point2D(70, 60))
 
     assert len(model.buildings) == 1
 
