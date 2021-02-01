@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.shadingparameter &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.shadingparameter</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;Shading Parameters with instructions for generating shades.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">from</span> <span class="nn">honeybee.typing</span> <span class="kn">import</span> <span class="n">float_in_range</span><span class="p">,</span> <span class="n">float_positive</span><span class="p">,</span> <span class="n">int_positive</span>
+
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry2d.pointvector</span> <span class="kn">import</span> <span class="n">Vector2D</span>
+
+
+<span class="k">class</span> <span class="nc">_ShadingParameterBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base object for all shading parameters.</span>
+
+<span class="sd">    This object records all of the methods that must be overwritten on a shading</span>
+<span class="sd">    parameter object for it to be successfully be applied in dragonfly workflows.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">add_shading_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Shades to a Honeybee Face using these Window Parameters.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these ShadingParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create ShadingParameterBase from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;ShadingParameterBase&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ShadingParameterBase&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected ShadingParameterBase dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get ShadingParameterBase as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;ShadingParameterBase&#39;</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">duplicate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a copy of this object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__copy__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">ToString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_ShadingParameterBase</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;ShadingParameterBase&#39;</span>
+
+
+<div class="viewcode-block" id="ExtrudedBorder"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.ExtrudedBorder">[docs]</a><span class="k">class</span> <span class="nc">ExtrudedBorder</span><span class="p">(</span><span class="n">_ShadingParameterBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for extruded borders over all windows in the wall.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        depth: A number for the depth of the border.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * depth</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_depth&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instructions for extruded borders over all windows in the wall.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_depth</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="s1">&#39;overhang width&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the depth of the border.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depth</span>
+
+<div class="viewcode-block" id="ExtrudedBorder.add_shading_to_face"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.ExtrudedBorder.add_shading_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_shading_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Shades to a Honeybee Face using these Shading Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: An optional value to return None if the overhang has a length less</span>
+<span class="sd">                than the tolerance. Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">ap</span> <span class="ow">in</span> <span class="n">face</span><span class="o">.</span><span class="n">apertures</span><span class="p">:</span>
+            <span class="n">ap</span><span class="o">.</span><span class="n">extruded_border</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExtrudedBorder.scale"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.ExtrudedBorder.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these ShadingParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">ExtrudedBorder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExtrudedBorder.from_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.ExtrudedBorder.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create ExtrudedBorder from a dictionary.</span>
+
+<span class="sd">        .. code-block:: json</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;ExtrudedBorder&quot;,</span>
+<span class="sd">            &quot;depth&quot;: 0.5</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;ExtrudedBorder&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected ExtrudedBorder dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ExtrudedBorder.to_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.ExtrudedBorder.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get ExtrudedBorder as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;ExtrudedBorder&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">ExtrudedBorder</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">ExtrudedBorder</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;ExtrudedBorder:</span><span class="se">\n</span><span class="s1"> depth: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Overhang"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.Overhang">[docs]</a><span class="k">class</span> <span class="nc">Overhang</span><span class="p">(</span><span class="n">_ShadingParameterBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for a single overhang over an entire wall.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        depth: A number for the overhang depth.</span>
+<span class="sd">        angle: A number for the for an angle to rotate the overhang in degrees.</span>
+<span class="sd">            Positive values indicate a downward rotation. Negative values indicate</span>
+<span class="sd">            an upward rotation. Default is 0 for no rotation.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * depth</span>
+<span class="sd">        * angle</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_depth&#39;</span><span class="p">,</span> <span class="s1">&#39;_angle&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Instructions for a single overhang over an entire wall.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_depth</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="s1">&#39;overhang width&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angle</span> <span class="o">=</span> <span class="n">float_in_range</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="s1">&#39;overhang angle&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the overhang depth.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depth</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the overhang angle.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angle</span>
+
+<div class="viewcode-block" id="Overhang.add_shading_to_face"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.Overhang.add_shading_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_shading_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Shades to a Honeybee Face using these Shading Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: An optional value to return None if the overhang has a length less</span>
+<span class="sd">                than the tolerance. Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">face</span><span class="o">.</span><span class="n">overhang</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Overhang.scale"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.Overhang.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these ShadingParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Overhang</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Overhang.from_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.Overhang.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create Overhang from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;Overhang&quot;,</span>
+<span class="sd">            &quot;depth&quot;: 1.5,</span>
+<span class="sd">            &quot;angle&quot;: 0</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Overhang&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected Overhang dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;angle&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">],</span> <span class="n">angle</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Overhang.to_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.Overhang.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get Overhang as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Overhang&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span>
+                <span class="s1">&#39;angle&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">Overhang</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">Overhang</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Overhang:</span><span class="se">\n</span><span class="s1"> depth: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> angle: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_LouversBase</span><span class="p">(</span><span class="n">_ShadingParameterBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for a series of louvered Shades over a Face.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        depth: A number for the depth to extrude the louvers.</span>
+<span class="sd">        offset: A number for the distance to louvers from this Face.</span>
+<span class="sd">            Default is 0 for no offset.</span>
+<span class="sd">        angle: A number for the for an angle to rotate the louvers in degrees.</span>
+<span class="sd">            Default is 0 for no rotation.</span>
+<span class="sd">        contour_vector: A Vector2D for the direction along which contours</span>
+<span class="sd">            are generated. This 2D vector will be interpreted into a 3D vector</span>
+<span class="sd">            within the plane of this Face. (0, 1) will usually generate</span>
+<span class="sd">            horizontal contours in 3D space, (1, 0) will generate vertical</span>
+<span class="sd">            contours, and (1, 1) will generate diagonal contours. Default: (0, 1).</span>
+<span class="sd">        flip_start_side: Boolean to note whether the side the louvers start from</span>
+<span class="sd">            should be flipped. Default is False to have contours on top or right.</span>
+<span class="sd">            Setting to True will start contours on the bottom or left.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * depth</span>
+<span class="sd">        * offset</span>
+<span class="sd">        * angle</span>
+<span class="sd">        * contour_vector</span>
+<span class="sd">        * flip_start_side</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_depth&#39;</span><span class="p">,</span> <span class="s1">&#39;_offset&#39;</span><span class="p">,</span> <span class="s1">&#39;_angle&#39;</span><span class="p">,</span> <span class="s1">&#39;_contour_vector&#39;</span><span class="p">,</span> <span class="s1">&#39;_flip_start_side&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">contour_vector</span><span class="o">=</span><span class="n">Vector2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span>
+                 <span class="n">flip_start_side</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize LouversBase.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_depth</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">depth</span><span class="p">,</span> <span class="s1">&#39;louver depth&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">offset</span><span class="p">,</span> <span class="s1">&#39;louver offset&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angle</span> <span class="o">=</span> <span class="n">float_in_range</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">,</span> <span class="s1">&#39;overhang angle&#39;</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">contour_vector</span><span class="p">,</span> <span class="n">Vector2D</span><span class="p">),</span> <span class="s1">&#39;Expected Vector2D for &#39;</span> \
+            <span class="s1">&#39;LouversByDistance contour_vector. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">contour_vector</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_contour_vector</span> <span class="o">=</span> <span class="n">contour_vector</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_flip_start_side</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">depth</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the depth to extrude the louvers.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_depth</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">offset</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the distance to louvers from this Face.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_offset</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">angle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for an angle to rotate the louvers in degrees.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angle</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">contour_vector</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Vector2D for the direction along which contours are generated.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_contour_vector</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">flip_start_side</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a boolean to note whether the side the louvers start from is flipped.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_flip_start_side</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_default_dict_parameters</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get defaulted parameters from a base dictionary.&quot;&quot;&quot;</span>
+        <span class="n">offset</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;offset&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;offset&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">angle</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;angle&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;angle&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="n">contr</span> <span class="o">=</span> <span class="n">Vector2D</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;contour_vector&#39;</span><span class="p">])</span> <span class="k">if</span> <span class="s1">&#39;contour_vector&#39;</span> <span class="ow">in</span> <span class="n">data</span> \
+            <span class="k">else</span> <span class="n">Vector2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">flip</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;flip_start_side&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;flip_start_side&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">offset</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">contr</span><span class="p">,</span> <span class="n">flip</span>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_LouversBase</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">_LouversBase</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;LouversBase:&#39;</span>
+
+
+<div class="viewcode-block" id="LouversByDistance"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByDistance">[docs]</a><span class="k">class</span> <span class="nc">LouversByDistance</span><span class="p">(</span><span class="n">_LouversBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for a series of louvered Shades at a given distance between.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        distance: A number for the approximate distance between each louver.</span>
+<span class="sd">        depth: A number for the depth to extrude the louvers.</span>
+<span class="sd">        offset: A number for the distance to louvers from the wall.</span>
+<span class="sd">            Default is 0 for no offset.</span>
+<span class="sd">        angle: A number for the for an angle to rotate the louvers in degrees.</span>
+<span class="sd">            Default is 0 for no rotation.</span>
+<span class="sd">        contour_vector: A Vector2D for the direction along which contours</span>
+<span class="sd">            are generated. This 2D vector will be interpreted into a 3D vector</span>
+<span class="sd">            within the plane of the wall. (0, 1) will usually generate</span>
+<span class="sd">            horizontal contours in 3D space, (1, 0) will generate vertical</span>
+<span class="sd">            contours, and (1, 1) will generate diagonal contours. Default: (0, 1).</span>
+<span class="sd">        flip_start_side: Boolean to note whether the side the louvers start from</span>
+<span class="sd">            should be flipped. Default is False to have contours on top or right.</span>
+<span class="sd">            Setting to True will start contours on the bottom or left.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * distance</span>
+<span class="sd">        * depth</span>
+<span class="sd">        * offset</span>
+<span class="sd">        * angle</span>
+<span class="sd">        * contour_vector</span>
+<span class="sd">        * flip_start_side</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_distance&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">contour_vector</span><span class="o">=</span><span class="n">Vector2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">flip_start_side</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize LouversByDistance.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_distance</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="s1">&#39;louver separation distance&#39;</span><span class="p">)</span>
+        <span class="n">_LouversBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span>
+                              <span class="n">contour_vector</span><span class="p">,</span> <span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">distance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the approximate distance between each louver.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_distance</span>
+
+<div class="viewcode-block" id="LouversByDistance.add_shading_to_face"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByDistance.add_shading_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_shading_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Shades to a Honeybee Face using these Shading Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: An optional value to remove any louvers with a length less</span>
+<span class="sd">                than the tolerance. Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">face</span><span class="o">.</span><span class="n">louvers_by_distance_between</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LouversByDistance.scale"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByDistance.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these ShadingParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">LouversByDistance</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">distance</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LouversByDistance.from_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByDistance.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create LouversByDistance from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;LouversByDistance&quot;,</span>
+<span class="sd">            &quot;distance&quot;: 0.3,</span>
+<span class="sd">            &quot;depth&quot;: 0.1,</span>
+<span class="sd">            &quot;offset&quot;: 0.3,</span>
+<span class="sd">            &quot;angle&quot;: 0,</span>
+<span class="sd">            &quot;contour_vector&quot;: [0, 1],  # array of (x, y) values</span>
+<span class="sd">            &quot;flip_start_side&quot;: False</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LouversByDistance&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected LouversByDistance dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="n">offset</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">contr</span><span class="p">,</span> <span class="n">flip</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_default_dict_parameters</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;distance&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">],</span> <span class="n">offset</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">contr</span><span class="p">,</span> <span class="n">flip</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LouversByDistance.to_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByDistance.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get LouversByDistance as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;LouversByDistance&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;distance&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span>
+                <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span>
+                <span class="s1">&#39;offset&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span>
+                <span class="s1">&#39;angle&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                <span class="s1">&#39;contour_vector&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="o">.</span><span class="n">to_array</span><span class="p">(),</span>
+                <span class="s1">&#39;flip_start_side&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LouversByDistance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">LouversByDistance</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;LouversByDistance:</span><span class="se">\n</span><span class="s1"> distance: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> depth: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> offset: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> angle: </span><span class="si">{}</span><span class="s1">&#39;</span> \
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> contour: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> flip: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">distance</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LouversByCount"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByCount">[docs]</a><span class="k">class</span> <span class="nc">LouversByCount</span><span class="p">(</span><span class="n">_LouversBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for a specific number of louvered Shades over a wall.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        louver_count: A positive integer for the number of louvers to generate.</span>
+<span class="sd">        depth: A number for the depth to extrude the louvers.</span>
+<span class="sd">        offset: A number for the distance to louvers from  the wall.</span>
+<span class="sd">            Default is 0 for no offset.</span>
+<span class="sd">        angle: A number for the for an angle to rotate the louvers in degrees.</span>
+<span class="sd">            Default is 0 for no rotation.</span>
+<span class="sd">        contour_vector: A Vector2D for the direction along which contours</span>
+<span class="sd">            are generated. This 2D vector will be interpreted into a 3D vector</span>
+<span class="sd">            within the plane of the wall. (0, 1) will usually generate</span>
+<span class="sd">            horizontal contours in 3D space, (1, 0) will generate vertical</span>
+<span class="sd">            contours, and (1, 1) will generate diagonal contours. Default: (0, 1).</span>
+<span class="sd">        flip_start_side: Boolean to note whether the side the louvers start from</span>
+<span class="sd">            should be flipped. Default is False to have contours on top or right.</span>
+<span class="sd">            Setting to True will start contours on the bottom or left.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * louver_count</span>
+<span class="sd">        * depth</span>
+<span class="sd">        * offset</span>
+<span class="sd">        * angle</span>
+<span class="sd">        * contour_vector</span>
+<span class="sd">        * flip_start_side</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_louver_count&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">louver_count</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">angle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                 <span class="n">contour_vector</span><span class="o">=</span><span class="n">Vector2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">flip_start_side</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize LouversByCount.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_louver_count</span> <span class="o">=</span> <span class="n">int_positive</span><span class="p">(</span><span class="n">louver_count</span><span class="p">,</span> <span class="s1">&#39;louver count&#39;</span><span class="p">)</span>
+        <span class="n">_LouversBase</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">depth</span><span class="p">,</span> <span class="n">offset</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span>
+                              <span class="n">contour_vector</span><span class="p">,</span> <span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">louver_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a integer for the number of louvers to generate.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_louver_count</span>
+
+<div class="viewcode-block" id="LouversByCount.add_shading_to_face"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByCount.add_shading_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_shading_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Shades to a Honeybee Face using these Shading Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: An optional value to remove any louvers with a length less</span>
+<span class="sd">                than the tolerance. Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">face</span><span class="o">.</span><span class="n">louvers_by_count</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">louver_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LouversByCount.scale"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByCount.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these ShadingParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">LouversByCount</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">louver_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LouversByCount.from_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByCount.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create LouversByCount from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;LouversByCount&quot;,</span>
+<span class="sd">            &quot;louver_count&quot;: 10,</span>
+<span class="sd">            &quot;depth&quot;: 0.1,</span>
+<span class="sd">            &quot;offset&quot;: 0.3,</span>
+<span class="sd">            &quot;angle&quot;: 0,</span>
+<span class="sd">            &quot;contour_vector&quot;: [0,  1],  # array of (x, y) values</span>
+<span class="sd">            &quot;flip_start_side&quot;: False</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;LouversByCount&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected LouversByCount dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="n">offset</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">contr</span><span class="p">,</span> <span class="n">flip</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_default_dict_parameters</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;louver_count&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;depth&#39;</span><span class="p">],</span> <span class="n">offset</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">contr</span><span class="p">,</span> <span class="n">flip</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LouversByCount.to_dict"><a class="viewcode-back" href="../../dragonfly.shadingparameter.html#dragonfly.shadingparameter.LouversByCount.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get LouversByCount as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;LouversByCount&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;louver_count&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">louver_count</span><span class="p">,</span>
+                <span class="s1">&#39;depth&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span>
+                <span class="s1">&#39;offset&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span>
+                <span class="s1">&#39;angle&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                <span class="s1">&#39;contour_vector&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="o">.</span><span class="n">to_array</span><span class="p">(),</span>
+                <span class="s1">&#39;flip_start_side&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">LouversByCount</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">louver_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                              <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">louver_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">LouversByCount</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;LouversByCount:</span><span class="se">\n</span><span class="s1"> count: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> depth: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> offset: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> angle: </span><span class="si">{}</span><span class="s1">&#39;</span> \
+            <span class="s1">&#39;</span><span class="se">\n</span><span class="s1"> contour: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> flip: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">louver_count</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">depth</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">offset</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">contour_vector</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">flip_start_side</span><span class="p">)</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.building &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.building</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;Dragonfly Building.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">from</span> <span class="nn">._base</span> <span class="kn">import</span> <span class="n">_BaseGeometry</span>
+<span class="kn">from</span> <span class="nn">.properties</span> <span class="kn">import</span> <span class="n">BuildingProperties</span>
+<span class="kn">from</span> <span class="nn">.story</span> <span class="kn">import</span> <span class="n">Story</span>
+<span class="kn">from</span> <span class="nn">.room2d</span> <span class="kn">import</span> <span class="n">Room2D</span>
+<span class="kn">import</span> <span class="nn">dragonfly.writer.building</span> <span class="k">as</span> <span class="nn">writer</span>
+
+<span class="kn">from</span> <span class="nn">honeybee.model</span> <span class="kn">import</span> <span class="n">Model</span>
+<span class="kn">from</span> <span class="nn">honeybee.boundarycondition</span> <span class="kn">import</span> <span class="n">boundary_conditions</span> <span class="k">as</span> <span class="n">bcs</span>
+<span class="kn">from</span> <span class="nn">honeybee.typing</span> <span class="kn">import</span> <span class="n">clean_string</span>
+
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry2d.pointvector</span> <span class="kn">import</span> <span class="n">Point2D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry2d.polygon</span> <span class="kn">import</span> <span class="n">Polygon2D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.pointvector</span> <span class="kn">import</span> <span class="n">Vector3D</span><span class="p">,</span> <span class="n">Point3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.face</span> <span class="kn">import</span> <span class="n">Face3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry_polyskel.polysplit</span> <span class="kn">import</span> <span class="n">perimeter_core_subpolygons</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">izip</span> <span class="k">as</span> <span class="nb">zip</span>  <span class="c1"># python 2</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="n">xrange</span> <span class="o">=</span> <span class="nb">range</span>  <span class="c1"># python 3</span>
+
+
+<div class="viewcode-block" id="Building"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building">[docs]</a><span class="k">class</span> <span class="nc">Building</span><span class="p">(</span><span class="n">_BaseGeometry</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A complete Building defined by Stories.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        identifier: Text string for a unique Building ID. Must be &lt; 100 characters</span>
+<span class="sd">            and not contain any spaces or special characters.</span>
+<span class="sd">        unique_stories: An array of unique Dragonfly Story objects that</span>
+<span class="sd">            together form the entire building. Stories should be ordered</span>
+<span class="sd">            from lowest floor to highest floor and they will be automatically</span>
+<span class="sd">            sorted based on floor height when they are added to a Building.</span>
+<span class="sd">            Note that, if a given Story is repeated several times over the</span>
+<span class="sd">            height of the Building, the unique Story included in this list</span>
+<span class="sd">            should be the first (lowest) Story of the repeated floors.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * identifier</span>
+<span class="sd">        * display_name</span>
+<span class="sd">        * unique_stories</span>
+<span class="sd">        * unique_room_2ds</span>
+<span class="sd">        * story_count</span>
+<span class="sd">        * story_count_above_ground</span>
+<span class="sd">        * height</span>
+<span class="sd">        * height_above_ground</span>
+<span class="sd">        * height_from_first_floor</span>
+<span class="sd">        * footprint_area</span>
+<span class="sd">        * floor_area</span>
+<span class="sd">        * exterior_wall_area</span>
+<span class="sd">        * exterior_aperture_area</span>
+<span class="sd">        * volume</span>
+<span class="sd">        * min</span>
+<span class="sd">        * max</span>
+<span class="sd">        * user_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_unique_stories&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">unique_stories</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A complete Building defined by Stories.&quot;&quot;&quot;</span>
+        <span class="n">_BaseGeometry</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span>  <span class="c1"># process the identifier</span>
+
+        <span class="c1"># process the story geometry</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">unique_stories</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Building must have at least one Story.&#39;</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">unique_stories</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">story</span><span class="p">,</span> <span class="n">Story</span><span class="p">),</span> \
+                <span class="s1">&#39;Expected dragonfly Story. Got </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">story</span><span class="p">))</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="n">flr_hgts</span> <span class="o">=</span> <span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">floor_height</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">unique_stories</span><span class="p">)</span>
+        <span class="n">unique_stories</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">x</span> <span class="k">for</span> <span class="n">h</span><span class="p">,</span> <span class="n">x</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">flr_hgts</span><span class="p">,</span> <span class="n">unique_stories</span><span class="p">)))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span> <span class="o">=</span> <span class="n">unique_stories</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">BuildingProperties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># properties for extensions</span>
+
+<div class="viewcode-block" id="Building.from_footprint"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.from_footprint">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_footprint</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">footprint</span><span class="p">,</span> <span class="n">floor_to_floor_heights</span><span class="p">,</span>
+                       <span class="n">perimeter_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize a Building from an array of Face3Ds representing a footprint.</span>
+
+<span class="sd">        All of the resulting Room2Ds will have a floor-to-ceiling height equal to the</span>
+<span class="sd">        Story floor-to-floor height. Also, none of the Room2Ds will have contact</span>
+<span class="sd">        with the ground or top exposure but the separate_top_bottom_floors method</span>
+<span class="sd">        can be used to automatically break these floors out from the multiplier</span>
+<span class="sd">        representation and assign these properties.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            identifier: Text string for a unique Building ID. Must be &lt; 100 characters</span>
+<span class="sd">                and not contain any spaces or special characters.</span>
+<span class="sd">            footprint: An array of horizontal ladybug-geometry Face3Ds that together</span>
+<span class="sd">                represent the the footprint of the Building.</span>
+<span class="sd">            floor_to_floor_heights: An array of float values with a length equal</span>
+<span class="sd">                to the number of stories in the Building. Each value in the list</span>
+<span class="sd">                represents the floor_to_floor height of the Story starting from</span>
+<span class="sd">                the first floor and then moving to the top floor.</span>
+<span class="sd">            perimeter_offset: An optional positive number that will be used to</span>
+<span class="sd">                offset the perimeter of the footprint to create core/perimeter</span>
+<span class="sd">                zones. If this value is 0, no offset will occur and each story</span>
+<span class="sd">                will be represented with a single Room2D per polygon (Default: 0).</span>
+<span class="sd">            tolerance: The maximum difference between z values at which point vertices</span>
+<span class="sd">                are considered to be in the same horizontal plane. This is used to check</span>
+<span class="sd">                that all vertices of the input floor_geometry lie in the same horizontal</span>
+<span class="sd">                floor plane. Default is 0, which will not perform any check.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># generate the unique Room2Ds from the footprint</span>
+        <span class="n">room_2ds</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_generate_room_2ds</span><span class="p">(</span>
+            <span class="n">footprint</span><span class="p">,</span> <span class="n">floor_to_floor_heights</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">perimeter_offset</span><span class="p">,</span>
+            <span class="n">identifier</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+
+        <span class="c1"># generate the unique stories from the floor_to_floor_heights</span>
+        <span class="n">stories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">total_height</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">prev_flr_to_flr</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">flr_hgt</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">floor_to_floor_heights</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">flr_hgt</span> <span class="o">!=</span> <span class="n">prev_flr_to_flr</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="n">rooms</span> <span class="o">=</span> <span class="p">[</span><span class="n">room</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="n">room_2ds</span><span class="p">]</span>
+                    <span class="n">move_vec</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">total_height</span><span class="p">)</span>
+                    <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">room</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">rooms</span><span class="p">):</span>
+                        <span class="n">room</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">move_vec</span><span class="p">)</span>
+                        <span class="n">room</span><span class="o">.</span><span class="n">floor_to_ceiling_height</span> <span class="o">=</span> <span class="n">flr_hgt</span>
+                        <span class="n">room</span><span class="o">.</span><span class="n">_identifier</span> <span class="o">=</span> \
+                            <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Floor</span><span class="si">{}</span><span class="s1">_Room</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">perimeter_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># reset all boundary conditions</span>
+                        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="n">rooms</span><span class="p">:</span>
+                            <span class="n">room</span><span class="o">.</span><span class="n">boundary_conditions</span> <span class="o">=</span> <span class="p">[</span><span class="n">bcs</span><span class="o">.</span><span class="n">outdoors</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
+                        <span class="n">Room2D</span><span class="o">.</span><span class="n">solve_adjacency</span><span class="p">(</span><span class="n">rooms</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">rooms</span> <span class="o">=</span> <span class="n">room_2ds</span>
+                <span class="n">stories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Story</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Floor</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">rooms</span><span class="p">,</span> <span class="n">flr_hgt</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">stories</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">total_height</span> <span class="o">+=</span> <span class="n">flr_hgt</span>
+            <span class="n">prev_flr_to_flr</span> <span class="o">=</span> <span class="n">flr_hgt</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">stories</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.from_all_story_geometry"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.from_all_story_geometry">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_all_story_geometry</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">all_story_geometry</span><span class="p">,</span>
+                                <span class="n">floor_to_floor_heights</span><span class="p">,</span> <span class="n">perimeter_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                                <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize a Building from an array of Face3Ds arrays representing all floors.</span>
+
+<span class="sd">        This method will test to see which of the stories are geometrically unique</span>
+<span class="sd">        (accouting for both the floor plate geometry and the floor_to_floor_heights).</span>
+<span class="sd">        It will only include the unique floor geometries in the resulting Building.</span>
+
+<span class="sd">        All of the resulting Room2Ds will have a floor-to-ceiling height equal to the</span>
+<span class="sd">        Story floor-to-floor height.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            identifier: Text string for a unique Building ID. Must be &lt; 100 characters</span>
+<span class="sd">                and not contain any spaces or special characters.</span>
+<span class="sd">            all_story_geometry: An array of arrays with each sub-array possessing</span>
+<span class="sd">                horizontal ladybug-geometry Face3Ds that representing the floor</span>
+<span class="sd">                plates of the building. Together, these Face3Ds should represent</span>
+<span class="sd">                all Stories of a building and each array of Face3Ds should together</span>
+<span class="sd">                represent one Story.</span>
+<span class="sd">            floor_to_floor_heights: An array of float values with a length equal</span>
+<span class="sd">                to the number of stories in the Building. Each value in the list</span>
+<span class="sd">                represents the floor_to_floor height of the Story starting from</span>
+<span class="sd">                the first floor and then moving to the top floor.</span>
+<span class="sd">            perimeter_offset: An optional positive number that will be used to offset</span>
+<span class="sd">                the perimeter of the all_story_geometry to create core/perimeter</span>
+<span class="sd">                zones. If this value is 0, no offset will occur and each story</span>
+<span class="sd">                will be represented with a single Room2D per polygon (Default: 0).</span>
+<span class="sd">            tolerance: The maximum difference between x, y, and z values at which</span>
+<span class="sd">                point vertices are considered to be the same. This is also needed as</span>
+<span class="sd">                a means to determine which floor geometries are equivalent to one</span>
+<span class="sd">                another and should be a part the same Story. Default: 0.01, suitable</span>
+<span class="sd">                for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># generate the first story of the building</span>
+        <span class="n">room_2ds</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_generate_room_2ds</span><span class="p">(</span>
+            <span class="n">all_story_geometry</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">floor_to_floor_heights</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">perimeter_offset</span><span class="p">,</span>
+            <span class="n">identifier</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+        <span class="n">stories</span> <span class="o">=</span> <span class="p">[</span><span class="n">Story</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Floor1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier</span><span class="p">),</span> <span class="n">room_2ds</span><span class="p">,</span>
+                         <span class="n">floor_to_floor_heights</span><span class="p">[</span><span class="mi">0</span><span class="p">])]</span>
+
+        <span class="c1"># generate the remaining unique stories from the floor_to_floor_heights</span>
+        <span class="c1"># TODO: Add an input for core_perimeter_offsets once we have straight skeletons</span>
+        <span class="n">remaining_geo</span> <span class="o">=</span> <span class="n">all_story_geometry</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">remaining_flr_hgts</span> <span class="o">=</span> <span class="n">floor_to_floor_heights</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="n">prev_geo</span> <span class="o">=</span> <span class="n">all_story_geometry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">prev_flr_to_flr</span> <span class="o">=</span> <span class="n">floor_to_floor_heights</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">room_geo</span><span class="p">,</span> <span class="n">flr_hgt</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">remaining_geo</span><span class="p">,</span> <span class="n">remaining_flr_hgts</span><span class="p">)):</span>
+            <span class="c1"># test is anything is geometrically different</span>
+            <span class="k">if</span> <span class="n">flr_hgt</span> <span class="o">!=</span> <span class="n">prev_flr_to_flr</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">room_geo</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">prev_geo</span><span class="p">)</span> <span class="ow">or</span> \
+                    <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="bp">cls</span><span class="o">.</span><span class="n">_is_story_equivalent</span><span class="p">(</span><span class="n">rm1</span><span class="p">,</span> <span class="n">rm2</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+                            <span class="k">for</span> <span class="n">rm1</span><span class="p">,</span> <span class="n">rm2</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">room_geo</span><span class="p">,</span> <span class="n">prev_geo</span><span class="p">)):</span>
+                <span class="n">room_2ds</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_generate_room_2ds</span><span class="p">(</span>
+                    <span class="n">room_geo</span><span class="p">,</span> <span class="n">flr_hgt</span><span class="p">,</span> <span class="n">perimeter_offset</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+                <span class="n">stories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Story</span><span class="p">(</span>
+                    <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Floor</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">),</span> <span class="n">room_2ds</span><span class="p">,</span> <span class="n">flr_hgt</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># geometry is the same as the floor below</span>
+                <span class="n">stories</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="n">prev_geo</span> <span class="o">=</span> <span class="n">room_geo</span>
+            <span class="n">prev_flr_to_flr</span> <span class="o">=</span> <span class="n">flr_hgt</span>
+
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="n">stories</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.from_dict"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize an Building from a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: A dictionary representation of a Building object.</span>
+<span class="sd">            tolerance: The maximum difference between z values at which point vertices</span>
+<span class="sd">                are considered to be in the same horizontal plane. This is used to check</span>
+<span class="sd">                that all vertices of the input floor_geometry lie in the same horizontal</span>
+<span class="sd">                floor plane. Default is 0, which will not perform any check.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check the type of dictionary</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Building&#39;</span><span class="p">,</span> <span class="s1">&#39;Expected Building dictionary. &#39;</span> \
+            <span class="s1">&#39;Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+
+        <span class="n">stories</span> <span class="o">=</span> <span class="p">[</span><span class="n">Story</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">s_dict</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+                   <span class="k">for</span> <span class="n">s_dict</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;unique_stories&#39;</span><span class="p">]]</span>
+
+        <span class="n">building</span> <span class="o">=</span> <span class="n">Building</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;identifier&#39;</span><span class="p">],</span> <span class="n">stories</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;display_name&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">building</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;user_data&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">building</span><span class="o">.</span><span class="n">user_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;BuildingProperties&#39;</span><span class="p">:</span>
+            <span class="n">building</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">_load_extension_attr_from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">building</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unique_stories</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a tuple of only unique Story objects that form the Building.</span>
+
+<span class="sd">        Repeated stories are represented only once but will have a non-unity multiplier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unique_room_2ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of the unique Room2D objects that form the Building.&quot;&quot;&quot;</span>
+        <span class="n">rooms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">rooms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">room_2ds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rooms</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">unique_stories_above_ground</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a tuple of unique Story objects that are above the ground.</span>
+
+<span class="sd">        A story is considered above the ground if at least one of its Room2Ds</span>
+<span class="sd">        has an outdoor boundary condition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">story</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span> <span class="k">if</span> <span class="n">story</span><span class="o">.</span><span class="n">is_above_ground</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">story_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an integer for the number of stories in the building.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">((</span><span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">story_count_above_ground</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an integer for the number of stories above the ground.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">((</span><span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_stories_above_ground</span><span class="p">))</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the roof height of the Building as an absolute Z-coordinate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">last_flr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">last_flr</span><span class="o">.</span><span class="n">floor_height</span> <span class="o">+</span> \
+            <span class="p">(</span><span class="n">last_flr</span><span class="o">.</span><span class="n">floor_to_floor_height</span> <span class="o">*</span> <span class="n">last_flr</span><span class="o">.</span><span class="n">multiplier</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">height_above_ground</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a the height difference between the roof and first floor above the ground.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_stories_above_ground</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">floor_height</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">height_from_first_floor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a the height difference between the roof and bottom-most floor.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">floor_height</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">footprint_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total footprint area of the Building.</span>
+
+<span class="sd">        The footprint is derived from the lowest story of the building.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">floor_area</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">floor_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total floor area in the Building.</span>
+
+<span class="sd">        Note that this property uses the story multipliers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">story</span><span class="o">.</span><span class="n">floor_area</span> <span class="o">*</span> <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span>
+                    <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exterior_wall_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total exterior wall area in the Building.</span>
+
+<span class="sd">        Note that this property uses the story multipliers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">story</span><span class="o">.</span><span class="n">exterior_wall_area</span> <span class="o">*</span> <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span>
+                    <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exterior_aperture_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total exterior aperture area in the Building.</span>
+
+<span class="sd">        Note that this property uses the story multipliers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">story</span><span class="o">.</span><span class="n">exterior_aperture_area</span> <span class="o">*</span> <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span>
+                    <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the volume of all the Rooms in the Building.</span>
+
+<span class="sd">        Note that this property uses the story multipliers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">story</span><span class="o">.</span><span class="n">volume</span> <span class="o">*</span> <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span>
+                    <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Point2D for the min bounding rectangle vertex in the XY plane.</span>
+
+<span class="sd">        This is useful in calculations to determine if this Building is in proximity</span>
+<span class="sd">        to other objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Point2D for the max bounding rectangle vertex in the XY plane.</span>
+
+<span class="sd">        This is useful in calculations to determine if this Building is in proximity</span>
+<span class="sd">        to other objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Building.all_stories"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.all_stories">[docs]</a>    <span class="k">def</span> <span class="nf">all_stories</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of all Story objects that form the Building.</span>
+
+<span class="sd">        The Story objects returned here each have a multiplier of 1 and repeated</span>
+<span class="sd">        stories are represented will their own Story object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">all_stories</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">new_story</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span>
+            <span class="n">new_story</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="s1">&#39;Flr1&#39;</span><span class="p">)</span>
+            <span class="n">new_story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">all_stories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_story</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">new_story</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span>
+                    <span class="n">new_story</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="s1">&#39;Flr</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">2</span><span class="p">))</span>
+                    <span class="n">new_story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">m_vec</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">story</span><span class="o">.</span><span class="n">floor_to_floor_height</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">))</span>
+                    <span class="n">new_story</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">m_vec</span><span class="p">)</span>
+                    <span class="n">all_stories</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_story</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">all_stories</span></div>
+
+<div class="viewcode-block" id="Building.all_room_2ds"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.all_room_2ds">[docs]</a>    <span class="k">def</span> <span class="nf">all_room_2ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of all Room2D objects that form the Building.&quot;&quot;&quot;</span>
+        <span class="n">rooms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_stories</span><span class="p">():</span>
+            <span class="n">rooms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">room_2ds</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">rooms</span></div>
+
+<div class="viewcode-block" id="Building.footprint"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.footprint">[docs]</a>    <span class="k">def</span> <span class="nf">footprint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A list of Face3D objects representing the footprint of the building.</span>
+
+<span class="sd">        The footprint is derived from the lowest story of the building and, if</span>
+<span class="sd">        all Room2Ds of this story can be joined into a single continuous polyface,</span>
+<span class="sd">        then only one Face3D will be contined in the list output from this method.</span>
+<span class="sd">        Otherwise, several Face3Ds may be output.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ground_story</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">ground_story</span><span class="o">.</span><span class="n">room_2ds</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># no need to create any new geometry</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">ground_story</span><span class="o">.</span><span class="n">room_2ds</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">floor_geometry</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># need a single list of Face3Ds for the whole footprint</span>
+            <span class="k">return</span> <span class="n">ground_story</span><span class="o">.</span><span class="n">footprint</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.shade_representation"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.shade_representation">[docs]</a>    <span class="k">def</span> <span class="nf">shade_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exclude_index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A list of honeybee Shade objects representing the building geometry.</span>
+
+<span class="sd">        These can be used to account for this Building&#39;s shade in the simulation of</span>
+<span class="sd">        another nearby Building.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            exclude_index: An optional index for a unique_story to be excluded from</span>
+<span class="sd">                the shade representation. If None, all stories will be included</span>
+<span class="sd">                in the result. (Default: None).</span>
+<span class="sd">            cap: Boolean to note whether the shade representation should be capped</span>
+<span class="sd">                with a top face. Usually, this is not necessary to account for</span>
+<span class="sd">                blocked sun and is only needed when it&#39;s important to account for</span>
+<span class="sd">                reflected sun off of roofs. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context_shades</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">exclude_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_stories</span><span class="p">:</span>
+                <span class="n">context_shades</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">shade_representation</span><span class="p">(</span><span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">story</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unique_stories</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="n">exclude_index</span><span class="p">:</span>
+                    <span class="n">context_shades</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">shade_representation</span><span class="p">(</span><span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">mult_shd</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">shade_representation_multiplier</span><span class="p">(</span>
+                        <span class="n">cap</span><span class="o">=</span><span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+                    <span class="n">context_shades</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">mult_shd</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">context_shades</span></div>
+
+<div class="viewcode-block" id="Building.add_prefix"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.add_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the object identifier and all child objects by inserting a prefix.</span>
+
+<span class="sd">        This is particularly useful in workflows where you duplicate and edit</span>
+<span class="sd">        a starting object and then want to combine it with the original object</span>
+<span class="sd">        into one Model (like making a model of repeating buildings) since all objects</span>
+<span class="sd">        within a Model must have unique identifiers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Text that will be inserted at the start of this object&#39;s</span>
+<span class="sd">                (and child objects&#39;) identifier and display_name. It is recommended</span>
+<span class="sd">                that this prefix be short to avoid maxing out the 100 allowable</span>
+<span class="sd">                characters for dragonfly identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span> <span class="o">=</span> <span class="n">clean_string</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">unique_stories</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.separate_top_bottom_floors"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.separate_top_bottom_floors">[docs]</a>    <span class="k">def</span> <span class="nf">separate_top_bottom_floors</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Separate top/bottom Stories with non-unity multipliers into their own Stories.</span>
+
+<span class="sd">        The resulting first and last Stories will each have a multiplier of 1 and</span>
+<span class="sd">        duplicated middle Stories will be added as needed. This method also</span>
+<span class="sd">        automatically assigns the first story Room2Ds to have a ground contact</span>
+<span class="sd">        floor and the top story Room2Ds to have an outdoor-exposed roof.</span>
+
+<span class="sd">        This is particularly helpful when using to_honeybee workflows with</span>
+<span class="sd">        multipliers but one wants to account for the heat exchange of the top</span>
+<span class="sd">        or bottom floors with the ground or outdoors.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_ground_floor</span> <span class="o">=</span> <span class="p">()</span>
+        <span class="n">new_top_floor</span> <span class="o">=</span> <span class="p">()</span>
+
+        <span class="c1"># ensure that the bottom floor is unique</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">story</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">new_ground_floor</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_separated_ground_floor</span><span class="p">(</span><span class="n">story</span><span class="p">),)</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">-</span> <span class="mi">1</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">story</span><span class="o">.</span><span class="n">floor_to_floor_height</span><span class="p">))</span>  <span class="c1"># 2nd floor</span>
+
+        <span class="c1"># ensure that the top floor is unique</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">story</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">new_top_floor</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_separated_top_floor</span><span class="p">(</span><span class="n">story</span><span class="p">),)</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="c1"># set the unique stories to include any new top and bottom floors</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span> <span class="o">=</span> <span class="n">new_ground_floor</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span> <span class="o">+</span> <span class="n">new_top_floor</span>
+
+        <span class="c1"># assign the is_ground_contact and is_top_exposed properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_ground_contact</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_top_exposed</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Building.set_outdoor_window_parameters"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.set_outdoor_window_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_outdoor_window_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all of the outdoor walls to have the same window parameters.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">set_outdoor_window_parameters</span><span class="p">(</span><span class="n">window_parameter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.set_outdoor_shading_parameters"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.set_outdoor_shading_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_outdoor_shading_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shading_parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all of the outdoor walls to have the same shading parameters.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">set_outdoor_shading_parameters</span><span class="p">(</span><span class="n">shading_parameter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.move"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moving_vec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move this Building along a vector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            moving_vec: A ladybug_geometry Vector3D with the direction and distance</span>
+<span class="sd">                to move the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.rotate_xy"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.rotate_xy">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rotate this Building counterclockwise in the XY plane by a certain angle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle: An angle in degrees.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D for the origin around which the</span>
+<span class="sd">                object will be rotated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.reflect"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.reflect">[docs]</a>    <span class="k">def</span> <span class="nf">reflect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plane</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reflect this Building across a plane.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plane: A ladybug_geometry Plane across which the object will be reflected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.scale"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Scale this Building by a factor from an origin point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D representing the origin from which</span>
+<span class="sd">                to scale. If None, it will be scaled from the World origin (0, 0, 0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Building.to_honeybee"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.to_honeybee">[docs]</a>    <span class="k">def</span> <span class="nf">to_honeybee</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_multiplier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert Dragonfly Building to a Honeybee Model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            use_multiplier: If True, the multipliers on this Building&#39;s Stories will be</span>
+<span class="sd">                passed along to the generated Honeybee Room objects, indicating the</span>
+<span class="sd">                simulation will be run once for each unique room and then results</span>
+<span class="sd">                will be multiplied. If False, full geometry objects will be written</span>
+<span class="sd">                for each and every floor in the building that are represented through</span>
+<span class="sd">                multipliers and all resulting multipliers will be 1. (Default: True).</span>
+<span class="sd">            add_plenum: Boolean to indicate whether ceiling/floor plenums should</span>
+<span class="sd">                be auto-generated for the Rooms. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance in z values of floor_height and</span>
+<span class="sd">                floor_to_ceiling_height at which adjacent Faces will be split.</span>
+<span class="sd">                Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hb_rooms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">use_multiplier</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+                <span class="n">hb_rooms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span>
+                    <span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_stories</span><span class="p">():</span>
+                <span class="n">hb_rooms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span>
+                    <span class="kc">False</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">))</span>
+        <span class="n">hb_mod</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">hb_rooms</span><span class="p">)</span>
+        <span class="n">hb_mod</span><span class="o">.</span><span class="n">_display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_display_name</span>
+        <span class="n">hb_mod</span><span class="o">.</span><span class="n">_user_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_user_data</span>
+        <span class="k">return</span> <span class="n">hb_mod</span></div>
+
+<div class="viewcode-block" id="Building.to_dict"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abridged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">included_prop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return Building as a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            abridged: Boolean to note whether the extension properties of the</span>
+<span class="sd">                object (ie. construction sets) should be included in detail</span>
+<span class="sd">                (False) or just referenced by identifier (True). Default: False.</span>
+<span class="sd">            included_prop: List of properties to filter keys that must be included in</span>
+<span class="sd">                output dictionary. For example [&#39;energy&#39;] will include &#39;energy&#39; key if</span>
+<span class="sd">                available in properties to_dict. By default all the keys will be</span>
+<span class="sd">                included. To exclude all the keys from extensions use an empty list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Building&#39;</span><span class="p">}</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;identifier&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;unique_stories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">s</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">abridged</span><span class="p">,</span> <span class="n">included_prop</span><span class="p">)</span>
+                                  <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">]</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">abridged</span><span class="p">,</span> <span class="n">included_prop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Building writer object.</span>
+
+<span class="sd">        Use this method to access Writer class to write the building in other formats.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">writer</span>
+
+<div class="viewcode-block" id="Building.district_to_honeybee"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.district_to_honeybee">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">district_to_honeybee</span><span class="p">(</span>
+            <span class="n">buildings</span><span class="p">,</span> <span class="n">use_multiplier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert an array of Building objects into a single district honeybee Model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            buildings: An array of Building objects to be converted into a</span>
+<span class="sd">                honeybee Model.</span>
+<span class="sd">            use_multiplier: If True, the multipliers on this Building&#39;s Stories will be</span>
+<span class="sd">                passed along to the generated Honeybee Room objects, indicating the</span>
+<span class="sd">                simulation will be run once for each unique room and then results</span>
+<span class="sd">                will be multiplied. If False, full geometry objects will be written</span>
+<span class="sd">                for each and every floor in the building that are represented through</span>
+<span class="sd">                multipliers and all resulting multipliers will be 1. (Default: True).</span>
+<span class="sd">            add_plenum: Boolean to indicate whether ceiling/floor plenums should</span>
+<span class="sd">                be auto-generated for the Rooms. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance in z values of floor_height and</span>
+<span class="sd">                floor_to_ceiling_height at which adjacent Faces will be split.</span>
+<span class="sd">                Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create a base model to which everything will be added</span>
+        <span class="n">base_model</span> <span class="o">=</span> <span class="n">buildings</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span>
+            <span class="n">use_multiplier</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="c1"># loop through each Building, create a model, and add it to the base one</span>
+        <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">base_model</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">bldg</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span>
+                <span class="n">use_multiplier</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">base_model</span></div>
+
+<div class="viewcode-block" id="Building.buildings_to_honeybee"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.buildings_to_honeybee">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">buildings_to_honeybee</span><span class="p">(</span>
+            <span class="n">buildings</span><span class="p">,</span> <span class="n">context_shades</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shade_distance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">use_multiplier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert an array of Buildings into several honeybee Models with self-shading.</span>
+
+<span class="sd">        Each input Building will be exported into its own Model. For each Model,</span>
+<span class="sd">        the other input Buildings will appear as context shade geometry. Thus,</span>
+<span class="sd">        each Model is its own simulate-able unit accounting for the total</span>
+<span class="sd">        self-shading of the input Buildings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            buildings: An array of Building objects to be converted into honeybee</span>
+<span class="sd">                Models that account for their own shading of one another.</span>
+<span class="sd">            context_shades: An optional array of ContextShade objects that will be</span>
+<span class="sd">                added to the honeybee Models if their bounding box overlaps with a</span>
+<span class="sd">                given building within the shade_distance.</span>
+<span class="sd">            shade_distance: An optional number to note the distance beyond which other</span>
+<span class="sd">                objects&#39; shade should not be exported into a given Model. This is</span>
+<span class="sd">                helpful for reducing the simulation run time of each Model when other</span>
+<span class="sd">                connected buildings are too far away to have a meaningful impact on</span>
+<span class="sd">                the results. If None, all other buildings will be included as context</span>
+<span class="sd">                shade in each and every Model. Set to 0 to exclude all neighboring</span>
+<span class="sd">                buildings from the resulting models. Default: None.</span>
+<span class="sd">            use_multiplier: If True, the multipliers on this Building&#39;s Stories will be</span>
+<span class="sd">                passed along to the generated Honeybee Room objects, indicating the</span>
+<span class="sd">                simulation will be run once for each unique room and then results</span>
+<span class="sd">                will be multiplied. If False, full geometry objects will be written</span>
+<span class="sd">                for each and every floor in the building that are represented through</span>
+<span class="sd">                multipliers and all room multipliers will be 1. (Default: True).</span>
+<span class="sd">            add_plenum: Boolean to indicate whether ceiling/floor plenums should</span>
+<span class="sd">                be auto-generated for the Rooms. (Default: False).</span>
+<span class="sd">            cap: Boolean to note whether building shade representations should be capped</span>
+<span class="sd">                with a top face. Usually, this is not necessary to account for</span>
+<span class="sd">                blocked sun and is only needed when it&#39;s important to account for</span>
+<span class="sd">                reflected sun off of roofs. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance in z values of floor_height and</span>
+<span class="sd">                floor_to_ceiling_height at which adjacent Faces will be split.</span>
+<span class="sd">                Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create lists with all context representations of the buildings + shade</span>
+        <span class="n">bldg_shades</span><span class="p">,</span> <span class="n">bldg_pts</span><span class="p">,</span> <span class="n">con_shades</span><span class="p">,</span> <span class="n">con_pts</span> <span class="o">=</span> <span class="n">Building</span><span class="o">.</span><span class="n">_honeybee_shades</span><span class="p">(</span>
+            <span class="n">buildings</span><span class="p">,</span> <span class="n">context_shades</span><span class="p">,</span> <span class="n">shade_distance</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+        <span class="c1"># loop through each Building and create a model</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list to be filled with Honeybee Models</span>
+        <span class="n">num_bldg</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">buildings</span><span class="p">):</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span>
+                <span class="n">use_multiplier</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+            <span class="n">Building</span><span class="o">.</span><span class="n">_add_context_to_honeybee</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">bldg_shades</span><span class="p">,</span> <span class="n">bldg_pts</span><span class="p">,</span> <span class="n">con_shades</span><span class="p">,</span>
+                                              <span class="n">con_pts</span><span class="p">,</span> <span class="n">shade_distance</span><span class="p">,</span> <span class="n">num_bldg</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>  <span class="c1"># append to the final list of Models</span>
+        <span class="k">return</span> <span class="n">models</span></div>
+
+<div class="viewcode-block" id="Building.stories_to_honeybee"><a class="viewcode-back" href="../../dragonfly.building.html#dragonfly.building.Building.stories_to_honeybee">[docs]</a>    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">stories_to_honeybee</span><span class="p">(</span>
+            <span class="n">buildings</span><span class="p">,</span> <span class="n">context_shades</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shade_distance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">use_multiplier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert an array of Buildings into one honeybee Model per story.</span>
+
+<span class="sd">        Each Story of each input Building will be exported into its own Model. For each</span>
+<span class="sd">        Honeybee Model, the other input Buildings will appear as context shade geometry</span>
+<span class="sd">        as will all of the other stories of the same building. Thus, each Model</span>
+<span class="sd">        is its own simulate-able unit accounting for the total self-shading of</span>
+<span class="sd">        the input Buildings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            buildings: An array of Building objects to be converted into an array of</span>
+<span class="sd">                honeybee Models with one story per model.</span>
+<span class="sd">            context_shades: An optional array of ContextShade objects that will be</span>
+<span class="sd">                added to the honeybee Models if their bounding box overlaps with a</span>
+<span class="sd">                given building within the shade_distance.</span>
+<span class="sd">            shade_distance: An optional number to note the distance beyond which other</span>
+<span class="sd">                objects&#39; shade should not be exported into a given Model. This is</span>
+<span class="sd">                helpful for reducing the simulation run time of each Model when other</span>
+<span class="sd">                connected buildings are too far away to have a meaningful impact on</span>
+<span class="sd">                the results. If None, all other buildings will be included as context</span>
+<span class="sd">                shade in each and every Model. Set to 0 to exclude all neighboring</span>
+<span class="sd">                buildings from the resulting models. Default: None.</span>
+<span class="sd">            use_multiplier: If True, the multipliers on this Building&#39;s Stories will be</span>
+<span class="sd">                passed along to the generated Honeybee Room objects, indicating the</span>
+<span class="sd">                simulation will be run once for each unique room and then results</span>
+<span class="sd">                will be multiplied. If False, full geometry objects will be written</span>
+<span class="sd">                for each and every floor in the building that are represented through</span>
+<span class="sd">                multipliers and all room multipliers will be 1. (Default: True).</span>
+<span class="sd">            add_plenum: Boolean to indicate whether ceiling/floor plenums should</span>
+<span class="sd">                be auto-generated for the Rooms. (Default: False).</span>
+<span class="sd">            cap: Boolean to note whether building shade representations should be capped</span>
+<span class="sd">                with a top face. Usually, this is not necessary to account for</span>
+<span class="sd">                blocked sun and is only needed when it&#39;s important to account for</span>
+<span class="sd">                reflected sun off of roofs. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance in z values of floor_height and</span>
+<span class="sd">                floor_to_ceiling_height at which adjacent Faces will be split.</span>
+<span class="sd">                Default: 0.01, suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># create lists with all context representations of the buildings + shade</span>
+        <span class="n">bldg_shades</span><span class="p">,</span> <span class="n">bldg_pts</span><span class="p">,</span> <span class="n">con_shades</span><span class="p">,</span> <span class="n">con_pts</span> <span class="o">=</span> <span class="n">Building</span><span class="o">.</span><span class="n">_honeybee_shades</span><span class="p">(</span>
+            <span class="n">buildings</span><span class="p">,</span> <span class="n">context_shades</span><span class="p">,</span> <span class="n">shade_distance</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+        <span class="c1"># loop through each Building and create a model</span>
+        <span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1"># list to be filled with Honeybee Models</span>
+        <span class="n">num_bldg</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">buildings</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">buildings</span><span class="p">):</span>
+            <span class="n">dummy_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">bldg</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>  <span class="c1"># blank model to hold context shade</span>
+            <span class="n">Building</span><span class="o">.</span><span class="n">_add_context_to_honeybee</span><span class="p">(</span>
+                <span class="n">dummy_model</span><span class="p">,</span> <span class="n">bldg_shades</span><span class="p">,</span> <span class="n">bldg_pts</span><span class="p">,</span> <span class="n">con_shades</span><span class="p">,</span> <span class="n">con_pts</span><span class="p">,</span>
+                <span class="n">shade_distance</span><span class="p">,</span> <span class="n">num_bldg</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">bldg_con</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">dummy_model</span><span class="o">.</span><span class="n">orphaned_shades</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">use_multiplier</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">story</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bldg</span><span class="o">.</span><span class="n">unique_stories</span><span class="p">):</span>
+                    <span class="n">hb_rooms</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+                    <span class="n">shds</span> <span class="o">=</span> <span class="n">bldg_con</span> <span class="o">+</span> <span class="n">bldg</span><span class="o">.</span><span class="n">shade_representation</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+                    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">hb_rooms</span><span class="p">,</span> <span class="n">orphaned_shades</span><span class="o">=</span><span class="n">shds</span><span class="p">)</span>
+                    <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>  <span class="c1"># append to the final list of Models</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">self_shds</span> <span class="o">=</span> <span class="p">[</span><span class="n">story</span><span class="o">.</span><span class="n">shade_representation</span><span class="p">(</span><span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+                             <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">bldg</span><span class="o">.</span><span class="n">unique_stories</span><span class="p">]</span>
+                <span class="n">full_shades</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">story</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bldg</span><span class="o">.</span><span class="n">unique_stories</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">multiplier</span><span class="p">):</span>
+                        <span class="n">mult_shd</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">shade_representation_multiplier</span><span class="p">(</span>
+                            <span class="n">k</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+                        <span class="n">mult_shd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s_ar</span> <span class="ow">in</span> <span class="n">self_shds</span><span class="p">[:</span><span class="n">j</span><span class="p">]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">s_ar</span><span class="p">])</span>
+                        <span class="n">mult_shd</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">s</span> <span class="k">for</span> <span class="n">s_ar</span> <span class="ow">in</span> <span class="n">self_shds</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:]</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">s_ar</span><span class="p">])</span>
+                        <span class="n">full_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mult_shd</span><span class="p">)</span>
+                <span class="k">for</span> <span class="n">story</span><span class="p">,</span> <span class="n">shades</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">bldg</span><span class="o">.</span><span class="n">all_stories</span><span class="p">(),</span> <span class="n">full_shades</span><span class="p">):</span>
+                    <span class="n">hb_rooms</span> <span class="o">=</span> <span class="n">story</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+                    <span class="n">shds</span> <span class="o">=</span> <span class="n">bldg_con</span> <span class="o">+</span> <span class="n">shades</span>
+                    <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">hb_rooms</span><span class="p">,</span> <span class="n">orphaned_shades</span><span class="o">=</span><span class="n">shds</span><span class="p">)</span>
+                    <span class="n">models</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>  <span class="c1"># append to the final list of Models</span>
+        <span class="k">return</span> <span class="n">models</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_honeybee_shades</span><span class="p">(</span><span class="n">buildings</span><span class="p">,</span> <span class="n">context_shades</span><span class="p">,</span> <span class="n">shade_distance</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get lists of Honeybee shades from Building and ContectShade objects.&quot;&quot;&quot;</span>
+        <span class="n">bldg_shades</span><span class="p">,</span> <span class="n">bldg_pts</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="n">con_shades</span><span class="p">,</span> <span class="n">con_pts</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">shade_distance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">shade_distance</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">:</span>
+                <span class="n">b_shades</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">shade_representation</span><span class="p">(</span><span class="n">cap</span><span class="o">=</span><span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+                <span class="n">bldg_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">b_shades</span><span class="p">)</span>
+                <span class="n">b_min</span><span class="p">,</span> <span class="n">b_max</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">bldg</span><span class="o">.</span><span class="n">max</span>
+                <span class="n">center</span> <span class="o">=</span> <span class="n">Point2D</span><span class="p">((</span><span class="n">b_min</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">b_max</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">b_min</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">b_max</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                <span class="n">bldg_pts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">b_min</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">b_max</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">context_shades</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">con</span> <span class="ow">in</span> <span class="n">context_shades</span><span class="p">:</span>
+                    <span class="n">con_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">con</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">())</span>
+                    <span class="n">c_min</span><span class="p">,</span> <span class="n">c_max</span> <span class="o">=</span> <span class="n">con</span><span class="o">.</span><span class="n">min</span><span class="p">,</span> <span class="n">con</span><span class="o">.</span><span class="n">max</span>
+                    <span class="n">center</span> <span class="o">=</span> <span class="n">Point2D</span><span class="p">((</span><span class="n">c_min</span><span class="o">.</span><span class="n">x</span> <span class="o">+</span> <span class="n">c_max</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="p">(</span><span class="n">c_min</span><span class="o">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">c_max</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+                    <span class="n">con_pts</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">c_min</span><span class="p">,</span> <span class="n">center</span><span class="p">,</span> <span class="n">c_max</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">bldg_shades</span><span class="p">,</span> <span class="n">bldg_pts</span><span class="p">,</span> <span class="n">con_shades</span><span class="p">,</span> <span class="n">con_pts</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_add_context_to_honeybee</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">bldg_shades</span><span class="p">,</span> <span class="n">bldg_pts</span><span class="p">,</span> <span class="n">con_shades</span><span class="p">,</span> <span class="n">con_pts</span><span class="p">,</span>
+                                 <span class="n">shade_distance</span><span class="p">,</span> <span class="n">num_bldg</span><span class="p">,</span> <span class="n">i</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add context shades to a Honeybee Model based on shade distance.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">shade_distance</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># add all other bldg shades to the model</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_bldg</span><span class="p">):</span>  <span class="c1"># buildings before this one</span>
+                <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="n">bldg_shades</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">add_shade</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>  <span class="c1"># buildings after this one</span>
+                <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="n">bldg_shades</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">add_shade</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">c_shade</span> <span class="ow">in</span> <span class="n">con_shades</span><span class="p">:</span>  <span class="c1"># context shades</span>
+                <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="n">c_shade</span><span class="p">:</span>
+                    <span class="n">model</span><span class="o">.</span><span class="n">add_shade</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">shade_distance</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># add only shade within the distance</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_bldg</span><span class="p">):</span>  <span class="c1"># buildings before this one</span>
+                <span class="k">if</span> <span class="n">Building</span><span class="o">.</span><span class="n">_bound_rect_in_dist</span><span class="p">(</span><span class="n">bldg_pts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bldg_pts</span><span class="p">[</span><span class="n">j</span><span class="p">],</span>
+                                                <span class="n">shade_distance</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="n">bldg_shades</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">add_shade</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>  <span class="c1"># buildings after this one</span>
+                <span class="k">if</span> <span class="n">Building</span><span class="o">.</span><span class="n">_bound_rect_in_dist</span><span class="p">(</span><span class="n">bldg_pts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">bldg_pts</span><span class="p">[</span><span class="n">k</span><span class="p">],</span>
+                                                <span class="n">shade_distance</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="n">bldg_shades</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">add_shade</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">xrange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">con_shades</span><span class="p">)):</span>  <span class="c1"># context shades</span>
+                <span class="k">if</span> <span class="n">Building</span><span class="o">.</span><span class="n">_bound_rect_in_dist</span><span class="p">(</span><span class="n">bldg_pts</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">con_pts</span><span class="p">[</span><span class="n">s</span><span class="p">],</span>
+                                                <span class="n">shade_distance</span><span class="p">):</span>
+                    <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="n">con_shades</span><span class="p">[</span><span class="n">s</span><span class="p">]:</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">add_shade</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_generate_room_2ds</span><span class="p">(</span><span class="n">face3d_array</span><span class="p">,</span> <span class="n">flr_to_ceiling</span><span class="p">,</span> <span class="n">perim_offset</span><span class="p">,</span>
+                           <span class="n">bldg_id</span><span class="p">,</span> <span class="n">flr_count</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Generate Room2D objects given geometry and information about their parent.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face3d_array: An array of Face3D objects to be turned into a Story&#39;s Room2Ds.</span>
+<span class="sd">            flr_to_ceiling: The floor-to-ceiling height to use for all the Room2Ds.</span>
+<span class="sd">            perim_offset: A perimeter offset to be used to subdivide Face3Ds</span>
+<span class="sd">            bldg_id: Text for the identifier to which the rooms belong.</span>
+<span class="sd">            flr_count: Integer for the which story the building belongs to.</span>
+<span class="sd">            tolerance: Tolerance to be used in the creation of the Room2Ds.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># if there is a non-zero perimeter offset, separate core vs. perimeter zones</span>
+        <span class="k">if</span> <span class="n">perim_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">perim_offset</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;perimeter_offset cannot be less than than 0.&#39;</span>
+            <span class="n">new_face3d_array</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">floor_face</span> <span class="ow">in</span> <span class="n">face3d_array</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">floor_face</span><span class="o">.</span><span class="n">has_holes</span><span class="p">:</span>  <span class="c1"># holes are not managed well in polyskel</span>
+                    <span class="n">new_face3d_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">floor_face</span><span class="p">)</span>  <span class="c1"># just use existing floor</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">z_val</span> <span class="o">=</span> <span class="n">floor_face</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">z</span>
+                    <span class="n">base_p</span> <span class="o">=</span> <span class="n">Polygon2D</span><span class="p">([</span><span class="n">Point2D</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">p</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">floor_face</span><span class="o">.</span><span class="n">boundary</span><span class="p">])</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">sub_polys_perim</span><span class="p">,</span> <span class="n">sub_polys_core</span> <span class="o">=</span> <span class="n">perimeter_core_subpolygons</span><span class="p">(</span>
+                            <span class="n">polygon</span><span class="o">=</span><span class="n">base_p</span><span class="p">,</span> <span class="n">distance</span><span class="o">=</span><span class="n">perim_offset</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+                        <span class="k">for</span> <span class="n">spl</span> <span class="ow">in</span> <span class="n">sub_polys_perim</span> <span class="o">+</span> <span class="n">sub_polys_core</span><span class="p">:</span>
+                            <span class="n">sub_face</span> <span class="o">=</span> <span class="n">Face3D</span><span class="p">([</span><span class="n">Point3D</span><span class="p">(</span><span class="n">pt</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pt</span><span class="o">.</span><span class="n">y</span><span class="p">,</span> <span class="n">z_val</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">spl</span><span class="p">])</span>
+                            <span class="n">new_face3d_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">sub_face</span><span class="p">)</span>
+                    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                        <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>  <span class="c1"># the generation of the polyskel failed</span>
+                        <span class="n">new_face3d_array</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">floor_face</span><span class="p">)</span>  <span class="c1"># just use existing floor</span>
+            <span class="n">face3d_array</span> <span class="o">=</span> <span class="n">new_face3d_array</span>  <span class="c1"># replace with offset core/perimeter</span>
+
+        <span class="c1"># create the Room2D objects</span>
+        <span class="n">room_2ds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">room_geo</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">face3d_array</span><span class="p">):</span>
+            <span class="n">room</span> <span class="o">=</span> <span class="n">Room2D</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Floor</span><span class="si">{}</span><span class="s1">_Room</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">bldg_id</span><span class="p">,</span> <span class="n">flr_count</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
+                          <span class="n">room_geo</span><span class="p">,</span> <span class="n">flr_to_ceiling</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+            <span class="n">room_2ds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
+
+        <span class="c1"># solve for interior adjacency if there core/perimeter zoning was requested</span>
+        <span class="k">if</span> <span class="n">perim_offset</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">Room2D</span><span class="o">.</span><span class="n">solve_adjacency</span><span class="p">(</span><span class="n">room_2ds</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">room_2ds</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_is_story_equivalent</span><span class="p">(</span><span class="n">face1</span><span class="p">,</span> <span class="n">face2</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check whether the area, XY centerpoint and XY first point match between Face3D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face1: First Face3D to check.</span>
+<span class="sd">            face2: Second Face3D to check.</span>
+<span class="sd">            tolerance: The maximum difference between x, y, and z values at which</span>
+<span class="sd">                point vertices are considered to be the same.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            True if face1 is geometrically equivalent to face 2 else False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check wether the center points match within tolerance.</span>
+        <span class="n">cent1</span> <span class="o">=</span> <span class="n">face1</span><span class="o">.</span><span class="n">center</span>
+        <span class="n">cent2</span> <span class="o">=</span> <span class="n">face2</span><span class="o">.</span><span class="n">center</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cent1</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">cent2</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">cent1</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">cent2</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check wether the point at start matches within tolerance</span>
+        <span class="n">start1</span> <span class="o">=</span> <span class="n">face1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">start2</span> <span class="o">=</span> <span class="n">face2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">start1</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">start2</span><span class="o">.</span><span class="n">x</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span> <span class="ow">or</span> <span class="nb">abs</span><span class="p">(</span><span class="n">start1</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">start2</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">tolerance</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="c1"># check whether areas match within tolerance</span>
+        <span class="n">area_tol</span> <span class="o">=</span> <span class="n">tolerance</span> <span class="o">**</span> <span class="mi">2</span>
+        <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">face1</span><span class="o">.</span><span class="n">area</span> <span class="o">-</span> <span class="n">face2</span><span class="o">.</span><span class="n">area</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">area_tol</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_bound_rect_in_dist</span><span class="p">(</span><span class="n">bound_pts1</span><span class="p">,</span> <span class="n">bound_pts2</span><span class="p">,</span> <span class="n">distance</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if the bounding rectangles of two footprints overlap within a distance.</span>
+
+<span class="sd">        Checking the overlap of the bounding rectangels is extremely quick given this</span>
+<span class="sd">        method&#39;s use of the Separating Axis Theorem.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bound_pts1: An array of Point2Ds (min, center, max) for the first footprint.</span>
+<span class="sd">            bound_pts2: An array of Point2Ds (min, center, max) for the second footprint.</span>
+<span class="sd">            distance: Acceptable distance between the two bounding rectangles.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># Bounding rectangle check using the Separating Axis Theorem</span>
+        <span class="n">polygon1_width</span> <span class="o">=</span> <span class="n">bound_pts1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">bound_pts1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">polygon2_width</span> <span class="o">=</span> <span class="n">bound_pts2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">bound_pts2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">x</span>
+        <span class="n">dist_btwn_x</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bound_pts1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">bound_pts2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">x_gap_btwn_rect</span> <span class="o">=</span> <span class="n">dist_btwn_x</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">polygon1_width</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">polygon2_width</span><span class="p">)</span>
+
+        <span class="n">polygon1_height</span> <span class="o">=</span> <span class="n">bound_pts1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">bound_pts1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">polygon2_height</span> <span class="o">=</span> <span class="n">bound_pts2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">bound_pts2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">y</span>
+        <span class="n">dist_btwn_y</span> <span class="o">=</span> <span class="nb">abs</span><span class="p">(</span><span class="n">bound_pts1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">y</span> <span class="o">-</span> <span class="n">bound_pts2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">y_gap_btwn_rect</span> <span class="o">=</span> <span class="n">dist_btwn_y</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">polygon1_height</span><span class="p">)</span> <span class="o">-</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">polygon2_height</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">x_gap_btwn_rect</span> <span class="o">&gt;</span> <span class="n">distance</span> <span class="ow">or</span> <span class="n">y_gap_btwn_rect</span> <span class="o">&gt;</span> <span class="n">distance</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># no overlap</span>
+        <span class="k">return</span> <span class="kc">True</span>  <span class="c1"># overlap exists</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_separated_ground_floor</span><span class="p">(</span><span class="n">base_story</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a separated ground floor from a base_story.&quot;&quot;&quot;</span>
+        <span class="n">bottom</span> <span class="o">=</span> <span class="n">base_story</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span>  <span class="c1"># generate a new bottom floor</span>
+        <span class="n">bottom</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">bottom</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="s1">&#39;Ground&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">bottom</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_separated_top_floor</span><span class="p">(</span><span class="n">base_story</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a separated top floor from a base_story.&quot;&quot;&quot;</span>
+        <span class="n">top</span> <span class="o">=</span> <span class="n">base_story</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span>  <span class="c1"># generate a new top floor</span>
+        <span class="n">move_vec</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">top</span><span class="o">.</span><span class="n">floor_to_floor_height</span> <span class="o">*</span> <span class="p">(</span><span class="n">top</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">top</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">move_vec</span><span class="p">)</span>
+        <span class="n">top</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">top</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="s1">&#39;Top&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">top</span>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">new_b</span> <span class="o">=</span> <span class="n">Building</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
+                         <span class="nb">tuple</span><span class="p">(</span><span class="n">story</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span> <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">))</span>
+        <span class="n">new_b</span><span class="o">.</span><span class="n">_display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span>
+        <span class="n">new_b</span><span class="o">.</span><span class="n">_user_data</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_b</span><span class="o">.</span><span class="n">_properties</span><span class="o">.</span><span class="n">_duplicate_extension_attr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_b</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Building: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

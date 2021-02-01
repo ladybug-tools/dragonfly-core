@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.extensionutil module &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dragonfly.model module" href="dragonfly.model.html" />
+    <link rel="prev" title="dragonfly.dictutil module" href="dragonfly.dictutil.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.dictutil.html" title="Previous Chapter: dragonfly.dictutil module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; dragonfly.dic...</span>
+    </a>
+  </li>
+  <li>
+    <a href="dragonfly.model.html" title="Next Chapter: dragonfly.model module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">dragonfly.mod... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/dragonfly.extensionutil.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="module-dragonfly.extensionutil">
+<span id="dragonfly-extensionutil-module"></span><h1>dragonfly.extensionutil module<a class="headerlink" href="#module-dragonfly.extensionutil" title="Permalink to this headline">¶</a></h1>
+<p>A series of utility functions that are useful across several dragonfly extensions.</p>
+<dl class="py function">
+<dt id="dragonfly.extensionutil.building_extension_dicts">
+<code class="sig-prename descclassname">dragonfly.extensionutil.</code><code class="sig-name descname">building_extension_dicts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">building_list</span></em>, <em class="sig-param"><span class="n">extension_key</span></em>, <em class="sig-param"><span class="n">building_ext_dicts</span></em>, <em class="sig-param"><span class="n">story_ext_dicts</span></em>, <em class="sig-param"><span class="n">room2d_ext_dicts</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/extensionutil.html#building_extension_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.extensionutil.building_extension_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all Building property dictionaires of an extension organized by geometry type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>building_list</strong> – A list of Building dictionaries.</p></li>
+<li><p><strong>extension_key</strong> – Text for the key of the extension (eg. “energy”, “radiance”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>A tuple with three elements</p>
+<ul class="simple">
+<li><p>building_ext_dicts: A list with the Building extension property dictionaries.</p></li>
+<li><p>story_ext_dicts: A list with Story extension property dictionaries.</p></li>
+<li><p>room2d_ext_dicts: A list with Room2D extension property dictionaries.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dragonfly.extensionutil.context_shade_extension_dicts">
+<code class="sig-prename descclassname">dragonfly.extensionutil.</code><code class="sig-name descname">context_shade_extension_dicts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">context_shade_list</span></em>, <em class="sig-param"><span class="n">extension_key</span></em>, <em class="sig-param"><span class="n">context_shade_ext_dicts</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/extensionutil.html#context_shade_extension_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.extensionutil.context_shade_extension_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all ContextShade property dictionaires of an extension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>context_shade_list</strong> – A list of ContextShade dictionaries.</p></li>
+<li><p><strong>extension_key</strong> – Text for the key of the extension (eg. “energy”, “radiance”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>context_shade_ext_dicts – A list with ContextShade extension property
+dictionaries.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dragonfly.extensionutil.model_extension_dicts">
+<code class="sig-prename descclassname">dragonfly.extensionutil.</code><code class="sig-name descname">model_extension_dicts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">extension_key</span></em>, <em class="sig-param"><span class="n">building_ext_dicts</span></em>, <em class="sig-param"><span class="n">story_ext_dicts</span></em>, <em class="sig-param"><span class="n">room2d_ext_dicts</span></em>, <em class="sig-param"><span class="n">context_shade_ext_dicts</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/extensionutil.html#model_extension_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.extensionutil.model_extension_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all Model property dictionaries of an extension organized by geometry type.</p>
+<p>Note that the order in which dictionaries appear in the output lists is the
+same order as the geometry objects appear when requested from the model.
+For example, the shade_ext_dicts align with the model.shades.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – A dictionary representation of an entire honeybee-core Model.</p></li>
+<li><p><strong>extension_key</strong> – Text for the key of the extension (eg. “energy”, “radiance”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>A tuple with four elements</p>
+<ul class="simple">
+<li><p>building_ext_dicts: A list of Building extension property dictionaries that
+align with the serialized model.buildings.</p></li>
+<li><p>story_ext_dicts: A list of Story extension property dictionaries that
+align with the serialized model.stories.</p></li>
+<li><p>room2d_ext_dicts: A list of Room2D extension property dictionaries that
+align with the serialized model.rooms.</p></li>
+<li><p>context_shade_ext_dicts: A list of ContextShade extension property dictionaries
+that align with the serialized model.context_shades.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dragonfly.extensionutil.room2d_extension_dicts">
+<code class="sig-prename descclassname">dragonfly.extensionutil.</code><code class="sig-name descname">room2d_extension_dicts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">room2d_list</span></em>, <em class="sig-param"><span class="n">extension_key</span></em>, <em class="sig-param"><span class="n">room2d_ext_dicts</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/extensionutil.html#room2d_extension_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.extensionutil.room2d_extension_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all Room2D property dictionaires of an extension.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>room2d_list</strong> – A list of Room2D dictionaries.</p></li>
+<li><p><strong>extension_key</strong> – Text for the key of the extension (eg. “energy”, “radiance”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>room2d_ext_dict – A list with Room2D extension property dictionaries.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt id="dragonfly.extensionutil.story_extension_dicts">
+<code class="sig-prename descclassname">dragonfly.extensionutil.</code><code class="sig-name descname">story_extension_dicts</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">story_list</span></em>, <em class="sig-param"><span class="n">extension_key</span></em>, <em class="sig-param"><span class="n">story_ext_dicts</span></em>, <em class="sig-param"><span class="n">room2d_ext_dicts</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/extensionutil.html#story_extension_dicts"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.extensionutil.story_extension_dicts" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get all Building property dictionaires of an extension organized by geometry type.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>building_list</strong> – A list of Building dictionaries.</p></li>
+<li><p><strong>extension_key</strong> – Text for the key of the extension (eg. “energy”, “radiance”).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>A tuple with two elements</p>
+<ul class="simple">
+<li><p>story_ext_dicts: A list with Story extension property dictionaries.</p></li>
+<li><p>room2d_ext_dicts: A list with Room2D extension property dictionaries.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

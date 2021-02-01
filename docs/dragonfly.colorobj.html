@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.colorobj module &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dragonfly.config module" href="dragonfly.config.html" />
+    <link rel="prev" title="dragonfly.building module" href="dragonfly.building.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.building.html" title="Previous Chapter: dragonfly.building module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; dragonfly.bui...</span>
+    </a>
+  </li>
+  <li>
+    <a href="dragonfly.config.html" title="Next Chapter: dragonfly.config module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">dragonfly.con... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/dragonfly.colorobj.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="module-dragonfly.colorobj">
+<span id="dragonfly-colorobj-module"></span><h1>dragonfly.colorobj module<a class="headerlink" href="#module-dragonfly.colorobj" title="Permalink to this headline">¶</a></h1>
+<p>Module for coloring geometry with attributes.</p>
+<dl class="py class">
+<dt id="dragonfly.colorobj.ColorRoom2D">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.colorobj.</code><code class="sig-name descname">ColorRoom2D</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">room_2ds</span></em>, <em class="sig-param"><span class="n">attr_name</span></em>, <em class="sig-param"><span class="n">legend_parameters</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/colorobj.html#ColorRoom2D"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">honeybee.colorobj._ColorObject</span></code></p>
+<p>Object for visualizing Room2D-level attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>room_2ds</strong> – An array of honeybee Room2Ds, which will be colored with the attribute.</p></li>
+<li><p><strong>attr_name</strong> – A text string of an attribute that the input rooms should have.
+This can have ‘.’ that separate the nested attributes from one another.
+For example, ‘properties.energy.program_type’.</p></li>
+<li><p><strong>legend_parameters</strong> – An optional LegendParameter object to change the display
+of the ColorRoom2D (Default: None).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>room_2ds</p></li>
+<li><p>attr_name</p></li>
+<li><p>legend_parameters</p></li>
+<li><p>attr_name_end</p></li>
+<li><p>attributes</p></li>
+<li><p>attributes_unique</p></li>
+<li><p>floor_faces</p></li>
+<li><p>graphic_container</p></li>
+<li><p>min_point</p></li>
+<li><p>max_point</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.attr_name">
+<em class="property">property </em><code class="sig-name descname">attr_name</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.attr_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a text string of an attribute that the input objects should have.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.attr_name_end">
+<em class="property">property </em><code class="sig-name descname">attr_name_end</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.attr_name_end" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get text for the last attribute in the attr_name.</p>
+<p>Useful when attr_name is nested.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.attributes">
+<em class="property">property </em><code class="sig-name descname">attributes</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple of text for the attributes assigned to the objects.</p>
+<p>If the input attr_name is a valid attribute for the object but None is
+assigned, the output will be ‘None’. If the input attr_name is not valid
+for the input object, ‘N/A’ will be returned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.attributes_unique">
+<em class="property">property </em><code class="sig-name descname">attributes_unique</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.attributes_unique" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple of text for the unique attributes assigned to the objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.floor_faces">
+<em class="property">property </em><code class="sig-name descname">floor_faces</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.floor_faces" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an list with a Face3Ds for each Room2D.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.graphic_container">
+<em class="property">property </em><code class="sig-name descname">graphic_container</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.graphic_container" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a ladybug GraphicContainer that relates to this object.</p>
+<p>The GraphicContainer possesses almost all things needed to visualize the
+ColorRooms object including the legend, value_colors, etc.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.legend_parameters">
+<em class="property">property </em><code class="sig-name descname">legend_parameters</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.legend_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set the legend parameters.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.max_point">
+<em class="property">property </em><code class="sig-name descname">max_point</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.max_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Point3D for the maximum of the box around the objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.min_point">
+<em class="property">property </em><code class="sig-name descname">min_point</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.min_point" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Point3D for the minimum of the box around the objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.colorobj.ColorRoom2D.room_2ds">
+<em class="property">property </em><code class="sig-name descname">room_2ds</code><a class="headerlink" href="#dragonfly.colorobj.ColorRoom2D.room_2ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple of dragonfly Room2Ds assigned to this object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

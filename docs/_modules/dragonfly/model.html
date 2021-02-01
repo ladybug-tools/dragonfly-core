@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.model &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.model</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;Dragonfly Model.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">from</span> <span class="nn">._base</span> <span class="kn">import</span> <span class="n">_BaseGeometry</span>
+<span class="kn">from</span> <span class="nn">.properties</span> <span class="kn">import</span> <span class="n">ModelProperties</span>
+<span class="kn">from</span> <span class="nn">.building</span> <span class="kn">import</span> <span class="n">Building</span>
+<span class="kn">from</span> <span class="nn">.context</span> <span class="kn">import</span> <span class="n">ContextShade</span>
+<span class="kn">from</span> <span class="nn">.projection</span> <span class="kn">import</span> <span class="n">meters_to_long_lat_factors</span><span class="p">,</span> <span class="n">polygon_to_lon_lat</span><span class="p">,</span> \
+    <span class="n">origin_long_lat_from_location</span><span class="p">,</span> <span class="n">lon_lat_to_polygon</span>
+<span class="kn">from</span> <span class="nn">dragonfly.config</span> <span class="kn">import</span> <span class="n">folders</span> <span class="k">as</span> <span class="n">df_folders</span>
+<span class="kn">import</span> <span class="nn">dragonfly.writer.model</span> <span class="k">as</span> <span class="nn">writer</span>
+
+<span class="kn">from</span> <span class="nn">honeybee.model</span> <span class="kn">import</span> <span class="n">Model</span> <span class="k">as</span> <span class="n">hb_model</span>
+<span class="kn">from</span> <span class="nn">honeybee.typing</span> <span class="kn">import</span> <span class="n">float_positive</span>
+<span class="kn">from</span> <span class="nn">honeybee.checkdup</span> <span class="kn">import</span> <span class="n">check_duplicate_identifiers</span>
+<span class="kn">from</span> <span class="nn">honeybee.config</span> <span class="kn">import</span> <span class="n">folders</span>
+
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry2d.pointvector</span> <span class="kn">import</span> <span class="n">Point2D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.face</span> <span class="kn">import</span> <span class="n">Face3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.pointvector</span> <span class="kn">import</span> <span class="n">Vector3D</span><span class="p">,</span> <span class="n">Point3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.plane</span> <span class="kn">import</span> <span class="n">Plane</span>
+<span class="kn">from</span> <span class="nn">ladybug.futil</span> <span class="kn">import</span> <span class="n">preparedir</span>
+<span class="kn">from</span> <span class="nn">ladybug.location</span> <span class="kn">import</span> <span class="n">Location</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+
+<div class="viewcode-block" id="Model"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model">[docs]</a><span class="k">class</span> <span class="nc">Model</span><span class="p">(</span><span class="n">_BaseGeometry</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A collection of Buildings and ContextShades for an entire model.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        identifier: Text string for a unique Model ID. Must be &lt; 100 characters</span>
+<span class="sd">            and not contain any spaces or special characters.</span>
+<span class="sd">        buildings: A list of Building objects in the model.</span>
+<span class="sd">        context_shades: A list of ContextShade objects in the model.</span>
+<span class="sd">        units: Text for the units system in which the model geometry</span>
+<span class="sd">            exists. Default: &#39;Meters&#39;. Choose from the following:</span>
+
+<span class="sd">            * Meters</span>
+<span class="sd">            * Millimeters</span>
+<span class="sd">            * Feet</span>
+<span class="sd">            * Inches</span>
+<span class="sd">            * Centimeters</span>
+
+<span class="sd">        tolerance: The maximum difference between x, y, and z values at which</span>
+<span class="sd">            vertices are considered equivalent. Zero indicates that no tolerance</span>
+<span class="sd">            checks should be performed and certain capabilities like to_honeybee</span>
+<span class="sd">            will not be available. None indicates that the tolerance will be</span>
+<span class="sd">            set based on the units above, with the tolerance consistently being</span>
+<span class="sd">            between 1 cm and 1 mm (roughly the tolerance implicit in the OpenStudio</span>
+<span class="sd">            SDK). (Default: None).</span>
+<span class="sd">        angle_tolerance: The max angle difference in degrees that vertices are allowed</span>
+<span class="sd">            to differ from one another in order to consider them colinear. Zero indicates</span>
+<span class="sd">            that no angle tolerance checks should be performed. (Default: 1.0).</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * identifier</span>
+<span class="sd">        * display_name</span>
+<span class="sd">        * units</span>
+<span class="sd">        * tolerance</span>
+<span class="sd">        * angle_tolerance</span>
+<span class="sd">        * buildings</span>
+<span class="sd">        * context_shades</span>
+<span class="sd">        * stories</span>
+<span class="sd">        * room_2ds</span>
+<span class="sd">        * average_story_count</span>
+<span class="sd">        * average_story_count_above_ground</span>
+<span class="sd">        * average_height</span>
+<span class="sd">        * average_height_above_ground</span>
+<span class="sd">        * footprint_area</span>
+<span class="sd">        * floor_area</span>
+<span class="sd">        * exterior_wall_area</span>
+<span class="sd">        * exterior_aperture_area</span>
+<span class="sd">        * volume</span>
+<span class="sd">        * min</span>
+<span class="sd">        * max</span>
+<span class="sd">        * user_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_buildings&#39;</span><span class="p">,</span> <span class="s1">&#39;_context_shades&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_units&#39;</span><span class="p">,</span> <span class="s1">&#39;_tolerance&#39;</span><span class="p">,</span> <span class="s1">&#39;_angle_tolerance&#39;</span><span class="p">)</span>
+    <span class="n">UNITS</span> <span class="o">=</span> <span class="n">hb_model</span><span class="o">.</span><span class="n">UNITS</span>
+    <span class="n">UNITS_TOLERANCES</span> <span class="o">=</span> <span class="n">hb_model</span><span class="o">.</span><span class="n">UNITS_TOLERANCES</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">buildings</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">context_shades</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Meters&#39;</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">angle_tolerance</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A collection of Buildings and ContextShades for an entire model.&quot;&quot;&quot;</span>
+        <span class="n">_BaseGeometry</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span>  <span class="c1"># process the identifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">angle_tolerance</span> <span class="o">=</span> <span class="n">angle_tolerance</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">buildings</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="n">buildings</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_building</span><span class="p">(</span><span class="n">bldg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">context_shades</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">shade</span> <span class="ow">in</span> <span class="n">context_shades</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_context_shade</span><span class="p">(</span><span class="n">shade</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">ModelProperties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Model.from_geojson"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.from_geojson">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_geojson</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">geojson_file_path</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">point</span><span class="o">=</span><span class="n">Point2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                     <span class="n">all_polygons_to_buildings</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Meters&#39;</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                     <span class="n">angle_tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make a Model from a geojson file.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            geojson_file_path: Text for the full path to the geojson file to load as</span>
+<span class="sd">                Model.</span>
+<span class="sd">            location: An optional ladybug location object with longitude and</span>
+<span class="sd">                latitude data defining the origin of the geojson file. If nothing</span>
+<span class="sd">                is passed, the origin is autocalculated as the bottom-left corner</span>
+<span class="sd">                of the bounding box of all building footprints in the geojson file</span>
+<span class="sd">                (Default: None).</span>
+<span class="sd">            point: A ladybug_geometry Point2D for where the location object exists</span>
+<span class="sd">                within the space of a scene. The coordinates of this point are</span>
+<span class="sd">                expected to be in the expected units of this Model (Default: (0, 0)).</span>
+<span class="sd">            units: Text for the units system in which the model geometry</span>
+<span class="sd">                exists. Default: &#39;Meters&#39;. Choose from the following:</span>
+
+<span class="sd">                * Meters</span>
+<span class="sd">                * Millimeters</span>
+<span class="sd">                * Feet</span>
+<span class="sd">                * Inches</span>
+<span class="sd">                * Centimeters</span>
+
+<span class="sd">                Note that this method assumes the point coordinates are in the same</span>
+<span class="sd">                units.</span>
+<span class="sd">            all_polygons_to_buildings: Boolean to indicate if all geometries in the</span>
+<span class="sd">                geojson file should be considered buildings. If False, this method</span>
+<span class="sd">                will only generate footprints from geometries that are defined as a</span>
+<span class="sd">                &#39;Building&#39; in the type field of its corresponding properties</span>
+<span class="sd">                (Default: False).</span>
+<span class="sd">            tolerance: The maximum difference between x, y, and z values at which</span>
+<span class="sd">                vertices are considered equivalent. Zero indicates that no tolerance</span>
+<span class="sd">                checks should be performed and certain capabilities like to_honeybee</span>
+<span class="sd">                will not be available. Default: 0.</span>
+<span class="sd">            angle_tolerance: The max angle difference in degrees that vertices are</span>
+<span class="sd">                allowed to differ from one another in order to consider them colinear.</span>
+<span class="sd">                Zero indicates that no angle tolerance checks should be performed.</span>
+<span class="sd">                Default: 0.</span>
+<span class="sd">        </span>
+<span class="sd">        Returns:</span>
+<span class="sd">            A tuple with the two items below.</span>
+
+<span class="sd">            * model -- A dragonfly Model derived from the geoJSON.</span>
+
+<span class="sd">            * location -- A ladybug Location object, which contains latitude and</span>
+<span class="sd">                longitude information and can be used to re-serialize the model</span>
+<span class="sd">                back to geoJSON.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># parse the geoJSON into a dictionary</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">geojson_file_path</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">fp</span><span class="p">)</span>
+
+        <span class="c1"># Get the list of building data</span>
+        <span class="k">if</span> <span class="n">all_polygons_to_buildings</span><span class="p">:</span>
+            <span class="n">bldgs_data</span> <span class="o">=</span> \
+                <span class="p">[</span><span class="n">bldg_data</span> <span class="k">for</span> <span class="n">bldg_data</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;geometry&#39;</span> <span class="ow">in</span> <span class="n">bldg_data</span>
+                 <span class="ow">and</span> <span class="n">bldg_data</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;Polygon&#39;</span><span class="p">,</span> <span class="s1">&#39;MultiPolygon&#39;</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">bldgs_data</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">bldg_data</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="s1">&#39;type&#39;</span> <span class="ow">in</span> <span class="n">bldg_data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">bldg_data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Building&#39;</span><span class="p">:</span>
+                        <span class="n">bldgs_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bldg_data</span><span class="p">)</span>
+
+        <span class="c1"># Check if buildings exist</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">bldgs_data</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;No building footprints were found in </span><span class="si">{}</span><span class="s1">. Check the &#39;</span> \
+            <span class="s1">&#39;geometry coordinates in the file and if the &quot;all_polygons_to_buildings&quot; &#39;</span> \
+            <span class="s1">&#39;argument is set correctly.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">geojson_file_path</span><span class="p">)</span>
+
+        <span class="c1"># if model units is not Meters, convert non-meter user inputs to meters</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="o">!=</span> <span class="s1">&#39;Meters&#39;</span><span class="p">:</span>
+            <span class="n">scale_to_meters</span> <span class="o">=</span> <span class="n">hb_model</span><span class="o">.</span><span class="n">conversion_factor_to_meters</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scale_to_meters</span><span class="p">)</span>
+
+        <span class="c1"># Get the longitude and latitude point in the geojson that corresponds to the</span>
+        <span class="c1"># model origin (point). If location is not passed by user, the coordinates are</span>
+        <span class="c1"># taken or derived from the geojson file.</span>
+        <span class="k">if</span> <span class="n">location</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">point_lon_lat</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">if</span> <span class="s1">&#39;project&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+                <span class="n">proj_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span>
+                <span class="k">if</span> <span class="s1">&#39;latitude&#39;</span> <span class="ow">in</span> <span class="n">proj_data</span> <span class="ow">and</span> <span class="s1">&#39;longitude&#39;</span> <span class="ow">in</span> <span class="n">proj_data</span><span class="p">:</span>
+                    <span class="n">point_lon_lat</span> <span class="o">=</span> <span class="p">(</span><span class="n">proj_data</span><span class="p">[</span><span class="s1">&#39;latitude&#39;</span><span class="p">],</span> <span class="n">proj_data</span><span class="p">[</span><span class="s1">&#39;longitude&#39;</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">point_lon_lat</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">point_lon_lat</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_bottom_left_coordinate_from_geojson</span><span class="p">(</span><span class="n">bldgs_data</span><span class="p">)</span>
+            <span class="n">location</span> <span class="o">=</span> <span class="n">Location</span><span class="p">(</span><span class="n">longitude</span><span class="o">=</span><span class="n">point_lon_lat</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">latitude</span><span class="o">=</span><span class="n">point_lon_lat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="c1"># The model point may not be at (0, 0), so shift the longitude and latitude to</span>
+        <span class="c1"># get the equivalent point in longitude and latitude for (0, 0) in the model.</span>
+        <span class="n">origin_lon_lat</span> <span class="o">=</span> <span class="n">origin_long_lat_from_location</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+        <span class="n">_convert_facs</span> <span class="o">=</span> <span class="n">meters_to_long_lat_factors</span><span class="p">(</span><span class="n">origin_lon_lat</span><span class="p">)</span>
+        <span class="n">convert_facs</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">_convert_facs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span> <span class="o">/</span> <span class="n">_convert_facs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="c1"># Extract buildings</span>
+        <span class="n">bldgs</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bldg_data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">bldgs_data</span><span class="p">):</span>
+            <span class="c1"># Set footprints</span>
+            <span class="n">footprint</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">geojson_coordinates</span> <span class="o">=</span> <span class="n">bldg_data</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">bldg_data</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Polygon&#39;</span><span class="p">:</span>
+                <span class="n">face3d</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_geojson_coordinates_to_face3d</span><span class="p">(</span>
+                    <span class="n">geojson_coordinates</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">)</span>
+                <span class="n">footprint</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">face3d</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># If MultiPolygon account for multiple polygons</span>
+                <span class="k">for</span> <span class="n">_geojson_coordinates</span> <span class="ow">in</span> <span class="n">geojson_coordinates</span><span class="p">:</span>
+                    <span class="n">face3d</span> <span class="o">=</span> <span class="bp">cls</span><span class="o">.</span><span class="n">_geojson_coordinates_to_face3d</span><span class="p">(</span>
+                        <span class="n">_geojson_coordinates</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">)</span>
+                    <span class="n">footprint</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">face3d</span><span class="p">)</span>
+
+            <span class="c1"># Set other building properties</span>
+            <span class="n">prop</span> <span class="o">=</span> <span class="n">bldg_data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span>
+
+            <span class="c1"># Define building heights from file or assign default single-storey building</span>
+            <span class="k">if</span> <span class="s1">&#39;maximum_roof_height&#39;</span> <span class="ow">in</span> <span class="n">prop</span> <span class="ow">and</span> <span class="s1">&#39;number_of_stories&#39;</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">:</span>
+                <span class="n">story_height</span> <span class="o">=</span> <span class="n">prop</span><span class="p">[</span><span class="s2">&quot;maximum_roof_height&quot;</span><span class="p">]</span> <span class="o">/</span> <span class="n">prop</span><span class="p">[</span><span class="s1">&#39;number_of_stories&#39;</span><span class="p">]</span>
+                <span class="n">story_heights</span> <span class="o">=</span> <span class="p">[</span><span class="n">story_height</span><span class="p">]</span> <span class="o">*</span> <span class="n">prop</span><span class="p">[</span><span class="s1">&#39;number_of_stories&#39;</span><span class="p">]</span>
+            <span class="k">elif</span> <span class="s1">&#39;number_of_stories&#39;</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">:</span>
+                <span class="n">story_heights</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">]</span> <span class="o">*</span> <span class="n">prop</span><span class="p">[</span><span class="s1">&#39;number_of_stories&#39;</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># just import it as one story per building</span>
+                <span class="n">story_heights</span> <span class="o">=</span> <span class="p">[</span><span class="mf">3.5</span><span class="p">]</span>
+
+            <span class="c1"># Make Building object</span>
+            <span class="n">bldg_id</span> <span class="o">=</span> <span class="s1">&#39;Building_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">prop</span> <span class="k">else</span> <span class="n">prop</span><span class="p">[</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="n">bldg</span> <span class="o">=</span> <span class="n">Building</span><span class="o">.</span><span class="n">from_footprint</span><span class="p">(</span><span class="n">bldg_id</span><span class="p">,</span> <span class="n">footprint</span><span class="p">,</span> <span class="n">story_heights</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">prop</span><span class="p">:</span>
+                <span class="n">bldg</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="n">prop</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+            <span class="n">bldgs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bldg</span><span class="p">)</span>
+
+        <span class="c1"># Define model id and name from file or assign defaults</span>
+        <span class="n">model_id</span><span class="p">,</span> <span class="n">model_name</span> <span class="o">=</span> <span class="s1">&#39;Model_1&#39;</span><span class="p">,</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="s1">&#39;project&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="s1">&#39;id&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]:</span>
+                <span class="n">model_id</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;name&#39;</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]:</span>
+                <span class="n">model_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Make model, in meters and then convert to user-defined units</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">cls</span><span class="p">(</span><span class="n">model_id</span><span class="p">,</span> <span class="n">buildings</span><span class="o">=</span><span class="n">bldgs</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Meters&#39;</span><span class="p">,</span>
+                    <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">,</span> <span class="n">angle_tolerance</span><span class="o">=</span><span class="n">angle_tolerance</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">model_name</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="n">model_name</span>
+        <span class="k">if</span> <span class="n">units</span> <span class="o">!=</span> <span class="s1">&#39;Meters&#39;</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">convert_to_units</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">model</span><span class="p">,</span> <span class="n">location</span></div>
+
+<div class="viewcode-block" id="Model.from_dict"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize a Model from a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: A dictionary representation of a Model object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check the type of dictionary</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Model&#39;</span><span class="p">,</span> <span class="s1">&#39;Expected Model dictionary. &#39;</span> \
+            <span class="s1">&#39;Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+
+        <span class="c1"># import the tolerance values</span>
+        <span class="n">tol</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="s1">&#39;tolerance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tolerance&#39;</span><span class="p">]</span>
+        <span class="n">angle_tol</span> <span class="o">=</span> <span class="mi">0</span> <span class="k">if</span> <span class="s1">&#39;angle_tolerance&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;angle_tolerance&#39;</span><span class="p">]</span>
+
+        <span class="n">buildings</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># import buildings</span>
+        <span class="k">if</span> <span class="s1">&#39;buildings&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;buildings&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">buildings</span> <span class="o">=</span> <span class="p">[</span><span class="n">Building</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">bldg</span><span class="p">,</span> <span class="n">tol</span><span class="p">)</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;buildings&#39;</span><span class="p">]]</span>
+        <span class="n">context_shades</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># import context shades</span>
+        <span class="k">if</span> <span class="s1">&#39;context_shades&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;context_shades&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">context_shades</span> <span class="o">=</span> <span class="p">[</span><span class="n">ContextShade</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">s</span><span class="p">)</span> <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;context_shades&#39;</span><span class="p">]]</span>
+
+        <span class="c1"># import the units</span>
+        <span class="n">units</span> <span class="o">=</span> <span class="s1">&#39;Meters&#39;</span> <span class="k">if</span> <span class="s1">&#39;units&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+
+        <span class="c1"># build the model object</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;identifier&#39;</span><span class="p">],</span> <span class="n">buildings</span><span class="p">,</span> <span class="n">context_shades</span><span class="p">,</span>
+                      <span class="n">units</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">angle_tol</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;display_name&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;user_data&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">user_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span>
+
+        <span class="c1"># assign extension properties to the model</span>
+        <span class="n">model</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">apply_properties_from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">model</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">units</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get or set Text for the units system in which the model geometry exists.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_units</span>
+
+    <span class="nd">@units</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">value</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">UNITS</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1"> is not supported as a units system. &#39;</span> \
+            <span class="s1">&#39;Choose from the following: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_units</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get or set a number for the max meaningful difference between x, y, z values.</span>
+
+<span class="sd">        This value should be in the Model&#39;s units. Zero indicates cases where</span>
+<span class="sd">        no tolerance checks should be performed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tolerance</span>
+
+    <span class="nd">@tolerance</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tolerance</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;model tolerance&#39;</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> \
+            <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">UNITS_TOLERANCES</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">]</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">angle_tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get or set a number for the max meaningful angle difference in degrees.</span>
+
+<span class="sd">        Face3D normal vectors differing by this amount are not considered parallel</span>
+<span class="sd">        and Face3D segments that differ from 180 by this amount are not considered</span>
+<span class="sd">        colinear. Zero indicates cases where no angle_tolerance checks should be</span>
+<span class="sd">        performed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_angle_tolerance</span>
+
+    <span class="nd">@angle_tolerance</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">angle_tolerance</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_angle_tolerance</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;model angle_tolerance&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">buildings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a tuple of all Building objects in the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">context_shades</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a tuple of all ContextShade objects in the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">stories</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a tuple of all unique Story objects in the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">story</span> <span class="k">for</span> <span class="n">building</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span>
+                     <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">building</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">room_2ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a tuple of all unique Room2D objects in the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">room2d</span> <span class="k">for</span> <span class="n">building</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span>
+                     <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">building</span><span class="o">.</span><span class="n">_unique_stories</span>
+                     <span class="k">for</span> <span class="n">room2d</span> <span class="ow">in</span> <span class="n">story</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">average_story_count</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the average number of stories for the buildings in the model.</span>
+
+<span class="sd">        Note that this will be a float and not an integer in most cases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">story_count</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">average_story_count_above_ground</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the average number of above-ground stories for the buildings in the model.</span>
+
+<span class="sd">        Note that this will be a float and not an integer in most cases.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">story_count_above_ground</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span> <span class="o">/</span> \
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">average_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the average height of the Buildings as an absolute Z-coordinate.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">height</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">average_height_above_ground</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the average building height relative to the first floor above ground.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">height_above_ground</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span> <span class="o">/</span> \
+            <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">footprint_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total footprint area of all Buildings in the Model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">footprint_area</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">floor_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total floor area of all Buildings in the Model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">floor_area</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exterior_wall_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total exterior wall area for all Buildings in the Model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">exterior_wall_area</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exterior_aperture_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total exterior aperture area for all Buildings.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">exterior_aperture_area</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the volume of all the Buildings in the Model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">bldg</span><span class="o">.</span><span class="n">volume</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Point2D for the min bounding rectangle vertex in the XY plane.</span>
+
+<span class="sd">        This is useful in calculations to determine if this Model is in proximity</span>
+<span class="sd">        to other objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Point2D for the max bounding rectangle vertex in the XY plane.</span>
+
+<span class="sd">        This is useful in calculations to determine if this Model is in proximity</span>
+<span class="sd">        to other objects.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Model.add_model"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.add_model">[docs]</a>    <span class="k">def</span> <span class="nf">add_model</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other_model</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add another Dragonfly Model object to this one.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other_model</span><span class="p">,</span> <span class="n">Model</span><span class="p">),</span> \
+            <span class="s1">&#39;Expected Dragonfly Model. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">other_model</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span> <span class="o">+</span> <span class="n">other_model</span><span class="o">.</span><span class="n">_buildings</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span> <span class="o">+</span> <span class="n">other_model</span><span class="o">.</span><span class="n">_context_shades</span></div>
+
+<div class="viewcode-block" id="Model.add_building"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.add_building">[docs]</a>    <span class="k">def</span> <span class="nf">add_building</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a Building object to the model.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">Building</span><span class="p">),</span> <span class="s1">&#39;Expected Building. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.add_context_shade"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.add_context_shade">[docs]</a>    <span class="k">def</span> <span class="nf">add_context_shade</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obj</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a ContextShade object to the model.&quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">ContextShade</span><span class="p">),</span> \
+            <span class="s1">&#39;Expected ContextShade. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">obj</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.buildings_by_identifier"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.buildings_by_identifier">[docs]</a>    <span class="k">def</span> <span class="nf">buildings_by_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifiers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of Building objects in the model given Building identifiers.&quot;&quot;&quot;</span>
+        <span class="n">buildings</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="n">identifiers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">bldg</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">identifier</span><span class="p">:</span>
+                    <span class="n">buildings</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bldg</span><span class="p">)</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;Building &quot;</span><span class="si">{}</span><span class="s1">&quot; was not found in the model.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">buildings</span></div>
+
+<div class="viewcode-block" id="Model.context_shade_by_identifier"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.context_shade_by_identifier">[docs]</a>    <span class="k">def</span> <span class="nf">context_shade_by_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifiers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of ContextShade objects in the model given ContextShade identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context_shades</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="n">identifiers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">shd</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">identifier</span><span class="p">:</span>
+                    <span class="n">context_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s1">&#39;ContextShade &quot;</span><span class="si">{}</span><span class="s1">&quot; was not found in the model.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">context_shades</span></div>
+
+<div class="viewcode-block" id="Model.move"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moving_vec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move this Model along a vector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            moving_vec: A ladybug_geometry Vector3D with the direction and distance</span>
+<span class="sd">                to move the model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">:</span>
+            <span class="n">bldg</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">shade</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">:</span>
+            <span class="n">shade</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.rotate_xy"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.rotate_xy">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rotate this Model counterclockwise in the world XY plane by a certain angle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle: An angle in degrees.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D for the origin around which the</span>
+<span class="sd">                object will be rotated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">:</span>
+            <span class="n">bldg</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">shade</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">:</span>
+            <span class="n">shade</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.reflect"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.reflect">[docs]</a>    <span class="k">def</span> <span class="nf">reflect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plane</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reflect this Model across a plane with the input normal vector and origin.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plane: A ladybug_geometry Plane across which the object will</span>
+<span class="sd">                be reflected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">:</span>
+            <span class="n">bldg</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">shade</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">:</span>
+            <span class="n">shade</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.scale"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Scale this Model by a factor from an origin point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D representing the origin from which</span>
+<span class="sd">                to scale. If None, it will be scaled from the World origin (0, 0, 0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">:</span>
+            <span class="n">bldg</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">shade</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">:</span>
+            <span class="n">shade</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.convert_to_units"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.convert_to_units">[docs]</a>    <span class="k">def</span> <span class="nf">convert_to_units</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;Meters&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert all of the geometry in this model to certain units.</span>
+
+<span class="sd">        This involves scaling the geometry, scaling the Model tolerance, and</span>
+<span class="sd">        changing the Model&#39;s units property.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            units: Text for the units to which the Model geometry should be</span>
+<span class="sd">                converted. Default: Meters. Choose from the following:</span>
+
+<span class="sd">                * Meters</span>
+<span class="sd">                * Millimeters</span>
+<span class="sd">                * Feet</span>
+<span class="sd">                * Inches</span>
+<span class="sd">                * Centimeters</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="n">units</span><span class="p">:</span>
+            <span class="n">scale_fac1</span> <span class="o">=</span> <span class="n">hb_model</span><span class="o">.</span><span class="n">conversion_factor_to_meters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">scale_fac2</span> <span class="o">=</span> <span class="n">hb_model</span><span class="o">.</span><span class="n">conversion_factor_to_meters</span><span class="p">(</span><span class="n">units</span><span class="p">)</span>
+            <span class="n">scale_fac</span> <span class="o">=</span> <span class="n">scale_fac1</span> <span class="o">/</span> <span class="n">scale_fac2</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scale_fac</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">*</span> <span class="n">scale_fac</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="n">units</span></div>
+
+<div class="viewcode-block" id="Model.check_duplicate_building_identifiers"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.check_duplicate_building_identifiers">[docs]</a>    <span class="k">def</span> <span class="nf">check_duplicate_building_identifiers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check that there are no duplicate Building identifiers in the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">check_duplicate_identifiers</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">,</span> <span class="n">raise_exception</span><span class="p">,</span> <span class="s1">&#39;Building&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.check_duplicate_context_shade_identifiers"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.check_duplicate_context_shade_identifiers">[docs]</a>    <span class="k">def</span> <span class="nf">check_duplicate_context_shade_identifiers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check that there are no duplicate ContextShade identifiers in the model.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">check_duplicate_identifiers</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">,</span> <span class="n">raise_exception</span><span class="p">,</span> <span class="s1">&#39;ContextShade&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Model.check_missing_adjacencies"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.check_missing_adjacencies">[docs]</a>    <span class="k">def</span> <span class="nf">check_missing_adjacencies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check that all Room2Ds have adjacent objects that exist within each Story.&quot;&quot;&quot;</span>
+        <span class="n">bldg_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">story</span> <span class="ow">in</span> <span class="n">bldg</span><span class="o">.</span><span class="n">_unique_stories</span><span class="p">:</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">story</span><span class="o">.</span><span class="n">check_missing_adjacencies</span><span class="p">(</span><span class="kc">False</span><span class="p">):</span>
+                    <span class="n">bldg_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bldg</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bldg_ids</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="k">if</span> <span class="n">raise_exception</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;The following buildings have missing adjacencies in &#39;</span>
+                                 <span class="s1">&#39;the Model:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bldg_ids</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Model.to_honeybee"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.to_honeybee">[docs]</a>    <span class="k">def</span> <span class="nf">to_honeybee</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_per_model</span><span class="o">=</span><span class="s1">&#39;Building&#39;</span><span class="p">,</span> <span class="n">shade_distance</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">use_multiplier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert Dragonfly Model to an array of Honeybee Models.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            object_per_model: Text to describe how the input Buildings should be</span>
+<span class="sd">                divided across the output Models. (Default: &#39;Building&#39;). Choose from</span>
+<span class="sd">                the following options:</span>
+
+<span class="sd">                * District - All buildings will be added to a single Honeybee Model.</span>
+<span class="sd">                  Such a Model can take a long time to simulate so this is only</span>
+<span class="sd">                  recommended for small numbers of buildings or cases where</span>
+<span class="sd">                  exchange of data between Buildings is necessary.</span>
+<span class="sd">                * Building - Each building will be exported into its own Model.</span>
+<span class="sd">                  For each Model, the other buildings input to this component will</span>
+<span class="sd">                  appear as context shade geometry.</span>
+<span class="sd">                * Story - Each Story of each Building will be exported into its</span>
+<span class="sd">                  own Model. For each Honeybee Model, the other input Buildings</span>
+<span class="sd">                  will appear as context shade geometry as will all of the other</span>
+<span class="sd">                  stories of the same building.</span>
+
+<span class="sd">            shade_distance: An optional number to note the distance beyond which other</span>
+<span class="sd">                objects&#39; shade should not be exported into a given Model. This is</span>
+<span class="sd">                helpful for reducing the simulation run time of each Model when other</span>
+<span class="sd">                connected buildings are too far away to have a meaningful impact on</span>
+<span class="sd">                the results. If None, all other buildings will be included as context</span>
+<span class="sd">                shade in each and every Model. Set to 0 to exclude all neighboring</span>
+<span class="sd">                buildings from the resulting models. (Default: None).</span>
+<span class="sd">            use_multiplier: If True, the multipliers on this Model&#39;s Stories will be</span>
+<span class="sd">                passed along to the generated Honeybee Room objects, indicating the</span>
+<span class="sd">                simulation will be run once for each unique room and then results</span>
+<span class="sd">                will be multiplied. If False, full geometry objects will be written</span>
+<span class="sd">                for each and every floor in the building that are represented through</span>
+<span class="sd">                multipliers and all resulting multipliers will be 1. (Default: True).</span>
+<span class="sd">            add_plenum: Boolean to indicate whether ceiling/floor plenums should</span>
+<span class="sd">                be auto-generated for the Rooms. (Default: False).</span>
+<span class="sd">            cap: Boolean to note whether building shade representations should be capped</span>
+<span class="sd">                with a top face. Usually, this is not necessary to account for</span>
+<span class="sd">                blocked sun and is only needed when it&#39;s important to account for</span>
+<span class="sd">                reflected sun off of roofs. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance in z values of floor_height and</span>
+<span class="sd">                floor_to_ceiling_height at which adjacent Faces will be split.</span>
+<span class="sd">                This is also used in the generation of Windows. This must be a</span>
+<span class="sd">                positive, non-zero number. If None, the Model&#39;s own tolerance</span>
+<span class="sd">                will be used. Default: None.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            An array of Honeybee Models that together represent this Dragonfly Model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check the tolerance, which is required to convert to honeybee</span>
+        <span class="n">tolerance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="k">if</span> <span class="n">tolerance</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">tolerance</span>
+        <span class="k">assert</span> <span class="n">tolerance</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> \
+            <span class="s1">&#39;Model tolerance must be non-zero to use Model.to_honeybee.&#39;</span>
+
+        <span class="c1"># create the model objects</span>
+        <span class="k">if</span> <span class="n">object_per_model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">object_per_model</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Building&#39;</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="n">Building</span><span class="o">.</span><span class="n">buildings_to_honeybee</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">,</span> <span class="n">shade_distance</span><span class="p">,</span>
+                <span class="n">use_multiplier</span><span class="p">,</span> <span class="n">add_plenum</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">object_per_model</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;Story&#39;</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="n">Building</span><span class="o">.</span><span class="n">stories_to_honeybee</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">,</span> <span class="n">shade_distance</span><span class="p">,</span>
+                <span class="n">use_multiplier</span><span class="p">,</span> <span class="n">add_plenum</span><span class="p">,</span> <span class="n">cap</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">object_per_model</span><span class="o">.</span><span class="n">title</span><span class="p">()</span> <span class="o">==</span> <span class="s1">&#39;District&#39;</span><span class="p">:</span>
+            <span class="n">models</span> <span class="o">=</span> <span class="p">[</span><span class="n">Building</span><span class="o">.</span><span class="n">district_to_honeybee</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">,</span> <span class="n">use_multiplier</span><span class="p">,</span> <span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)]</span>
+            <span class="k">for</span> <span class="n">shd_group</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="n">shd_group</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">():</span>
+                    <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+                        <span class="n">model</span><span class="o">.</span><span class="n">add_shade</span><span class="p">(</span><span class="n">shd</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unrecognized object_per_model input: &#39;</span>
+                             <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">object_per_model</span><span class="p">))</span>
+
+        <span class="c1"># change the tolerance and units systems to match the dragonfly model</span>
+        <span class="k">for</span> <span class="n">model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">=</span> <span class="n">tolerance</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">angle_tolerance</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_tolerance</span>
+
+        <span class="c1"># transfer Model extension attributes to the honeybee models</span>
+        <span class="k">for</span> <span class="n">h_model</span> <span class="ow">in</span> <span class="n">models</span><span class="p">:</span>
+            <span class="n">h_model</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span><span class="n">h_model</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">models</span></div>
+
+<div class="viewcode-block" id="Model.to_geojson_dict"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.to_geojson_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_geojson_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">point</span><span class="o">=</span><span class="n">Point2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert Dragonfly Model to a geoJSON-style Python dictionary.</span>
+
+<span class="sd">        This dictionary can be written into a JSON, which is then a valid geoJSON</span>
+<span class="sd">        that can be visualized in any geoJSON viewer. Each dragonfly Building</span>
+<span class="sd">        will appear in the geoJSON as a single feature (either as a Polygon or</span>
+<span class="sd">        a MultiPolygon).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            location: A ladybug Location object possessing longitude and latitude data.</span>
+<span class="sd">            point: A ladybug_geometry Point2D for where the location object exists</span>
+<span class="sd">                within the space of a scene. The coordinates of this point are</span>
+<span class="sd">                expected to be in the units of this Model. (Default: (0, 0)).</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A Python dictionary in a geoJSON style with each Building in the Model</span>
+<span class="sd">            as a separate feature.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set up the base dictionary for the geoJSON</span>
+        <span class="n">geojson_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;FeatureCollection&#39;</span><span class="p">,</span> <span class="s1">&#39;features&#39;</span><span class="p">:</span> <span class="p">[],</span> <span class="s1">&#39;mappers&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+
+        <span class="c1"># assign the site information in the project key</span>
+        <span class="n">project_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;id&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span><span class="p">,</span>
+            <span class="s1">&#39;city&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">city</span><span class="p">,</span>
+            <span class="s1">&#39;country&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">country</span><span class="p">,</span>
+            <span class="s1">&#39;elevation&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">elevation</span><span class="p">,</span>
+            <span class="s1">&#39;latitude&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">latitude</span><span class="p">,</span>
+            <span class="s1">&#39;longitude&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span>
+            <span class="s1">&#39;time_zone&#39;</span><span class="p">:</span> <span class="n">location</span><span class="o">.</span><span class="n">time_zone</span>
+        <span class="p">}</span>
+        <span class="n">geojson_dict</span><span class="p">[</span><span class="s1">&#39;project&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">project_dict</span>
+
+        <span class="c1"># ensure that the Model we are working with is in meters</span>
+        <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s1">&#39;Meters&#39;</span><span class="p">:</span>
+            <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span>  <span class="c1"># duplicate to avoid editing this object</span>
+            <span class="n">model</span><span class="o">.</span><span class="n">convert_to_units</span><span class="p">(</span><span class="s1">&#39;Meters&#39;</span><span class="p">)</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">hb_model</span><span class="o">.</span><span class="n">conversion_factor_to_meters</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">units</span><span class="p">))</span>
+
+        <span class="c1"># get the conversion factors over to (longitude, latitude)</span>
+        <span class="n">origin_lon_lat</span> <span class="o">=</span> <span class="n">origin_long_lat_from_location</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+        <span class="n">convert_facs</span> <span class="o">=</span> <span class="n">meters_to_long_lat_factors</span><span class="p">(</span><span class="n">origin_lon_lat</span><span class="p">)</span>
+
+        <span class="c1"># export each building as a feature in the file</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">model</span><span class="o">.</span><span class="n">buildings</span><span class="p">):</span>
+            <span class="c1"># create the base dictionary</span>
+            <span class="n">feature_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;geometry&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;properties&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Feature&#39;</span><span class="p">}</span>
+
+            <span class="c1"># add the geometry including coordinates</span>
+            <span class="n">footprint</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">footprint</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">footprint</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Polygon&#39;</span>
+                <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_face3d_to_geojson_coordinates</span><span class="p">(</span>
+                        <span class="n">footprint</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MultiPolygon&#39;</span>
+                <span class="n">all_coords</span> <span class="o">=</span> <span class="p">[]</span>
+                <span class="k">for</span> <span class="n">floor</span> <span class="ow">in</span> <span class="n">footprint</span><span class="p">:</span>
+                    <span class="n">all_coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_face3d_to_geojson_coordinates</span><span class="p">(</span>
+                            <span class="n">floor</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">))</span>
+                <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">all_coords</span>
+
+            <span class="c1"># add several of the properties to the geoJSON</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;building_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Mixed use&#39;</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;floor_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">floor_area</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;footprint_area&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">footprint_area</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">identifier</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">display_name</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;number_of_stories&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bldg</span><span class="o">.</span><span class="n">story_count</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;number_of_stories_above_ground&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">bldg</span><span class="o">.</span><span class="n">story_count_above_ground</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;maximum_roof_height&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">bldg</span><span class="o">.</span><span class="n">height_above_ground</span>
+            <span class="n">feature_dict</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;Building&#39;</span>
+
+            <span class="c1"># append the feature to the global dictionary</span>
+            <span class="n">geojson_dict</span><span class="p">[</span><span class="s1">&#39;features&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">feature_dict</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">geojson_dict</span></div>
+
+<div class="viewcode-block" id="Model.to_geojson"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.to_geojson">[docs]</a>    <span class="k">def</span> <span class="nf">to_geojson</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">location</span><span class="p">,</span> <span class="n">point</span><span class="o">=</span><span class="n">Point2D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">folder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert Dragonfly Model to a geoJSON of buildings footprints.</span>
+
+<span class="sd">        This geoJSON will be in a format that is compatible with the URBANopt SDK,</span>
+<span class="sd">        including properties for floor_area, footprint_area, and detailed_model_filename,</span>
+<span class="sd">        which will align with the paths to OpenStudio model (.osm) files output</span>
+<span class="sd">        from honeybee Models translated to OSM.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            location: A ladybug Location object possessing longitude and latitude data.</span>
+<span class="sd">            point: A ladybug_geometry Point2D for where the location object exists</span>
+<span class="sd">                within the space of a scene. The coordinates of this point are</span>
+<span class="sd">                expected to be in the units of this Model. (Default: (0, 0)).</span>
+<span class="sd">            folder: Text for the full path to the folder where the OpenStudio</span>
+<span class="sd">                model files for each building are written. This is also the location</span>
+<span class="sd">                where the geojson will be written. If None, the honeybee default</span>
+<span class="sd">                simulation folder will be used (Default: None).</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The path to a geoJSON file that contains polygons for all of the</span>
+<span class="sd">            Buildings within the dragonfly model along with their properties</span>
+<span class="sd">            (floor area, number of stories, etc.). The polygons will also possess</span>
+<span class="sd">            detailed_model_filename keys that align with where OpenStudio models</span>
+<span class="sd">            would be written, assuming the input folder matches that used to</span>
+<span class="sd">            export OpenStudio models.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set the default simulation folder</span>
+        <span class="k">if</span> <span class="n">folder</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">folder</span> <span class="o">=</span> <span class="n">folders</span><span class="o">.</span><span class="n">default_simulation_folder</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">preparedir</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">remove_content</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="c1"># get the geojson dictionary</span>
+        <span class="n">geojson_dict</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_geojson_dict</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">point</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+
+        <span class="c1"># write out the dictionary to a geojson file</span>
+        <span class="n">project_folder</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+        <span class="n">preparedir</span><span class="p">(</span><span class="n">project_folder</span><span class="p">,</span> <span class="n">remove_content</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_folder</span><span class="p">,</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">.geojson&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">))</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+            <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">geojson_dict</span><span class="p">,</span> <span class="n">fp</span><span class="p">,</span> <span class="n">indent</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">file_path</span></div>
+
+<div class="viewcode-block" id="Model.to_dict"><a class="viewcode-back" href="../../dragonfly.model.html#dragonfly.model.Model.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">included_prop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return Model as a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            included_prop: List of properties to filter keys that must be included in</span>
+<span class="sd">                output dictionary. For example [&#39;energy&#39;] will include &#39;energy&#39; key if</span>
+<span class="sd">                available in properties to_dict. By default all the keys will be</span>
+<span class="sd">                included. To exclude all the keys from extensions use an empty list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Model&#39;</span><span class="p">}</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;identifier&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">included_prop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;buildings&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="p">[</span><span class="n">bldg</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">included_prop</span><span class="p">)</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span> <span class="o">!=</span> <span class="p">[]:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;context_shades&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="p">[</span><span class="n">shd</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="kc">True</span><span class="p">,</span> <span class="n">included_prop</span><span class="p">)</span> <span class="k">for</span> <span class="n">shd</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">]</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span> <span class="o">!=</span> <span class="s1">&#39;Meters&#39;</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">units</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;tolerance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tolerance</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_tolerance</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;angle_tolerance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">angle_tolerance</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span>
+        <span class="k">if</span> <span class="n">df_folders</span><span class="o">.</span><span class="n">dragonfly_schema_version</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;version&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">df_folders</span><span class="o">.</span><span class="n">dragonfly_schema_version_str</span>
+
+        <span class="k">return</span> <span class="n">base</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Model writer object.</span>
+
+<span class="sd">        Use this method to access Writer class to write the model in other formats.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">writer</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_face3d_to_geojson_coordinates</span><span class="p">(</span><span class="n">face3d</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert a horizontal Face3D to geoJSON coordinates.&quot;&quot;&quot;</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">polygon_to_lon_lat</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">pt</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pt</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">face3d</span><span class="o">.</span><span class="n">boundary</span><span class="p">],</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">)]</span>
+        <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">face3d</span><span class="o">.</span><span class="n">has_holes</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">hole</span> <span class="ow">in</span> <span class="n">face3d</span><span class="o">.</span><span class="n">holes</span><span class="p">:</span>
+                <span class="n">hole_verts</span> <span class="o">=</span> <span class="n">polygon_to_lon_lat</span><span class="p">(</span>
+                    <span class="p">[(</span><span class="n">pt</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pt</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">hole</span><span class="p">],</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">)</span>
+                <span class="n">hole_verts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hole_verts</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">coords</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hole_verts</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">coords</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_geojson_coordinates_to_face3d</span><span class="p">(</span><span class="n">geojson_coordinates</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert geoJSON coordinates to a horizontal Face3D with zero height.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            geojson_coordinates: The coordinates from the geojson file. For &#39;Polygon&#39;</span>
+<span class="sd">                geometries, this will be the list from the &#39;coordinates&#39; key in the</span>
+<span class="sd">                geojson file, for &#39;MultiPolygon&#39; geometries, this will be each item</span>
+<span class="sd">                in the list from the &#39;coordinates&#39; key.</span>
+<span class="sd">            origin_lon_lat: An array of two numbers in degrees representing the longitude</span>
+<span class="sd">                and latitude of the scene origin in degrees.</span>
+<span class="sd">            convert_facs: A tuple with two values used to translate between longitude, latitude</span>
+<span class="sd">                and meters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A Face3D object in model space coordinates converted from the geojson coordinates.</span>
+<span class="sd">            The height of the Face3D vertices will be 0.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">holes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">lon_lat_to_polygon</span><span class="p">(</span><span class="n">geojson_coordinates</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">)</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">Point3D</span><span class="p">(</span><span class="n">pt2d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pt2d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt2d</span> <span class="ow">in</span> <span class="n">coords</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># Remove redundant point</span>
+
+        <span class="c1"># If there are more then 1 polygons, then the other polygons are holes.</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geojson_coordinates</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">holes</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">hole_geojson_coordinates</span> <span class="ow">in</span> <span class="n">geojson_coordinates</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+                <span class="n">hole_coords</span> <span class="o">=</span> <span class="n">lon_lat_to_polygon</span><span class="p">(</span>
+                    <span class="n">hole_geojson_coordinates</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="p">,</span> <span class="n">convert_facs</span><span class="p">)</span>
+                <span class="n">hole_coords</span> <span class="o">=</span> <span class="p">[</span><span class="n">Point3D</span><span class="p">(</span><span class="n">pt2d</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">pt2d</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt2d</span> <span class="ow">in</span> <span class="n">hole_coords</span><span class="p">][:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">holes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hole_coords</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Face3D</span><span class="p">(</span><span class="n">coords</span><span class="p">,</span> <span class="n">plane</span><span class="o">=</span><span class="n">Plane</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">holes</span><span class="o">=</span><span class="n">holes</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_bottom_left_coordinate_from_geojson</span><span class="p">(</span><span class="n">bldgs_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Calculate the bottom-left bounding box coordinate from geojson building coordinates.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bldgs_data: a list of dictionaries containing geojson geometries that</span>
+<span class="sd">                represent building footprints.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The bottom-left most corner of the bounding box around the coordinates.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xs</span><span class="p">,</span> <span class="n">ys</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="n">bldgs_data</span><span class="p">:</span>
+            <span class="n">bldg_coords</span> <span class="o">=</span> <span class="n">bldg</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;coordinates&#39;</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">bldg</span><span class="p">[</span><span class="s1">&#39;geometry&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Polygon&#39;</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">bldg_footprint</span> <span class="ow">in</span> <span class="n">bldg_coords</span><span class="p">:</span>
+                    <span class="n">xs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">bldg_footprint</span><span class="p">])</span>
+                    <span class="n">ys</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">bldg_footprint</span><span class="p">])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">bldg_footprints</span> <span class="ow">in</span> <span class="n">bldg_coords</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">bldg_footprint</span> <span class="ow">in</span> <span class="n">bldg_footprints</span><span class="p">:</span>
+                        <span class="n">xs</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">bldg_footprint</span><span class="p">])</span>
+                        <span class="n">ys</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">bldg_footprint</span><span class="p">])</span>
+
+        <span class="k">return</span> <span class="nb">min</span><span class="p">(</span><span class="n">xs</span><span class="p">),</span> <span class="nb">min</span><span class="p">(</span><span class="n">ys</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__add__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="n">new_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span>
+        <span class="n">new_model</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_model</span>
+
+    <span class="k">def</span> <span class="fm">__iadd__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_model</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">new_model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span>
+            <span class="p">[</span><span class="n">bldg</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span> <span class="k">for</span> <span class="n">bldg</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_buildings</span><span class="p">],</span>
+            <span class="p">[</span><span class="n">shade</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span> <span class="k">for</span> <span class="n">shade</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_context_shades</span><span class="p">])</span>
+        <span class="n">new_model</span><span class="o">.</span><span class="n">_display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span>
+        <span class="n">new_model</span><span class="o">.</span><span class="n">_user_data</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_model</span><span class="o">.</span><span class="n">_properties</span><span class="o">.</span><span class="n">_duplicate_extension_attr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_model</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Dragonfly Model: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.projection &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.projection</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utilities for converting X,Y coordinates in meters to longitude, latitude.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">math</span>
+
+<div class="viewcode-block" id="meters_to_long_lat_factors"><a class="viewcode-back" href="../../dragonfly.projection.html#dragonfly.projection.meters_to_long_lat_factors">[docs]</a><span class="k">def</span> <span class="nf">meters_to_long_lat_factors</span><span class="p">(</span><span class="n">origin_lon_lat</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>
+    <span class="sd">&quot;&quot;&quot;Get conversion factors for translating meters to longitude, latitude.</span>
+
+<span class="sd">    The resulting factors should obey the WSG84 assumptions for the radius of</span>
+<span class="sd">    the earth at the equator relative to the poles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        origin_long_lat: An array of two numbers in degrees. The first value</span>
+<span class="sd">            represents the longitude of the scene origin in degrees (between -180</span>
+<span class="sd">            and +180). The second value represents latitude of the scene origin</span>
+<span class="sd">            in degrees (between -90 and +90). Default: (0, 0).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple with two values:</span>
+
+<span class="sd">        meters_to_lon -- conversion factor for changing meters to degrees longitude.</span>
+
+<span class="sd">        meters_to_lat -- conversion factor for changing meters to degrees latitude.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># constants of the WSG84 system</span>
+    <span class="n">equator_rad</span> <span class="o">=</span> <span class="mf">6378137.0</span>  <span class="c1"># radius of the earth at the equator (meters)</span>
+    <span class="n">pole_rad</span> <span class="o">=</span> <span class="mf">6356752.314</span>  <span class="c1"># radius of the earth at the poles (meters)</span>
+
+    <span class="c1"># convert everything to radians</span>
+    <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">origin_lon_lat</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">origin_lon_lat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="c1"># compute the conversion values</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">equator_rad</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">pole_rad</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">))</span>
+    <span class="n">r</span> <span class="o">=</span> <span class="p">(</span><span class="n">equator_rad</span> <span class="o">*</span> <span class="n">pole_rad</span><span class="p">)</span> <span class="o">/</span> <span class="n">d</span>  <span class="c1"># radius of the earth at the latitude</span>
+    <span class="n">meters_to_lat</span> <span class="o">=</span> <span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">pi</span> <span class="o">*</span> <span class="n">r</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">/</span> <span class="mi">360</span>  <span class="c1"># meters in one degree of latitude</span>
+    <span class="n">meters_to_lon</span> <span class="o">=</span> <span class="n">meters_to_lat</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">lat</span><span class="p">)</span>  <span class="c1"># meters in one degree of longitude</span>
+
+    <span class="k">return</span> <span class="n">meters_to_lon</span><span class="p">,</span> <span class="n">meters_to_lat</span></div>
+
+
+<div class="viewcode-block" id="polygon_to_lon_lat"><a class="viewcode-back" href="../../dragonfly.projection.html#dragonfly.projection.polygon_to_lon_lat">[docs]</a><span class="k">def</span> <span class="nf">polygon_to_lon_lat</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span> <span class="n">conversion_factors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get an array of (longitude, latitude) from a ladybug_geometry Polygon2D in meters.</span>
+
+<span class="sd">    The resulting coordinates should obey the WSG84 assumptions for the radius of</span>
+<span class="sd">    the earth at the equator relative to the poles.</span>
+<span class="sd">    Note that this function uses a simple formula and some distortion is possible</span>
+<span class="sd">    when translating polygons several kilometers long.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        polygon: An array of (X, Y) values for coordinates in meters.</span>
+<span class="sd">        origin_lon_lat: An array of two numbers in degrees. The first value</span>
+<span class="sd">            represents the longitude of the scene origin in degrees (between -180</span>
+<span class="sd">            and +180). The second value represents latitude of the scene origin</span>
+<span class="sd">            in degrees (between -90 and +90). Note that the &quot;scene origin&quot; is the</span>
+<span class="sd">            (0, 0) coordinate in the 2D space of the input polygon. Default: (0, 0).</span>
+<span class="sd">        conversion_factors: A tuple with two values used to translate between</span>
+<span class="sd">            meters and longitude, latitude. If None, these values will be automatically</span>
+<span class="sd">            calculated from the origin_lon_lat using the meters_to_long_lat_factors</span>
+<span class="sd">            method.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A nested array with each sub-array having 2 values for the</span>
+<span class="sd">        (longitude, latitude) of each polygon vertex.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># unpack or autocalculate the conversion factors</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">conversion_factors</span><span class="p">:</span>
+        <span class="n">meters_to_lon</span><span class="p">,</span> <span class="n">meters_to_lat</span> <span class="o">=</span> <span class="n">meters_to_long_lat_factors</span><span class="p">(</span><span class="n">origin_lon_lat</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">meters_to_lon</span><span class="p">,</span> <span class="n">meters_to_lat</span> <span class="o">=</span> <span class="n">conversion_factors</span>
+
+    <span class="c1"># get the longitude, latitude values for the polygon</span>
+    <span class="k">return</span> <span class="p">[(</span><span class="n">origin_lon_lat</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">pt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">meters_to_lon</span><span class="p">,</span>
+             <span class="n">origin_lon_lat</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">pt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">meters_to_lat</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">polygon</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="lon_lat_to_polygon"><a class="viewcode-back" href="../../dragonfly.projection.html#dragonfly.projection.lon_lat_to_polygon">[docs]</a><span class="k">def</span> <span class="nf">lon_lat_to_polygon</span><span class="p">(</span><span class="n">polygon_lon_lat_coords</span><span class="p">,</span> <span class="n">origin_lon_lat</span><span class="o">=</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">),</span>
+                       <span class="n">conversion_factors</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert an array of (longitude, latitude) coordinates to (X, Y) coordinates in meters.</span>
+
+<span class="sd">    The resulting coordinates will obey the WSG84 assumptions for the radius of</span>
+<span class="sd">    the earth at the equator relative to the poles.</span>
+<span class="sd">    Note that this function uses a simple formula and some distortion is possible</span>
+<span class="sd">    when translating polygons several kilometers long.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        polygon_lon_lat_coords: A nested array with each sub-array having 2 values for</span>
+<span class="sd">            the (longitude, latitude) of a polygon boundary.</span>
+<span class="sd">        origin_lon_lat: An array of two numbers in degrees. The first value</span>
+<span class="sd">            represents the longitude of the scene origin in degrees (between -180</span>
+<span class="sd">            and +180). The second value represents latitude of the scene origin</span>
+<span class="sd">            in degrees (between -90 and +90). Note that the &quot;scene origin&quot; is the</span>
+<span class="sd">            (0, 0) coordinate in the 2D space of the input polygon. Default: (0, 0).</span>
+<span class="sd">        conversion_factors: A tuple with two values used to translate between</span>
+<span class="sd">            longitude, latitude and meters. If None, these values will be automatically</span>
+<span class="sd">            calculated from the origin_lon_lat using the inverse of the</span>
+<span class="sd">            factors computed from the meters_to_long_lat_factors method.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        An array of (X, Y) values for the boundary coordinates in meters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Unpack or autocalculate the conversion factors</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">conversion_factors</span><span class="p">:</span>
+        <span class="n">meters_to_lon</span><span class="p">,</span> <span class="n">meters_to_lat</span> <span class="o">=</span> <span class="n">meters_to_long_lat_factors</span><span class="p">(</span><span class="n">origin_lon_lat</span><span class="p">)</span>
+        <span class="n">lon_to_meters</span><span class="p">,</span> <span class="n">lat_to_meters</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">meters_to_lon</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">meters_to_lat</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">lon_to_meters</span><span class="p">,</span> <span class="n">lat_to_meters</span> <span class="o">=</span> <span class="n">conversion_factors</span>
+
+    <span class="c1"># Get the (X, Y) values for the boundary in meters</span>
+    <span class="k">return</span> <span class="p">[((</span><span class="n">pt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">origin_lon_lat</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="n">lon_to_meters</span><span class="p">,</span>
+             <span class="p">(</span><span class="n">pt</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">origin_lon_lat</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">lat_to_meters</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">polygon_lon_lat_coords</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="origin_long_lat_from_location"><a class="viewcode-back" href="../../dragonfly.projection.html#dragonfly.projection.origin_long_lat_from_location">[docs]</a><span class="k">def</span> <span class="nf">origin_long_lat_from_location</span><span class="p">(</span><span class="n">location</span><span class="p">,</span> <span class="n">point</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get the (longitude, latitude) of the scene origin from a location and a point.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        location: A ladybug Location object possessing longitude and latitude data.</span>
+<span class="sd">        point: A ladybug_geometry Point2D for where the location object exists</span>
+<span class="sd">            within the space of a scene. The coordinates of this point are expected</span>
+<span class="sd">            to be in meters.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An array of two numbers in degrees. The first value represents the longitude</span>
+<span class="sd">        of the scene origin in degrees (between -180 and +180). The second value</span>
+<span class="sd">        represents latitude of the scene origin in degrees (between -90 and +90).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">meters_to_lon</span><span class="p">,</span> <span class="n">meters_to_lat</span> <span class="o">=</span> <span class="n">meters_to_long_lat_factors</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">location</span><span class="o">.</span><span class="n">longitude</span><span class="p">,</span> <span class="n">location</span><span class="o">.</span><span class="n">latitude</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">location</span><span class="o">.</span><span class="n">longitude</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">x</span> <span class="o">/</span> <span class="n">meters_to_lon</span><span class="p">,</span> \
+        <span class="n">location</span><span class="o">.</span><span class="n">latitude</span> <span class="o">-</span> <span class="n">point</span><span class="o">.</span><span class="n">y</span> <span class="o">/</span> <span class="n">meters_to_lat</span></div>
+
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

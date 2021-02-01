@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.story module &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dragonfly.subdivide module" href="dragonfly.subdivide.html" />
+    <link rel="prev" title="dragonfly.shadingparameter module" href="dragonfly.shadingparameter.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.shadingparameter.html" title="Previous Chapter: dragonfly.shadingparameter module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; dragonfly.sha...</span>
+    </a>
+  </li>
+  <li>
+    <a href="dragonfly.subdivide.html" title="Next Chapter: dragonfly.subdivide module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">dragonfly.sub... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/dragonfly.story.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="module-dragonfly.story">
+<span id="dragonfly-story-module"></span><h1>dragonfly.story module<a class="headerlink" href="#module-dragonfly.story" title="Permalink to this headline">¶</a></h1>
+<p>Dragonfly Story.</p>
+<dl class="py class">
+<dt id="dragonfly.story.Story">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.story.</code><code class="sig-name descname">Story</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">room_2ds</span></em>, <em class="sig-param"><span class="n">floor_to_floor_height</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">floor_height</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">multiplier</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly._base._BaseGeometry</span></code></p>
+<p>A Story of a building defined by an extruded Room2Ds.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>identifier</strong> – Text string for a unique Story ID. Must be &lt; 100 characters
+and not contain any spaces or special characters.</p></li>
+<li><p><strong>room_2ds</strong> – An array of dragonfly Room2D objects that together form an
+entire story of a building.</p></li>
+<li><p><strong>floor_to_floor_height</strong> – A number for the distance from the floor plate of
+this Story to the floor of the story above this one (if it exists).
+If None, this value will be the maximum floor_to_ceiling_height of the
+input room_2ds plus any difference between the Story floor height
+and the room floor heights. (Default: None)</p></li>
+<li><p><strong>floor_height</strong> – A number for the absolute floor height of the Story.
+If None, this will be the minimum floor height of all the Story’s
+room_2ds, which is suitable for cases where there are no floor
+plenums. (Default: None).</p></li>
+<li><p><strong>multiplier</strong> – An integer that denotes the number of times that this
+Story is repeated over the height of the building. Default: 1.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>identifier</p></li>
+<li><p>display_name</p></li>
+<li><p>room_2ds</p></li>
+<li><p>floor_to_floor_height</p></li>
+<li><p>multiplier</p></li>
+<li><p>parent</p></li>
+<li><p>has_parent</p></li>
+<li><p>floor_height</p></li>
+<li><p>floor_area</p></li>
+<li><p>exterior_wall_area</p></li>
+<li><p>exterior_aperture_area</p></li>
+<li><p>volume</p></li>
+<li><p>is_above_ground</p></li>
+<li><p>min</p></li>
+<li><p>max</p></li>
+<li><p>user_data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.story.Story.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.story.Story.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.add_prefix">
+<code class="sig-name descname">add_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.add_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.add_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the identifier and all child Room2D ids by inserting a prefix.</p>
+<p>This is particularly useful in workflows where you duplicate and edit
+a starting object and then want to combine it with the original object
+into one Model (like making a model of repeated stories) since all objects
+within a Model must have unique identifiers.</p>
+<p>This method is used internally to convert from a Story with a mutliplier
+to fully-detailed Stories with unique identifiers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> – Text that will be inserted at the start of this object’s
+(and child segments’) identifier and display_name. It is recommended
+that this prefix be short to avoid maxing out the 100 allowable
+characters for dragonfly identifiers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.add_room_2d">
+<code class="sig-name descname">add_room_2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">room_2d</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.add_room_2d"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.add_room_2d" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a Room2D to this Story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>room_2d</strong> – A Room2D object to be added to this Story.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.add_room_2ds">
+<code class="sig-name descname">add_room_2ds</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">rooms_2ds</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.add_room_2ds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.add_room_2ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a list of Room2Ds to this Story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>room_2d</strong> – A list of Room2D objects to be added to this Story.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.check_missing_adjacencies">
+<code class="sig-name descname">check_missing_adjacencies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raise_exception</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.check_missing_adjacencies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.check_missing_adjacencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that all Room2Ds have adjacent objects that exist within this Story.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.story.Story.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.floor_geometry">
+<code class="sig-name descname">floor_geometry</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.floor_geometry"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.floor_geometry" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a ladybug_geometry Polyface3D object representing the floor plate.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.footprint">
+<code class="sig-name descname">footprint</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.footprint"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.footprint" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of Face3D objects for the minimum floor plate representation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize an Story from a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> – A dictionary representation of a Story object.</p></li>
+<li><p><strong>tolerance</strong> – The maximum difference between z values at which point vertices
+are considered to be in the same horizontal plane. This is used to check
+that all vertices of the input floor_geometry lie in the same horizontal
+floor plane. Default is 0, which will not perform any check.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.generate_grid">
+<code class="sig-name descname">generate_grid</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">x_dim</span></em>, <em class="sig-param"><span class="n">y_dim</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.generate_grid"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.generate_grid" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of gridded Mesh3D objects offset from the floors of this story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>x_dim</strong> – The x dimension of the grid cells as a number.</p></li>
+<li><p><strong>y_dim</strong> – The y dimension of the grid cells as a number. Default is None,
+which will assume the same cell dimension for y as is set for x.</p></li>
+<li><p><strong>offset</strong> – A number for how far to offset the grid from the base face.
+Default is 1.0, which will not offset the grid to be 1 unit above
+the floor.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.intersect_room_2d_adjacency">
+<code class="sig-name descname">intersect_room_2d_adjacency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.intersect_room_2d_adjacency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.intersect_room_2d_adjacency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically intersect the line segments of the Story’s Room2Ds.</p>
+<p>Note that this method effectively erases all assigned boundary conditions,
+window parameters and shading parameters as the original segments are
+subdivided. As such, it is recommended that this method be used before all
+other steps when creating a Story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tolerance</strong> – The minimum difference between the coordinate values of two
+at which they can be considered adjacent. Default: 0.01,
+suitable for objects in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.make_underground">
+<code class="sig-name descname">make_underground</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.make_underground"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.make_underground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make this Story underground by setting all Room2D segments to have Ground BCs.</p>
+<p>Note that this method only changes the outdoor walls of the Room2Ds to have
+Ground boundary conditions and, if the floors of the story are also in
+contact with the ground, the set_ground_contact should be used in addition
+to this method.</p>
+<p>Also note that this method will throw an exception if any of the Room2Ds have
+WindowParameters assigned to them (since Ground boundary conditions are)
+not compatible with windows. So using the set_outdoor_window_parameters
+method and passing None to remove all windows is often recommended
+before running this method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.move">
+<code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">moving_vec</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move this Story along a vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>moving_vec</strong> – A ladybug_geometry Vector3D with the direction and distance
+to move the object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.outline_polylines">
+<code class="sig-name descname">outline_polylines</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.outline_polylines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.outline_polylines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of Polyline3D objects for the outline of the floor plate.</p>
+<p>Note that these segments include both the boundary surrounding the floor
+and any holes for courtyards that exist within the floor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.outline_segments">
+<code class="sig-name descname">outline_segments</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.outline_segments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.outline_segments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of LineSegment3D objects for the outline of the floor plate.</p>
+<p>Note that these segments include both the boundary surrounding the floor
+and any holes for courtyards that exist within the floor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.reflect">
+<code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plane</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.reflect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reflect this Story across a plane.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plane</strong> – A ladybug_geometry Plane across which the object will be reflected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.remove_room_2d_colinear_vertices">
+<code class="sig-name descname">remove_room_2d_colinear_vertices</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.remove_room_2d_colinear_vertices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.remove_room_2d_colinear_vertices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically remove colinear or duplicate vertices for the Story’s Room2Ds.</p>
+<p>Note that this method effectively erases all assigned boundary conditions,
+window parameters and shading parameters as many of the original segments
+may be deleted. As such, it is recommended that this method be used before
+all other steps when creating a Story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tolerance</strong> – The minimum difference between the coordinate values of two
+faces at which they can be considered adjacent. Default: 0.01,
+suitable for objects in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.room_by_identifier">
+<code class="sig-name descname">room_by_identifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">room_identifier</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.room_by_identifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.room_by_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Room2D from this Story using its identifier.</p>
+<p>Result will be None if the Room2D is not found in the Story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>room_identifier</strong> – String for the identifier of the Room2D to be
+retrieved from this story.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.rooms_by_identifier">
+<code class="sig-name descname">rooms_by_identifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">room_identifiers</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.rooms_by_identifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.rooms_by_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of Room2D objects in this story given Room2D identifiers.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>room_identifier</strong> – Array of strings for the identifiers of the Room2D
+to be retrieved from this Story.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.rotate_xy">
+<code class="sig-name descname">rotate_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em>, <em class="sig-param"><span class="n">origin</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.rotate_xy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.rotate_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate this Story counterclockwise in the XY plane by a certain angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – An angle in degrees.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D for the origin around which the
+object will be rotated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale this Story by a factor from an origin point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – A number representing how much the object should be scaled.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D representing the origin from which
+to scale. If None, it will be scaled from the World origin (0, 0, 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.set_ground_contact">
+<code class="sig-name descname">set_ground_contact</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">is_ground_contact</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.set_ground_contact"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.set_ground_contact" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set all child Room2Ds of this object to have floors in contact with the ground.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>is_ground_contact</strong> – A boolean noting whether all the Story’s room_2ds
+have floors in contact with the ground. Default: True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.set_outdoor_shading_parameters">
+<code class="sig-name descname">set_outdoor_shading_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">shading_parameter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.set_outdoor_shading_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.set_outdoor_shading_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set all of the outdoor walls to have the same shading parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>shading_parameter</strong> – A ShadingParameter object that will be assigned to
+all wall segments of this story’s rooms that have an Outdoors
+boundary conditions. This can also be None, to remove all
+shades from the story.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.set_outdoor_window_parameters">
+<code class="sig-name descname">set_outdoor_window_parameters</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">window_parameter</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.set_outdoor_window_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.set_outdoor_window_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set all of the outdoor walls to have the same window parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>window_parameter</strong> – A WindowParameter object that will be assigned to
+all wall segments of this story’s rooms that have an Outdoors
+boundary conditions. This can also be None, to remove all
+windows from the story.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.set_top_exposed">
+<code class="sig-name descname">set_top_exposed</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">is_top_exposed</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.set_top_exposed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.set_top_exposed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set all child Room2Ds of this object to have ceilings exposed to the outdoors.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>is_top_exposed</strong> – A boolean noting whether all the Story’s room_2ds
+have ceilings exposed to the outdoors. Default: True.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.shade_representation">
+<code class="sig-name descname">shade_representation</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cap</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.shade_representation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.shade_representation" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of honeybee Shade objects representing the story geometry.</p>
+<p>This accounts for the story multiplier and can be used to account for
+this Story’s shade in the simulation of another nearby Story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cap</strong> – Boolean to note whether the shade representation should be capped
+with a top face. Usually, this is not necessary to account for
+blocked sun and is only needed when it’s important to account for
+reflected sun off of roofs. (Default: False).</p></li>
+<li><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.shade_representation_multiplier">
+<code class="sig-name descname">shade_representation_multiplier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">exclude_index</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">cap</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.shade_representation_multiplier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.shade_representation_multiplier" title="Permalink to this definition">¶</a></dt>
+<dd><p>A list of honeybee Shade objects for just the “multiplier” part of the story.</p>
+<p>This includes all of the geometry along the height of the multiplier except
+for one of the floors (represented by the exclude_index). This will be an
+empty list if the story has a multiplier of 1.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exclude_index</strong> – An optional index for a story along the multiplier to
+be excluded from the shade representation. For example, if 0,
+the bottom geometry along the multiplier is excluded. (Default: 0).</p></li>
+<li><p><strong>cap</strong> – Boolean to note whether the shade representation should be capped
+with a top face. Usually, this is not necessary to account for
+blocked sun and is only needed when it’s important to account for
+reflected sun off of roofs. (Default: False).</p></li>
+<li><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.solve_room_2d_adjacency">
+<code class="sig-name descname">solve_room_2d_adjacency</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.solve_room_2d_adjacency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.solve_room_2d_adjacency" title="Permalink to this definition">¶</a></dt>
+<dd><p>Automatically solve adjacencies across the Room2Ds in this story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>tolerance</strong> – The minimum difference between the coordinate values of two
+faces at which they can be considered adjacent. Default: 0.01,
+suitable for objects in meters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abridged</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">included_prop</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Story as a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abridged</strong> – Boolean to note whether the extension properties of the
+object (ie. construction sets) should be included in detail
+(False) or just referenced by identifier (True). Default: False.</p></li>
+<li><p><strong>included_prop</strong> – List of properties to filter keys that must be included in
+output dictionary. For example [‘energy’] will include ‘energy’ key if
+available in properties to_dict. By default all the keys will be
+included. To exclude all the keys from extensions use an empty list.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.to_honeybee">
+<code class="sig-name descname">to_honeybee</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">use_multiplier</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">add_plenum</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/story.html#Story.to_honeybee"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.story.Story.to_honeybee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Dragonfly Story to a list of Honeybee Rooms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>use_multiplier</strong> – If True, this Story’s multiplier will be passed along
+to the generated Honeybee Room objects, indicating the simulation
+will be run once for the Story and then results will be multiplied.
+You will want to set this to False when exporting each Story as
+full geometry.</p></li>
+<li><p><strong>add_plenum</strong> – Boolean to indicate whether ceiling/floor plenums should
+be auto-generated for the Rooms. (Default: False).</p></li>
+<li><p><strong>tolerance</strong> – The minimum distance in z values of floor_height and
+floor_to_ceiling_height at which adjacent Faces will be split.
+If None, no splitting will occur. Default: 0.01, suitable for
+objects in meters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A list of honeybee Rooms that represent the Story.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.display_name">
+<em class="property">property </em><code class="sig-name descname">display_name</code><a class="headerlink" href="#dragonfly.story.Story.display_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a string for the object name without any character restrictions.</p>
+<p>If not set, this will be equal to the identifier.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.exterior_aperture_area">
+<em class="property">property </em><code class="sig-name descname">exterior_aperture_area</code><a class="headerlink" href="#dragonfly.story.Story.exterior_aperture_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the total exterior aperture area in the Story.</p>
+<p>Note that this property is for one story and does NOT use the multiplier.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.exterior_wall_area">
+<em class="property">property </em><code class="sig-name descname">exterior_wall_area</code><a class="headerlink" href="#dragonfly.story.Story.exterior_wall_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the total exterior wall area in the Story.</p>
+<p>Note that this property is for one story and does NOT use the multiplier.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.floor_area">
+<em class="property">property </em><code class="sig-name descname">floor_area</code><a class="headerlink" href="#dragonfly.story.Story.floor_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the total floor area in the Story.</p>
+<p>Note that this property is for one story and does NOT use the multiplier.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.floor_height">
+<em class="property">property </em><code class="sig-name descname">floor_height</code><a class="headerlink" href="#dragonfly.story.Story.floor_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a number for the abolute floor height of the Story.</p>
+<p>This will be the minimum floor height of all the Story’s room_2ds unless
+specified otherwise.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.floor_to_floor_height">
+<em class="property">property </em><code class="sig-name descname">floor_to_floor_height</code><a class="headerlink" href="#dragonfly.story.Story.floor_to_floor_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a number for the distance from this floor plate to the next one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.has_parent">
+<em class="property">property </em><code class="sig-name descname">has_parent</code><a class="headerlink" href="#dragonfly.story.Story.has_parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Boolean noting whether this Story has a parent Building.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.identifier">
+<em class="property">property </em><code class="sig-name descname">identifier</code><a class="headerlink" href="#dragonfly.story.Story.identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a text string for the unique object identifer.</p>
+<p>This identifier remains constant as the object is mutated, copied, and
+serialized to different formats (eg. dict, idf, rad). This property is also
+used to reference the object across a Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.is_above_ground">
+<em class="property">property </em><code class="sig-name descname">is_above_ground</code><a class="headerlink" href="#dragonfly.story.Story.is_above_ground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a boolean to note if this Story is above the ground.</p>
+<p>The story is considered above the ground if at least one of its Room2Ds
+has an outdoor boundary condition.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.max">
+<em class="property">property </em><code class="sig-name descname">max</code><a class="headerlink" href="#dragonfly.story.Story.max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Point2D for the max bounding rectangle vertex in the XY plane.</p>
+<p>This is useful in calculations to determine if this Story is in proximity
+to others.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.min">
+<em class="property">property </em><code class="sig-name descname">min</code><a class="headerlink" href="#dragonfly.story.Story.min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Point2D for the min bounding rectangle vertex in the XY plane.</p>
+<p>This is useful in calculations to determine if this Story is in proximity
+to others.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.multiplier">
+<em class="property">property </em><code class="sig-name descname">multiplier</code><a class="headerlink" href="#dragonfly.story.Story.multiplier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set an integer noting how many times this Story is repeated.</p>
+<p>Multipliers are used to speed up the calculation when similar Stories are
+repeated more than once. Essentially, a given simulation with the
+Story is run once and then the result is mutliplied by the multiplier.
+This comes with some inaccuracy. However, this error might not be too large
+if the Stories are similar enough and it can often be worth it since it can
+greatly speed up the calculation.</p>
+<p>For more information on multipliers in EnergyPlus see EnergyPlus Tips and Tricks:
+<a class="reference external" href="https://bigladdersoftware.com/epx/docs/9-1/tips-and-tricks-using-energyplus/using-multipliers-zone-and-or-window.html">https://bigladdersoftware.com/epx/docs/9-1/tips-and-tricks-using-energyplus/using-multipliers-zone-and-or-window.html</a></p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.parent">
+<em class="property">property </em><code class="sig-name descname">parent</code><a class="headerlink" href="#dragonfly.story.Story.parent" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parent Building if assigned. None if not assigned.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.properties">
+<em class="property">property </em><code class="sig-name descname">properties</code><a class="headerlink" href="#dragonfly.story.Story.properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object properties, including Radiance, Energy and other properties.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.room_2ds">
+<em class="property">property </em><code class="sig-name descname">room_2ds</code><a class="headerlink" href="#dragonfly.story.Story.room_2ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>A tuple of Room2D objects that form an entire story of a building.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.to">
+<em class="property">property </em><code class="sig-name descname">to</code><a class="headerlink" href="#dragonfly.story.Story.to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Story writer object.</p>
+<p>Use this method to access Writer class to write the story in other formats.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.user_data">
+<em class="property">property </em><code class="sig-name descname">user_data</code><a class="headerlink" href="#dragonfly.story.Story.user_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set an optional dictionary for additional meta data for this object.</p>
+<p>This will be None until it has been set. All keys and values of this
+dictionary should be of a standard Python type to ensure correct
+serialization of the object to/from JSON (eg. str, float, int, list dict)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.story.Story.volume">
+<em class="property">property </em><code class="sig-name descname">volume</code><a class="headerlink" href="#dragonfly.story.Story.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the volume of all the Rooms in the Story.</p>
+<p>Note that this property is for one story and does NOT use the multiplier.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

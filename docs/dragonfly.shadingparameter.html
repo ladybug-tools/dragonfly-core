@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.shadingparameter module &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dragonfly.story module" href="dragonfly.story.html" />
+    <link rel="prev" title="dragonfly.room2d module" href="dragonfly.room2d.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.room2d.html" title="Previous Chapter: dragonfly.room2d module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; dragonfly.roo...</span>
+    </a>
+  </li>
+  <li>
+    <a href="dragonfly.story.html" title="Next Chapter: dragonfly.story module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">dragonfly.sto... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/dragonfly.shadingparameter.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="module-dragonfly.shadingparameter">
+<span id="dragonfly-shadingparameter-module"></span><h1>dragonfly.shadingparameter module<a class="headerlink" href="#module-dragonfly.shadingparameter" title="Permalink to this headline">¶</a></h1>
+<p>Shading Parameters with instructions for generating shades.</p>
+<dl class="py class">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.shadingparameter.</code><code class="sig-name descname">ExtrudedBorder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">depth</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#ExtrudedBorder"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.shadingparameter._ShadingParameterBase</span></code></p>
+<p>Instructions for extruded borders over all windows in the wall.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>depth</strong> – A number for the depth of the border.</p>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>depth</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder.add_shading_to_face">
+<code class="sig-name descname">add_shading_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#ExtrudedBorder.add_shading_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder.add_shading_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Shades to a Honeybee Face using these Shading Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – An optional value to return None if the overhang has a length less
+than the tolerance. Default: 0.01, suitable for objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#ExtrudedBorder.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create ExtrudedBorder from a dictionary.</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="nt">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;ExtrudedBorder&quot;</span><span class="p">,</span>
+<span class="nt">&quot;depth&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#ExtrudedBorder.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these ShadingParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#ExtrudedBorder.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get ExtrudedBorder as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.ExtrudedBorder.depth">
+<em class="property">property </em><code class="sig-name descname">depth</code><a class="headerlink" href="#dragonfly.shadingparameter.ExtrudedBorder.depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the depth of the border.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.shadingparameter.LouversByCount">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.shadingparameter.</code><code class="sig-name descname">LouversByCount</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">louver_count</span></em>, <em class="sig-param"><span class="n">depth</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">angle</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">contour_vector</span><span class="o">=</span><span class="default_value">Vector2D(0.0, 1.0)</span></em>, <em class="sig-param"><span class="n">flip_start_side</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByCount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.shadingparameter._LouversBase</span></code></p>
+<p>Instructions for a specific number of louvered Shades over a wall.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>louver_count</strong> – A positive integer for the number of louvers to generate.</p></li>
+<li><p><strong>depth</strong> – A number for the depth to extrude the louvers.</p></li>
+<li><p><strong>offset</strong> – A number for the distance to louvers from  the wall.
+Default is 0 for no offset.</p></li>
+<li><p><strong>angle</strong> – A number for the for an angle to rotate the louvers in degrees.
+Default is 0 for no rotation.</p></li>
+<li><p><strong>contour_vector</strong> – A Vector2D for the direction along which contours
+are generated. This 2D vector will be interpreted into a 3D vector
+within the plane of the wall. (0, 1) will usually generate
+horizontal contours in 3D space, (1, 0) will generate vertical
+contours, and (1, 1) will generate diagonal contours. Default: (0, 1).</p></li>
+<li><p><strong>flip_start_side</strong> – Boolean to note whether the side the louvers start from
+should be flipped. Default is False to have contours on top or right.
+Setting to True will start contours on the bottom or left.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>louver_count</p></li>
+<li><p>depth</p></li>
+<li><p>offset</p></li>
+<li><p>angle</p></li>
+<li><p>contour_vector</p></li>
+<li><p>flip_start_side</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.add_shading_to_face">
+<code class="sig-name descname">add_shading_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByCount.add_shading_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.add_shading_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Shades to a Honeybee Face using these Shading Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – An optional value to remove any louvers with a length less
+than the tolerance. Default: 0.01, suitable for objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByCount.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create LouversByCount from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;LouversByCount&quot;</span><span class="p">,</span>
+<span class="s2">&quot;louver_count&quot;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span>
+<span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+<span class="s2">&quot;angle&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="s2">&quot;contour_vector&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span>  <span class="mi">1</span><span class="p">],</span>  <span class="c1"># array of (x, y) values</span>
+<span class="s2">&quot;flip_start_side&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByCount.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these ShadingParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByCount.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get LouversByCount as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.angle">
+<em class="property">property </em><code class="sig-name descname">angle</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for an angle to rotate the louvers in degrees.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.contour_vector">
+<em class="property">property </em><code class="sig-name descname">contour_vector</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.contour_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Vector2D for the direction along which contours are generated.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.depth">
+<em class="property">property </em><code class="sig-name descname">depth</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the depth to extrude the louvers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.flip_start_side">
+<em class="property">property </em><code class="sig-name descname">flip_start_side</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.flip_start_side" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a boolean to note whether the side the louvers start from is flipped.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.louver_count">
+<em class="property">property </em><code class="sig-name descname">louver_count</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.louver_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a integer for the number of louvers to generate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByCount.offset">
+<em class="property">property </em><code class="sig-name descname">offset</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByCount.offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the distance to louvers from this Face.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.shadingparameter.LouversByDistance">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.shadingparameter.</code><code class="sig-name descname">LouversByDistance</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">distance</span></em>, <em class="sig-param"><span class="n">depth</span></em>, <em class="sig-param"><span class="n">offset</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">angle</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">contour_vector</span><span class="o">=</span><span class="default_value">Vector2D(0.0, 1.0)</span></em>, <em class="sig-param"><span class="n">flip_start_side</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByDistance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.shadingparameter._LouversBase</span></code></p>
+<p>Instructions for a series of louvered Shades at a given distance between.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>distance</strong> – A number for the approximate distance between each louver.</p></li>
+<li><p><strong>depth</strong> – A number for the depth to extrude the louvers.</p></li>
+<li><p><strong>offset</strong> – A number for the distance to louvers from the wall.
+Default is 0 for no offset.</p></li>
+<li><p><strong>angle</strong> – A number for the for an angle to rotate the louvers in degrees.
+Default is 0 for no rotation.</p></li>
+<li><p><strong>contour_vector</strong> – A Vector2D for the direction along which contours
+are generated. This 2D vector will be interpreted into a 3D vector
+within the plane of the wall. (0, 1) will usually generate
+horizontal contours in 3D space, (1, 0) will generate vertical
+contours, and (1, 1) will generate diagonal contours. Default: (0, 1).</p></li>
+<li><p><strong>flip_start_side</strong> – Boolean to note whether the side the louvers start from
+should be flipped. Default is False to have contours on top or right.
+Setting to True will start contours on the bottom or left.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>distance</p></li>
+<li><p>depth</p></li>
+<li><p>offset</p></li>
+<li><p>angle</p></li>
+<li><p>contour_vector</p></li>
+<li><p>flip_start_side</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.add_shading_to_face">
+<code class="sig-name descname">add_shading_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByDistance.add_shading_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.add_shading_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Shades to a Honeybee Face using these Shading Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – An optional value to remove any louvers with a length less
+than the tolerance. Default: 0.01, suitable for objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByDistance.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create LouversByDistance from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;LouversByDistance&quot;</span><span class="p">,</span>
+<span class="s2">&quot;distance&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+<span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+<span class="s2">&quot;offset&quot;</span><span class="p">:</span> <span class="mf">0.3</span><span class="p">,</span>
+<span class="s2">&quot;angle&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+<span class="s2">&quot;contour_vector&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span>  <span class="c1"># array of (x, y) values</span>
+<span class="s2">&quot;flip_start_side&quot;</span><span class="p">:</span> <span class="kc">False</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByDistance.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these ShadingParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#LouversByDistance.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get LouversByDistance as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.angle">
+<em class="property">property </em><code class="sig-name descname">angle</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for an angle to rotate the louvers in degrees.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.contour_vector">
+<em class="property">property </em><code class="sig-name descname">contour_vector</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.contour_vector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Vector2D for the direction along which contours are generated.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.depth">
+<em class="property">property </em><code class="sig-name descname">depth</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the depth to extrude the louvers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.distance">
+<em class="property">property </em><code class="sig-name descname">distance</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.distance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the approximate distance between each louver.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.flip_start_side">
+<em class="property">property </em><code class="sig-name descname">flip_start_side</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.flip_start_side" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a boolean to note whether the side the louvers start from is flipped.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.LouversByDistance.offset">
+<em class="property">property </em><code class="sig-name descname">offset</code><a class="headerlink" href="#dragonfly.shadingparameter.LouversByDistance.offset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the distance to louvers from this Face.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.shadingparameter.Overhang">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.shadingparameter.</code><code class="sig-name descname">Overhang</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">depth</span></em>, <em class="sig-param"><span class="n">angle</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#Overhang"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.Overhang" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.shadingparameter._ShadingParameterBase</span></code></p>
+<p>Instructions for a single overhang over an entire wall.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>depth</strong> – A number for the overhang depth.</p></li>
+<li><p><strong>angle</strong> – A number for the for an angle to rotate the overhang in degrees.
+Positive values indicate a downward rotation. Negative values indicate
+an upward rotation. Default is 0 for no rotation.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>depth</p></li>
+<li><p>angle</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.add_shading_to_face">
+<code class="sig-name descname">add_shading_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#Overhang.add_shading_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.add_shading_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Shades to a Honeybee Face using these Shading Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – An optional value to return None if the overhang has a length less
+than the tolerance. Default: 0.01, suitable for objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#Overhang.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create Overhang from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;Overhang&quot;</span><span class="p">,</span>
+<span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+<span class="s2">&quot;angle&quot;</span><span class="p">:</span> <span class="mi">0</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#Overhang.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these ShadingParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/shadingparameter.html#Overhang.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Overhang as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.angle">
+<em class="property">property </em><code class="sig-name descname">angle</code><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.angle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the overhang angle.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.shadingparameter.Overhang.depth">
+<em class="property">property </em><code class="sig-name descname">depth</code><a class="headerlink" href="#dragonfly.shadingparameter.Overhang.depth" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the overhang depth.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

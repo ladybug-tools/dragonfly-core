@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.windowparameter &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.windowparameter</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;Window Parameters with instructions for generating windows.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">from</span> <span class="nn">honeybee.typing</span> <span class="kn">import</span> <span class="n">float_in_range</span><span class="p">,</span> <span class="n">float_positive</span>
+<span class="kn">from</span> <span class="nn">honeybee.boundarycondition</span> <span class="kn">import</span> <span class="n">Surface</span>
+<span class="kn">from</span> <span class="nn">honeybee.aperture</span> <span class="kn">import</span> <span class="n">Aperture</span>
+
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry2d.pointvector</span> <span class="kn">import</span> <span class="n">Point2D</span><span class="p">,</span> <span class="n">Vector2D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry2d.polygon</span> <span class="kn">import</span> <span class="n">Polygon2D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.line</span> <span class="kn">import</span> <span class="n">LineSegment3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.plane</span> <span class="kn">import</span> <span class="n">Plane</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.face</span> <span class="kn">import</span> <span class="n">Face3D</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="k">if</span> <span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">version_info</span> <span class="o">&lt;</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">)):</span>  <span class="c1"># python 2</span>
+    <span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">izip</span> <span class="k">as</span> <span class="nb">zip</span>  <span class="c1"># python 2</span>
+
+
+<span class="k">class</span> <span class="nc">_WindowParameterBase</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base object for all window parameters.</span>
+
+<span class="sd">    This object records all of the methods that must be overwritten on a window</span>
+<span class="sd">    parameter object for it to be successfully be applied in dragonfly workflows.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">area_from_segment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">floor_to_ceiling_height</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the window area generated by these parameters from a LineSegment3D.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+    <span class="k">def</span> <span class="nf">add_window_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Apertures to a Honeybee Face using these Window Parameters.&quot;&quot;&quot;</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these WindowParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create WindowParameterBase from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;WindowParameterBase&quot;</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;WindowParameterBase&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected WindowParameterBase dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get WindowParameterBase as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;WindowParameterBase&#39;</span><span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">duplicate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a copy of this object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__copy__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">ToString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_WindowParameterBase</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;WindowParameterBase&#39;</span>
+
+
+<div class="viewcode-block" id="SingleWindow"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SingleWindow">[docs]</a><span class="k">class</span> <span class="nc">SingleWindow</span><span class="p">(</span><span class="n">_WindowParameterBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for a single window in the face center defined by a width x height.</span>
+
+<span class="sd">    Note that, if these parameters are applied to a base face that is too short</span>
+<span class="sd">    or too narrow for the input width and/or height, the generated window will</span>
+<span class="sd">    automatically be shortened when it is applied to the face. In this way,</span>
+<span class="sd">    setting the width to be `float(&#39;inf&#39;)` will create parameters that always</span>
+<span class="sd">    generate a ribbon window of the input height.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        width: A number for the window width.</span>
+<span class="sd">        height: A number for the window height.</span>
+<span class="sd">        sill_height: A number for the window sill height. Default: 1.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * width</span>
+<span class="sd">        * height</span>
+<span class="sd">        * sill_height</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_width&#39;</span><span class="p">,</span> <span class="s1">&#39;_height&#39;</span><span class="p">,</span> <span class="s1">&#39;_sill_height&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">sill_height</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize SingleWindow.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_width</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="s1">&#39;window width&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_height</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">height</span><span class="p">,</span> <span class="s1">&#39;window height&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">sill_height</span><span class="p">,</span> <span class="s1">&#39;window sill height&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the window width.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_width</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the window height.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_height</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sill_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the sill height.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span>
+
+<div class="viewcode-block" id="SingleWindow.area_from_segment"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SingleWindow.area_from_segment">[docs]</a>    <span class="k">def</span> <span class="nf">area_from_segment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">floor_to_ceiling_height</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the window area generated by these parameters from a LineSegment3D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            segment: A LineSegment3D to which these parameters are applied.</span>
+<span class="sd">            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D</span>
+<span class="sd">                to which the segment belongs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_width</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="mf">0.99</span>
+        <span class="n">max_height</span> <span class="o">=</span> <span class="p">(</span><span class="n">floor_to_ceiling_height</span> <span class="o">*</span> <span class="mf">0.99</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span>
+        <span class="n">final_width</span> <span class="o">=</span> <span class="n">max_width</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">&gt;</span> <span class="n">max_width</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span>
+        <span class="n">final_height</span> <span class="o">=</span> <span class="n">max_height</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;</span> <span class="n">max_height</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span>
+        <span class="k">if</span> <span class="n">final_height</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mi">0</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">final_width</span> <span class="o">*</span> <span class="n">final_height</span></div>
+
+<div class="viewcode-block" id="SingleWindow.add_window_to_face"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SingleWindow.add_window_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_window_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Apertures to a Honeybee Face using these Window Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: Optional tolerance value. Default: 0.01, suitable for</span>
+<span class="sd">                objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">width_seg</span> <span class="o">=</span> <span class="n">LineSegment3D</span><span class="o">.</span><span class="n">from_end_points</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">height_seg</span> <span class="o">=</span> <span class="n">LineSegment3D</span><span class="o">.</span><span class="n">from_end_points</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">max_width</span> <span class="o">=</span> <span class="n">width_seg</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="mf">0.99</span>
+        <span class="n">max_height</span> <span class="o">=</span> <span class="p">(</span><span class="n">height_seg</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="mf">0.99</span><span class="p">)</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span>
+        <span class="n">final_width</span> <span class="o">=</span> <span class="n">max_width</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">&gt;</span> <span class="n">max_width</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span>
+        <span class="n">final_height</span> <span class="o">=</span> <span class="n">max_height</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">&gt;</span> <span class="n">max_height</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span>
+        <span class="k">if</span> <span class="n">final_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">face</span><span class="o">.</span><span class="n">aperture_by_width_height</span><span class="p">(</span><span class="n">final_width</span><span class="p">,</span> <span class="n">final_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">)</span>
+            <span class="c1"># if the Aperture is interior, set adjacent boundary condition</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="o">.</span><span class="n">boundary_condition_objects</span>
+                <span class="n">adj_ap_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                <span class="n">final_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_ap_id</span><span class="p">,)</span> <span class="o">+</span> <span class="n">ids</span>
+                <span class="n">face</span><span class="o">.</span><span class="n">apertures</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">Surface</span><span class="p">(</span><span class="n">final_ids</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SingleWindow.scale"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SingleWindow.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these WindowParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">SingleWindow</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">width</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SingleWindow.from_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SingleWindow.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create SingleWindow from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;SingleWindow&quot;,</span>
+<span class="sd">            &quot;width&quot;: 100,</span>
+<span class="sd">            &quot;height&quot;: 1.5,</span>
+<span class="sd">            &quot;sill_height&quot;: 0.8</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SingleWindow&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected SingleWindow dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="n">sill</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sill_height&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;sill_height&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;width&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;height&#39;</span><span class="p">],</span> <span class="n">sill</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SingleWindow.to_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SingleWindow.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get SingleWindow as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;SingleWindow&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;width&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span>
+                <span class="s1">&#39;height&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span>
+                <span class="s1">&#39;sill_height&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SingleWindow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SingleWindow</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;SingleWindow:</span><span class="se">\n</span><span class="s1"> width: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> height: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> sill_height: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SimpleWindowRatio"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SimpleWindowRatio">[docs]</a><span class="k">class</span> <span class="nc">SimpleWindowRatio</span><span class="p">(</span><span class="n">_WindowParameterBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for a single window defined by an area ratio with the base wall.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * window_ratio</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        window_ratio: A number between 0 and 1 for the ratio between the window</span>
+<span class="sd">            area and the parent wall surface area.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_window_ratio&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_ratio</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize SimpleWindowRatio.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span> <span class="o">=</span> <span class="n">float_in_range</span><span class="p">(</span><span class="n">window_ratio</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;window ratio&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">window_ratio</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number between 0 and 1 for the window ratio.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span>
+
+<div class="viewcode-block" id="SimpleWindowRatio.area_from_segment"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SimpleWindowRatio.area_from_segment">[docs]</a>    <span class="k">def</span> <span class="nf">area_from_segment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">floor_to_ceiling_height</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the window area generated by these parameters from a LineSegment3D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            segment: A LineSegment3D to which these parameters are applied.</span>
+<span class="sd">            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D</span>
+<span class="sd">                to which the segment belongs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">segment</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="n">floor_to_ceiling_height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span></div>
+
+<div class="viewcode-block" id="SimpleWindowRatio.add_window_to_face"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SimpleWindowRatio.add_window_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_window_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Apertures to a Honeybee Face using these Window Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: Optional tolerance value. Default: 0.01, suitable for</span>
+<span class="sd">                objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">scale_factor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_ratio</span> <span class="o">**</span> <span class="o">.</span><span class="mi">5</span>
+        <span class="n">ap_face</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">scale_factor</span><span class="p">,</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">center</span><span class="p">)</span>
+        <span class="n">aperture</span> <span class="o">=</span> <span class="n">Aperture</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">identifier</span><span class="p">),</span> <span class="n">ap_face</span><span class="p">)</span>
+        <span class="n">aperture</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">face</span>
+        <span class="n">face</span><span class="o">.</span><span class="n">add_aperture</span><span class="p">(</span><span class="n">aperture</span><span class="p">)</span>
+        <span class="c1"># if the Aperture is interior, set adjacent boundary condition</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+            <span class="n">ids</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="o">.</span><span class="n">boundary_condition_objects</span>
+            <span class="n">adj_ap_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">final_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_ap_id</span><span class="p">,)</span> <span class="o">+</span> <span class="n">ids</span>
+            <span class="n">aperture</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">Surface</span><span class="p">(</span><span class="n">final_ids</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SimpleWindowRatio.from_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SimpleWindowRatio.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create SimpleWindowRatio from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;SimpleWindowRatio&quot;,</span>
+<span class="sd">            &quot;window_ratio&quot;: 0.4</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;SimpleWindowRatio&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected SimpleWindowRatio dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;window_ratio&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="SimpleWindowRatio.to_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.SimpleWindowRatio.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get SimpleWindowRatio as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;SimpleWindowRatio&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;window_ratio&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_ratio</span><span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">SimpleWindowRatio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window_ratio</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">SimpleWindowRatio</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;SimpleWindowRatio:</span><span class="se">\n</span><span class="s1"> ratio: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">window_ratio</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RepeatingWindowRatio"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowRatio">[docs]</a><span class="k">class</span> <span class="nc">RepeatingWindowRatio</span><span class="p">(</span><span class="n">SimpleWindowRatio</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for repeating windows derived from an area ratio with the base surface.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        window_ratio: A number between 0 and 1 for the ratio between the window</span>
+<span class="sd">            area and the total facade area.</span>
+<span class="sd">        window_height: A number for the target height of the windows.</span>
+<span class="sd">            Note that, if the window ratio is too large for the height, the</span>
+<span class="sd">            ratio will take precedence and the actual window_height will</span>
+<span class="sd">            be larger than this value.</span>
+<span class="sd">        sill_height: A number for the target height above the bottom edge of</span>
+<span class="sd">            the rectangle to start the windows. Note that, if the</span>
+<span class="sd">            ratio is too large for the height, the ratio will take precedence</span>
+<span class="sd">            and the sill_height will be smaller than this value.</span>
+<span class="sd">        horizontal_separation: A number for the target separation between</span>
+<span class="sd">            individual window centerlines.  If this number is larger than</span>
+<span class="sd">            the parent rectangle base, only one window will be produced.</span>
+<span class="sd">        vertical_separation: An optional number to create a single vertical</span>
+<span class="sd">            separation between top and bottom windows. Default: 0.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * window_ratio</span>
+<span class="sd">        * window_height</span>
+<span class="sd">        * sill_height</span>
+<span class="sd">        * horizontal_separation</span>
+<span class="sd">        * vertical_separation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_window_height&#39;</span><span class="p">,</span> <span class="s1">&#39;_sill_height&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_horizontal_separation&#39;</span><span class="p">,</span> <span class="s1">&#39;_vertical_separation&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_ratio</span><span class="p">,</span> <span class="n">window_height</span><span class="p">,</span> <span class="n">sill_height</span><span class="p">,</span>
+                 <span class="n">horizontal_separation</span><span class="p">,</span> <span class="n">vertical_separation</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize RepeatingWindowRatio.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span> <span class="o">=</span> <span class="n">float_in_range</span><span class="p">(</span><span class="n">window_ratio</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.95</span><span class="p">,</span> <span class="s1">&#39;window ratio&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">window_height</span><span class="p">,</span> <span class="s1">&#39;window height&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">sill_height</span><span class="p">,</span> <span class="s1">&#39;sill height&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span> <span class="o">=</span> \
+            <span class="n">float_positive</span><span class="p">(</span><span class="n">horizontal_separation</span><span class="p">,</span> <span class="s1">&#39;window horizontal separation&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vertical_separation</span> <span class="o">=</span> \
+            <span class="n">float_positive</span><span class="p">(</span><span class="n">vertical_separation</span><span class="p">,</span> <span class="s1">&#39;window vertical separation&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">window_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number or the target height of the windows.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sill_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the height above the bottom edge of the floor.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">horizontal_separation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the separation between individual window centerlines.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">vertical_separation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for a vertical separation between top/bottom windows.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vertical_separation</span>
+
+<div class="viewcode-block" id="RepeatingWindowRatio.add_window_to_face"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowRatio.add_window_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_window_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Apertures to a Honeybee Face using these Window Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: The maximum difference between point values for them to be</span>
+<span class="sd">                considered a part of a rectangle. Default: 0.01, suitable for</span>
+<span class="sd">                objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">face</span><span class="o">.</span><span class="n">apertures_by_ratio_rectangle</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_separation</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+        <span class="c1"># if the Aperture is interior, set adjacent boundary condition</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+            <span class="n">num_aps</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">apertures</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ap</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">apertures</span><span class="p">):</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="o">.</span><span class="n">boundary_condition_objects</span>
+                <span class="n">adj_ap_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_aps</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">final_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_ap_id</span><span class="p">,)</span> <span class="o">+</span> <span class="n">ids</span>
+                <span class="n">ap</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">Surface</span><span class="p">(</span><span class="n">final_ids</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RepeatingWindowRatio.scale"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowRatio.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these WindowParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RepeatingWindowRatio</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_separation</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RepeatingWindowRatio.from_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowRatio.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create RepeatingWindowRatio from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;RepeatingWindowRatio&quot;,</span>
+<span class="sd">            &quot;window_ratio&quot;: 0.4,</span>
+<span class="sd">            &quot;window_height&quot;: 2,</span>
+<span class="sd">            &quot;sill_height&quot;: 0.8,</span>
+<span class="sd">            &quot;horizontal_separation&quot;: 4,</span>
+<span class="sd">            &quot;vertical_separation&quot;: 0.5</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RepeatingWindowRatio&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected RepeatingWindowRatio dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="n">vert</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;vertical_separation&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;vertical_separation&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;window_ratio&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;window_height&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sill_height&#39;</span><span class="p">],</span>
+                   <span class="n">data</span><span class="p">[</span><span class="s1">&#39;horizontal_separation&#39;</span><span class="p">],</span> <span class="n">vert</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RepeatingWindowRatio.to_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowRatio.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get RepeatingWindowRatio as a dictionary.&quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RepeatingWindowRatio&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;window_ratio&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_ratio</span><span class="p">,</span>
+                <span class="s1">&#39;window_height&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span><span class="p">,</span>
+                <span class="s1">&#39;sill_height&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">,</span>
+                <span class="s1">&#39;horizontal_separation&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span><span class="p">}</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_separation</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;vertical_separation&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_separation</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">RepeatingWindowRatio</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vertical_separation</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vertical_separation</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">RepeatingWindowRatio</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;RepeatingWindowRatio:</span><span class="se">\n</span><span class="s1"> ratio: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> window_height: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> sill_height:&#39;</span> \
+            <span class="s1">&#39; </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> horizontal: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> vertical: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_window_ratio</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vertical_separation</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="RepeatingWindowWidthHeight"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowWidthHeight">[docs]</a><span class="k">class</span> <span class="nc">RepeatingWindowWidthHeight</span><span class="p">(</span><span class="n">_WindowParameterBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for repeating rectangular windows of a fixed width and height.</span>
+
+<span class="sd">    This class effectively fills a wall with windows at the specified width, height</span>
+<span class="sd">    and separation.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        window_height: A number for the target height of the windows.</span>
+<span class="sd">            Note that, if the window_height is larger than the height of the wall,</span>
+<span class="sd">            the generated windows will have a height equal to the wall height</span>
+<span class="sd">            in order to avoid having windows extend outside the wall face.</span>
+<span class="sd">        window_width: A number for the target width of the windows.</span>
+<span class="sd">            Note that, if the window_width is larger than the width of the wall,</span>
+<span class="sd">            the generated windows will have a width equal to the wall width</span>
+<span class="sd">            in order to avoid having windows extend outside the wall face.</span>
+<span class="sd">        sill_height: A number for the target height above the bottom edge of</span>
+<span class="sd">            the wall to start the windows. If the window_height</span>
+<span class="sd">            is too large for the sill_height to fit within the rectangle,</span>
+<span class="sd">            the window_height will take precedence.</span>
+<span class="sd">        horizontal_separation: A number for the target separation between</span>
+<span class="sd">            individual window centerlines.  If this number is larger than</span>
+<span class="sd">            the parent rectangle base, only one window will be produced.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * window_height</span>
+<span class="sd">        * window_width</span>
+<span class="sd">        * sill_height</span>
+<span class="sd">        * horizontal_separation</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_window_height&#39;</span><span class="p">,</span> <span class="s1">&#39;_window_width&#39;</span><span class="p">,</span> <span class="s1">&#39;_sill_height&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_horizontal_separation&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_height</span><span class="p">,</span> <span class="n">window_width</span><span class="p">,</span> <span class="n">sill_height</span><span class="p">,</span> <span class="n">horizontal_separation</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize RepeatingWindowWidthHeight.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">window_height</span><span class="p">,</span> <span class="s1">&#39;window height&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_window_width</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">window_width</span><span class="p">,</span> <span class="s1">&#39;window width&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">sill_height</span><span class="p">,</span> <span class="s1">&#39;sill height&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span> <span class="o">=</span> \
+            <span class="n">float_positive</span><span class="p">(</span><span class="n">horizontal_separation</span><span class="p">,</span> <span class="s1">&#39;window horizontal separation&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">window_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number or the target height of the windows.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">window_width</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number or the target width of the windows.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_width</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">sill_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the height above the bottom edge of the floor.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">horizontal_separation</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the separation between individual window centerlines.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span>
+
+<div class="viewcode-block" id="RepeatingWindowWidthHeight.add_window_to_face"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowWidthHeight.add_window_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_window_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Apertures to a Honeybee Face using these Window Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: The maximum difference between point values for them to be</span>
+<span class="sd">                considered a part of a rectangle. Default: 0.01, suitable for</span>
+<span class="sd">                objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">face</span><span class="o">.</span><span class="n">apertures_by_width_height_rectangle</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+        <span class="c1"># if the Aperture is interior, set adjacent boundary condition</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+            <span class="n">num_aps</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">apertures</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ap</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">apertures</span><span class="p">):</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="o">.</span><span class="n">boundary_condition_objects</span>
+                <span class="n">adj_ap_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">num_aps</span> <span class="o">-</span> <span class="n">i</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">final_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_ap_id</span><span class="p">,)</span> <span class="o">+</span> <span class="n">ids</span>
+                <span class="n">ap</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">Surface</span><span class="p">(</span><span class="n">final_ids</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RepeatingWindowWidthHeight.scale"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowWidthHeight.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these WindowParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RepeatingWindowWidthHeight</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_width</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RepeatingWindowWidthHeight.from_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowWidthHeight.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create RepeatingWindowWidthHeight from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;RepeatingWindowWidthHeight&quot;,</span>
+<span class="sd">            &quot;window_height&quot;: 2,</span>
+<span class="sd">            &quot;window_width&quot;: 1.5,</span>
+<span class="sd">            &quot;sill_height&quot;: 0.8,</span>
+<span class="sd">            &quot;horizontal_separation&quot;: 4</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RepeatingWindowWidthHeight&#39;</span><span class="p">,</span> <span class="s1">&#39;Expected &#39;</span> \
+            <span class="s1">&#39;RepeatingWindowWidthHeight dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;window_height&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;window_width&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;sill_height&#39;</span><span class="p">],</span>
+                   <span class="n">data</span><span class="p">[</span><span class="s1">&#39;horizontal_separation&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="RepeatingWindowWidthHeight.to_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RepeatingWindowWidthHeight.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get RepeatingWindowWidthHeight as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RepeatingWindowWidthHeight&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;window_height&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span><span class="p">,</span>
+                <span class="s1">&#39;window_width&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_width</span><span class="p">,</span>
+                <span class="s1">&#39;sill_height&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">,</span>
+                <span class="s1">&#39;horizontal_separation&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span><span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">RepeatingWindowWidthHeight</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_window_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sill_height</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_horizontal_separation</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">RepeatingWindowWidthHeight</span><span class="p">)</span> <span class="ow">and</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;RepeatingWindowWidthHeight:</span><span class="se">\n</span><span class="s1"> window_height: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> window_width: &#39;</span> \
+            <span class="s1">&#39;</span><span class="si">{}</span><span class="se">\n</span><span class="s1"> sill_height: </span><span class="si">{}</span><span class="se">\n</span><span class="s1"> horizontal: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">window_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">window_width</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">sill_height</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">horizontal_separation</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_AsymmetricBase</span><span class="p">(</span><span class="n">_WindowParameterBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for WindowParameters that can make asymmetric windows on a wall.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">flip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flip the direction of the windows along a wall segment.</span>
+
+<span class="sd">        This is needed since windows can exist asymmetrically across the wall</span>
+<span class="sd">        segment and operations like reflecting the Room2D across a plane will</span>
+<span class="sd">        require the window parameters to be flipped. Reversing the Room2D vertices</span>
+<span class="sd">        also requires flipping.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            seg_length: The length of the segment along which the parameters are</span>
+<span class="sd">                being flipped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+
+<div class="viewcode-block" id="RectangularWindows"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RectangularWindows">[docs]</a><span class="k">class</span> <span class="nc">RectangularWindows</span><span class="p">(</span><span class="n">_AsymmetricBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for several rectangular windows, defined by origin, width and height.</span>
+
+<span class="sd">    Note that, if these parameters are applied to a base wall that is too short</span>
+<span class="sd">    or too narrow such that the windows fall outside the boundary of the wall, the</span>
+<span class="sd">    generated windows will automatically be shortened or excluded. This way, a</span>
+<span class="sd">    certain pattern of repeating rectangular windows can be encoded in a single</span>
+<span class="sd">    RectangularWindows instance and applied to multiple Room2D segments.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        origins: An array of ladybug_geometry Point2D objects within the plane</span>
+<span class="sd">            of the wall for the origin of each window. The wall plane is assumed</span>
+<span class="sd">            to have an origin at the first point of the wall segment and an</span>
+<span class="sd">            X-axis extending along the length of the segment. The wall plane&#39;s</span>
+<span class="sd">            Y-axis always points upwards.  Therefore, both X and Y values of</span>
+<span class="sd">            each origin point should be positive.</span>
+<span class="sd">        widths: An array of positive numbers for the window widths. The length</span>
+<span class="sd">            of this list must match the length of the origins.</span>
+<span class="sd">        heights: An array of positive numbers for the window heights. The length</span>
+<span class="sd">            of this list must match the length of the origins.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * origins</span>
+<span class="sd">        * widths</span>
+<span class="sd">        * heights</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_origins&#39;</span><span class="p">,</span> <span class="s1">&#39;_widths&#39;</span><span class="p">,</span> <span class="s1">&#39;_heights&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">origins</span><span class="p">,</span> <span class="n">widths</span><span class="p">,</span> <span class="n">heights</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize RectangularWindows.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">origins</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">origins</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">origins</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">origins</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">Point2D</span><span class="p">),</span> \
+                <span class="s1">&#39;Expected Point2D for window origin. Got </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">point</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_origins</span> <span class="o">=</span> <span class="n">origins</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_widths</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">float_positive</span><span class="p">(</span><span class="n">width</span><span class="p">,</span> <span class="s1">&#39;window width&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">width</span> <span class="ow">in</span> <span class="n">widths</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_heights</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">float_positive</span><span class="p">(</span><span class="n">hgt</span><span class="p">,</span> <span class="s1">&#39;window height&#39;</span><span class="p">)</span> <span class="k">for</span> <span class="n">hgt</span> <span class="ow">in</span> <span class="n">heights</span><span class="p">)</span>
+
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_origins</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_widths</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_heights</span><span class="p">),</span> \
+            <span class="s1">&#39;Number of window origins, widths, and heights must match.&#39;</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">origins</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an array of Point2Ds within the wall plane for the origin of each window.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_origins</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">widths</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an array of numbers for the window widths.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_widths</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">heights</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an array of numbers for the window heights.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_heights</span>
+
+<div class="viewcode-block" id="RectangularWindows.area_from_segment"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RectangularWindows.area_from_segment">[docs]</a>    <span class="k">def</span> <span class="nf">area_from_segment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">floor_to_ceiling_height</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the window area generated by these parameters from a LineSegment3D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            segment: A LineSegment3D to which these parameters are applied.</span>
+<span class="sd">            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D</span>
+<span class="sd">                to which the segment belongs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">max_width</span> <span class="o">=</span> <span class="n">segment</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="mf">0.999</span>
+        <span class="n">max_height</span> <span class="o">=</span> <span class="n">floor_to_ceiling_height</span> <span class="o">*</span> <span class="mf">0.999</span>
+
+        <span class="n">areas</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">):</span>
+            <span class="n">final_width</span> <span class="o">=</span> <span class="n">max_width</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span> <span class="k">if</span> <span class="n">width</span> <span class="o">+</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">max_width</span> <span class="k">else</span> <span class="n">width</span>
+            <span class="n">final_height</span> <span class="o">=</span> <span class="n">max_height</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span> <span class="k">if</span> <span class="n">height</span> <span class="o">+</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">max_height</span> <span class="k">else</span> <span class="n">height</span>
+            <span class="k">if</span> <span class="n">final_height</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">final_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># inside wall boundary</span>
+                <span class="n">areas</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">final_width</span> <span class="o">*</span> <span class="n">final_height</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">areas</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RectangularWindows.add_window_to_face"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RectangularWindows.add_window_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_window_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Apertures to a Honeybee Face using these Window Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: Optional tolerance value. Default: 0.01, suitable for</span>
+<span class="sd">                objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># collect the global properties of the face that set limits on apertures</span>
+        <span class="n">wall_plane</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">plane</span>
+        <span class="n">width_seg</span> <span class="o">=</span> <span class="n">LineSegment3D</span><span class="o">.</span><span class="n">from_end_points</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">height_seg</span> <span class="o">=</span> <span class="n">LineSegment3D</span><span class="o">.</span><span class="n">from_end_points</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">max_width</span> <span class="o">=</span> <span class="n">width_seg</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="mf">0.99</span>
+        <span class="n">max_height</span> <span class="o">=</span> <span class="n">height_seg</span><span class="o">.</span><span class="n">length</span> <span class="o">*</span> <span class="mf">0.99</span>
+
+        <span class="c1"># loop through each window and create its geometry</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="p">(</span><span class="n">o</span><span class="p">,</span> <span class="n">wid</span><span class="p">,</span> <span class="n">hgt</span><span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">)):</span>
+            <span class="n">final_width</span> <span class="o">=</span> <span class="n">max_width</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span> <span class="k">if</span> <span class="n">wid</span> <span class="o">+</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span> <span class="o">&gt;</span> <span class="n">max_width</span> <span class="k">else</span> <span class="n">wid</span>
+            <span class="n">final_height</span> <span class="o">=</span> <span class="n">max_height</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span> <span class="k">if</span> <span class="n">hgt</span> <span class="o">+</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span> <span class="o">&gt;</span> <span class="n">max_height</span> <span class="k">else</span> <span class="n">hgt</span>
+            <span class="k">if</span> <span class="n">final_height</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">final_height</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># inside wall boundary</span>
+                <span class="n">base_plane</span> <span class="o">=</span> <span class="n">Plane</span><span class="p">(</span><span class="n">wall_plane</span><span class="o">.</span><span class="n">n</span><span class="p">,</span> <span class="n">wall_plane</span><span class="o">.</span><span class="n">xy_to_xyz</span><span class="p">(</span><span class="n">o</span><span class="p">),</span> <span class="n">wall_plane</span><span class="o">.</span><span class="n">x</span><span class="p">)</span>
+                <span class="n">ap_face</span> <span class="o">=</span> <span class="n">Face3D</span><span class="o">.</span><span class="n">from_rectangle</span><span class="p">(</span><span class="n">final_width</span><span class="p">,</span> <span class="n">final_height</span><span class="p">,</span> <span class="n">base_plane</span><span class="p">)</span>
+                <span class="n">aperture</span> <span class="o">=</span> <span class="n">Aperture</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">ap_face</span><span class="p">)</span>
+                <span class="n">aperture</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">face</span>
+                <span class="n">face</span><span class="o">.</span><span class="n">add_aperture</span><span class="p">(</span><span class="n">aperture</span><span class="p">)</span>
+                <span class="c1"># if the Aperture is interior, set adjacent boundary condition</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+                    <span class="n">ids</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="o">.</span><span class="n">boundary_condition_objects</span>
+                    <span class="n">adj_ap_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                    <span class="n">final_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_ap_id</span><span class="p">,)</span> <span class="o">+</span> <span class="n">ids</span>
+                    <span class="n">aperture</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">Surface</span><span class="p">(</span><span class="n">final_ids</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RectangularWindows.scale"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RectangularWindows.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these WindowParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">RectangularWindows</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">Point2D</span><span class="p">(</span><span class="n">pt</span><span class="o">.</span><span class="n">x</span> <span class="o">*</span> <span class="n">factor</span><span class="p">,</span> <span class="n">pt</span><span class="o">.</span><span class="n">y</span> <span class="o">*</span> <span class="n">factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">width</span> <span class="o">*</span> <span class="n">factor</span> <span class="k">for</span> <span class="n">width</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">),</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">height</span> <span class="o">*</span> <span class="n">factor</span> <span class="k">for</span> <span class="n">height</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="RectangularWindows.flip"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RectangularWindows.flip">[docs]</a>    <span class="k">def</span> <span class="nf">flip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flip the direction of the windows along a segment.</span>
+
+<span class="sd">        This is needed since windows can exist asymmetrically across the wall</span>
+<span class="sd">        segment and operations like reflecting the Room2D across a plane will</span>
+<span class="sd">        require the window parameters to be flipped to remain in the same place.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            seg_length: The length of the segment along which the parameters are</span>
+<span class="sd">                being flipped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">new_origins</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">new_widths</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">new_heights</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">o</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">height</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">):</span>
+            <span class="n">new_x</span> <span class="o">=</span> <span class="n">seg_length</span> <span class="o">-</span> <span class="n">o</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="n">width</span>
+            <span class="k">if</span> <span class="n">new_x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># fully within the wall boundary</span>
+                <span class="n">new_origins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Point2D</span><span class="p">(</span><span class="n">new_x</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+                <span class="n">new_widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">width</span><span class="p">)</span>
+                <span class="n">new_heights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">new_x</span> <span class="o">+</span> <span class="n">width</span> <span class="o">&gt;</span> <span class="n">seg_length</span> <span class="o">*</span> <span class="mf">0.001</span><span class="p">:</span>  <span class="c1"># partially within the boundary</span>
+                <span class="n">new_widths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">width</span> <span class="o">+</span> <span class="n">new_x</span> <span class="o">-</span> <span class="p">(</span><span class="n">seg_length</span> <span class="o">*</span> <span class="mf">0.001</span><span class="p">))</span>
+                <span class="n">new_x</span> <span class="o">=</span> <span class="n">seg_length</span> <span class="o">*</span> <span class="mf">0.001</span>
+                <span class="n">new_origins</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Point2D</span><span class="p">(</span><span class="n">new_x</span><span class="p">,</span> <span class="n">o</span><span class="o">.</span><span class="n">y</span><span class="p">))</span>
+                <span class="n">new_heights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">RectangularWindows</span><span class="p">(</span><span class="n">new_origins</span><span class="p">,</span> <span class="n">new_widths</span><span class="p">,</span> <span class="n">new_heights</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="RectangularWindows.from_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RectangularWindows.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create RectangularWindows from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;RectangularWindows&quot;,</span>
+<span class="sd">            &quot;origins&quot;: [(1, 1), (3, 0.5)],  # array of (x, y) floats in wall plane</span>
+<span class="sd">            &quot;widths&quot;: [1, 3],  # array of floats for window widths</span>
+<span class="sd">            &quot;heights&quot;: [1, 2.5]  # array of floats for window heights</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;RectangularWindows&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected RectangularWindows. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">Point2D</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;origins&#39;</span><span class="p">]),</span>
+                   <span class="n">data</span><span class="p">[</span><span class="s1">&#39;widths&#39;</span><span class="p">],</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;heights&#39;</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="RectangularWindows.to_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.RectangularWindows.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get RectangularWindows as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;RectangularWindows&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;origins&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">pt</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">],</span>
+                <span class="s1">&#39;widths&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span>
+                <span class="s1">&#39;heights&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span>
+                <span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">RectangularWindows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">),</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">widths</span><span class="p">),</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heights</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">RectangularWindows</span><span class="p">)</span> <span class="ow">and</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;RectangularWindows:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> windows&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">origins</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="DetailedWindows"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.DetailedWindows">[docs]</a><span class="k">class</span> <span class="nc">DetailedWindows</span><span class="p">(</span><span class="n">_AsymmetricBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Instructions for detailed windows, defined by 2D Polygons (lists of 2D vertices).</span>
+
+<span class="sd">    Note that these parameters are intended to represent windows that are specific</span>
+<span class="sd">    to a particular segment and, unlike the other WindowParameters, this class</span>
+<span class="sd">    performs no automatic checks to ensure that the windows lie within the</span>
+<span class="sd">    boundary of the wall they have been assigned to.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        polygons: An array of ladybug_geometry Polygon2D objects within the plane</span>
+<span class="sd">            of the wall with one polygon for each window. The wall plane is</span>
+<span class="sd">            assumed to have an origin at the first point of the wall segment</span>
+<span class="sd">            and an X-axis extending along the length of the segment. The wall</span>
+<span class="sd">            plane&#39;s Y-axis always points upwards.  Therefore, both X and Y</span>
+<span class="sd">            values of each point in the polygon should always be positive.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * polygons</span>
+
+<span class="sd">    Usage:</span>
+<span class="sd">        Note that, if you are starting from 3D vertices of windows, you can</span>
+<span class="sd">        use this class to represent them. Below is some sample code to convert from</span>
+<span class="sd">        vertices in the same 3D space as a vertical wall to vertices in the 2D</span>
+<span class="sd">        plane of the wall (as this class interprets it).</span>
+
+<span class="sd">        In the code, &#39;seg_p1&#39; is the first point of a given wall segment and</span>
+<span class="sd">        is assumed to be the origin of the wall plane. &#39;seg_p2&#39; is the second</span>
+<span class="sd">        point of the wall segment, and &#39;vertex&#39; is a given vertex of the</span>
+<span class="sd">        window that you want to translate from 3D coordinates into 2D. All</span>
+<span class="sd">        input points are presented as arrays of 3 floats and the output is</span>
+<span class="sd">        an array of 2 (x, y) coordinates.</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        def dot_product(v1, v2):</span>
+<span class="sd">            return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[3]</span>
+
+<span class="sd">        def normalize(v):</span>
+<span class="sd">            d = (v[0] ** 2 + v[1] ** 2 + v[2] ** 2) ** 0.5</span>
+<span class="sd">            return (v[0] / d, v[1] / d, v[2] / d)</span>
+
+<span class="sd">        def xyz_to_xy(seg_p1, seg_p2, vertex):</span>
+<span class="sd">            diff = (vertex[0] - seg_p1[0], vertex[1] - seg_p1[1], vertex[2] - seg_p1[2])</span>
+<span class="sd">            a_axis = (seg_p2[0] - seg_p1[0], seg_p2[1] - seg_p1[1], seg_p2[2] - seg_p1[2])</span>
+<span class="sd">            plane_x = normalize(a_axis)</span>
+<span class="sd">            plane_y = (0, 0, 1)</span>
+<span class="sd">            return (dot_product(plane_x , diff), dot_product(plane_y, diff))</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_polygons&#39;</span><span class="p">,)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygons</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize DetailedWindows.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygons</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">polygons</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">polygons</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="n">polygons</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">polygon</span><span class="p">,</span> <span class="n">Polygon2D</span><span class="p">),</span> \
+                <span class="s1">&#39;Expected Polygon2D for window polygon. Got </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">polygon</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span> <span class="o">=</span> <span class="n">polygons</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get an array of Polygon2Ds with one polygon for each window.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span>
+
+<div class="viewcode-block" id="DetailedWindows.area_from_segment"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.DetailedWindows.area_from_segment">[docs]</a>    <span class="k">def</span> <span class="nf">area_from_segment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">segment</span><span class="p">,</span> <span class="n">floor_to_ceiling_height</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the window area generated by these parameters from a LineSegment3D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            segment: A LineSegment3D to which these parameters are applied.</span>
+<span class="sd">            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D</span>
+<span class="sd">                to which the segment belongs.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">area</span> <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetailedWindows.add_window_to_face"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.DetailedWindows.add_window_to_face">[docs]</a>    <span class="k">def</span> <span class="nf">add_window_to_face</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Apertures to a Honeybee Face using these Window Parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            face: A honeybee-core Face object.</span>
+<span class="sd">            tolerance: Optional tolerance value. Default: 0.01, suitable for</span>
+<span class="sd">                objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">wall_plane</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">plane</span>
+
+        <span class="c1"># loop through each window and create its geometry</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">):</span>
+            <span class="n">pt3d</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">wall_plane</span><span class="o">.</span><span class="n">xy_to_xyz</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">polygon</span><span class="p">)</span>
+            <span class="n">aperture</span> <span class="o">=</span> <span class="n">Aperture</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="n">Face3D</span><span class="p">(</span><span class="n">pt3d</span><span class="p">))</span>
+            <span class="n">aperture</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="n">face</span>
+            <span class="n">face</span><span class="o">.</span><span class="n">add_aperture</span><span class="p">(</span><span class="n">aperture</span><span class="p">)</span>
+            <span class="c1"># if the Aperture is interior, set adjacent boundary condition</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+                <span class="n">ids</span> <span class="o">=</span> <span class="n">face</span><span class="o">.</span><span class="n">_boundary_condition</span><span class="o">.</span><span class="n">boundary_condition_objects</span>
+                <span class="n">adj_ap_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Glz</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ids</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                <span class="n">final_ids</span> <span class="o">=</span> <span class="p">(</span><span class="n">adj_ap_id</span><span class="p">,)</span> <span class="o">+</span> <span class="n">ids</span>
+                <span class="n">aperture</span><span class="o">.</span><span class="n">boundary_condition</span> <span class="o">=</span> <span class="n">Surface</span><span class="p">(</span><span class="n">final_ids</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetailedWindows.scale"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.DetailedWindows.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a scaled version of these WindowParameters.</span>
+
+<span class="sd">        This method is called within the scale methods of the Room2D.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">DetailedWindows</span><span class="p">(</span>
+            <span class="nb">tuple</span><span class="p">(</span><span class="n">polygon</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">)</span> <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DetailedWindows.flip"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.DetailedWindows.flip">[docs]</a>    <span class="k">def</span> <span class="nf">flip</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">seg_length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Flip the direction of the windows along a segment.</span>
+
+<span class="sd">        This is needed since windows can exist asymmetrically across the wall</span>
+<span class="sd">        segment and operations like reflecting the Room2D across a plane will</span>
+<span class="sd">        require the window parameters to be flipped to remain in the same place.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            seg_length: The length of the segment along which the parameters are</span>
+<span class="sd">                being flipped.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set values derived from the property of the segment</span>
+        <span class="n">normal</span> <span class="o">=</span> <span class="n">Vector2D</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">origin</span> <span class="o">=</span> <span class="n">Point2D</span><span class="p">(</span><span class="n">seg_length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># loop through the polygons and reflect them across the midplane of the wall</span>
+        <span class="n">new_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">:</span>
+            <span class="n">new_verts</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">pt</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">normal</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">polygon</span><span class="o">.</span><span class="n">vertices</span><span class="p">)</span>
+            <span class="n">new_polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Polygon2D</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">new_verts</span><span class="p">))))</span>
+        <span class="k">return</span> <span class="n">DetailedWindows</span><span class="p">(</span><span class="n">new_polygons</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DetailedWindows.from_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.DetailedWindows.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create DetailedWindows from a dictionary.</span>
+
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            {</span>
+<span class="sd">            &quot;type&quot;: &quot;DetailedWindows&quot;,</span>
+<span class="sd">            &quot;polygons&quot;: [((0.5, 0.5), (2, 0.5), (2, 2), (0.5, 2)),</span>
+<span class="sd">                         ((3, 1), (4, 1), (4, 2))]</span>
+<span class="sd">            }</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;DetailedWindows&#39;</span><span class="p">,</span> \
+            <span class="s1">&#39;Expected DetailedWindows dictionary. Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">Polygon2D</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="n">Point2D</span><span class="o">.</span><span class="n">from_array</span><span class="p">(</span><span class="n">pt</span><span class="p">)</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">poly</span><span class="p">))</span>
+                         <span class="k">for</span> <span class="n">poly</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;polygons&#39;</span><span class="p">]))</span></div>
+
+<div class="viewcode-block" id="DetailedWindows.to_dict"><a class="viewcode-back" href="../../dragonfly.windowparameter.html#dragonfly.windowparameter.DetailedWindows.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get DetailedWindows as a dictionary.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;DetailedWindows&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;polygons&#39;</span><span class="p">:</span> <span class="p">[[</span><span class="n">pt</span><span class="o">.</span><span class="n">to_array</span><span class="p">()</span> <span class="k">for</span> <span class="n">pt</span> <span class="ow">in</span> <span class="n">poly</span><span class="p">]</span> <span class="k">for</span> <span class="n">poly</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">polygons</span><span class="p">]</span>
+                <span class="p">}</span></div>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">DetailedWindows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__key</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple based on the object properties, useful for hashing.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">tuple</span><span class="p">(</span><span class="nb">hash</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span> <span class="k">for</span> <span class="n">polygon</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">hash</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">())</span>
+
+    <span class="k">def</span> <span class="fm">__eq__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">DetailedWindows</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span> <span class="o">==</span> <span class="n">other</span><span class="o">.</span><span class="n">__key</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__ne__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">):</span>
+        <span class="k">return</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;DetailedWindows:</span><span class="se">\n</span><span class="s1"> </span><span class="si">{}</span><span class="s1"> windows&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_polygons</span><span class="p">))</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

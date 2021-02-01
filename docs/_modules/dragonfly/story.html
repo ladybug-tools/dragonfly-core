@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.story &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.story</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;Dragonfly Story.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">from</span> <span class="nn">._base</span> <span class="kn">import</span> <span class="n">_BaseGeometry</span>
+<span class="kn">from</span> <span class="nn">.properties</span> <span class="kn">import</span> <span class="n">StoryProperties</span>
+<span class="kn">from</span> <span class="nn">.room2d</span> <span class="kn">import</span> <span class="n">Room2D</span>
+<span class="kn">import</span> <span class="nn">dragonfly.writer.story</span> <span class="k">as</span> <span class="nn">writer</span>
+
+<span class="kn">from</span> <span class="nn">honeybee.typing</span> <span class="kn">import</span> <span class="n">float_positive</span><span class="p">,</span> <span class="n">int_in_range</span><span class="p">,</span> <span class="n">clean_string</span>
+<span class="kn">from</span> <span class="nn">honeybee.boundarycondition</span> <span class="kn">import</span> <span class="n">boundary_conditions</span> <span class="k">as</span> <span class="n">bcs</span>
+<span class="kn">from</span> <span class="nn">honeybee.boundarycondition</span> <span class="kn">import</span> <span class="n">Outdoors</span><span class="p">,</span> <span class="n">Surface</span>
+<span class="kn">from</span> <span class="nn">honeybee.shade</span> <span class="kn">import</span> <span class="n">Shade</span>
+<span class="kn">from</span> <span class="nn">honeybee.room</span> <span class="kn">import</span> <span class="n">Room</span>
+
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.pointvector</span> <span class="kn">import</span> <span class="n">Vector3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.polyline</span> <span class="kn">import</span> <span class="n">Polyline3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.plane</span> <span class="kn">import</span> <span class="n">Plane</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.face</span> <span class="kn">import</span> <span class="n">Face3D</span>
+<span class="kn">from</span> <span class="nn">ladybug_geometry.geometry3d.polyface</span> <span class="kn">import</span> <span class="n">Polyface3D</span>
+
+
+<div class="viewcode-block" id="Story"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story">[docs]</a><span class="k">class</span> <span class="nc">Story</span><span class="p">(</span><span class="n">_BaseGeometry</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;A Story of a building defined by an extruded Room2Ds.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        identifier: Text string for a unique Story ID. Must be &lt; 100 characters</span>
+<span class="sd">            and not contain any spaces or special characters.</span>
+<span class="sd">        room_2ds: An array of dragonfly Room2D objects that together form an</span>
+<span class="sd">            entire story of a building.</span>
+<span class="sd">        floor_to_floor_height: A number for the distance from the floor plate of</span>
+<span class="sd">            this Story to the floor of the story above this one (if it exists).</span>
+<span class="sd">            If None, this value will be the maximum floor_to_ceiling_height of the</span>
+<span class="sd">            input room_2ds plus any difference between the Story floor height</span>
+<span class="sd">            and the room floor heights. (Default: None)</span>
+<span class="sd">        floor_height: A number for the absolute floor height of the Story.</span>
+<span class="sd">            If None, this will be the minimum floor height of all the Story&#39;s</span>
+<span class="sd">            room_2ds, which is suitable for cases where there are no floor</span>
+<span class="sd">            plenums. (Default: None).</span>
+<span class="sd">        multiplier: An integer that denotes the number of times that this</span>
+<span class="sd">            Story is repeated over the height of the building. Default: 1.</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * identifier</span>
+<span class="sd">        * display_name</span>
+<span class="sd">        * room_2ds</span>
+<span class="sd">        * floor_to_floor_height</span>
+<span class="sd">        * multiplier</span>
+<span class="sd">        * parent</span>
+<span class="sd">        * has_parent</span>
+<span class="sd">        * floor_height</span>
+<span class="sd">        * floor_area</span>
+<span class="sd">        * exterior_wall_area</span>
+<span class="sd">        * exterior_aperture_area</span>
+<span class="sd">        * volume</span>
+<span class="sd">        * is_above_ground</span>
+<span class="sd">        * min</span>
+<span class="sd">        * max</span>
+<span class="sd">        * user_data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="vm">__slots__</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;_room_2ds&#39;</span><span class="p">,</span> <span class="s1">&#39;_floor_to_floor_height&#39;</span><span class="p">,</span> <span class="s1">&#39;_floor_height&#39;</span><span class="p">,</span>
+                 <span class="s1">&#39;_multiplier&#39;</span><span class="p">,</span> <span class="s1">&#39;_parent&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">,</span> <span class="n">room_2ds</span><span class="p">,</span> <span class="n">floor_to_floor_height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">floor_height</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">multiplier</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A Story of a building defined by an extruded Floor2Ds.&quot;&quot;&quot;</span>
+        <span class="n">_BaseGeometry</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">identifier</span><span class="p">)</span>  <span class="c1"># process the identifier</span>
+
+        <span class="c1"># process the story geometry</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">room_2ds</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">room_2ds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">room_2ds</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">room_2ds</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Story must have at least one Room2D.&#39;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="n">room_2ds</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">room</span><span class="p">,</span> <span class="n">Room2D</span><span class="p">),</span> \
+                <span class="s1">&#39;Expected dragonfly Room2D. Got </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">room</span><span class="p">))</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span> <span class="o">=</span> <span class="n">room_2ds</span>
+
+        <span class="c1"># process the input properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">floor_height</span> <span class="o">=</span> <span class="n">floor_height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_floor_height</span> <span class="o">=</span> <span class="n">floor_to_floor_height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">=</span> <span class="n">multiplier</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># _parent will be set when Story is added to a Building</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_properties</span> <span class="o">=</span> <span class="n">StoryProperties</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>  <span class="c1"># properties for extensions</span>
+
+<div class="viewcode-block" id="Story.from_dict"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.from_dict">[docs]</a>    <span class="nd">@classmethod</span>
+    <span class="k">def</span> <span class="nf">from_dict</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize an Story from a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: A dictionary representation of a Story object.</span>
+<span class="sd">            tolerance: The maximum difference between z values at which point vertices</span>
+<span class="sd">                are considered to be in the same horizontal plane. This is used to check</span>
+<span class="sd">                that all vertices of the input floor_geometry lie in the same horizontal</span>
+<span class="sd">                floor plane. Default is 0, which will not perform any check.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># check the type of dictionary</span>
+        <span class="k">assert</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;Story&#39;</span><span class="p">,</span> <span class="s1">&#39;Expected Story dictionary. &#39;</span> \
+            <span class="s1">&#39;Got </span><span class="si">{}</span><span class="s1">.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">])</span>
+
+        <span class="c1"># serialize the rooms</span>
+        <span class="n">rooms</span> <span class="o">=</span> <span class="p">[</span><span class="n">Room2D</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span><span class="n">r_dict</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span> <span class="k">for</span> <span class="n">r_dict</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;room_2ds&#39;</span><span class="p">]]</span>
+
+        <span class="c1"># check if any room boundaries were reversed</span>
+        <span class="n">dict_pts</span> <span class="o">=</span> <span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">room</span><span class="p">[</span><span class="s1">&#39;floor_boundary&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;room_2ds&#39;</span><span class="p">]]</span>
+        <span class="n">room_pts</span> <span class="o">=</span> <span class="p">[(</span><span class="n">rm</span><span class="o">.</span><span class="n">floor_geometry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">rm</span><span class="o">.</span><span class="n">floor_geometry</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">y</span><span class="p">)</span> <span class="k">for</span> <span class="n">rm</span> <span class="ow">in</span> <span class="n">rooms</span><span class="p">]</span>
+        <span class="n">not_reversed</span> <span class="o">=</span> <span class="p">[</span><span class="n">dpt</span> <span class="o">==</span> <span class="n">rpt</span> <span class="k">for</span> <span class="n">dpt</span><span class="p">,</span> <span class="n">rpt</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">dict_pts</span><span class="p">,</span> <span class="n">room_pts</span><span class="p">)]</span>
+
+        <span class="c1"># ensure Surface boundary conditions are correct if floors were reversed</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">all</span><span class="p">(</span><span class="n">not_reversed</span><span class="p">):</span>  <span class="c1"># some room floors have been reversed</span>
+            <span class="n">bcs_to_update</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">not_revd</span><span class="p">,</span> <span class="n">room</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">not_reversed</span><span class="p">,</span> <span class="n">rooms</span><span class="p">):</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">not_revd</span><span class="p">:</span>  <span class="c1"># double negative! reversed room boundary</span>
+                    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">room</span><span class="o">.</span><span class="n">_boundary_conditions</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bc</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>  <span class="c1"># segment must be updated</span>
+                            <span class="n">newid</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">..Face</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">room</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+                            <span class="n">bc_room</span> <span class="o">=</span> <span class="n">bc</span><span class="o">.</span><span class="n">boundary_condition_objects</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">bc_f_i</span> <span class="o">=</span> <span class="n">bc</span><span class="o">.</span><span class="n">boundary_condition_objects</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;..Face&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                            <span class="n">bc_tup</span> <span class="o">=</span> <span class="p">(</span><span class="n">bc_room</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">bc_f_i</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="p">(</span><span class="n">newid</span><span class="p">,</span> <span class="n">room</span><span class="o">.</span><span class="n">identifier</span><span class="p">))</span>
+                            <span class="n">bcs_to_update</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bc_tup</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">bc_tup</span> <span class="ow">in</span> <span class="n">bcs_to_update</span><span class="p">:</span>  <span class="c1"># update any reversed boundary conditions</span>
+                <span class="n">adj_room</span> <span class="o">=</span> <span class="n">bc_tup</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">not_revd</span><span class="p">,</span> <span class="n">room</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">not_reversed</span><span class="p">,</span> <span class="n">rooms</span><span class="p">):</span>  <span class="c1"># find adjacent room</span>
+                    <span class="k">if</span> <span class="n">room</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">adj_room</span><span class="p">:</span>
+                        <span class="n">bc_to_update</span> <span class="o">=</span> <span class="n">room</span><span class="o">.</span><span class="n">_boundary_conditions</span><span class="p">[</span><span class="n">bc_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span> <span class="k">if</span> <span class="n">not_revd</span> \
+                            <span class="k">else</span> <span class="n">room</span><span class="o">.</span><span class="n">_boundary_conditions</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span> <span class="o">-</span> <span class="n">bc_tup</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+                        <span class="n">bc_to_update</span><span class="o">.</span><span class="n">_boundary_condition_objects</span> <span class="o">=</span> <span class="n">bc_tup</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="c1"># process the floor_to_floor_height and the multiplier</span>
+        <span class="n">f2fh</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;floor_to_floor_height&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;floor_to_floor_height&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;floor_height&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;floor_height&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="n">mult</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;multiplier&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="s1">&#39;multiplier&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="n">story</span> <span class="o">=</span> <span class="n">Story</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;identifier&#39;</span><span class="p">],</span> <span class="n">rooms</span><span class="p">,</span> <span class="n">f2fh</span><span class="p">,</span> <span class="n">fh</span><span class="p">,</span> <span class="n">mult</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;display_name&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">_display_name</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;user_data&#39;</span> <span class="ow">in</span> <span class="n">data</span> <span class="ow">and</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">user_data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;StoryProperties&#39;</span><span class="p">:</span>
+            <span class="n">story</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">_load_extension_attr_from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">story</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">room_2ds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A tuple of Room2D objects that form an entire story of a building.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">floor_to_floor_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get or set a number for the distance from this floor plate to the next one.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floor_to_floor_height</span>
+
+    <span class="nd">@floor_to_floor_height</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">floor_to_floor_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ciel_hgt</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">room</span><span class="o">.</span><span class="n">ceiling_height</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">])</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="n">ciel_hgt</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_height</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floor_to_floor_height</span> <span class="o">=</span> <span class="n">float_positive</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="s1">&#39;floor-to-floor height&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">floor_height</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get or set a number for the abolute floor height of the Story.</span>
+
+<span class="sd">        This will be the minimum floor height of all the Story&#39;s room_2ds unless</span>
+<span class="sd">        specified otherwise.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floor_height</span>
+
+    <span class="nd">@floor_height</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">floor_height</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">min</span><span class="p">([</span><span class="n">room</span><span class="o">.</span><span class="n">floor_height</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floor_height</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">multiplier</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get or set an integer noting how many times this Story is repeated.</span>
+
+<span class="sd">        Multipliers are used to speed up the calculation when similar Stories are</span>
+<span class="sd">        repeated more than once. Essentially, a given simulation with the</span>
+<span class="sd">        Story is run once and then the result is mutliplied by the multiplier.</span>
+<span class="sd">        This comes with some inaccuracy. However, this error might not be too large</span>
+<span class="sd">        if the Stories are similar enough and it can often be worth it since it can</span>
+<span class="sd">        greatly speed up the calculation.</span>
+
+<span class="sd">        For more information on multipliers in EnergyPlus see EnergyPlus Tips and Tricks:</span>
+<span class="sd">        https://bigladdersoftware.com/epx/docs/9-1/tips-and-tricks-using-energyplus/\</span>
+<span class="sd">using-multipliers-zone-and-or-window.html</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span>
+
+    <span class="nd">@multiplier</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">multiplier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span> <span class="o">=</span> <span class="n">int_in_range</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">input_name</span><span class="o">=</span><span class="s1">&#39;room multiplier&#39;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parent Building if assigned. None if not assigned.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">has_parent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Boolean noting whether this Story has a parent Building.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">floor_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total floor area in the Story.</span>
+
+<span class="sd">        Note that this property is for one story and does NOT use the multiplier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">room</span><span class="o">.</span><span class="n">floor_area</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exterior_wall_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total exterior wall area in the Story.</span>
+
+<span class="sd">        Note that this property is for one story and does NOT use the multiplier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">room</span><span class="o">.</span><span class="n">exterior_wall_area</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">exterior_aperture_area</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the total exterior aperture area in the Story.</span>
+
+<span class="sd">        Note that this property is for one story and does NOT use the multiplier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">room</span><span class="o">.</span><span class="n">exterior_aperture_area</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">volume</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a number for the volume of all the Rooms in the Story.</span>
+
+<span class="sd">        Note that this property is for one story and does NOT use the multiplier.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">sum</span><span class="p">([</span><span class="n">room</span><span class="o">.</span><span class="n">volume</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">])</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">is_above_ground</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a boolean to note if this Story is above the ground.</span>
+
+<span class="sd">        The story is considered above the ground if at least one of its Room2Ds</span>
+<span class="sd">        has an outdoor boundary condition.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">room</span><span class="o">.</span><span class="n">_boundary_conditions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bc</span><span class="p">,</span> <span class="n">Outdoors</span><span class="p">):</span>
+                    <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">min</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Point2D for the min bounding rectangle vertex in the XY plane.</span>
+
+<span class="sd">        This is useful in calculations to determine if this Story is in proximity</span>
+<span class="sd">        to others.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_min</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">max</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Point2D for the max bounding rectangle vertex in the XY plane.</span>
+
+<span class="sd">        This is useful in calculations to determine if this Story is in proximity</span>
+<span class="sd">        to others.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calculate_max</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Story.floor_geometry"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.floor_geometry">[docs]</a>    <span class="k">def</span> <span class="nf">floor_geometry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a ladybug_geometry Polyface3D object representing the floor plate.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">story_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_height</span>
+        <span class="n">room_floors</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">room_2ds</span><span class="p">:</span>
+            <span class="n">diff</span> <span class="o">=</span> <span class="n">story_height</span> <span class="o">-</span> <span class="n">room</span><span class="o">.</span><span class="n">floor_height</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">tolerance</span><span class="p">:</span>
+                <span class="n">room_floors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">room</span><span class="o">.</span><span class="n">floor_geometry</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">room_floors</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">room</span><span class="o">.</span><span class="n">floor_geometry</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">diff</span><span class="p">)))</span>
+        <span class="c1"># TODO: consider returning a list of polyfaces if input rooms are disjointed</span>
+        <span class="k">return</span> <span class="n">Polyface3D</span><span class="o">.</span><span class="n">from_faces</span><span class="p">(</span><span class="n">room_floors</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.outline_segments"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.outline_segments">[docs]</a>    <span class="k">def</span> <span class="nf">outline_segments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of LineSegment3D objects for the outline of the floor plate.</span>
+
+<span class="sd">        Note that these segments include both the boundary surrounding the floor</span>
+<span class="sd">        and any holes for courtyards that exist within the floor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_geometry</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span><span class="o">.</span><span class="n">naked_edges</span></div>
+
+<div class="viewcode-block" id="Story.outline_polylines"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.outline_polylines">[docs]</a>    <span class="k">def</span> <span class="nf">outline_polylines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of Polyline3D objects for the outline of the floor plate.</span>
+
+<span class="sd">        Note that these segments include both the boundary surrounding the floor</span>
+<span class="sd">        and any holes for courtyards that exist within the floor.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">Polyline3D</span><span class="o">.</span><span class="n">join_segments</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outline_segments</span><span class="p">(</span><span class="n">tolerance</span><span class="p">),</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.footprint"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.footprint">[docs]</a>    <span class="k">def</span> <span class="nf">footprint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of Face3D objects for the minimum floor plate representation.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">plines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">outline_polylines</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">plines</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># can be represented with a single Face3D</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">Face3D</span><span class="p">(</span><span class="n">plines</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">vertices</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Plane</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))]</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># need to separate holes from distinct Face3Ds</span>
+            <span class="n">faces</span> <span class="o">=</span> <span class="p">[</span><span class="n">Face3D</span><span class="p">(</span><span class="n">pl</span><span class="o">.</span><span class="n">vertices</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">Plane</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)))</span>
+                        <span class="k">for</span> <span class="n">pl</span> <span class="ow">in</span> <span class="n">plines</span><span class="p">]</span>
+            <span class="n">faces</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">area</span><span class="p">,</span> <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">base_face</span> <span class="o">=</span> <span class="n">faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">remain_faces</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">faces</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+            <span class="n">all_face3ds</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">while</span> <span class="nb">len</span><span class="p">(</span><span class="n">remain_faces</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">all_face3ds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_match_holes_to_face</span><span class="p">(</span>
+                    <span class="n">base_face</span><span class="p">,</span> <span class="n">remain_faces</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">))</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">remain_faces</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">base_face</span> <span class="o">=</span> <span class="n">remain_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="k">del</span> <span class="n">remain_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">remain_faces</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>  <span class="c1"># lone last Face3D</span>
+                    <span class="n">all_face3ds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">remain_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+                    <span class="k">del</span> <span class="n">remain_faces</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">all_face3ds</span></div>
+
+<div class="viewcode-block" id="Story.shade_representation"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.shade_representation">[docs]</a>    <span class="k">def</span> <span class="nf">shade_representation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A list of honeybee Shade objects representing the story geometry.</span>
+
+<span class="sd">        This accounts for the story multiplier and can be used to account for</span>
+<span class="sd">        this Story&#39;s shade in the simulation of another nearby Story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            cap: Boolean to note whether the shade representation should be capped</span>
+<span class="sd">                with a top face. Usually, this is not necessary to account for</span>
+<span class="sd">                blocked sun and is only needed when it&#39;s important to account for</span>
+<span class="sd">                reflected sun off of roofs. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">context_shades</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">extru_vec</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_floor_height</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outline_segments</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">extru_geo</span> <span class="o">=</span> <span class="n">Face3D</span><span class="o">.</span><span class="n">from_extrusion</span><span class="p">(</span><span class="n">seg</span><span class="p">,</span> <span class="n">extru_vec</span><span class="p">)</span>
+                <span class="n">shd_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">context_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Shade</span><span class="p">(</span><span class="n">shd_id</span><span class="p">,</span> <span class="n">extru_geo</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                <span class="k">pass</span>  <span class="c1"># duplicate vertex resulting in a segment of length 0</span>
+        <span class="k">if</span> <span class="n">cap</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">footprint</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)):</span>
+                <span class="n">shd_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Top_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">context_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Shade</span><span class="p">(</span><span class="n">shd_id</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">extru_vec</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">context_shades</span></div>
+
+<div class="viewcode-block" id="Story.shade_representation_multiplier"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.shade_representation_multiplier">[docs]</a>    <span class="k">def</span> <span class="nf">shade_representation_multiplier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exclude_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">cap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A list of honeybee Shade objects for just the &quot;multiplier&quot; part of the story.</span>
+
+<span class="sd">        This includes all of the geometry along the height of the multiplier except</span>
+<span class="sd">        for one of the floors (represented by the exclude_index). This will be an</span>
+<span class="sd">        empty list if the story has a multiplier of 1.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            exclude_index: An optional index for a story along the multiplier to</span>
+<span class="sd">                be excluded from the shade representation. For example, if 0,</span>
+<span class="sd">                the bottom geometry along the multiplier is excluded. (Default: 0).</span>
+<span class="sd">            cap: Boolean to note whether the shade representation should be capped</span>
+<span class="sd">                with a top face. Usually, this is not necessary to account for</span>
+<span class="sd">                blocked sun and is only needed when it&#39;s important to account for</span>
+<span class="sd">                reflected sun off of roofs. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance between points at which they are</span>
+<span class="sd">                not considered touching. Default: 0.01, suitable for objects</span>
+<span class="sd">                in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="c1"># get the extrusion and moving vectors</span>
+        <span class="n">ftf</span><span class="p">,</span> <span class="n">mult</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_floor_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span>
+        <span class="n">context_shades</span><span class="p">,</span> <span class="n">ceil_vecs</span><span class="p">,</span> <span class="n">extru_vecs</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">if</span> <span class="n">exclude_index</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>  <span class="c1"># insert vectors for the bottom shade</span>
+            <span class="n">ceil_vecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">extru_vecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ftf</span> <span class="o">*</span> <span class="n">exclude_index</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">exclude_index</span> <span class="o">&lt;</span> <span class="n">mult</span><span class="p">:</span>  <span class="c1"># insert vectors for the top shade</span>
+            <span class="n">ceil_vecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ftf</span> <span class="o">*</span> <span class="p">(</span><span class="n">exclude_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+            <span class="n">extru_vecs</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ftf</span> <span class="o">*</span> <span class="p">(</span><span class="n">mult</span> <span class="o">-</span> <span class="n">exclude_index</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)))</span>
+        <span class="c1"># loop through the segments and build up the shades</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">seg</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">outline_segments</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)):</span>
+            <span class="k">for</span> <span class="n">ceil_vec</span><span class="p">,</span> <span class="n">extru_vec</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">ceil_vecs</span><span class="p">,</span> <span class="n">extru_vecs</span><span class="p">):</span>
+                <span class="n">seg</span> <span class="o">=</span> <span class="n">seg</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">ceil_vec</span><span class="p">)</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">extru_geo</span> <span class="o">=</span> <span class="n">Face3D</span><span class="o">.</span><span class="n">from_extrusion</span><span class="p">(</span><span class="n">seg</span><span class="p">,</span> <span class="n">extru_vec</span><span class="p">)</span>
+                    <span class="n">shd_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                    <span class="n">context_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Shade</span><span class="p">(</span><span class="n">shd_id</span><span class="p">,</span> <span class="n">extru_geo</span><span class="p">))</span>
+                <span class="k">except</span> <span class="ne">ZeroDivisionError</span><span class="p">:</span>
+                    <span class="k">pass</span>  <span class="c1"># duplicate vertex resulting in a segment of length 0</span>
+        <span class="c1"># cap the extrusions if requested</span>
+        <span class="k">if</span> <span class="n">cap</span> <span class="ow">and</span> <span class="n">exclude_index</span> <span class="o">&lt;</span> <span class="n">mult</span><span class="p">:</span>
+            <span class="n">full_vec</span> <span class="o">=</span> <span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ftf</span> <span class="o">*</span> <span class="n">mult</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">s</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">footprint</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)):</span>
+                <span class="n">shd_id</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_Top_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+                <span class="n">context_shades</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Shade</span><span class="p">(</span><span class="n">shd_id</span><span class="p">,</span> <span class="n">s</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">full_vec</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">context_shades</span></div>
+
+<div class="viewcode-block" id="Story.room_by_identifier"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.room_by_identifier">[docs]</a>    <span class="k">def</span> <span class="nf">room_by_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">room_identifier</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a Room2D from this Story using its identifier.</span>
+
+<span class="sd">        Result will be None if the Room2D is not found in the Story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            room_identifier: String for the identifier of the Room2D to be</span>
+<span class="sd">                retrieved from this story.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">room</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">room_identifier</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">room</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Room2D &quot;</span><span class="si">{}</span><span class="s1">&quot; was not found in the story &quot;</span><span class="si">{}</span><span class="s1">&quot;&#39;</span>
+                             <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">room_identifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Story.rooms_by_identifier"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.rooms_by_identifier">[docs]</a>    <span class="k">def</span> <span class="nf">rooms_by_identifier</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">room_identifiers</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of Room2D objects in this story given Room2D identifiers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            room_identifier: Array of strings for the identifiers of the Room2D</span>
+<span class="sd">                to be retrieved from this Story.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">room_2ds</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">identifier</span> <span class="ow">in</span> <span class="n">room_identifiers</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">room</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">identifier</span><span class="p">:</span>
+                    <span class="n">room_2ds</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">room</span><span class="p">)</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Room2D &quot;</span><span class="si">{}</span><span class="s1">&quot; was not found in the story &#39;</span>
+                                 <span class="s1">&#39;&quot;</span><span class="si">{}</span><span class="s1">&quot;.&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">identifier</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">room_2ds</span></div>
+
+<div class="viewcode-block" id="Story.add_prefix"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.add_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the identifier and all child Room2D ids by inserting a prefix.</span>
+
+<span class="sd">        This is particularly useful in workflows where you duplicate and edit</span>
+<span class="sd">        a starting object and then want to combine it with the original object</span>
+<span class="sd">        into one Model (like making a model of repeated stories) since all objects</span>
+<span class="sd">        within a Model must have unique identifiers.</span>
+
+<span class="sd">        This method is used internally to convert from a Story with a mutliplier</span>
+<span class="sd">        to fully-detailed Stories with unique identifiers.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Text that will be inserted at the start of this object&#39;s</span>
+<span class="sd">                (and child segments&#39;) identifier and display_name. It is recommended</span>
+<span class="sd">                that this prefix be short to avoid maxing out the 100 allowable</span>
+<span class="sd">                characters for dragonfly identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_identifier</span> <span class="o">=</span> <span class="n">clean_string</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">prefix</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.add_room_2d"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.add_room_2d">[docs]</a>    <span class="k">def</span> <span class="nf">add_room_2d</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">room_2d</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a Room2D to this Story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            room_2d: A Room2D object to be added to this Story.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">room_2d</span><span class="p">,</span> <span class="n">Room2D</span><span class="p">),</span> \
+            <span class="s1">&#39;Expected dragonfly Room2D. Got </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">room_2d</span><span class="p">))</span>
+        <span class="n">room_2d</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span> <span class="o">+</span> <span class="p">(</span><span class="n">room_2d</span><span class="p">,)</span></div>
+
+<div class="viewcode-block" id="Story.add_room_2ds"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.add_room_2ds">[docs]</a>    <span class="k">def</span> <span class="nf">add_room_2ds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rooms_2ds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add a list of Room2Ds to this Story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            room_2d: A list of Room2D objects to be added to this Story.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="n">rooms_2ds</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_room_2d</span><span class="p">(</span><span class="n">room</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.solve_room_2d_adjacency"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.solve_room_2d_adjacency">[docs]</a>    <span class="k">def</span> <span class="nf">solve_room_2d_adjacency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Automatically solve adjacencies across the Room2Ds in this story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum difference between the coordinate values of two</span>
+<span class="sd">                faces at which they can be considered adjacent. Default: 0.01,</span>
+<span class="sd">                suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Room2D</span><span class="o">.</span><span class="n">solve_adjacency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.intersect_room_2d_adjacency"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.intersect_room_2d_adjacency">[docs]</a>    <span class="k">def</span> <span class="nf">intersect_room_2d_adjacency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Automatically intersect the line segments of the Story&#39;s Room2Ds.</span>
+
+<span class="sd">        Note that this method effectively erases all assigned boundary conditions,</span>
+<span class="sd">        window parameters and shading parameters as the original segments are</span>
+<span class="sd">        subdivided. As such, it is recommended that this method be used before all</span>
+<span class="sd">        other steps when creating a Story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum difference between the coordinate values of two</span>
+<span class="sd">                at which they can be considered adjacent. Default: 0.01,</span>
+<span class="sd">                suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span> <span class="o">=</span> <span class="n">Room2D</span><span class="o">.</span><span class="n">intersect_adjacency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.remove_room_2d_colinear_vertices"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.remove_room_2d_colinear_vertices">[docs]</a>    <span class="k">def</span> <span class="nf">remove_room_2d_colinear_vertices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Automatically remove colinear or duplicate vertices for the Story&#39;s Room2Ds.</span>
+
+<span class="sd">        Note that this method effectively erases all assigned boundary conditions,</span>
+<span class="sd">        window parameters and shading parameters as many of the original segments</span>
+<span class="sd">        may be deleted. As such, it is recommended that this method be used before</span>
+<span class="sd">        all other steps when creating a Story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            tolerance: The minimum difference between the coordinate values of two</span>
+<span class="sd">                faces at which they can be considered adjacent. Default: 0.01,</span>
+<span class="sd">                suitable for objects in meters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">room</span><span class="o">.</span><span class="n">remove_colinear_vertices</span><span class="p">(</span><span class="n">tolerance</span><span class="p">)</span>
+                               <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.set_outdoor_window_parameters"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.set_outdoor_window_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_outdoor_window_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">window_parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all of the outdoor walls to have the same window parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            window_parameter: A WindowParameter object that will be assigned to</span>
+<span class="sd">                all wall segments of this story&#39;s rooms that have an Outdoors</span>
+<span class="sd">                boundary conditions. This can also be None, to remove all</span>
+<span class="sd">                windows from the story.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">set_outdoor_window_parameters</span><span class="p">(</span><span class="n">window_parameter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.set_outdoor_shading_parameters"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.set_outdoor_shading_parameters">[docs]</a>    <span class="k">def</span> <span class="nf">set_outdoor_shading_parameters</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">shading_parameter</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all of the outdoor walls to have the same shading parameters.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            shading_parameter: A ShadingParameter object that will be assigned to</span>
+<span class="sd">                all wall segments of this story&#39;s rooms that have an Outdoors</span>
+<span class="sd">                boundary conditions. This can also be None, to remove all</span>
+<span class="sd">                shades from the story.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">set_outdoor_shading_parameters</span><span class="p">(</span><span class="n">shading_parameter</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.set_ground_contact"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.set_ground_contact">[docs]</a>    <span class="k">def</span> <span class="nf">set_ground_contact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_ground_contact</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all child Room2Ds of this object to have floors in contact with the ground.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            is_ground_contact: A boolean noting whether all the Story&#39;s room_2ds</span>
+<span class="sd">                have floors in contact with the ground. Default: True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">is_ground_contact</span> <span class="o">=</span> <span class="n">is_ground_contact</span></div>
+
+<div class="viewcode-block" id="Story.set_top_exposed"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.set_top_exposed">[docs]</a>    <span class="k">def</span> <span class="nf">set_top_exposed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">is_top_exposed</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all child Room2Ds of this object to have ceilings exposed to the outdoors.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            is_top_exposed: A boolean noting whether all the Story&#39;s room_2ds</span>
+<span class="sd">                have ceilings exposed to the outdoors. Default: True.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">is_top_exposed</span> <span class="o">=</span> <span class="n">is_top_exposed</span></div>
+
+<div class="viewcode-block" id="Story.make_underground"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.make_underground">[docs]</a>    <span class="k">def</span> <span class="nf">make_underground</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Make this Story underground by setting all Room2D segments to have Ground BCs.</span>
+
+<span class="sd">        Note that this method only changes the outdoor walls of the Room2Ds to have</span>
+<span class="sd">        Ground boundary conditions and, if the floors of the story are also in</span>
+<span class="sd">        contact with the ground, the set_ground_contact should be used in addition</span>
+<span class="sd">        to this method.</span>
+
+<span class="sd">        Also note that this method will throw an exception if any of the Room2Ds have</span>
+<span class="sd">        WindowParameters assigned to them (since Ground boundary conditions are)</span>
+<span class="sd">        not compatible with windows. So using the set_outdoor_window_parameters</span>
+<span class="sd">        method and passing None to remove all windows is often recommended</span>
+<span class="sd">        before running this method.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">bc</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">room</span><span class="o">.</span><span class="n">_boundary_conditions</span><span class="p">):</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bc</span><span class="p">,</span> <span class="n">Outdoors</span><span class="p">):</span>
+                    <span class="n">room</span><span class="o">.</span><span class="n">set_boundary_condition</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">bcs</span><span class="o">.</span><span class="n">ground</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.generate_grid"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.generate_grid">[docs]</a>    <span class="k">def</span> <span class="nf">generate_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_dim</span><span class="p">,</span> <span class="n">y_dim</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">offset</span><span class="o">=</span><span class="mf">1.0</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get a list of gridded Mesh3D objects offset from the floors of this story.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            x_dim: The x dimension of the grid cells as a number.</span>
+<span class="sd">            y_dim: The y dimension of the grid cells as a number. Default is None,</span>
+<span class="sd">                which will assume the same cell dimension for y as is set for x.</span>
+<span class="sd">            offset: A number for how far to offset the grid from the base face.</span>
+<span class="sd">                Default is 1.0, which will not offset the grid to be 1 unit above</span>
+<span class="sd">                the floor.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">room</span><span class="o">.</span><span class="n">generate_grid</span><span class="p">(</span><span class="n">x_dim</span><span class="p">,</span> <span class="n">y_dim</span><span class="p">,</span> <span class="n">offset</span><span class="p">)</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="Story.move"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.move">[docs]</a>    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moving_vec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Move this Story along a vector.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            moving_vec: A ladybug_geometry Vector3D with the direction and distance</span>
+<span class="sd">                to move the object.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floor_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floor_height</span> <span class="o">+</span> <span class="n">moving_vec</span><span class="o">.</span><span class="n">z</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.rotate_xy"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.rotate_xy">[docs]</a>    <span class="k">def</span> <span class="nf">rotate_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Rotate this Story counterclockwise in the XY plane by a certain angle.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle: An angle in degrees.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D for the origin around which the</span>
+<span class="sd">                object will be rotated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.reflect"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.reflect">[docs]</a>    <span class="k">def</span> <span class="nf">reflect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plane</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Reflect this Story across a plane.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plane: A ladybug_geometry Plane across which the object will be reflected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.scale"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.scale">[docs]</a>    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Scale this Story by a factor from an origin point.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D representing the origin from which</span>
+<span class="sd">                to scale. If None, it will be scaled from the World origin (0, 0, 0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">room</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floor_to_floor_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floor_to_floor_height</span> <span class="o">*</span> <span class="n">factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_floor_height</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floor_height</span> <span class="o">*</span> <span class="n">factor</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Story.check_missing_adjacencies"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.check_missing_adjacencies">[docs]</a>    <span class="k">def</span> <span class="nf">check_missing_adjacencies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raise_exception</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check that all Room2Ds have adjacent objects that exist within this Story.&quot;&quot;&quot;</span>
+        <span class="n">bc_obj_ids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">bc</span> <span class="ow">in</span> <span class="n">room</span><span class="o">.</span><span class="n">_boundary_conditions</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bc</span><span class="p">,</span> <span class="n">Surface</span><span class="p">):</span>
+                    <span class="n">bc_obj_ids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bc</span><span class="o">.</span><span class="n">boundary_condition_objects</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rooms_by_identifier</span><span class="p">(</span><span class="n">bc_obj_ids</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raise_exception</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;A Room2D has an adjacent object that is missing &#39;</span>
+                                 <span class="s1">&#39;from the model:</span><span class="se">\n</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Story.to_honeybee"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.to_honeybee">[docs]</a>    <span class="k">def</span> <span class="nf">to_honeybee</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">use_multiplier</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert Dragonfly Story to a list of Honeybee Rooms.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            use_multiplier: If True, this Story&#39;s multiplier will be passed along</span>
+<span class="sd">                to the generated Honeybee Room objects, indicating the simulation</span>
+<span class="sd">                will be run once for the Story and then results will be multiplied.</span>
+<span class="sd">                You will want to set this to False when exporting each Story as</span>
+<span class="sd">                full geometry.</span>
+<span class="sd">            add_plenum: Boolean to indicate whether ceiling/floor plenums should</span>
+<span class="sd">                be auto-generated for the Rooms. (Default: False).</span>
+<span class="sd">            tolerance: The minimum distance in z values of floor_height and</span>
+<span class="sd">                floor_to_ceiling_height at which adjacent Faces will be split.</span>
+<span class="sd">                If None, no splitting will occur. Default: 0.01, suitable for</span>
+<span class="sd">                objects in meters.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of honeybee Rooms that represent the Story.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># set up the multiplier</span>
+        <span class="n">mult</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span> <span class="k">if</span> <span class="n">use_multiplier</span> <span class="k">else</span> <span class="mi">1</span>
+
+        <span class="c1"># convert all of the Room2Ds to honeybee Rooms</span>
+        <span class="n">hb_rooms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">adjacencies</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">:</span>
+            <span class="n">hb_room</span><span class="p">,</span> <span class="n">adj</span> <span class="o">=</span> <span class="n">room</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span>
+                <span class="n">mult</span><span class="p">,</span> <span class="n">add_plenum</span><span class="o">=</span><span class="n">add_plenum</span><span class="p">,</span> <span class="n">tolerance</span><span class="o">=</span><span class="n">tolerance</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">hb_room</span><span class="p">,</span> <span class="n">Room</span><span class="p">):</span>
+                <span class="n">hb_rooms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">hb_room</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># list of rooms with plenums</span>
+                <span class="n">hb_rooms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">hb_room</span><span class="p">)</span>
+            <span class="n">adjacencies</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">adj</span><span class="p">)</span>
+
+        <span class="c1"># assign adjacent boundary conditions that could not be set on the room level</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">adjacencies</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">adj_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="k">for</span> <span class="n">adj</span> <span class="ow">in</span> <span class="n">adjacencies</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">adj</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">identifier</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">adj_set</span><span class="p">:</span>
+                    <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="n">hb_rooms</span><span class="p">:</span>
+                        <span class="n">adj_room</span> <span class="o">=</span> <span class="n">adj</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="k">if</span> <span class="n">room</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">adj_room</span><span class="p">:</span>
+                            <span class="k">for</span> <span class="n">face</span> <span class="ow">in</span> <span class="n">room</span><span class="o">.</span><span class="n">faces</span><span class="p">:</span>
+                                <span class="n">adj_face</span> <span class="o">=</span> <span class="n">adj</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+                                <span class="k">if</span> <span class="n">face</span><span class="o">.</span><span class="n">identifier</span> <span class="o">==</span> <span class="n">adj_face</span><span class="p">:</span>
+                                    <span class="n">adj</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_adjacency</span><span class="p">(</span><span class="n">face</span><span class="p">,</span> <span class="n">tolerance</span><span class="p">)</span>
+                                    <span class="n">adj_set</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">face</span><span class="o">.</span><span class="n">identifier</span><span class="p">)</span>
+                                    <span class="k">break</span>
+                            <span class="k">break</span>
+        <span class="k">return</span> <span class="n">hb_rooms</span></div>
+
+<div class="viewcode-block" id="Story.to_dict"><a class="viewcode-back" href="../../dragonfly.story.html#dragonfly.story.Story.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abridged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">included_prop</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return Story as a dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            abridged: Boolean to note whether the extension properties of the</span>
+<span class="sd">                object (ie. construction sets) should be included in detail</span>
+<span class="sd">                (False) or just referenced by identifier (True). Default: False.</span>
+<span class="sd">            included_prop: List of properties to filter keys that must be included in</span>
+<span class="sd">                output dictionary. For example [&#39;energy&#39;] will include &#39;energy&#39; key if</span>
+<span class="sd">                available in properties to_dict. By default all the keys will be</span>
+<span class="sd">                included. To exclude all the keys from extensions use an empty list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Story&#39;</span><span class="p">}</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;identifier&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">identifier</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;display_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;room_2ds&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="n">r</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">abridged</span><span class="p">,</span> <span class="n">included_prop</span><span class="p">)</span> <span class="k">for</span> <span class="n">r</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">]</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;floor_to_floor_height&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_to_floor_height</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;floor_height&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">floor_height</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;multiplier&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">multiplier</span>
+        <span class="n">base</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">abridged</span><span class="p">,</span> <span class="n">included_prop</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">base</span><span class="p">[</span><span class="s1">&#39;user_data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">to</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Story writer object.</span>
+
+<span class="sd">        Use this method to access Writer class to write the story in other formats.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">writer</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">_match_holes_to_face</span><span class="p">(</span><span class="n">base_face</span><span class="p">,</span> <span class="n">other_faces</span><span class="p">,</span> <span class="n">tol</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Attempt to merge other faces into a base face as holes.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base_face: A Face3D to serve as the base.</span>
+<span class="sd">            other_faces: A list of other Face3D objects to attempt to merge into</span>
+<span class="sd">                the base_face as a hole. This method will delete any faces</span>
+<span class="sd">                that are successfully merged into the output from this list.</span>
+<span class="sd">            tol: The tolerance to be used for evaluating sub-faces.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A Face3D which has holes in it if any of the other_faces is a valid</span>
+<span class="sd">            sub face.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">holes</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">more_to_check</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">while</span> <span class="n">more_to_check</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">r_face</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">other_faces</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">base_face</span><span class="o">.</span><span class="n">is_sub_face</span><span class="p">(</span><span class="n">r_face</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
+                    <span class="n">holes</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">r_face</span><span class="p">)</span>
+                    <span class="k">del</span> <span class="n">other_faces</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+                    <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">more_to_check</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">holes</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">base_face</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">hole_verts</span> <span class="o">=</span> <span class="p">[</span><span class="n">hole</span><span class="o">.</span><span class="n">vertices</span> <span class="k">for</span> <span class="n">hole</span> <span class="ow">in</span> <span class="n">holes</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">Face3D</span><span class="p">(</span><span class="n">base_face</span><span class="o">.</span><span class="n">vertices</span><span class="p">,</span> <span class="n">Plane</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="n">Vector3D</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)),</span> <span class="n">hole_verts</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__copy__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">new_s</span> <span class="o">=</span> <span class="n">Story</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">identifier</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">room</span><span class="o">.</span><span class="n">duplicate</span><span class="p">()</span> <span class="k">for</span> <span class="n">room</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">),</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">_floor_to_floor_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_floor_height</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_multiplier</span><span class="p">)</span>
+        <span class="n">new_s</span><span class="o">.</span><span class="n">_display_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span>
+        <span class="n">new_s</span><span class="o">.</span><span class="n">_user_data</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">new_s</span><span class="o">.</span><span class="n">_parent</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parent</span>
+        <span class="n">new_s</span><span class="o">.</span><span class="n">_properties</span><span class="o">.</span><span class="n">_duplicate_extension_attr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_properties</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">new_s</span>
+
+    <span class="k">def</span> <span class="fm">__len__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__getitem__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">key</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="fm">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">iter</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_room_2ds</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s1">&#39;Story: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="bp">self</span><span class="o">.</span><span class="n">display_name</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

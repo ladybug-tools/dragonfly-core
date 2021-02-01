@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.properties &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.properties</h1><div class="highlight"><pre>
+<span></span><span class="c1"># coding: utf-8</span>
+<span class="sd">&quot;&quot;&quot;Extension properties for Building, Story, Room2D.</span>
+
+<span class="sd">These objects hold all attributes assigned by extensions like dragonfly-radiance</span>
+<span class="sd">and dragonfly-energy.  Note that these Property objects are not intended to exist</span>
+<span class="sd">on their own but should have a host object.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+<span class="kn">import</span> <span class="nn">honeybee.properties</span> <span class="k">as</span> <span class="nn">hb_properties</span>
+
+
+<span class="k">class</span> <span class="nc">_Properties</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Base class for all Properties classes.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        host: A dragonfly-core geometry object that hosts these properties</span>
+<span class="sd">            (ie. Building, Story, Room2D).</span>
+
+<span class="sd">    Properties:</span>
+<span class="sd">        * host</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_exclude</span> <span class="o">=</span> <span class="p">(</span><span class="s1">&#39;host&#39;</span><span class="p">,</span> <span class="s1">&#39;move&#39;</span><span class="p">,</span> <span class="s1">&#39;rotate_xy&#39;</span><span class="p">,</span> <span class="s1">&#39;reflect&#39;</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">,</span> <span class="s1">&#39;add_prefix&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;reset_to_default&#39;</span><span class="p">,</span> <span class="s1">&#39;to_dict&#39;</span><span class="p">,</span> <span class="s1">&#39;to_honeybee&#39;</span><span class="p">,</span> <span class="s1">&#39;ToString&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize properties.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_host</span> <span class="o">=</span> <span class="n">host</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">host</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get the object hosting these properties.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_host</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">_extension_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">atr</span> <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">atr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">)</span>
+                <span class="ow">and</span> <span class="n">atr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exclude</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">move</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">moving_vec</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply a move transform to extension attributes.</span>
+
+<span class="sd">        This is useful in cases where extension attributes possess geometric data</span>
+<span class="sd">        that should be moved alongside the host object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            moving_vec: A ladybug_geometry Vector3D with the direction and distance</span>
+<span class="sd">                to move the face.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;move&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">var</span><span class="o">.</span><span class="n">move</span><span class="p">(</span><span class="n">moving_vec</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to move </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">rotate_xy</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply a rotatation in the XY plane to extension attributes.</span>
+
+<span class="sd">        This is useful in cases where extension attributes possess geometric data</span>
+<span class="sd">        that should be rotated alongside the host object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            angle: An angle in degrees.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D for the origin around which the</span>
+<span class="sd">                object will be rotated.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;rotate_xy&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">var</span><span class="o">.</span><span class="n">rotate_xy</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to rotate </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">reflect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plane</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply a reflection transform to extension attributes.</span>
+
+<span class="sd">        This is useful in cases where extension attributes possess geometric data</span>
+<span class="sd">        that should be reflected alongside the host object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            plane: A ladybug_geometry Plane across which the object will</span>
+<span class="sd">                be reflected.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;reflect&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">var</span><span class="o">.</span><span class="n">reflect</span><span class="p">(</span><span class="n">plane</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to reflect </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">scale</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply a scale transform to extension attributes.</span>
+
+<span class="sd">        This is useful in cases where extension attributes possess geometric data</span>
+<span class="sd">        that should be scaled alongside the host object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            factor: A number representing how much the object should be scaled.</span>
+<span class="sd">            origin: A ladybug_geometry Point3D representing the origin from which</span>
+<span class="sd">                to scale. If None, it will be scaled from the World origin (0, 0, 0).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;scale&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">var</span><span class="o">.</span><span class="n">scale</span><span class="p">(</span><span class="n">factor</span><span class="p">,</span> <span class="n">origin</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to scale </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_duplicate_extension_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">original_properties</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Duplicate the attributes added by extensions.</span>
+
+<span class="sd">        This method should be called within the duplicate or __copy__ methods of</span>
+<span class="sd">        each dragonfly-core geometry object after the core object has been duplicated.</span>
+<span class="sd">        This method only needs to be called on the new (duplicated) core object and</span>
+<span class="sd">        the extension properties of the original core object should be passed to</span>
+<span class="sd">        this method as the original_properties.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            original_properties: The properties object of the original core</span>
+<span class="sd">                object from which the duplicate was derived.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">original_properties</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;duplicate&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">atr</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">duplicate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to duplicate </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_add_prefix_extension_attr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the identifier of attributes unique to this object by adding a prefix.</span>
+
+<span class="sd">        This is particularly useful in workflows where you duplicate and edit</span>
+<span class="sd">        a starting object and then want to combine it with the original object</span>
+<span class="sd">        into one Model (like making a model of repeated buildings).</span>
+
+<span class="sd">        Notably, this method only adds the prefix to extension attributes that must</span>
+<span class="sd">        be unique to the object and does not add the prefix to attributes that are</span>
+<span class="sd">        shared across several objects.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Text that will be inserted at the start of the extension attributes&#39;</span>
+<span class="sd">                identifier. It is recommended that this prefix be short to avoid maxing</span>
+<span class="sd">                out the 100 allowable characters for honeybee identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;add_prefix&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">var</span><span class="o">.</span><span class="n">add_prefix</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to add prefix to </span><span class="si">{}</span><span class="s1">: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_add_extension_attr_to_honeybee</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">,</span> <span class="n">honeybee_properties</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add Dragonfly properties for extensions to Honeybee extension properties.</span>
+
+<span class="sd">        This method should be called within the to_honeybee method for any</span>
+<span class="sd">        dragonfly-core geometry object that maps directly to a honeybee-core object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            host: A honeybee-core object that hosts these properties.</span>
+<span class="sd">            honeybee_properties: A honeybee-core Properties object to which the</span>
+<span class="sd">                dragonfly-core extension attributes will be added.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;to_honeybee&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">honeybee_properties</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">atr</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="n">to_honeybee</span><span class="p">(</span><span class="n">host</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to translate </span><span class="si">{}</span><span class="s1"> to_honeybee: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">honeybee_properties</span>
+
+    <span class="k">def</span> <span class="nf">_add_extension_attr_to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base</span><span class="p">,</span> <span class="n">abridged</span><span class="p">,</span> <span class="n">include</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Add attributes for extensions to the base dictionary.</span>
+
+<span class="sd">        This method should be called within the to_dict method of each dragonfly-core</span>
+<span class="sd">        geometry object.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            base: The dictionary of the core object without any extension attributes.</span>
+<span class="sd">                This method will add extension attributes to this dictionary. For</span>
+<span class="sd">                example, energy properties will appear under base[&#39;properties&#39;][&#39;energy&#39;].</span>
+<span class="sd">            abridged: Boolean to note whether the attributes of the extensions should</span>
+<span class="sd">                be abridged (True) or full (False). For example, if a Room&#39;s energy</span>
+<span class="sd">                properties are abridged, the program_type attribute under the energy</span>
+<span class="sd">                properties dictionary will just be the identifier of the program_type. If</span>
+<span class="sd">                it is full (not abridged), the program_type will be a complete</span>
+<span class="sd">                dictionary following the ProgramType schema. Abridged dictionaries</span>
+<span class="sd">                should be used within the Model.to_dict but full dictionaries should</span>
+<span class="sd">                be used within the to_dict methods of individual objects.</span>
+<span class="sd">            include: List of properties to filter keys that must be included in</span>
+<span class="sd">                output dictionary. For example [&#39;energy&#39;] will include &#39;energy&#39; key if</span>
+<span class="sd">                available in properties to_dict. By default all the keys will be</span>
+<span class="sd">                included. To exclude all the keys from extensions use an empty list.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="n">include</span> <span class="k">if</span> <span class="n">include</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;to_dict&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">base</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">to_dict</span><span class="p">(</span><span class="n">abridged</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to convert </span><span class="si">{}</span><span class="s1"> to a dict: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">base</span>
+
+    <span class="k">def</span> <span class="nf">_load_extension_attr_from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">property_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Get attributes for extensions from a dictionary of the properties.</span>
+
+<span class="sd">        This method should be called within the from_dict method of each dragonfly-core</span>
+<span class="sd">        geometry object. Specifically, this method should be called on the core</span>
+<span class="sd">        object after it has been created from a dictionary but lacks any of the</span>
+<span class="sd">        extension attributes in the dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            property_dict: A dictionary of properties for the object (ie.</span>
+<span class="sd">                StoryProperties, BuildingProperties). These will be used to load</span>
+<span class="sd">                attributes from the dictionary and assign them to the object on which</span>
+<span class="sd">                this method is called.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;from_dict&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;_&#39;</span> <span class="o">+</span> <span class="n">atr</span><span class="p">,</span> <span class="n">var</span><span class="o">.</span><span class="vm">__class__</span><span class="o">.</span><span class="n">from_dict</span><span class="p">(</span>
+                    <span class="n">property_dict</span><span class="p">[</span><span class="n">atr</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">host</span><span class="p">))</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="k">pass</span>  <span class="c1"># the property_dict possesses no properties for that extension</span>
+
+    <span class="k">def</span> <span class="nf">ToString</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Overwrite .NET ToString method.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="fm">__repr__</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Properties representation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;BaseProperties&#39;</span>
+
+
+<div class="viewcode-block" id="ModelProperties"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ModelProperties">[docs]</a><span class="k">class</span> <span class="nc">ModelProperties</span><span class="p">(</span><span class="n">_Properties</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dragonfly Model Properties. This class will be extended by extensions.</span>
+
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        model = Model(&#39;South Boston District&#39;, list_of_buildings)</span>
+<span class="sd">        model.properties -&gt; ModelProperties</span>
+<span class="sd">        model.properties.radiance -&gt; ModelRadianceProperties</span>
+<span class="sd">        model.properties.energy -&gt; ModelEnergyProperties</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ModelProperties.to_dict"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ModelProperties.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert properties to dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            include: A list of keys to be included in dictionary.</span>
+<span class="sd">                If None all the available keys will be included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;ModelProperties&#39;</span><span class="p">}</span>
+        <span class="n">attr</span> <span class="o">=</span> <span class="n">include</span> <span class="k">if</span> <span class="n">include</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="n">attr</span><span class="p">:</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;to_dict&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">base</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">var</span><span class="o">.</span><span class="n">to_dict</span><span class="p">())</span>  <span class="c1"># no abridged dictionary for model</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Failed to convert </span><span class="si">{}</span><span class="s1"> to a dict: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+<div class="viewcode-block" id="ModelProperties.apply_properties_from_dict"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ModelProperties.apply_properties_from_dict">[docs]</a>    <span class="k">def</span> <span class="nf">apply_properties_from_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Apply extension properties from a Model dictionary to the host Model.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            data: A dictionary representation of an entire dragonfly-core Model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">atr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extension_attributes</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">atr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">]</span> <span class="ow">or</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;properties&#39;</span><span class="p">][</span><span class="n">atr</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">continue</span>
+            <span class="n">var</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">atr</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="s1">&#39;apply_properties_from_dict&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">var</span><span class="o">.</span><span class="n">apply_properties_from_dict</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="kn">import</span> <span class="nn">traceback</span>
+                <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                    <span class="s1">&#39;Failed to apply </span><span class="si">{}</span><span class="s1"> properties to the Model: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">atr</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ModelProperties.to_honeybee"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ModelProperties.to_honeybee">[docs]</a>    <span class="k">def</span> <span class="nf">to_honeybee</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert this Model&#39;s extension properties to honeybee Model properties.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            host: A honeybee-core Model object that hosts these properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hb_prop</span> <span class="o">=</span> <span class="n">hb_properties</span><span class="o">.</span><span class="n">ModelProperties</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension_attr_to_honeybee</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">hb_prop</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Properties representation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;ModelProperties&#39;</span></div>
+
+
+<div class="viewcode-block" id="ContextShadeProperties"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ContextShadeProperties">[docs]</a><span class="k">class</span> <span class="nc">ContextShadeProperties</span><span class="p">(</span><span class="n">_Properties</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dragonfly ContextShade properties. This class will be extended by extensions.</span>
+
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        canopy = ContextShade(&#39;Outdoor Canopy&#39;, canopy_geo)</span>
+<span class="sd">        canopy.properties -&gt; ContextShadeProperties</span>
+<span class="sd">        canopy.properties.radiance -&gt; ContextShadeRadianceProperties</span>
+<span class="sd">        canopy.properties.energy -&gt; ContextShadeEnergyProperties</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ContextShadeProperties.to_dict"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ContextShadeProperties.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abridged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert properties to dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            abridged: Boolean to note whether the full dictionary describing the</span>
+<span class="sd">                object should be returned (False) or just an abridged version (True).</span>
+<span class="sd">                Default: False.</span>
+<span class="sd">            include: A list of keys to be included in dictionary.</span>
+<span class="sd">                If None all the available keys will be included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;ContextShadeProperties&#39;</span><span class="p">}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">abridged</span> <span class="k">else</span> \
+            <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;ContextShadePropertiesAbridged&#39;</span><span class="p">}</span>
+
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension_attr_to_dict</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">abridged</span><span class="p">,</span> <span class="n">include</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+<div class="viewcode-block" id="ContextShadeProperties.to_honeybee"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ContextShadeProperties.to_honeybee">[docs]</a>    <span class="k">def</span> <span class="nf">to_honeybee</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert this ContextShade&#39;s extension properties to honeybee Shade properties.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            host: A honeybee-core Shade object that hosts these properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hb_prop</span> <span class="o">=</span> <span class="n">hb_properties</span><span class="o">.</span><span class="n">ShadeProperties</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension_attr_to_honeybee</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">hb_prop</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ContextShadeProperties.add_prefix"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.ContextShadeProperties.add_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the identifier of attributes unique to this object by adding a prefix.</span>
+
+<span class="sd">        Notably, this method only adds the prefix to extension attributes that must</span>
+<span class="sd">        be unique to the ContextShade and does not add the prefix to attributes that are</span>
+<span class="sd">        shared across several ContextShades.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Text that will be inserted at the start of extension</span>
+<span class="sd">                attribute identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_prefix_extension_attr</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Properties representation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;ContextShadeProperties&#39;</span></div>
+
+
+<div class="viewcode-block" id="BuildingProperties"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.BuildingProperties">[docs]</a><span class="k">class</span> <span class="nc">BuildingProperties</span><span class="p">(</span><span class="n">_Properties</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dragonfly Building properties. This class will be extended by extensions.</span>
+
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        building = Building(&#39;Office Tower&#39;, unique_stories)</span>
+<span class="sd">        building.properties -&gt; BuildingProperties</span>
+<span class="sd">        building.properties.radiance -&gt; BuildingRadianceProperties</span>
+<span class="sd">        building.properties.energy -&gt; BuildingEnergyProperties</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BuildingProperties.to_dict"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.BuildingProperties.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abridged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert properties to dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            abridged: Boolean to note whether the full dictionary describing the</span>
+<span class="sd">                object should be returned (False) or just an abridged version (True).</span>
+<span class="sd">                Default: False.</span>
+<span class="sd">            include: A list of keys to be included in dictionary.</span>
+<span class="sd">                If None all the available keys will be included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;BuildingProperties&#39;</span><span class="p">}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">abridged</span> <span class="k">else</span> \
+            <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;BuildingPropertiesAbridged&#39;</span><span class="p">}</span>
+
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension_attr_to_dict</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">abridged</span><span class="p">,</span> <span class="n">include</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+<div class="viewcode-block" id="BuildingProperties.add_prefix"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.BuildingProperties.add_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the identifier of attributes unique to this object by adding a prefix.</span>
+
+<span class="sd">        Notably, this method only adds the prefix to extension attributes that must</span>
+<span class="sd">        be unique to the Building and does not add the prefix to attributes that are</span>
+<span class="sd">        shared across several Buildings.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Text that will be inserted at the start of extension</span>
+<span class="sd">                attribute identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_prefix_extension_attr</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Properties representation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;BuildingProperties&#39;</span></div>
+
+
+<div class="viewcode-block" id="StoryProperties"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.StoryProperties">[docs]</a><span class="k">class</span> <span class="nc">StoryProperties</span><span class="p">(</span><span class="n">_Properties</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dragonfly Story properties. This class will be extended by extensions.</span>
+
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        story = Story(&#39;Ground Floor Retail&#39;, room_2ds)</span>
+<span class="sd">        story.properties -&gt; StoryProperties</span>
+<span class="sd">        story.properties.radiance -&gt; StoryRadianceProperties</span>
+<span class="sd">        story.properties.energy -&gt; StoryEnergyProperties</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StoryProperties.to_dict"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.StoryProperties.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abridged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert properties to dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            abridged: Boolean to note whether the full dictionary describing the</span>
+<span class="sd">                object should be returned (False) or just an abridged version (True).</span>
+<span class="sd">                Default: False.</span>
+<span class="sd">            include: A list of keys to be included in dictionary.</span>
+<span class="sd">                If None all the available keys will be included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;StoryProperties&#39;</span><span class="p">}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">abridged</span> <span class="k">else</span> \
+            <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;StoryPropertiesAbridged&#39;</span><span class="p">}</span>
+
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension_attr_to_dict</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">abridged</span><span class="p">,</span> <span class="n">include</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+<div class="viewcode-block" id="StoryProperties.add_prefix"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.StoryProperties.add_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the identifier of attributes unique to this object by adding a prefix.</span>
+
+<span class="sd">        Notably, this method only adds the prefix to extension attributes that must</span>
+<span class="sd">        be unique to the Story and does not add the prefix to attributes that are</span>
+<span class="sd">        shared across several Stories.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Text that will be inserted at the start of extension</span>
+<span class="sd">                attribute identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_prefix_extension_attr</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Properties representation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;StoryProperties&#39;</span></div>
+
+
+<div class="viewcode-block" id="Room2DProperties"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.Room2DProperties">[docs]</a><span class="k">class</span> <span class="nc">Room2DProperties</span><span class="p">(</span><span class="n">_Properties</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Dragonfly Room2D properties. This class will be extended by extensions.</span>
+
+<span class="sd">    Usage:</span>
+
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        room = Room2D(&#39;Office&#39;, geometry)</span>
+<span class="sd">        room.properties -&gt; Room2DProperties</span>
+<span class="sd">        room.properties.radiance -&gt; Room2DRadianceProperties</span>
+<span class="sd">        room.properties.energy -&gt; Room2DEnergyProperties</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="Room2DProperties.to_dict"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.Room2DProperties.to_dict">[docs]</a>    <span class="k">def</span> <span class="nf">to_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">abridged</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">include</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert properties to dictionary.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            abridged: Boolean to note whether the full dictionary describing the</span>
+<span class="sd">                object should be returned (False) or just an abridged version (True).</span>
+<span class="sd">                Default: False.</span>
+<span class="sd">            include: A list of keys to be included in dictionary.</span>
+<span class="sd">                If None all the available keys will be included.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Room2DProperties&#39;</span><span class="p">}</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">abridged</span> <span class="k">else</span> \
+            <span class="p">{</span><span class="s1">&#39;type&#39;</span><span class="p">:</span> <span class="s1">&#39;Room2DPropertiesAbridged&#39;</span><span class="p">}</span>
+
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension_attr_to_dict</span><span class="p">(</span><span class="n">base</span><span class="p">,</span> <span class="n">abridged</span><span class="p">,</span> <span class="n">include</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">base</span></div>
+
+<div class="viewcode-block" id="Room2DProperties.to_honeybee"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.Room2DProperties.to_honeybee">[docs]</a>    <span class="k">def</span> <span class="nf">to_honeybee</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">host</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Convert this Room2D&#39;s extension properties to honeybee Room properties.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            host: A honeybee-core Room object that hosts these properties.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">hb_prop</span> <span class="o">=</span> <span class="n">hb_properties</span><span class="o">.</span><span class="n">RoomProperties</span><span class="p">(</span><span class="n">host</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_add_extension_attr_to_honeybee</span><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">hb_prop</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Room2DProperties.add_prefix"><a class="viewcode-back" href="../../dragonfly.properties.html#dragonfly.properties.Room2DProperties.add_prefix">[docs]</a>    <span class="k">def</span> <span class="nf">add_prefix</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">prefix</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Change the identifier of attributes unique to this object by adding a prefix.</span>
+
+<span class="sd">        Notably, this method only adds the prefix to extension attributes that must</span>
+<span class="sd">        be unique to the Room2D (eg. single-room HVAC systems) and does not add</span>
+<span class="sd">        the prefix to attributes that are shared across several Rooms2Ds (eg.</span>
+<span class="sd">        ConstructionSets).</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            prefix: Text that will be inserted at the start of extension</span>
+<span class="sd">                attribute identifiers.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_add_prefix_extension_attr</span><span class="p">(</span><span class="n">prefix</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="fm">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Properties representation.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="s1">&#39;Room2DProperties&#39;</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

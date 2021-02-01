@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.subdivide &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../../_static/custom.css" />
+    <script id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script src="../../_static/jquery.js"></script>
+    <script src="../../_static/underscore.js"></script>
+    <script src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../../index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../../index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="../../dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="../../dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+              <li class="hidden-sm"></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <h1>Source code for dragonfly.subdivide</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;Utilities to interpret parameters for subdividing building masses.&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">division</span>
+
+
+<div class="viewcode-block" id="interpret_floor_height_subdivide"><a class="viewcode-back" href="../../dragonfly.subdivide.html#dragonfly.subdivide.interpret_floor_height_subdivide">[docs]</a><span class="k">def</span> <span class="nf">interpret_floor_height_subdivide</span><span class="p">(</span><span class="n">floor_to_floor_heights</span><span class="p">,</span> <span class="n">max_height</span><span class="p">,</span>
+                                     <span class="n">first_floor_height</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interpret a list of instructions for subdividing a building mass into floors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        floor_to_floor_heights: An array of floor-to-floor height instructions</span>
+<span class="sd">            that describe how a building mass should be divided into floors.</span>
+<span class="sd">            The array should run from bottom floor to top floor.</span>
+<span class="sd">            Each item in the array can be either a single number for the</span>
+<span class="sd">            floor-to-floor height or a text string that codes for how many</span>
+<span class="sd">            floors of each height should be generated.  For example, inputting</span>
+<span class="sd">            &quot;2@4&quot; will make two floors with a height of 4 units. Simply inputting</span>
+<span class="sd">            &quot;@3&quot; will make all floors at 3 units.  Putting in sequential arrays</span>
+<span class="sd">            of these text strings will divide up floors accordingly.  For example,</span>
+<span class="sd">            the list [&quot;1@5&quot;, &quot;2@4&quot;, &quot;@3&quot;]  will make a ground floor of 5 units,</span>
+<span class="sd">            two floors above that at 4 units and all remaining floors at 3 units.</span>
+<span class="sd">        max_height: The maximum height of the building, noting the z-value</span>
+<span class="sd">            above which no new floor heights should be generated.</span>
+<span class="sd">        first_floor_height: The z-value of the first floor.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        A tuple with two elements</span>
+
+<span class="sd">        -   floor_heights -- An array of float values for the floor heights, which</span>
+<span class="sd">            can be used to generate planes that subdivide a building mass.</span>
+
+<span class="sd">        -   interpreted_f2f -- An array of float values noting the distance between</span>
+<span class="sd">            each floor. Note that, unlike the input floor_to_floor_heights,</span>
+<span class="sd">            this array always has float values and is the same length as the</span>
+<span class="sd">            floor_heights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># generate the list of height float values</span>
+    <span class="n">floor_heights</span> <span class="o">=</span> <span class="p">[</span><span class="n">first_floor_height</span><span class="p">]</span>
+    <span class="n">interpreted_f2f</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">height</span> <span class="ow">in</span> <span class="n">floor_to_floor_heights</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>  <span class="c1"># single number for the floor</span>
+            <span class="n">flr_h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">height</span><span class="p">)</span>
+            <span class="n">flr_count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>  <span class="c1"># instructions for generating floors</span>
+            <span class="n">flr_h</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">height</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">flr_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">height</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># no number of floors to generate (ie. &#39;@3&#39;)</span>
+                <span class="n">flr_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">max_height</span> <span class="o">-</span> <span class="n">floor_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">flr_h</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">flr_h</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">flr_count</span><span class="p">):</span>
+                <span class="n">floor_heights</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">floor_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">flr_h</span><span class="p">)</span>
+                <span class="n">interpreted_f2f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flr_h</span><span class="p">)</span>
+
+    <span class="c1"># check to be sure no heights are above the max height</span>
+    <span class="k">if</span> <span class="n">floor_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">max_height</span><span class="p">:</span>
+        <span class="n">floor_heights</span> <span class="o">=</span> <span class="p">[</span><span class="n">hgt</span> <span class="k">for</span> <span class="n">hgt</span> <span class="ow">in</span> <span class="n">floor_heights</span> <span class="k">if</span> <span class="n">hgt</span> <span class="o">&lt;</span> <span class="n">max_height</span><span class="p">]</span>
+        <span class="n">interpreted_f2f</span> <span class="o">=</span> <span class="p">[</span><span class="n">interpreted_f2f</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">floor_heights</span><span class="p">))]</span>
+
+    <span class="c1"># remove last height if the difference between it and max height is too small</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">floor_heights</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span> <span class="ow">and</span> \
+            <span class="n">max_height</span> <span class="o">-</span> <span class="n">floor_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">interpreted_f2f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1e-9</span><span class="p">:</span>
+        <span class="k">del</span> <span class="n">floor_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">del</span> <span class="n">interpreted_f2f</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">interpreted_f2f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_height</span> <span class="o">-</span> <span class="n">floor_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">interpreted_f2f</span><span class="p">)</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">floor_heights</span><span class="p">):</span>
+        <span class="n">interpreted_f2f</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">max_height</span> <span class="o">-</span> <span class="n">floor_heights</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">floor_heights</span><span class="p">,</span> <span class="n">interpreted_f2f</span></div>
+
+
+<div class="viewcode-block" id="interpret_core_perimeter_subdivide"><a class="viewcode-back" href="../../dragonfly.subdivide.html#dragonfly.subdivide.interpret_core_perimeter_subdivide">[docs]</a><span class="k">def</span> <span class="nf">interpret_core_perimeter_subdivide</span><span class="p">(</span><span class="n">perimeter_depths</span><span class="p">,</span> <span class="n">floor_count</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Interpret a list of instructions for subdividing a building mass into floors.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        perimeter_depths: An array of perimeter depth instructions that describe</span>
+<span class="sd">            how a building floors should be divided into core/perimeter Rooms.</span>
+<span class="sd">            The array should run from bottom floor to top floor.</span>
+<span class="sd">            Each item in the array can be either a single number for the perimeter</span>
+<span class="sd">            depth or a text string that codes for over how many floors a given</span>
+<span class="sd">            perimeter depth should be applies.  For example, inputting</span>
+<span class="sd">            &quot;2@4&quot; will offset the first 2 floors 4 units. Simply inputting</span>
+<span class="sd">            &quot;@3&quot; will make all floors offset at 3 units.  Putting in sequential arrays</span>
+<span class="sd">            of these text strings will offset floors accordingly.  For example,</span>
+<span class="sd">            the list [&quot;1@5&quot;, &quot;2@4&quot;, &quot;@3&quot;]  will offset the ground floor at 5 units,</span>
+<span class="sd">            two floors above that at 4 units and all remaining floors at 3 units.</span>
+<span class="sd">        floor_count: An integer for the number of floors within the building. The</span>
+<span class="sd">            array output from this function will have a length equal to this number.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        An array of float values for perimeter depths, which can be used to offset</span>
+<span class="sd">        perimeters over a building&#39;s stories.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># generate the list of depth float values</span>
+    <span class="n">interpreted_depths</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">depth</span> <span class="ow">in</span> <span class="n">perimeter_depths</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>  <span class="c1"># single number for the floor</span>
+            <span class="n">flr_d</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">depth</span><span class="p">)</span>
+            <span class="n">flr_count</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">TypeError</span><span class="p">,</span> <span class="ne">ValueError</span><span class="p">):</span>  <span class="c1"># instructions for generating depths</span>
+            <span class="n">flr_d</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">depth</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">flr_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">depth</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;@&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># no number of depths to generate (ie. &#39;@3&#39;)</span>
+                <span class="n">flr_count</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">floor_count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">interpreted_depths</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">flr_count</span><span class="p">):</span>
+            <span class="n">interpreted_depths</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">flr_d</span><span class="p">)</span>
+
+    <span class="c1"># check to be sure the length of the list is correct</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">interpreted_depths</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">floor_count</span><span class="p">:</span>  <span class="c1"># cut the list short</span>
+        <span class="n">interpreted_depths</span> <span class="o">=</span> <span class="p">[</span><span class="n">interpreted_depths</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">floor_count</span><span class="p">)]</span>
+    <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">interpreted_depths</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">floor_count</span><span class="p">:</span>  <span class="c1"># repeat last floor</span>
+        <span class="n">interpreted_depths</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">interpreted_depths</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>
+                                   <span class="nb">range</span><span class="p">(</span><span class="n">floor_count</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">interpreted_depths</span><span class="p">))])</span>
+
+    <span class="k">return</span> <span class="n">interpreted_depths</span></div>
+</pre></div>
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

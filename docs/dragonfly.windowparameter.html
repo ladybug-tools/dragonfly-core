@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.windowparameter module &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="dragonfly.subdivide module" href="dragonfly.subdivide.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.subdivide.html" title="Previous Chapter: dragonfly.subdivide module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; dragonfly.sub...</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/dragonfly.windowparameter.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="module-dragonfly.windowparameter">
+<span id="dragonfly-windowparameter-module"></span><h1>dragonfly.windowparameter module<a class="headerlink" href="#module-dragonfly.windowparameter" title="Permalink to this headline">¶</a></h1>
+<p>Window Parameters with instructions for generating windows.</p>
+<dl class="py class">
+<dt id="dragonfly.windowparameter.DetailedWindows">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.windowparameter.</code><code class="sig-name descname">DetailedWindows</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">polygons</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#DetailedWindows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.windowparameter._AsymmetricBase</span></code></p>
+<p>Instructions for detailed windows, defined by 2D Polygons (lists of 2D vertices).</p>
+<p>Note that these parameters are intended to represent windows that are specific
+to a particular segment and, unlike the other WindowParameters, this class
+performs no automatic checks to ensure that the windows lie within the
+boundary of the wall they have been assigned to.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>polygons</strong> – An array of ladybug_geometry Polygon2D objects within the plane
+of the wall with one polygon for each window. The wall plane is
+assumed to have an origin at the first point of the wall segment
+and an X-axis extending along the length of the segment. The wall
+plane’s Y-axis always points upwards.  Therefore, both X and Y
+values of each point in the polygon should always be positive.</p>
+</dd>
+</dl>
+<dl>
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>polygons</p></li>
+</ul>
+</dd>
+<dt>Usage:</dt><dd><p>Note that, if you are starting from 3D vertices of windows, you can
+use this class to represent them. Below is some sample code to convert from
+vertices in the same 3D space as a vertical wall to vertices in the 2D
+plane of the wall (as this class interprets it).</p>
+<p>In the code, ‘seg_p1’ is the first point of a given wall segment and
+is assumed to be the origin of the wall plane. ‘seg_p2’ is the second
+point of the wall segment, and ‘vertex’ is a given vertex of the
+window that you want to translate from 3D coordinates into 2D. All
+input points are presented as arrays of 3 floats and the output is
+an array of 2 (x, y) coordinates.</p>
+</dd>
+</dl>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">dot_product</span><span class="p">(</span><span class="n">v1</span><span class="p">,</span> <span class="n">v2</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">v1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">v2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">v1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">v2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">v1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">v2</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">normalize</span><span class="p">(</span><span class="n">v</span><span class="p">):</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span> <span class="o">**</span> <span class="mf">0.5</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="p">,</span> <span class="n">v</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">/</span> <span class="n">d</span><span class="p">)</span>
+
+<span class="k">def</span> <span class="nf">xyz_to_xy</span><span class="p">(</span><span class="n">seg_p1</span><span class="p">,</span> <span class="n">seg_p2</span><span class="p">,</span> <span class="n">vertex</span><span class="p">):</span>
+    <span class="n">diff</span> <span class="o">=</span> <span class="p">(</span><span class="n">vertex</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">seg_p1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">vertex</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">seg_p1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">vertex</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">seg_p1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">a_axis</span> <span class="o">=</span> <span class="p">(</span><span class="n">seg_p2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">seg_p1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">seg_p2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">seg_p1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">seg_p2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">seg_p1</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="n">plane_x</span> <span class="o">=</span> <span class="n">normalize</span><span class="p">(</span><span class="n">a_axis</span><span class="p">)</span>
+    <span class="n">plane_y</span> <span class="o">=</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">dot_product</span><span class="p">(</span><span class="n">plane_x</span> <span class="p">,</span> <span class="n">diff</span><span class="p">),</span> <span class="n">dot_product</span><span class="p">(</span><span class="n">plane_y</span><span class="p">,</span> <span class="n">diff</span><span class="p">))</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.add_window_to_face">
+<code class="sig-name descname">add_window_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#DetailedWindows.add_window_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.add_window_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Apertures to a Honeybee Face using these Window Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – Optional tolerance value. Default: 0.01, suitable for
+objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.area_from_segment">
+<code class="sig-name descname">area_from_segment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">segment</span></em>, <em class="sig-param"><span class="n">floor_to_ceiling_height</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#DetailedWindows.area_from_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.area_from_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the window area generated by these parameters from a LineSegment3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>segment</strong> – A LineSegment3D to which these parameters are applied.</p></li>
+<li><p><strong>floor_to_ceiling_height</strong> – The floor-to-ceiling height of the Room2D
+to which the segment belongs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.flip">
+<code class="sig-name descname">flip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seg_length</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#DetailedWindows.flip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flip the direction of the windows along a segment.</p>
+<p>This is needed since windows can exist asymmetrically across the wall
+segment and operations like reflecting the Room2D across a plane will
+require the window parameters to be flipped to remain in the same place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seg_length</strong> – The length of the segment along which the parameters are
+being flipped.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#DetailedWindows.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create DetailedWindows from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;DetailedWindows&quot;</span><span class="p">,</span>
+<span class="s2">&quot;polygons&quot;</span><span class="p">:</span> <span class="p">[((</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">),</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="p">(</span><span class="mf">0.5</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+             <span class="p">((</span><span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">))]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#DetailedWindows.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these WindowParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#DetailedWindows.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get DetailedWindows as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.DetailedWindows.polygons">
+<em class="property">property </em><code class="sig-name descname">polygons</code><a class="headerlink" href="#dragonfly.windowparameter.DetailedWindows.polygons" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an array of Polygon2Ds with one polygon for each window.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.windowparameter.RectangularWindows">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.windowparameter.</code><code class="sig-name descname">RectangularWindows</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">origins</span></em>, <em class="sig-param"><span class="n">widths</span></em>, <em class="sig-param"><span class="n">heights</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RectangularWindows"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.windowparameter._AsymmetricBase</span></code></p>
+<p>Instructions for several rectangular windows, defined by origin, width and height.</p>
+<p>Note that, if these parameters are applied to a base wall that is too short
+or too narrow such that the windows fall outside the boundary of the wall, the
+generated windows will automatically be shortened or excluded. This way, a
+certain pattern of repeating rectangular windows can be encoded in a single
+RectangularWindows instance and applied to multiple Room2D segments.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>origins</strong> – An array of ladybug_geometry Point2D objects within the plane
+of the wall for the origin of each window. The wall plane is assumed
+to have an origin at the first point of the wall segment and an
+X-axis extending along the length of the segment. The wall plane’s
+Y-axis always points upwards.  Therefore, both X and Y values of
+each origin point should be positive.</p></li>
+<li><p><strong>widths</strong> – An array of positive numbers for the window widths. The length
+of this list must match the length of the origins.</p></li>
+<li><p><strong>heights</strong> – An array of positive numbers for the window heights. The length
+of this list must match the length of the origins.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>origins</p></li>
+<li><p>widths</p></li>
+<li><p>heights</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.add_window_to_face">
+<code class="sig-name descname">add_window_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RectangularWindows.add_window_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.add_window_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Apertures to a Honeybee Face using these Window Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – Optional tolerance value. Default: 0.01, suitable for
+objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.area_from_segment">
+<code class="sig-name descname">area_from_segment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">segment</span></em>, <em class="sig-param"><span class="n">floor_to_ceiling_height</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RectangularWindows.area_from_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.area_from_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the window area generated by these parameters from a LineSegment3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>segment</strong> – A LineSegment3D to which these parameters are applied.</p></li>
+<li><p><strong>floor_to_ceiling_height</strong> – The floor-to-ceiling height of the Room2D
+to which the segment belongs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.flip">
+<code class="sig-name descname">flip</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">seg_length</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RectangularWindows.flip"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.flip" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flip the direction of the windows along a segment.</p>
+<p>This is needed since windows can exist asymmetrically across the wall
+segment and operations like reflecting the Room2D across a plane will
+require the window parameters to be flipped to remain in the same place.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>seg_length</strong> – The length of the segment along which the parameters are
+being flipped.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RectangularWindows.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create RectangularWindows from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;RectangularWindows&quot;</span><span class="p">,</span>
+<span class="s2">&quot;origins&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)],</span>  <span class="c1"># array of (x, y) floats in wall plane</span>
+<span class="s2">&quot;widths&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>  <span class="c1"># array of floats for window widths</span>
+<span class="s2">&quot;heights&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">]</span>  <span class="c1"># array of floats for window heights</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RectangularWindows.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these WindowParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RectangularWindows.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get RectangularWindows as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.heights">
+<em class="property">property </em><code class="sig-name descname">heights</code><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.heights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an array of numbers for the window heights.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.origins">
+<em class="property">property </em><code class="sig-name descname">origins</code><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.origins" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an array of Point2Ds within the wall plane for the origin of each window.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RectangularWindows.widths">
+<em class="property">property </em><code class="sig-name descname">widths</code><a class="headerlink" href="#dragonfly.windowparameter.RectangularWindows.widths" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an array of numbers for the window widths.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.windowparameter.</code><code class="sig-name descname">RepeatingWindowRatio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">window_ratio</span></em>, <em class="sig-param"><span class="n">window_height</span></em>, <em class="sig-param"><span class="n">sill_height</span></em>, <em class="sig-param"><span class="n">horizontal_separation</span></em>, <em class="sig-param"><span class="n">vertical_separation</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowRatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dragonfly.windowparameter.SimpleWindowRatio" title="dragonfly.windowparameter.SimpleWindowRatio"><code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.windowparameter.SimpleWindowRatio</span></code></a></p>
+<p>Instructions for repeating windows derived from an area ratio with the base surface.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window_ratio</strong> – A number between 0 and 1 for the ratio between the window
+area and the total facade area.</p></li>
+<li><p><strong>window_height</strong> – A number for the target height of the windows.
+Note that, if the window ratio is too large for the height, the
+ratio will take precedence and the actual window_height will
+be larger than this value.</p></li>
+<li><p><strong>sill_height</strong> – A number for the target height above the bottom edge of
+the rectangle to start the windows. Note that, if the
+ratio is too large for the height, the ratio will take precedence
+and the sill_height will be smaller than this value.</p></li>
+<li><p><strong>horizontal_separation</strong> – A number for the target separation between
+individual window centerlines.  If this number is larger than
+the parent rectangle base, only one window will be produced.</p></li>
+<li><p><strong>vertical_separation</strong> – An optional number to create a single vertical
+separation between top and bottom windows. Default: 0.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>window_ratio</p></li>
+<li><p>window_height</p></li>
+<li><p>sill_height</p></li>
+<li><p>horizontal_separation</p></li>
+<li><p>vertical_separation</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.add_window_to_face">
+<code class="sig-name descname">add_window_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowRatio.add_window_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.add_window_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Apertures to a Honeybee Face using these Window Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – The maximum difference between point values for them to be
+considered a part of a rectangle. Default: 0.01, suitable for
+objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.area_from_segment">
+<code class="sig-name descname">area_from_segment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">segment</span></em>, <em class="sig-param"><span class="n">floor_to_ceiling_height</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.area_from_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the window area generated by these parameters from a LineSegment3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>segment</strong> – A LineSegment3D to which these parameters are applied.</p></li>
+<li><p><strong>floor_to_ceiling_height</strong> – The floor-to-ceiling height of the Room2D
+to which the segment belongs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowRatio.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create RepeatingWindowRatio from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;RepeatingWindowRatio&quot;</span><span class="p">,</span>
+<span class="s2">&quot;window_ratio&quot;</span><span class="p">:</span> <span class="mf">0.4</span><span class="p">,</span>
+<span class="s2">&quot;window_height&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+<span class="s2">&quot;sill_height&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+<span class="s2">&quot;horizontal_separation&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>
+<span class="s2">&quot;vertical_separation&quot;</span><span class="p">:</span> <span class="mf">0.5</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowRatio.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these WindowParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowRatio.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get RepeatingWindowRatio as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.horizontal_separation">
+<em class="property">property </em><code class="sig-name descname">horizontal_separation</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.horizontal_separation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the separation between individual window centerlines.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.sill_height">
+<em class="property">property </em><code class="sig-name descname">sill_height</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.sill_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the height above the bottom edge of the floor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.vertical_separation">
+<em class="property">property </em><code class="sig-name descname">vertical_separation</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.vertical_separation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for a vertical separation between top/bottom windows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.window_height">
+<em class="property">property </em><code class="sig-name descname">window_height</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.window_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number or the target height of the windows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowRatio.window_ratio">
+<em class="property">property </em><code class="sig-name descname">window_ratio</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowRatio.window_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number between 0 and 1 for the window ratio.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.windowparameter.</code><code class="sig-name descname">RepeatingWindowWidthHeight</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">window_height</span></em>, <em class="sig-param"><span class="n">window_width</span></em>, <em class="sig-param"><span class="n">sill_height</span></em>, <em class="sig-param"><span class="n">horizontal_separation</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowWidthHeight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.windowparameter._WindowParameterBase</span></code></p>
+<p>Instructions for repeating rectangular windows of a fixed width and height.</p>
+<p>This class effectively fills a wall with windows at the specified width, height
+and separation.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>window_height</strong> – A number for the target height of the windows.
+Note that, if the window_height is larger than the height of the wall,
+the generated windows will have a height equal to the wall height
+in order to avoid having windows extend outside the wall face.</p></li>
+<li><p><strong>window_width</strong> – A number for the target width of the windows.
+Note that, if the window_width is larger than the width of the wall,
+the generated windows will have a width equal to the wall width
+in order to avoid having windows extend outside the wall face.</p></li>
+<li><p><strong>sill_height</strong> – A number for the target height above the bottom edge of
+the wall to start the windows. If the window_height
+is too large for the sill_height to fit within the rectangle,
+the window_height will take precedence.</p></li>
+<li><p><strong>horizontal_separation</strong> – A number for the target separation between
+individual window centerlines.  If this number is larger than
+the parent rectangle base, only one window will be produced.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>window_height</p></li>
+<li><p>window_width</p></li>
+<li><p>sill_height</p></li>
+<li><p>horizontal_separation</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.add_window_to_face">
+<code class="sig-name descname">add_window_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowWidthHeight.add_window_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.add_window_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Apertures to a Honeybee Face using these Window Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – The maximum difference between point values for them to be
+considered a part of a rectangle. Default: 0.01, suitable for
+objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.area_from_segment">
+<code class="sig-name descname">area_from_segment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">segment</span></em>, <em class="sig-param"><span class="n">floor_to_ceiling_height</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.area_from_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the window area generated by these parameters from a LineSegment3D.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowWidthHeight.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create RepeatingWindowWidthHeight from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;RepeatingWindowWidthHeight&quot;</span><span class="p">,</span>
+<span class="s2">&quot;window_height&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span>
+<span class="s2">&quot;window_width&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+<span class="s2">&quot;sill_height&quot;</span><span class="p">:</span> <span class="mf">0.8</span><span class="p">,</span>
+<span class="s2">&quot;horizontal_separation&quot;</span><span class="p">:</span> <span class="mi">4</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowWidthHeight.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these WindowParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#RepeatingWindowWidthHeight.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get RepeatingWindowWidthHeight as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.horizontal_separation">
+<em class="property">property </em><code class="sig-name descname">horizontal_separation</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.horizontal_separation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the separation between individual window centerlines.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.sill_height">
+<em class="property">property </em><code class="sig-name descname">sill_height</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.sill_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the height above the bottom edge of the floor.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.window_height">
+<em class="property">property </em><code class="sig-name descname">window_height</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.window_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number or the target height of the windows.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.RepeatingWindowWidthHeight.window_width">
+<em class="property">property </em><code class="sig-name descname">window_width</code><a class="headerlink" href="#dragonfly.windowparameter.RepeatingWindowWidthHeight.window_width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number or the target width of the windows.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.windowparameter.</code><code class="sig-name descname">SimpleWindowRatio</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">window_ratio</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SimpleWindowRatio"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.windowparameter._WindowParameterBase</span></code></p>
+<p>Instructions for a single window defined by an area ratio with the base wall.</p>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>window_ratio</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>window_ratio</strong> – A number between 0 and 1 for the ratio between the window
+area and the parent wall surface area.</p>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.add_window_to_face">
+<code class="sig-name descname">add_window_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SimpleWindowRatio.add_window_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.add_window_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Apertures to a Honeybee Face using these Window Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – Optional tolerance value. Default: 0.01, suitable for
+objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.area_from_segment">
+<code class="sig-name descname">area_from_segment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">segment</span></em>, <em class="sig-param"><span class="n">floor_to_ceiling_height</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SimpleWindowRatio.area_from_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.area_from_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the window area generated by these parameters from a LineSegment3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>segment</strong> – A LineSegment3D to which these parameters are applied.</p></li>
+<li><p><strong>floor_to_ceiling_height</strong> – The floor-to-ceiling height of the Room2D
+to which the segment belongs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SimpleWindowRatio.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create SimpleWindowRatio from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;SimpleWindowRatio&quot;</span><span class="p">,</span>
+<span class="s2">&quot;window_ratio&quot;</span><span class="p">:</span> <span class="mf">0.4</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these WindowParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SimpleWindowRatio.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get SimpleWindowRatio as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SimpleWindowRatio.window_ratio">
+<em class="property">property </em><code class="sig-name descname">window_ratio</code><a class="headerlink" href="#dragonfly.windowparameter.SimpleWindowRatio.window_ratio" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number between 0 and 1 for the window ratio.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.windowparameter.SingleWindow">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.windowparameter.</code><code class="sig-name descname">SingleWindow</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">width</span></em>, <em class="sig-param"><span class="n">height</span></em>, <em class="sig-param"><span class="n">sill_height</span><span class="o">=</span><span class="default_value">1</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SingleWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.windowparameter._WindowParameterBase</span></code></p>
+<p>Instructions for a single window in the face center defined by a width x height.</p>
+<p>Note that, if these parameters are applied to a base face that is too short
+or too narrow for the input width and/or height, the generated window will
+automatically be shortened when it is applied to the face. In this way,
+setting the width to be <cite>float(‘inf’)</cite> will create parameters that always
+generate a ribbon window of the input height.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>width</strong> – A number for the window width.</p></li>
+<li><p><strong>height</strong> – A number for the window height.</p></li>
+<li><p><strong>sill_height</strong> – A number for the window sill height. Default: 1.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>width</p></li>
+<li><p>height</p></li>
+<li><p>sill_height</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.add_window_to_face">
+<code class="sig-name descname">add_window_to_face</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">face</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SingleWindow.add_window_to_face"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.add_window_to_face" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add Apertures to a Honeybee Face using these Window Parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>face</strong> – A honeybee-core Face object.</p></li>
+<li><p><strong>tolerance</strong> – Optional tolerance value. Default: 0.01, suitable for
+objects in meters.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.area_from_segment">
+<code class="sig-name descname">area_from_segment</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">segment</span></em>, <em class="sig-param"><span class="n">floor_to_ceiling_height</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SingleWindow.area_from_segment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.area_from_segment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the window area generated by these parameters from a LineSegment3D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>segment</strong> – A LineSegment3D to which these parameters are applied.</p></li>
+<li><p><strong>floor_to_ceiling_height</strong> – The floor-to-ceiling height of the Room2D
+to which the segment belongs.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SingleWindow.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create SingleWindow from a dictionary.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="s2">&quot;type&quot;</span><span class="p">:</span> <span class="s2">&quot;SingleWindow&quot;</span><span class="p">,</span>
+<span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+<span class="s2">&quot;height&quot;</span><span class="p">:</span> <span class="mf">1.5</span><span class="p">,</span>
+<span class="s2">&quot;sill_height&quot;</span><span class="p">:</span> <span class="mf">0.8</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SingleWindow.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a scaled version of these WindowParameters.</p>
+<p>This method is called within the scale methods of the Room2D.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>factor</strong> – A number representing how much the object should be scaled.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/windowparameter.html#SingleWindow.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get SingleWindow as a dictionary.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.height">
+<em class="property">property </em><code class="sig-name descname">height</code><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the window height.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.sill_height">
+<em class="property">property </em><code class="sig-name descname">sill_height</code><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.sill_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the sill height.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.windowparameter.SingleWindow.width">
+<em class="property">property </em><code class="sig-name descname">width</code><a class="headerlink" href="#dragonfly.windowparameter.SingleWindow.width" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the window width.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

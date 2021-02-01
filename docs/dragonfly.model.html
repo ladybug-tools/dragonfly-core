@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.model module &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dragonfly.projection module" href="dragonfly.projection.html" />
+    <link rel="prev" title="dragonfly.extensionutil module" href="dragonfly.extensionutil.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.extensionutil.html" title="Previous Chapter: dragonfly.extensionutil module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; dragonfly.ext...</span>
+    </a>
+  </li>
+  <li>
+    <a href="dragonfly.projection.html" title="Next Chapter: dragonfly.projection module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">dragonfly.pro... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/dragonfly.model.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="module-dragonfly.model">
+<span id="dragonfly-model-module"></span><h1>dragonfly.model module<a class="headerlink" href="#module-dragonfly.model" title="Permalink to this headline">¶</a></h1>
+<p>Dragonfly Model.</p>
+<dl class="py class">
+<dt id="dragonfly.model.Model">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.model.</code><code class="sig-name descname">Model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifier</span></em>, <em class="sig-param"><span class="n">buildings</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">context_shades</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'Meters'</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">angle_tolerance</span><span class="o">=</span><span class="default_value">1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly._base._BaseGeometry</span></code></p>
+<p>A collection of Buildings and ContextShades for an entire model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>identifier</strong> – Text string for a unique Model ID. Must be &lt; 100 characters
+and not contain any spaces or special characters.</p></li>
+<li><p><strong>buildings</strong> – A list of Building objects in the model.</p></li>
+<li><p><strong>context_shades</strong> – A list of ContextShade objects in the model.</p></li>
+<li><p><strong>units</strong> – <p>Text for the units system in which the model geometry
+exists. Default: ‘Meters’. Choose from the following:</p>
+<ul>
+<li><p>Meters</p></li>
+<li><p>Millimeters</p></li>
+<li><p>Feet</p></li>
+<li><p>Inches</p></li>
+<li><p>Centimeters</p></li>
+</ul>
+</p></li>
+<li><p><strong>tolerance</strong> – The maximum difference between x, y, and z values at which
+vertices are considered equivalent. Zero indicates that no tolerance
+checks should be performed and certain capabilities like to_honeybee
+will not be available. None indicates that the tolerance will be
+set based on the units above, with the tolerance consistently being
+between 1 cm and 1 mm (roughly the tolerance implicit in the OpenStudio
+SDK). (Default: None).</p></li>
+<li><p><strong>angle_tolerance</strong> – The max angle difference in degrees that vertices are allowed
+to differ from one another in order to consider them colinear. Zero indicates
+that no angle tolerance checks should be performed. (Default: 1.0).</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="simple">
+<dt>Properties:</dt><dd><ul class="simple">
+<li><p>identifier</p></li>
+<li><p>display_name</p></li>
+<li><p>units</p></li>
+<li><p>tolerance</p></li>
+<li><p>angle_tolerance</p></li>
+<li><p>buildings</p></li>
+<li><p>context_shades</p></li>
+<li><p>stories</p></li>
+<li><p>room_2ds</p></li>
+<li><p>average_story_count</p></li>
+<li><p>average_story_count_above_ground</p></li>
+<li><p>average_height</p></li>
+<li><p>average_height_above_ground</p></li>
+<li><p>footprint_area</p></li>
+<li><p>floor_area</p></li>
+<li><p>exterior_wall_area</p></li>
+<li><p>exterior_aperture_area</p></li>
+<li><p>volume</p></li>
+<li><p>min</p></li>
+<li><p>max</p></li>
+<li><p>user_data</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt id="dragonfly.model.Model.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.model.Model.ToString" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.add_building">
+<code class="sig-name descname">add_building</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.add_building"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.add_building" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a Building object to the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.add_context_shade">
+<code class="sig-name descname">add_context_shade</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">obj</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.add_context_shade"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.add_context_shade" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a ContextShade object to the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.add_model">
+<code class="sig-name descname">add_model</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">other_model</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.add_model"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.add_model" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add another Dragonfly Model object to this one.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.buildings_by_identifier">
+<code class="sig-name descname">buildings_by_identifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifiers</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.buildings_by_identifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.buildings_by_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of Building objects in the model given Building identifiers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.check_duplicate_building_identifiers">
+<code class="sig-name descname">check_duplicate_building_identifiers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raise_exception</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.check_duplicate_building_identifiers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.check_duplicate_building_identifiers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that there are no duplicate Building identifiers in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.check_duplicate_context_shade_identifiers">
+<code class="sig-name descname">check_duplicate_context_shade_identifiers</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raise_exception</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.check_duplicate_context_shade_identifiers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.check_duplicate_context_shade_identifiers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that there are no duplicate ContextShade identifiers in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.check_missing_adjacencies">
+<code class="sig-name descname">check_missing_adjacencies</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">raise_exception</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.check_missing_adjacencies"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.check_missing_adjacencies" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check that all Room2Ds have adjacent objects that exist within each Story.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.context_shade_by_identifier">
+<code class="sig-name descname">context_shade_by_identifier</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">identifiers</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.context_shade_by_identifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.context_shade_by_identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a list of ContextShade objects in the model given ContextShade identifiers.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.convert_to_units">
+<code class="sig-name descname">convert_to_units</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'Meters'</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.convert_to_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.convert_to_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert all of the geometry in this model to certain units.</p>
+<p>This involves scaling the geometry, scaling the Model tolerance, and
+changing the Model’s units property.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>units</strong> – <p>Text for the units to which the Model geometry should be
+converted. Default: Meters. Choose from the following:</p>
+<ul class="simple">
+<li><p>Meters</p></li>
+<li><p>Millimeters</p></li>
+<li><p>Feet</p></li>
+<li><p>Inches</p></li>
+<li><p>Centimeters</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.duplicate">
+<code class="sig-name descname">duplicate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.model.Model.duplicate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a copy of this object.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.from_dict">
+<em class="property">classmethod </em><code class="sig-name descname">from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize a Model from a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – A dictionary representation of a Model object.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.from_geojson">
+<em class="property">classmethod </em><code class="sig-name descname">from_geojson</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">geojson_file_path</span></em>, <em class="sig-param"><span class="n">location</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">point</span><span class="o">=</span><span class="default_value">Point2D(0.0, 0.0)</span></em>, <em class="sig-param"><span class="n">all_polygons_to_buildings</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">units</span><span class="o">=</span><span class="default_value">'Meters'</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">angle_tolerance</span><span class="o">=</span><span class="default_value">0</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.from_geojson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.from_geojson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make a Model from a geojson file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geojson_file_path</strong> – Text for the full path to the geojson file to load as
+Model.</p></li>
+<li><p><strong>location</strong> – An optional ladybug location object with longitude and
+latitude data defining the origin of the geojson file. If nothing
+is passed, the origin is autocalculated as the bottom-left corner
+of the bounding box of all building footprints in the geojson file
+(Default: None).</p></li>
+<li><p><strong>point</strong> – A ladybug_geometry Point2D for where the location object exists
+within the space of a scene. The coordinates of this point are
+expected to be in the expected units of this Model (Default: (0, 0)).</p></li>
+<li><p><strong>units</strong> – <p>Text for the units system in which the model geometry
+exists. Default: ‘Meters’. Choose from the following:</p>
+<ul>
+<li><p>Meters</p></li>
+<li><p>Millimeters</p></li>
+<li><p>Feet</p></li>
+<li><p>Inches</p></li>
+<li><p>Centimeters</p></li>
+</ul>
+<p>Note that this method assumes the point coordinates are in the same
+units.</p>
+</p></li>
+<li><p><strong>all_polygons_to_buildings</strong> – Boolean to indicate if all geometries in the
+geojson file should be considered buildings. If False, this method
+will only generate footprints from geometries that are defined as a
+‘Building’ in the type field of its corresponding properties
+(Default: False).</p></li>
+<li><p><strong>tolerance</strong> – The maximum difference between x, y, and z values at which
+vertices are considered equivalent. Zero indicates that no tolerance
+checks should be performed and certain capabilities like to_honeybee
+will not be available. Default: 0.</p></li>
+<li><p><strong>angle_tolerance</strong> – The max angle difference in degrees that vertices are
+allowed to differ from one another in order to consider them colinear.
+Zero indicates that no angle tolerance checks should be performed.
+Default: 0.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p>A tuple with the two items below.</p>
+<ul class="simple">
+<li><p>model – A dragonfly Model derived from the geoJSON.</p></li>
+<li><dl class="simple">
+<dt>location – A ladybug Location object, which contains latitude and</dt><dd><p>longitude information and can be used to re-serialize the model
+back to geoJSON.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.move">
+<code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">moving_vec</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.move"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Move this Model along a vector.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>moving_vec</strong> – A ladybug_geometry Vector3D with the direction and distance
+to move the model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.reflect">
+<code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plane</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.reflect"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reflect this Model across a plane with the input normal vector and origin.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plane</strong> – A ladybug_geometry Plane across which the object will
+be reflected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.rotate_xy">
+<code class="sig-name descname">rotate_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em>, <em class="sig-param"><span class="n">origin</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.rotate_xy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.rotate_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rotate this Model counterclockwise in the world XY plane by a certain angle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – An angle in degrees.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D for the origin around which the
+object will be rotated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.scale"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Scale this Model by a factor from an origin point.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – A number representing how much the object should be scaled.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D representing the origin from which
+to scale. If None, it will be scaled from the World origin (0, 0, 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">included_prop</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return Model as a dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>included_prop</strong> – List of properties to filter keys that must be included in
+output dictionary. For example [‘energy’] will include ‘energy’ key if
+available in properties to_dict. By default all the keys will be
+included. To exclude all the keys from extensions use an empty list.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.to_geojson">
+<code class="sig-name descname">to_geojson</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span></em>, <em class="sig-param"><span class="n">point</span><span class="o">=</span><span class="default_value">Point2D(0.0, 0.0)</span></em>, <em class="sig-param"><span class="n">folder</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.to_geojson"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.to_geojson" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Dragonfly Model to a geoJSON of buildings footprints.</p>
+<p>This geoJSON will be in a format that is compatible with the URBANopt SDK,
+including properties for floor_area, footprint_area, and detailed_model_filename,
+which will align with the paths to OpenStudio model (.osm) files output
+from honeybee Models translated to OSM.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>location</strong> – A ladybug Location object possessing longitude and latitude data.</p></li>
+<li><p><strong>point</strong> – A ladybug_geometry Point2D for where the location object exists
+within the space of a scene. The coordinates of this point are
+expected to be in the units of this Model. (Default: (0, 0)).</p></li>
+<li><p><strong>folder</strong> – Text for the full path to the folder where the OpenStudio
+model files for each building are written. This is also the location
+where the geojson will be written. If None, the honeybee default
+simulation folder will be used (Default: None).</p></li>
+<li><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The path to a geoJSON file that contains polygons for all of the
+Buildings within the dragonfly model along with their properties
+(floor area, number of stories, etc.). The polygons will also possess
+detailed_model_filename keys that align with where OpenStudio models
+would be written, assuming the input folder matches that used to
+export OpenStudio models.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.to_geojson_dict">
+<code class="sig-name descname">to_geojson_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">location</span></em>, <em class="sig-param"><span class="n">point</span><span class="o">=</span><span class="default_value">Point2D(0.0, 0.0)</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">0.01</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.to_geojson_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.to_geojson_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Dragonfly Model to a geoJSON-style Python dictionary.</p>
+<p>This dictionary can be written into a JSON, which is then a valid geoJSON
+that can be visualized in any geoJSON viewer. Each dragonfly Building
+will appear in the geoJSON as a single feature (either as a Polygon or
+a MultiPolygon).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>location</strong> – A ladybug Location object possessing longitude and latitude data.</p></li>
+<li><p><strong>point</strong> – A ladybug_geometry Point2D for where the location object exists
+within the space of a scene. The coordinates of this point are
+expected to be in the units of this Model. (Default: (0, 0)).</p></li>
+<li><p><strong>tolerance</strong> – The minimum distance between points at which they are
+not considered touching. Default: 0.01, suitable for objects
+in meters.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>A Python dictionary in a geoJSON style with each Building in the Model
+as a separate feature.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.to_honeybee">
+<code class="sig-name descname">to_honeybee</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">object_per_model</span><span class="o">=</span><span class="default_value">'Building'</span></em>, <em class="sig-param"><span class="n">shade_distance</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">use_multiplier</span><span class="o">=</span><span class="default_value">True</span></em>, <em class="sig-param"><span class="n">add_plenum</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">cap</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">tolerance</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/model.html#Model.to_honeybee"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.model.Model.to_honeybee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert Dragonfly Model to an array of Honeybee Models.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>object_per_model</strong> – <p>Text to describe how the input Buildings should be
+divided across the output Models. (Default: ‘Building’). Choose from
+the following options:</p>
+<ul>
+<li><p>District - All buildings will be added to a single Honeybee Model.
+Such a Model can take a long time to simulate so this is only
+recommended for small numbers of buildings or cases where
+exchange of data between Buildings is necessary.</p></li>
+<li><p>Building - Each building will be exported into its own Model.
+For each Model, the other buildings input to this component will
+appear as context shade geometry.</p></li>
+<li><p>Story - Each Story of each Building will be exported into its
+own Model. For each Honeybee Model, the other input Buildings
+will appear as context shade geometry as will all of the other
+stories of the same building.</p></li>
+</ul>
+</p></li>
+<li><p><strong>shade_distance</strong> – An optional number to note the distance beyond which other
+objects’ shade should not be exported into a given Model. This is
+helpful for reducing the simulation run time of each Model when other
+connected buildings are too far away to have a meaningful impact on
+the results. If None, all other buildings will be included as context
+shade in each and every Model. Set to 0 to exclude all neighboring
+buildings from the resulting models. (Default: None).</p></li>
+<li><p><strong>use_multiplier</strong> – If True, the multipliers on this Model’s Stories will be
+passed along to the generated Honeybee Room objects, indicating the
+simulation will be run once for each unique room and then results
+will be multiplied. If False, full geometry objects will be written
+for each and every floor in the building that are represented through
+multipliers and all resulting multipliers will be 1. (Default: True).</p></li>
+<li><p><strong>add_plenum</strong> – Boolean to indicate whether ceiling/floor plenums should
+be auto-generated for the Rooms. (Default: False).</p></li>
+<li><p><strong>cap</strong> – Boolean to note whether building shade representations should be capped
+with a top face. Usually, this is not necessary to account for
+blocked sun and is only needed when it’s important to account for
+reflected sun off of roofs. (Default: False).</p></li>
+<li><p><strong>tolerance</strong> – The minimum distance in z values of floor_height and
+floor_to_ceiling_height at which adjacent Faces will be split.
+This is also used in the generation of Windows. This must be a
+positive, non-zero number. If None, the Model’s own tolerance
+will be used. Default: None.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>An array of Honeybee Models that together represent this Dragonfly Model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt id="dragonfly.model.Model.UNITS">
+<code class="sig-name descname">UNITS</code><em class="property"> = ('Meters', 'Millimeters', 'Feet', 'Inches', 'Centimeters')</em><a class="headerlink" href="#dragonfly.model.Model.UNITS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt id="dragonfly.model.Model.UNITS_TOLERANCES">
+<code class="sig-name descname">UNITS_TOLERANCES</code><em class="property"> = {'Centimeters': 1.0, 'Feet': 0.01, 'Inches': 0.1, 'Meters': 0.01, 'Millimeters': 1.0}</em><a class="headerlink" href="#dragonfly.model.Model.UNITS_TOLERANCES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.angle_tolerance">
+<em class="property">property </em><code class="sig-name descname">angle_tolerance</code><a class="headerlink" href="#dragonfly.model.Model.angle_tolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a number for the max meaningful angle difference in degrees.</p>
+<p>Face3D normal vectors differing by this amount are not considered parallel
+and Face3D segments that differ from 180 by this amount are not considered
+colinear. Zero indicates cases where no angle_tolerance checks should be
+performed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.average_height">
+<em class="property">property </em><code class="sig-name descname">average_height</code><a class="headerlink" href="#dragonfly.model.Model.average_height" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the average height of the Buildings as an absolute Z-coordinate.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.average_height_above_ground">
+<em class="property">property </em><code class="sig-name descname">average_height_above_ground</code><a class="headerlink" href="#dragonfly.model.Model.average_height_above_ground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the average building height relative to the first floor above ground.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.average_story_count">
+<em class="property">property </em><code class="sig-name descname">average_story_count</code><a class="headerlink" href="#dragonfly.model.Model.average_story_count" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the average number of stories for the buildings in the model.</p>
+<p>Note that this will be a float and not an integer in most cases.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.average_story_count_above_ground">
+<em class="property">property </em><code class="sig-name descname">average_story_count_above_ground</code><a class="headerlink" href="#dragonfly.model.Model.average_story_count_above_ground" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the average number of above-ground stories for the buildings in the model.</p>
+<p>Note that this will be a float and not an integer in most cases.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.buildings">
+<em class="property">property </em><code class="sig-name descname">buildings</code><a class="headerlink" href="#dragonfly.model.Model.buildings" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple of all Building objects in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.context_shades">
+<em class="property">property </em><code class="sig-name descname">context_shades</code><a class="headerlink" href="#dragonfly.model.Model.context_shades" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple of all ContextShade objects in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.display_name">
+<em class="property">property </em><code class="sig-name descname">display_name</code><a class="headerlink" href="#dragonfly.model.Model.display_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a string for the object name without any character restrictions.</p>
+<p>If not set, this will be equal to the identifier.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.exterior_aperture_area">
+<em class="property">property </em><code class="sig-name descname">exterior_aperture_area</code><a class="headerlink" href="#dragonfly.model.Model.exterior_aperture_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the total exterior aperture area for all Buildings.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.exterior_wall_area">
+<em class="property">property </em><code class="sig-name descname">exterior_wall_area</code><a class="headerlink" href="#dragonfly.model.Model.exterior_wall_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the total exterior wall area for all Buildings in the Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.floor_area">
+<em class="property">property </em><code class="sig-name descname">floor_area</code><a class="headerlink" href="#dragonfly.model.Model.floor_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the total floor area of all Buildings in the Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.footprint_area">
+<em class="property">property </em><code class="sig-name descname">footprint_area</code><a class="headerlink" href="#dragonfly.model.Model.footprint_area" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the total footprint area of all Buildings in the Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.identifier">
+<em class="property">property </em><code class="sig-name descname">identifier</code><a class="headerlink" href="#dragonfly.model.Model.identifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a text string for the unique object identifer.</p>
+<p>This identifier remains constant as the object is mutated, copied, and
+serialized to different formats (eg. dict, idf, rad). This property is also
+used to reference the object across a Model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.max">
+<em class="property">property </em><code class="sig-name descname">max</code><a class="headerlink" href="#dragonfly.model.Model.max" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Point2D for the max bounding rectangle vertex in the XY plane.</p>
+<p>This is useful in calculations to determine if this Model is in proximity
+to other objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.min">
+<em class="property">property </em><code class="sig-name descname">min</code><a class="headerlink" href="#dragonfly.model.Model.min" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a Point2D for the min bounding rectangle vertex in the XY plane.</p>
+<p>This is useful in calculations to determine if this Model is in proximity
+to other objects.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.properties">
+<em class="property">property </em><code class="sig-name descname">properties</code><a class="headerlink" href="#dragonfly.model.Model.properties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Object properties, including Radiance, Energy and other properties.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.room_2ds">
+<em class="property">property </em><code class="sig-name descname">room_2ds</code><a class="headerlink" href="#dragonfly.model.Model.room_2ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple of all unique Room2D objects in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.stories">
+<em class="property">property </em><code class="sig-name descname">stories</code><a class="headerlink" href="#dragonfly.model.Model.stories" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a tuple of all unique Story objects in the model.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.to">
+<em class="property">property </em><code class="sig-name descname">to</code><a class="headerlink" href="#dragonfly.model.Model.to" title="Permalink to this definition">¶</a></dt>
+<dd><p>Model writer object.</p>
+<p>Use this method to access Writer class to write the model in other formats.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.tolerance">
+<em class="property">property </em><code class="sig-name descname">tolerance</code><a class="headerlink" href="#dragonfly.model.Model.tolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set a number for the max meaningful difference between x, y, z values.</p>
+<p>This value should be in the Model’s units. Zero indicates cases where
+no tolerance checks should be performed.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.units">
+<em class="property">property </em><code class="sig-name descname">units</code><a class="headerlink" href="#dragonfly.model.Model.units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set Text for the units system in which the model geometry exists.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.user_data">
+<em class="property">property </em><code class="sig-name descname">user_data</code><a class="headerlink" href="#dragonfly.model.Model.user_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get or set an optional dictionary for additional meta data for this object.</p>
+<p>This will be None until it has been set. All keys and values of this
+dictionary should be of a standard Python type to ensure correct
+serialization of the object to/from JSON (eg. str, float, int, list dict)</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.model.Model.volume">
+<em class="property">property </em><code class="sig-name descname">volume</code><a class="headerlink" href="#dragonfly.model.Model.volume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get a number for the volume of all the Buildings in the Model.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

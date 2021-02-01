@@ -1,0 +1,20 @@
+dragonfly.cli package
+=====================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   dragonfly.cli.edit
+   dragonfly.cli.translate
+   dragonfly.cli.validate
+
+Module contents
+---------------
+
+.. automodule:: dragonfly.cli
+   :members:
+   :undoc-members:
+   :show-inheritance:

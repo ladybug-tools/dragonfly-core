@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Welcome to Dragonfly’s documentation! &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dragonfly package" href="dragonfly.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="dragonfly.html">dragonfly package</a></li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.html" title="Next Chapter: dragonfly package"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">dragonfly package &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/index.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul>
+<li class="toctree-l1"><a class="reference internal" href="dragonfly.html">dragonfly package</a></li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="welcome-to-dragonfly-s-documentation">
+<h1>Welcome to Dragonfly’s documentation!<a class="headerlink" href="#welcome-to-dragonfly-s-documentation" title="Permalink to this headline">¶</a></h1>
+<img alt="http://www.ladybug.tools/assets/img/dragonfly.png" src="http://www.ladybug.tools/assets/img/dragonfly.png" />
+<p>Dragonfly is a collection of Python libraries to create representations of buildings
+following <a class="reference external" href="https://github.com/ladybug-tools/dragonfly-schema/wiki">dragonfly-schema</a>.
+It abstracts the capabilities of <a class="reference external" href="https://github.com/ladybug-tools/honeybee-core/">honeybee-core</a>
+to make it easier to construct models on the urban scale.</p>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>To install the core library use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-U</span> <span class="pre">dragonfly-core</span></code>.</p>
+<p>If you want to also include the command line interface use <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-U</span> <span class="pre">dragonfly-core[cli]</span></code>.</p>
+<p>To check if the Dragonfly command line is installed correctly use <code class="docutils literal notranslate"><span class="pre">dragonfly</span> <span class="pre">viz</span></code> and you
+should get a <code class="docutils literal notranslate"><span class="pre">viiiiiiiiiiiiizzzzzzzzz!</span></code> back in response!</p>
+</div>
+<div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<p>This document includes <a class="reference external" href="#dragonfly">Dragonfly API documentation</a> and
+<a class="reference external" href="#id1">Dragonfly Command Line Interface</a> documentation for <code class="docutils literal notranslate"><span class="pre">dragonfly</span> <span class="pre">core</span></code> and does
+not include the documentation for dragonfly extensions. For each extension refer to
+extension’s documentation page.</p>
+<p>Here are a number of popular Dragonfly extensions:</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://ladybug.tools/dragonfly-energy/docs">dragonfly-energy</a></p></li>
+</ul>
+<div class="toctree-wrapper compound">
+</div>
+</div>
+<div class="section" id="dragonfly">
+<h1>dragonfly<a class="headerlink" href="#dragonfly" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.properties.html">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="id1">
+<h1>dragonfly command line interface<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="dragonfly">
+<h2>dragonfly<a class="headerlink" href="#dragonfly" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-version">
+<code class="sig-name descname">--version</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-version" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show the version and exit.</p>
+</dd></dl>
+
+<div class="section" id="dragonfly-edit">
+<h3>edit<a class="headerlink" href="#dragonfly-edit" title="Permalink to this headline">¶</a></h3>
+<p>Commands for editing Dragonfly models.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly edit <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<div class="section" id="dragonfly-edit-convert-units">
+<h4>convert-units<a class="headerlink" href="#dragonfly-edit-convert-units" title="Permalink to this headline">¶</a></h4>
+<p>Convert a Model to a given units system.</p>
+<div class="line-block">
+<div class="line">Args:</div>
+<div class="line-block">
+<div class="line">model_json: Full path to a Model JSON file.</div>
+<div class="line">units: Text for the units system to which the model will be converted.</div>
+<div class="line-block">
+<div class="line">Choose from (Meters, Millimeters, Feet, Inches, Centimeters).</div>
+</div>
+</div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly edit convert-units <span class="o">[</span>OPTIONS<span class="o">]</span> MODEL_JSON UNITS
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-convert-units-scale">
+<span id="cmdoption-dragonfly-edit-convert-units-ns"></span><span id="cmdoption-dragonfly-edit-convert-units-do-not-scale"></span><code class="sig-name descname">--scale</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">-ns</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--do-not-scale</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-edit-convert-units-scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to note whether the model should be scaled as it is converted to the new units system.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-convert-units-f">
+<span id="cmdoption-dragonfly-edit-convert-units-output-file"></span><code class="sig-name descname">-f</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--output-file</code><code class="sig-prename descclassname"> &lt;output_file&gt;</code><a class="headerlink" href="#cmdoption-dragonfly-edit-convert-units-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional file to output the Model JSON string with solved adjacency. By default it will be printed out to stdout</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-convert-units-arg-MODEL_JSON">
+<span id="cmdoption-dragonfly-edit-convert-units-arg-model-json"></span><code class="sig-name descname">MODEL_JSON</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-edit-convert-units-arg-MODEL_JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-convert-units-arg-UNITS">
+<span id="cmdoption-dragonfly-edit-convert-units-arg-units"></span><code class="sig-name descname">UNITS</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-edit-convert-units-arg-UNITS" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+<div class="section" id="dragonfly-edit-solve-adjacency">
+<h4>solve-adjacency<a class="headerlink" href="#dragonfly-edit-solve-adjacency" title="Permalink to this headline">¶</a></h4>
+<p>Solve adjacency between Room2Ds of a Model JSON file.</p>
+<p>This involves setting Surface or Adiabatic boundary conditions for all matching
+segments across each Story.</p>
+<div class="line-block">
+<div class="line">If the –intersect option is selected, this will involve involve the following.</div>
+<div class="line">1. Remove colinear vertices from the Room2D polygons.</div>
+<div class="line">2. Intersect adjacent segments of the same Story with one another.</div>
+<div class="line">Note that the –intersect option removes all existing boundary_conditions,</div>
+<div class="line">window_parameters, and shading_parameters.</div>
+</div>
+<div class="line-block">
+<div class="line">Args:</div>
+<div class="line-block">
+<div class="line">model_json: Full path to a Model JSON file.</div>
+</div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly edit solve-adjacency <span class="o">[</span>OPTIONS<span class="o">]</span> MODEL_JSON
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-solve-adjacency-surface">
+<span id="cmdoption-dragonfly-edit-solve-adjacency-a"></span><span id="cmdoption-dragonfly-edit-solve-adjacency-adiabatic"></span><code class="sig-name descname">--surface</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">-a</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--adiabatic</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-edit-solve-adjacency-surface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to note whether the adjacencies should be surface or adiabatic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-solve-adjacency-no-intersect">
+<span id="cmdoption-dragonfly-edit-solve-adjacency-i"></span><span id="cmdoption-dragonfly-edit-solve-adjacency-intersect"></span><code class="sig-name descname">--no-intersect</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">-i</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--intersect</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-edit-solve-adjacency-no-intersect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to note whether the segments of the Room2Ds should be intersected with one another before the adjacencies are solved.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-solve-adjacency-f">
+<span id="cmdoption-dragonfly-edit-solve-adjacency-output-file"></span><code class="sig-name descname">-f</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--output-file</code><code class="sig-prename descclassname"> &lt;output_file&gt;</code><a class="headerlink" href="#cmdoption-dragonfly-edit-solve-adjacency-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional file to output the Model JSON string with solved adjacency. By default it will be printed out to stdout</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-edit-solve-adjacency-arg-MODEL_JSON">
+<span id="cmdoption-dragonfly-edit-solve-adjacency-arg-model-json"></span><code class="sig-name descname">MODEL_JSON</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-edit-solve-adjacency-arg-MODEL_JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="dragonfly-translate">
+<h3>translate<a class="headerlink" href="#dragonfly-translate" title="Permalink to this headline">¶</a></h3>
+<p>Commands for translating Dragonfly JSON files to honeybee.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly translate <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<div class="section" id="dragonfly-translate-model-to-honeybee">
+<h4>model-to-honeybee<a class="headerlink" href="#dragonfly-translate-model-to-honeybee" title="Permalink to this headline">¶</a></h4>
+<p>Translate a Dragonfly Model JSON file into several Honeybee Models.</p>
+<div class="line-block">
+<div class="line">Args:</div>
+<div class="line-block">
+<div class="line">model_json: Path to a Dragonfly Model JSON file.</div>
+</div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly translate model-to-honeybee <span class="o">[</span>OPTIONS<span class="o">]</span> MODEL_JSON
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-o">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-obj-per-model"></span><code class="sig-name descname">-o</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--obj-per-model</code><code class="sig-prename descclassname"> &lt;obj_per_model&gt;</code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-o" title="Permalink to this definition">¶</a></dt>
+<dd><p>Text to describe how the input Model should be divided across the output Models. Choose from: District, Building, Story.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>Building</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-multiplier">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-fg"></span><span id="cmdoption-dragonfly-translate-model-to-honeybee-full-geometry"></span><code class="sig-name descname">--multiplier</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">-fg</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--full-geometry</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-multiplier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to note if the multipliers on each Building story should be passed along to the generated Honeybee Room objects or if full geometry objects should be written for each story in the building.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-no-plenum">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-p"></span><span id="cmdoption-dragonfly-translate-model-to-honeybee-plenum"></span><code class="sig-name descname">--no-plenum</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">-p</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--plenum</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-no-plenum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to indicate whether ceiling/floor plenums should be auto-generated for the Rooms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-no-cap">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-c"></span><span id="cmdoption-dragonfly-translate-model-to-honeybee-cap"></span><code class="sig-name descname">--no-cap</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">-c</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--cap</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-no-cap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Flag to indicate whether context shade buildings should be capped with a top face.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><p>True</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-sd">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-shade-dist"></span><code class="sig-name descname">-sd</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--shade-dist</code><code class="sig-prename descclassname"> &lt;shade_dist&gt;</code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-sd" title="Permalink to this definition">¶</a></dt>
+<dd><p>An optional number to note the distance beyond which other buildings shade should not be exported into a Model. This number should be in meters regardless of the input model units. If None, all other buildings will be included as context shade in each and every Model. Set to 0 to exclude all neighboring buildings from the resulting models.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-f">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-folder"></span><code class="sig-name descname">-f</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--folder</code><code class="sig-prename descclassname"> &lt;folder&gt;</code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-f" title="Permalink to this definition">¶</a></dt>
+<dd><p>Folder on this computer, into which the HBJSON files will be written. If None, the files will be output to the honeybee default simulation folder and placed in a project folder with the same name as the model json.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-log">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-log-file"></span><code class="sig-name descname">-log</code><code class="sig-prename descclassname"></code><code class="sig-prename descclassname">, </code><code class="sig-name descname">--log-file</code><code class="sig-prename descclassname"> &lt;log_file&gt;</code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optional log file to output a JSON array of dictionaries with information about each of the genrated HBJSONs, including their file paths. By default the list will be printed out to stdout</p>
+<dl class="field-list simple">
+<dt class="field-odd">Default</dt>
+<dd class="field-odd"><ul class="simple">
+<li></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-translate-model-to-honeybee-arg-MODEL_JSON">
+<span id="cmdoption-dragonfly-translate-model-to-honeybee-arg-model-json"></span><code class="sig-name descname">MODEL_JSON</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-translate-model-to-honeybee-arg-MODEL_JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="dragonfly-validate">
+<h3>validate<a class="headerlink" href="#dragonfly-validate" title="Permalink to this headline">¶</a></h3>
+<p>Commands for validating Dragonfly JSON files.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly validate <span class="o">[</span>OPTIONS<span class="o">]</span> COMMAND <span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<div class="section" id="dragonfly-validate-model">
+<h4>model<a class="headerlink" href="#dragonfly-validate-model" title="Permalink to this headline">¶</a></h4>
+<p>Validate a Model JSON file against the Dragonfly schema.</p>
+<div class="line-block">
+<div class="line">Args:</div>
+<div class="line-block">
+<div class="line">model_json: Full path to a Model JSON file.</div>
+</div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly validate model <span class="o">[</span>OPTIONS<span class="o">]</span> MODEL_JSON
+</pre></div>
+</div>
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt id="cmdoption-dragonfly-validate-model-arg-MODEL_JSON">
+<span id="cmdoption-dragonfly-validate-model-arg-model-json"></span><code class="sig-name descname">MODEL_JSON</code><code class="sig-prename descclassname"></code><a class="headerlink" href="#cmdoption-dragonfly-validate-model-arg-MODEL_JSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="dragonfly-viz">
+<h3>viz<a class="headerlink" href="#dragonfly-viz" title="Permalink to this headline">¶</a></h3>
+<p>Check if dragonfly is flying!</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>dragonfly viz <span class="o">[</span>OPTIONS<span class="o">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

@@ -1,0 +1,40 @@
+dragonfly package
+=================
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   dragonfly.cli
+   dragonfly.writer
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   dragonfly.building
+   dragonfly.colorobj
+   dragonfly.config
+   dragonfly.context
+   dragonfly.dictutil
+   dragonfly.extensionutil
+   dragonfly.model
+   dragonfly.projection
+   dragonfly.properties
+   dragonfly.room2d
+   dragonfly.shadingparameter
+   dragonfly.story
+   dragonfly.subdivide
+   dragonfly.windowparameter
+
+Module contents
+---------------
+
+.. automodule:: dragonfly
+   :members:
+   :undoc-members:
+   :show-inheritance:

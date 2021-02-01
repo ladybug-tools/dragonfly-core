@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>dragonfly.properties module &#8212; dragonfly-core  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="dragonfly.room2d module" href="dragonfly.room2d.html" />
+    <link rel="prev" title="dragonfly.projection module" href="dragonfly.projection.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="index.html">
+          dragonfly-core</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="index.html">Site <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.cli.html">dragonfly.cli package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.edit.html">dragonfly.cli.edit module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.translate.html">dragonfly.cli.translate module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.cli.validate.html">dragonfly.cli.validate module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.cli.html#module-dragonfly.cli">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.writer.html">dragonfly.writer package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#submodules">Submodules</a><ul>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.building.html">dragonfly.writer.building module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.context.html">dragonfly.writer.context module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.model.html">dragonfly.writer.model module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.room2d.html">dragonfly.writer.room2d module</a></li>
+<li class="toctree-l5"><a class="reference internal" href="dragonfly.writer.story.html">dragonfly.writer.story module</a></li>
+</ul>
+</li>
+<li class="toctree-l4"><a class="reference internal" href="dragonfly.writer.html#module-dragonfly.writer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Page <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="dragonfly.projection.html" title="Previous Chapter: dragonfly.projection module"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; dragonfly.pro...</span>
+    </a>
+  </li>
+  <li>
+    <a href="dragonfly.room2d.html" title="Next Chapter: dragonfly.room2d module"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">dragonfly.roo... &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+              <li class="hidden-sm">
+<div id="sourcelink">
+  <a href="_sources/dragonfly.properties.rst.txt"
+     rel="nofollow">Source</a>
+</div></li>
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+      <div class="col-md-4">
+        <div id="sidebar" class="bs-sidenav" role="complementary"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="dragonfly.html">dragonfly package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#subpackages">Subpackages</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="dragonfly.html#submodules">Submodules</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.building.html">dragonfly.building module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.colorobj.html">dragonfly.colorobj module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.config.html">dragonfly.config module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.context.html">dragonfly.context module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.dictutil.html">dragonfly.dictutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.extensionutil.html">dragonfly.extensionutil module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.model.html">dragonfly.model module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.projection.html">dragonfly.projection module</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">dragonfly.properties module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.room2d.html">dragonfly.room2d module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.shadingparameter.html">dragonfly.shadingparameter module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.story.html">dragonfly.story module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.subdivide.html">dragonfly.subdivide module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="dragonfly.windowparameter.html">dragonfly.windowparameter module</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="dragonfly.html#module-dragonfly">Module contents</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    <div class="body col-md-8 content" role="main">
+      
+  <div class="section" id="module-dragonfly.properties">
+<span id="dragonfly-properties-module"></span><h1>dragonfly.properties module<a class="headerlink" href="#module-dragonfly.properties" title="Permalink to this headline">¶</a></h1>
+<p>Extension properties for Building, Story, Room2D.</p>
+<p>These objects hold all attributes assigned by extensions like dragonfly-radiance
+and dragonfly-energy.  Note that these Property objects are not intended to exist
+on their own but should have a host object.</p>
+<dl class="py class">
+<dt id="dragonfly.properties.BuildingProperties">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.properties.</code><code class="sig-name descname">BuildingProperties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#BuildingProperties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.BuildingProperties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.properties._Properties</span></code></p>
+<p>Dragonfly Building properties. This class will be extended by extensions.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">building</span> <span class="o">=</span> <span class="n">Building</span><span class="p">(</span><span class="s1">&#39;Office Tower&#39;</span><span class="p">,</span> <span class="n">unique_stories</span><span class="p">)</span>
+<span class="n">building</span><span class="o">.</span><span class="n">properties</span> <span class="o">-&gt;</span> <span class="n">BuildingProperties</span>
+<span class="n">building</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">radiance</span> <span class="o">-&gt;</span> <span class="n">BuildingRadianceProperties</span>
+<span class="n">building</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">energy</span> <span class="o">-&gt;</span> <span class="n">BuildingEnergyProperties</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.BuildingProperties.ToString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overwrite .NET ToString method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.add_prefix">
+<code class="sig-name descname">add_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#BuildingProperties.add_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.BuildingProperties.add_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the identifier of attributes unique to this object by adding a prefix.</p>
+<p>Notably, this method only adds the prefix to extension attributes that must
+be unique to the Building and does not add the prefix to attributes that are
+shared across several Buildings.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> – Text that will be inserted at the start of extension
+attribute identifiers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.move">
+<code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">moving_vec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.BuildingProperties.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a move transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be moved alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>moving_vec</strong> – A ladybug_geometry Vector3D with the direction and distance
+to move the face.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.reflect">
+<code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plane</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.BuildingProperties.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a reflection transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be reflected alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plane</strong> – A ladybug_geometry Plane across which the object will
+be reflected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.rotate_xy">
+<code class="sig-name descname">rotate_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em>, <em class="sig-param"><span class="n">origin</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.BuildingProperties.rotate_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a rotatation in the XY plane to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be rotated alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – An angle in degrees.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D for the origin around which the
+object will be rotated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.BuildingProperties.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a scale transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be scaled alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – A number representing how much the object should be scaled.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D representing the origin from which
+to scale. If None, it will be scaled from the World origin (0, 0, 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abridged</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">include</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#BuildingProperties.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.BuildingProperties.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert properties to dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abridged</strong> – Boolean to note whether the full dictionary describing the
+object should be returned (False) or just an abridged version (True).
+Default: False.</p></li>
+<li><p><strong>include</strong> – A list of keys to be included in dictionary.
+If None all the available keys will be included.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.BuildingProperties.host">
+<em class="property">property </em><code class="sig-name descname">host</code><a class="headerlink" href="#dragonfly.properties.BuildingProperties.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the object hosting these properties.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.properties.ContextShadeProperties">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.properties.</code><code class="sig-name descname">ContextShadeProperties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ContextShadeProperties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.properties._Properties</span></code></p>
+<p>Dragonfly ContextShade properties. This class will be extended by extensions.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">canopy</span> <span class="o">=</span> <span class="n">ContextShade</span><span class="p">(</span><span class="s1">&#39;Outdoor Canopy&#39;</span><span class="p">,</span> <span class="n">canopy_geo</span><span class="p">)</span>
+<span class="n">canopy</span><span class="o">.</span><span class="n">properties</span> <span class="o">-&gt;</span> <span class="n">ContextShadeProperties</span>
+<span class="n">canopy</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">radiance</span> <span class="o">-&gt;</span> <span class="n">ContextShadeRadianceProperties</span>
+<span class="n">canopy</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">energy</span> <span class="o">-&gt;</span> <span class="n">ContextShadeEnergyProperties</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.ToString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overwrite .NET ToString method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.add_prefix">
+<code class="sig-name descname">add_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ContextShadeProperties.add_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.add_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the identifier of attributes unique to this object by adding a prefix.</p>
+<p>Notably, this method only adds the prefix to extension attributes that must
+be unique to the ContextShade and does not add the prefix to attributes that are
+shared across several ContextShades.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> – Text that will be inserted at the start of extension
+attribute identifiers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.move">
+<code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">moving_vec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a move transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be moved alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>moving_vec</strong> – A ladybug_geometry Vector3D with the direction and distance
+to move the face.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.reflect">
+<code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plane</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a reflection transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be reflected alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plane</strong> – A ladybug_geometry Plane across which the object will
+be reflected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.rotate_xy">
+<code class="sig-name descname">rotate_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em>, <em class="sig-param"><span class="n">origin</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.rotate_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a rotatation in the XY plane to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be rotated alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – An angle in degrees.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D for the origin around which the
+object will be rotated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a scale transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be scaled alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – A number representing how much the object should be scaled.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D representing the origin from which
+to scale. If None, it will be scaled from the World origin (0, 0, 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abridged</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">include</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ContextShadeProperties.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert properties to dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abridged</strong> – Boolean to note whether the full dictionary describing the
+object should be returned (False) or just an abridged version (True).
+Default: False.</p></li>
+<li><p><strong>include</strong> – A list of keys to be included in dictionary.
+If None all the available keys will be included.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.to_honeybee">
+<code class="sig-name descname">to_honeybee</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ContextShadeProperties.to_honeybee"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.to_honeybee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert this ContextShade’s extension properties to honeybee Shade properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>host</strong> – A honeybee-core Shade object that hosts these properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ContextShadeProperties.host">
+<em class="property">property </em><code class="sig-name descname">host</code><a class="headerlink" href="#dragonfly.properties.ContextShadeProperties.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the object hosting these properties.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.properties.ModelProperties">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.properties.</code><code class="sig-name descname">ModelProperties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ModelProperties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ModelProperties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.properties._Properties</span></code></p>
+<p>Dragonfly Model Properties. This class will be extended by extensions.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">model</span> <span class="o">=</span> <span class="n">Model</span><span class="p">(</span><span class="s1">&#39;South Boston District&#39;</span><span class="p">,</span> <span class="n">list_of_buildings</span><span class="p">)</span>
+<span class="n">model</span><span class="o">.</span><span class="n">properties</span> <span class="o">-&gt;</span> <span class="n">ModelProperties</span>
+<span class="n">model</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">radiance</span> <span class="o">-&gt;</span> <span class="n">ModelRadianceProperties</span>
+<span class="n">model</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">energy</span> <span class="o">-&gt;</span> <span class="n">ModelEnergyProperties</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ModelProperties.ToString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overwrite .NET ToString method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.apply_properties_from_dict">
+<code class="sig-name descname">apply_properties_from_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ModelProperties.apply_properties_from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ModelProperties.apply_properties_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply extension properties from a Model dictionary to the host Model.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>data</strong> – A dictionary representation of an entire dragonfly-core Model.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.move">
+<code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">moving_vec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ModelProperties.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a move transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be moved alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>moving_vec</strong> – A ladybug_geometry Vector3D with the direction and distance
+to move the face.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.reflect">
+<code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plane</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ModelProperties.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a reflection transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be reflected alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plane</strong> – A ladybug_geometry Plane across which the object will
+be reflected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.rotate_xy">
+<code class="sig-name descname">rotate_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em>, <em class="sig-param"><span class="n">origin</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ModelProperties.rotate_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a rotatation in the XY plane to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be rotated alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – An angle in degrees.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D for the origin around which the
+object will be rotated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.ModelProperties.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a scale transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be scaled alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – A number representing how much the object should be scaled.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D representing the origin from which
+to scale. If None, it will be scaled from the World origin (0, 0, 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">include</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ModelProperties.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ModelProperties.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert properties to dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>include</strong> – A list of keys to be included in dictionary.
+If None all the available keys will be included.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.to_honeybee">
+<code class="sig-name descname">to_honeybee</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#ModelProperties.to_honeybee"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.ModelProperties.to_honeybee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert this Model’s extension properties to honeybee Model properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>host</strong> – A honeybee-core Model object that hosts these properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.ModelProperties.host">
+<em class="property">property </em><code class="sig-name descname">host</code><a class="headerlink" href="#dragonfly.properties.ModelProperties.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the object hosting these properties.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.properties.Room2DProperties">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.properties.</code><code class="sig-name descname">Room2DProperties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#Room2DProperties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.Room2DProperties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.properties._Properties</span></code></p>
+<p>Dragonfly Room2D properties. This class will be extended by extensions.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">room</span> <span class="o">=</span> <span class="n">Room2D</span><span class="p">(</span><span class="s1">&#39;Office&#39;</span><span class="p">,</span> <span class="n">geometry</span><span class="p">)</span>
+<span class="n">room</span><span class="o">.</span><span class="n">properties</span> <span class="o">-&gt;</span> <span class="n">Room2DProperties</span>
+<span class="n">room</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">radiance</span> <span class="o">-&gt;</span> <span class="n">Room2DRadianceProperties</span>
+<span class="n">room</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">energy</span> <span class="o">-&gt;</span> <span class="n">Room2DEnergyProperties</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.Room2DProperties.ToString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overwrite .NET ToString method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.add_prefix">
+<code class="sig-name descname">add_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#Room2DProperties.add_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.Room2DProperties.add_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the identifier of attributes unique to this object by adding a prefix.</p>
+<p>Notably, this method only adds the prefix to extension attributes that must
+be unique to the Room2D (eg. single-room HVAC systems) and does not add
+the prefix to attributes that are shared across several Rooms2Ds (eg.
+ConstructionSets).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> – Text that will be inserted at the start of extension
+attribute identifiers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.move">
+<code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">moving_vec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.Room2DProperties.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a move transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be moved alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>moving_vec</strong> – A ladybug_geometry Vector3D with the direction and distance
+to move the face.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.reflect">
+<code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plane</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.Room2DProperties.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a reflection transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be reflected alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plane</strong> – A ladybug_geometry Plane across which the object will
+be reflected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.rotate_xy">
+<code class="sig-name descname">rotate_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em>, <em class="sig-param"><span class="n">origin</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.Room2DProperties.rotate_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a rotatation in the XY plane to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be rotated alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – An angle in degrees.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D for the origin around which the
+object will be rotated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.Room2DProperties.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a scale transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be scaled alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – A number representing how much the object should be scaled.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D representing the origin from which
+to scale. If None, it will be scaled from the World origin (0, 0, 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abridged</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">include</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#Room2DProperties.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.Room2DProperties.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert properties to dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abridged</strong> – Boolean to note whether the full dictionary describing the
+object should be returned (False) or just an abridged version (True).
+Default: False.</p></li>
+<li><p><strong>include</strong> – A list of keys to be included in dictionary.
+If None all the available keys will be included.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.to_honeybee">
+<code class="sig-name descname">to_honeybee</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#Room2DProperties.to_honeybee"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.Room2DProperties.to_honeybee" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert this Room2D’s extension properties to honeybee Room properties.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>host</strong> – A honeybee-core Room object that hosts these properties.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.Room2DProperties.host">
+<em class="property">property </em><code class="sig-name descname">host</code><a class="headerlink" href="#dragonfly.properties.Room2DProperties.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the object hosting these properties.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt id="dragonfly.properties.StoryProperties">
+<em class="property">class </em><code class="sig-prename descclassname">dragonfly.properties.</code><code class="sig-name descname">StoryProperties</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">host</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#StoryProperties"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.StoryProperties" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">dragonfly.properties._Properties</span></code></p>
+<p>Dragonfly Story properties. This class will be extended by extensions.</p>
+<p>Usage:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">story</span> <span class="o">=</span> <span class="n">Story</span><span class="p">(</span><span class="s1">&#39;Ground Floor Retail&#39;</span><span class="p">,</span> <span class="n">room_2ds</span><span class="p">)</span>
+<span class="n">story</span><span class="o">.</span><span class="n">properties</span> <span class="o">-&gt;</span> <span class="n">StoryProperties</span>
+<span class="n">story</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">radiance</span> <span class="o">-&gt;</span> <span class="n">StoryRadianceProperties</span>
+<span class="n">story</span><span class="o">.</span><span class="n">properties</span><span class="o">.</span><span class="n">energy</span> <span class="o">-&gt;</span> <span class="n">StoryEnergyProperties</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.ToString">
+<code class="sig-name descname">ToString</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.StoryProperties.ToString" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overwrite .NET ToString method.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.add_prefix">
+<code class="sig-name descname">add_prefix</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">prefix</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#StoryProperties.add_prefix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.StoryProperties.add_prefix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the identifier of attributes unique to this object by adding a prefix.</p>
+<p>Notably, this method only adds the prefix to extension attributes that must
+be unique to the Story and does not add the prefix to attributes that are
+shared across several Stories.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>prefix</strong> – Text that will be inserted at the start of extension
+attribute identifiers.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.move">
+<code class="sig-name descname">move</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">moving_vec</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.StoryProperties.move" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a move transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be moved alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>moving_vec</strong> – A ladybug_geometry Vector3D with the direction and distance
+to move the face.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.reflect">
+<code class="sig-name descname">reflect</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">plane</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.StoryProperties.reflect" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a reflection transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be reflected alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>plane</strong> – A ladybug_geometry Plane across which the object will
+be reflected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.rotate_xy">
+<code class="sig-name descname">rotate_xy</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">angle</span></em>, <em class="sig-param"><span class="n">origin</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.StoryProperties.rotate_xy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a rotatation in the XY plane to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be rotated alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>angle</strong> – An angle in degrees.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D for the origin around which the
+object will be rotated.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.scale">
+<code class="sig-name descname">scale</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">factor</span></em>, <em class="sig-param"><span class="n">origin</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="headerlink" href="#dragonfly.properties.StoryProperties.scale" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a scale transform to extension attributes.</p>
+<p>This is useful in cases where extension attributes possess geometric data
+that should be scaled alongside the host object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>factor</strong> – A number representing how much the object should be scaled.</p></li>
+<li><p><strong>origin</strong> – A ladybug_geometry Point3D representing the origin from which
+to scale. If None, it will be scaled from the World origin (0, 0, 0).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.to_dict">
+<code class="sig-name descname">to_dict</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">abridged</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">include</span><span class="o">=</span><span class="default_value">None</span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dragonfly/properties.html#StoryProperties.to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dragonfly.properties.StoryProperties.to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert properties to dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>abridged</strong> – Boolean to note whether the full dictionary describing the
+object should be returned (False) or just an abridged version (True).
+Default: False.</p></li>
+<li><p><strong>include</strong> – A list of keys to be included in dictionary.
+If None all the available keys will be included.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt id="dragonfly.properties.StoryProperties.host">
+<em class="property">property </em><code class="sig-name descname">host</code><a class="headerlink" href="#dragonfly.properties.StoryProperties.host" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the object hosting these properties.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+    </p>
+    <p>
+        &copy; Copyright 2021, Ladybug Tools.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.4.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
