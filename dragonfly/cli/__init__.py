@@ -44,13 +44,7 @@ Note:
     For extension with several commands you can use a folder structure instead of a single
     file.
 """
-
-try:
-    import click
-except ImportError:
-    raise ImportError(
-        'click module is not installed. Try `pip install dragonfly-core[cli]` command.'
-    )
+import click
 
 from dragonfly.cli.validate import validate
 from dragonfly.cli.translate import translate

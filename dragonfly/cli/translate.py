@@ -1,20 +1,13 @@
 """dragonfly translation commands."""
-
-try:
-    import click
-except ImportError:
-    raise ImportError(
-        'click is not installed. Try `pip install . [cli]` command.'
-    )
-
-from ladybug.futil import preparedir
-from honeybee.config import folders as hb_folders
-from dragonfly.model import Model
-
+import click
 import sys
 import os
 import logging
 import json
+
+from ladybug.futil import preparedir
+from honeybee.config import folders as hb_folders
+from dragonfly.model import Model
 
 _logger = logging.getLogger(__name__)
 

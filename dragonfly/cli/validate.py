@@ -1,14 +1,5 @@
 """dragonfly validation commands."""
-
-try:
-    import click
-except ImportError:
-    raise ImportError(
-        'click is not installed. Try `pip install . [cli]` command.'
-    )
-
-from dragonfly.model import Model
-
+import click
 import sys
 import os
 import logging
@@ -16,11 +7,14 @@ import json
 
 _logger = logging.getLogger(__name__)
 
+from dragonfly.model import Model
+
 try:
     import dragonfly_schema.model as schema_model
 except ImportError:
     _logger.exception(
-        'dragonfly_schema is not installed. Try `pip install . [cli]` command.'
+        'dragonfly_schema is not installed and validation commands are unavailable.\n'
+        'You must use Python 3.7 or above to run validation commands.'
     )
 
 
