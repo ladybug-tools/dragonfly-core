@@ -205,9 +205,10 @@ class _Properties(object):
         geometry object.
 
         Args:
-            base: The dictionary of the core object without any extension attributes.
-                This method will add extension attributes to this dictionary. For
-                example, energy properties will appear under base['properties']['energy'].
+            base: The dictionary of the core object without any extension
+                attributes. This method will add extension attributes to this
+                dictionary. For example, energy properties will appear under
+                base['properties']['energy'].
             abridged: Boolean to note whether the attributes of the extensions should
                 be abridged (True) or full (False). For example, if a Room's energy
                 properties are abridged, the program_type attribute under the energy

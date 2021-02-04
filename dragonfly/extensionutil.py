@@ -27,8 +27,8 @@ def model_extension_dicts(data, extension_key, building_ext_dicts, story_ext_dic
         -   room2d_ext_dicts: A list of Room2D extension property dictionaries that
             align with the serialized model.rooms.
 
-        -   context_shade_ext_dicts: A list of ContextShade extension property dictionaries
-            that align with the serialized model.context_shades.
+        -   context_shade_ext_dicts: A list of ContextShade extension property
+            dictionaries that align with the serialized model.context_shades.
     """
     assert data['type'] == 'Model', \
         'Expected Model dictionary. Got {}.'.format(data['type'])

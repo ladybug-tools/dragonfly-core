@@ -1,13 +1,12 @@
 """dragonfly validation commands."""
 import click
 import sys
-import os
 import logging
 import json
 
-_logger = logging.getLogger(__name__)
-
 from dragonfly.model import Model
+
+_logger = logging.getLogger(__name__)
 
 try:
     import dragonfly_schema.model as schema_model

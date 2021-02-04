@@ -48,7 +48,7 @@ def interpret_floor_height_subdivide(floor_to_floor_heights, max_height,
                 flr_count = int((max_height - floor_heights[-1]) / flr_h)
 
         if flr_h != 0:
-            for i in range(flr_count):
+            for _ in range(flr_count):
                 floor_heights.append(floor_heights[-1] + flr_h)
                 interpreted_f2f.append(flr_h)
 
@@ -104,7 +104,7 @@ def interpret_core_perimeter_subdivide(perimeter_depths, floor_count):
             except ValueError:  # no number of depths to generate (ie. '@3')
                 flr_count = int(floor_count - len(interpreted_depths))
 
-        for i in range(flr_count):
+        for _ in range(flr_count):
             interpreted_depths.append(flr_d)
 
     # check to be sure the length of the list is correct

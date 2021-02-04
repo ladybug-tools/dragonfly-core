@@ -671,7 +671,8 @@ class RectangularWindows(_AsymmetricBase):
 
     @property
     def origins(self):
-        """Get an array of Point2Ds within the wall plane for the origin of each window."""
+        """Get an array of Point2Ds within the wall plane for the origin of each window.
+        """
         return self._origins
 
     @property
@@ -866,8 +867,8 @@ class DetailedWindows(_AsymmetricBase):
 
         def xyz_to_xy(seg_p1, seg_p2, vertex):
             diff = (vertex[0] - seg_p1[0], vertex[1] - seg_p1[1], vertex[2] - seg_p1[2])
-            a_axis = (seg_p2[0] - seg_p1[0], seg_p2[1] - seg_p1[1], seg_p2[2] - seg_p1[2])
-            plane_x = normalize(a_axis)
+            axis = (seg_p2[0] - seg_p1[0], seg_p2[1] - seg_p1[1], seg_p2[2] - seg_p1[2])
+            plane_x = normalize(axis)
             plane_y = (0, 0, 1)
             return (dot_product(plane_x , diff), dot_product(plane_y, diff))
     """
@@ -972,9 +973,10 @@ class DetailedWindows(_AsymmetricBase):
 
     def to_dict(self):
         """Get DetailedWindows as a dictionary."""
-        return {'type': 'DetailedWindows',
-                'polygons': [[pt.to_array() for pt in poly] for poly in self.polygons]
-                }
+        return {
+            'type': 'DetailedWindows',
+            'polygons': [[pt.to_array() for pt in poly] for poly in self.polygons]
+        }
 
     def __copy__(self):
         return DetailedWindows(self._polygons)

@@ -143,7 +143,7 @@ class Model(_BaseGeometry):
                 allowed to differ from one another in order to consider them colinear.
                 Zero indicates that no angle tolerance checks should be performed.
                 Default: 0.
-        
+
         Returns:
             A tuple with the two items below.
 
@@ -170,8 +170,9 @@ class Model(_BaseGeometry):
                         bldgs_data.append(bldg_data)
 
         # Check if buildings exist
-        assert len(bldgs_data) > 0, 'No building footprints were found in {}. Check the ' \
-            'geometry coordinates in the file and if the "all_polygons_to_buildings" ' \
+        assert len(bldgs_data) > 0, 'No building footprints were found in {}. ' \
+            'Check the geometry coordinates in the file and if the ' \
+            '"all_polygons_to_buildings" ' \
             'argument is set correctly.'.format(geojson_file_path)
 
         # if model units is not Meters, convert non-meter user inputs to meters
@@ -708,7 +709,7 @@ class Model(_BaseGeometry):
         convert_facs = meters_to_long_lat_factors(origin_lon_lat)
 
         # export each building as a feature in the file
-        for i, bldg in enumerate(model.buildings):
+        for _, bldg in enumerate(model.buildings):
             # create the base dictionary
             feature_dict = {'geometry': {}, 'properties': {}, 'type': 'Feature'}
 
@@ -848,7 +849,8 @@ class Model(_BaseGeometry):
         return coords
 
     @staticmethod
-    def _geojson_coordinates_to_face3d(geojson_coordinates, origin_lon_lat, convert_facs):
+    def _geojson_coordinates_to_face3d(geojson_coordinates, origin_lon_lat,
+                                       convert_facs):
         """Convert geoJSON coordinates to a horizontal Face3D with zero height.
 
         Args:
@@ -856,18 +858,18 @@ class Model(_BaseGeometry):
                 geometries, this will be the list from the 'coordinates' key in the
                 geojson file, for 'MultiPolygon' geometries, this will be each item
                 in the list from the 'coordinates' key.
-            origin_lon_lat: An array of two numbers in degrees representing the longitude
-                and latitude of the scene origin in degrees.
-            convert_facs: A tuple with two values used to translate between longitude, latitude
-                and meters.
+            origin_lon_lat: An array of two numbers in degrees representing the
+                longitude and latitude of the scene origin in degrees.
+            convert_facs: A tuple with two values used to translate between
+                longitude, latitude and meters.
 
         Returns:
-            A Face3D object in model space coordinates converted from the geojson coordinates.
-            The height of the Face3D vertices will be 0.
+            A Face3D object in model space coordinates converted from the geojson
+            coordinates. The height of the Face3D vertices will be 0.
         """
         holes = None
         coords = lon_lat_to_polygon(geojson_coordinates[0], origin_lon_lat, convert_facs)
-        coords = [Point3D(pt2d[0], pt2d[1], 0) for pt2d in coords][:-1]  # Remove redundant point
+        coords = [Point3D(pt2d[0], pt2d[1], 0) for pt2d in coords][:-1]
 
         # If there are more then 1 polygons, then the other polygons are holes.
         if len(geojson_coordinates) > 1:

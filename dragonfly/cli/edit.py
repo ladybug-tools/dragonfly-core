@@ -1,7 +1,6 @@
 """dragonfly model editing commands."""
 import click
 import sys
-import os
 import logging
 import json
 
