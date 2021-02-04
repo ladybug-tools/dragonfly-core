@@ -18,9 +18,6 @@ setuptools.setup(
     url="https://github.com/ladybug-tools/dragonfly-core",
     packages=setuptools.find_packages(exclude=["tests"]),
     install_requires=requirements,
-    extras_require={
-        'cli': ['click==7.1.2', "dragonfly-schema==1.6.32;python_version>='3.6'"]
-    },
     entry_points={
         "console_scripts": ["dragonfly = dragonfly.cli:main"]
     },

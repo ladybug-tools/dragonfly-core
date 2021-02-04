@@ -1,11 +1,9 @@
 """dragonfly model editing commands."""
-
-try:
-    import click
-except ImportError:
-    raise ImportError(
-        'click is not installed. Try `pip install . [cli]` command.'
-    )
+import click
+import sys
+import os
+import logging
+import json
 
 from dragonfly.model import Model
 from honeybee.boundarycondition import boundary_conditions as bcs
@@ -13,12 +11,6 @@ try:
     ad_bc = bcs.adiabatic
 except AttributeError:  # honeybee_energy is not loaded and adiabatic does not exist
     ad_bc = None
-
-
-import sys
-import os
-import logging
-import json
 
 _logger = logging.getLogger(__name__)
 

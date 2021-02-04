@@ -14,9 +14,7 @@ Installation
 
 To install the core library use ``pip install -U dragonfly-core``.
 
-If you want to also include the command line interface use ``pip install -U dragonfly-core[cli]``.
-
-To check if the Dragonfly command line is installed correctly use ``dragonfly viz`` and you
+To check if the Dragonfly command line interface is installed correctly use ``dragonfly viz`` and you
 should get a ``viiiiiiiiiiiiizzzzzzzzz!`` back in response!
 
 
