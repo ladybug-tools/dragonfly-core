@@ -4,9 +4,9 @@ Command Line Interface (CLI) entry point for dragonfly and dragonfly extensions.
 Use this file only to add commands related to dragonfly-core. For adding extra commands
 from each extention see below.
 
-Dragonfly is using click (https://click.palletsprojects.com/en/7.x/) for creating the CLI.
-You can extend the command line interface from inside each extention by following these
-steps:
+Dragonfly is using click (https://click.palletsprojects.com/en/7.x/) for creating
+the CLI. You can extend the command line interface from inside each extention by
+following these steps:
 
 1. Create a ``cli`` folder in your extension.
 2. Import the ``main`` function from this ``dragonfly.cli``.
@@ -16,7 +16,8 @@ steps:
 
 Good practice is to group all your extention commands in a command group named after
 the extension. This will make the commands organized under extension namespace. For
-instance commands for `dragonfly-energy` will be called like ``dragonfly energy [energy-command]``.
+instance commands for `dragonfly-energy` will be called like
+``dragonfly energy [energy-command]``.
 
 
 .. code-block:: python
@@ -41,8 +42,8 @@ instance commands for `dragonfly-energy` will be called like ``dragonfly energy 
     # to dragonfly commands.
 
 Note:
-    For extension with several commands you can use a folder structure instead of a single
-    file.
+    For extension with several commands you can use a folder structure instead
+    of a single file.
 """
 import click
 

@@ -326,7 +326,7 @@ using-multipliers-zone-and-or-window.html
             return [Face3D(plines[0].vertices[:-1], Plane(n=Vector3D(0, 0, 1)))]
         else:  # need to separate holes from distinct Face3Ds
             faces = [Face3D(pl.vertices[:-1], Plane(n=Vector3D(0, 0, 1)))
-                        for pl in plines]
+                     for pl in plines]
             faces.sort(key=lambda x: x.area, reverse=True)
             base_face = faces[0]
             remain_faces = list(faces[1:])
@@ -373,7 +373,8 @@ using-multipliers-zone-and-or-window.html
                 context_shades.append(Shade(shd_id, s.move(extru_vec)))
         return context_shades
 
-    def shade_representation_multiplier(self, exclude_index=0, cap=False, tolerance=0.01):
+    def shade_representation_multiplier(self, exclude_index=0, cap=False,
+                                        tolerance=0.01):
         """A list of honeybee Shade objects for just the "multiplier" part of the story.
 
         This includes all of the geometry along the height of the multiplier except
@@ -794,8 +795,9 @@ using-multipliers-zone-and-or-window.html
             return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
 
     def __copy__(self):
-        new_s = Story(self.identifier, tuple(room.duplicate() for room in self._room_2ds),
-                      self._floor_to_floor_height, self._floor_height, self._multiplier)
+        new_s = Story(
+            self.identifier, tuple(room.duplicate() for room in self._room_2ds),
+            self._floor_to_floor_height, self._floor_height, self._multiplier)
         new_s._display_name = self.display_name
         new_s._user_data = None if self.user_data is None else self.user_data.copy()
         new_s._parent = self._parent

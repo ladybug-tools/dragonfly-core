@@ -3,6 +3,7 @@ from __future__ import division
 
 import math
 
+
 def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     """Get conversion factors for translating meters to longitude, latitude.
 
@@ -130,4 +131,3 @@ def origin_long_lat_from_location(location, point):
         (location.longitude, location.latitude))
     return location.longitude - point.x / meters_to_lon, \
         location.latitude - point.y / meters_to_lat
-

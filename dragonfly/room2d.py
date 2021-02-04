@@ -230,7 +230,8 @@ class Room2D(_BaseGeometry):
         grnd = data['is_ground_contact'] if 'is_ground_contact' in data else False
         top = data['is_top_exposed'] if 'is_top_exposed' in data else False
 
-        room = Room2D(data['identifier'], floor_geometry, data['floor_to_ceiling_height'],
+        room = Room2D(data['identifier'], floor_geometry,
+                      data['floor_to_ceiling_height'],
                       b_conditions, glz_pars, shd_pars, grnd, top, tolerance)
         if 'air_boundaries' in data and data['air_boundaries'] is not None:
             room.air_boundaries = data['air_boundaries']
@@ -416,7 +417,7 @@ class Room2D(_BaseGeometry):
     @property
     def air_boundaries(self):
         """Get or set a tuple of booleans for whether each wall has an air boundary type.
-        
+
         False values indicate a standard opaque type while True values indicate
         an AirBoundary type. All walls will be False by default. Note that any
         walls with a True air boundary must have a Surface boundary condition
@@ -1280,7 +1281,8 @@ class Room2D(_BaseGeometry):
             if not isinstance(bc, Surface):
                 new_faces.append(face)
             else:
-                adj_rm = self._parent.room_by_identifier(bc.boundary_condition_objects[-1])
+                adj_rm = self._parent.room_by_identifier(
+                    bc.boundary_condition_objects[-1])
                 flr_diff = adj_rm.floor_height - self.floor_height
                 ciel_diff = self.ceiling_height - adj_rm.ceiling_height
                 if flr_diff <= tolerance and ciel_diff <= tolerance:
@@ -1294,8 +1296,10 @@ class Room2D(_BaseGeometry):
                     vec1 = Vector3D(0, 0, flr_diff)
                     vec2 = Vector3D(0, 0, self.floor_to_ceiling_height - ciel_diff)
                     below = Face3D.from_extrusion(lseg, vec1)
-                    mid = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, mid_dist))
-                    above = Face3D.from_extrusion(lseg.move(vec2), Vector3D(0, 0, ciel_diff))
+                    mid = Face3D.from_extrusion(
+                        lseg.move(vec1), Vector3D(0, 0, mid_dist))
+                    above = Face3D.from_extrusion(
+                        lseg.move(vec2), Vector3D(0, 0, ciel_diff))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
                     self._reassign_split_windows(mid_face, i, tolerance)
@@ -1314,7 +1318,8 @@ class Room2D(_BaseGeometry):
                     mid_dist = self.floor_to_ceiling_height - flr_diff
                     vec1 = Vector3D(0, 0, flr_diff)
                     below = Face3D.from_extrusion(lseg, vec1)
-                    mid = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, mid_dist))
+                    mid = Face3D.from_extrusion(
+                        lseg.move(vec1), Vector3D(0, 0, mid_dist))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
                     self._reassign_split_windows(mid_face, i, tolerance)
@@ -1331,7 +1336,8 @@ class Room2D(_BaseGeometry):
                     mid_dist = self.floor_to_ceiling_height - ciel_diff
                     vec1 = Vector3D(0, 0, mid_dist)
                     mid = Face3D.from_extrusion(lseg, vec1)
-                    above = Face3D.from_extrusion(lseg.move(vec1), Vector3D(0, 0, ciel_diff))
+                    above = Face3D.from_extrusion(
+                        lseg.move(vec1), Vector3D(0, 0, ciel_diff))
                     mid_face = face.duplicate()
                     mid_face._geometry = mid
                     self._reassign_split_windows(mid_face, i, tolerance)

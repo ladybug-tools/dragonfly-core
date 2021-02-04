@@ -118,7 +118,7 @@ class _BaseGeometry(object):
         return Point2D(max_pt[0], max_pt[1])
 
     def __copy__(self):
-        new_obj = self.__class__(self.name)
+        new_obj = self.__class__(self.identifier)
         new_obj._display_name = self.display_name
         new_obj._user_data = None if self.user_data is None else self.user_data.copy()
         return new_obj
