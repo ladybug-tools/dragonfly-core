@@ -94,7 +94,8 @@ class Building(_BaseGeometry):
             floor_to_floor_heights: An array of float values with a length equal
                 to the number of stories in the Building. Each value in the list
                 represents the floor_to_floor height of the Story starting from
-                the first floor and then moving to the top floor.
+                the first floor and then moving to the top floor. Note that numbers
+                should be in the units system of the footprint geometry.
             perimeter_offset: An optional positive number that will be used to
                 offset the perimeter of the footprint to create core/perimeter
                 zones. If this value is 0, no offset will occur and each story
@@ -162,7 +163,8 @@ class Building(_BaseGeometry):
             floor_to_floor_heights: An array of float values with a length equal
                 to the number of stories in the Building. Each value in the list
                 represents the floor_to_floor height of the Story starting from
-                the first floor and then moving to the top floor.
+                the first floor and then moving to the top floor. Note that numbers
+                should be in the units system of the footprint geometry.
             perimeter_offset: An optional positive number that will be used to offset
                 the perimeter of the all_story_geometry to create core/perimeter
                 zones. If this value is 0, no offset will occur and each story

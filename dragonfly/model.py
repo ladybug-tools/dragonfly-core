@@ -176,8 +176,8 @@ class Model(_BaseGeometry):
             'argument is set correctly.'.format(geojson_file_path)
 
         # if model units is not Meters, convert non-meter user inputs to meters
+        scale_to_meters = hb_model.conversion_factor_to_meters(units)
         if units != 'Meters':
-            scale_to_meters = hb_model.conversion_factor_to_meters(units)
             point = point.scale(scale_to_meters)
 
         # Get the longitude and latitude point in the geojson that corresponds to the
@@ -225,9 +225,9 @@ class Model(_BaseGeometry):
                 story_height = prop["maximum_roof_height"] / prop['number_of_stories']
                 story_heights = [story_height] * prop['number_of_stories']
             elif 'number_of_stories' in prop:
-                story_heights = [3.5] * prop['number_of_stories']
+                story_heights = [3.5 / scale_to_meters] * prop['number_of_stories']
             else:  # just import it as one story per building
-                story_heights = [3.5]
+                story_heights = [3.5 / scale_to_meters]
 
             # Make Building object
             bldg_id = 'Building_{}'.format(i) if 'id' not in prop else prop['id']

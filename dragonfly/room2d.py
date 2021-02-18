@@ -39,7 +39,8 @@ class Room2D(_BaseGeometry):
             floor plate of the Room. Note that this Face3D must be horizontal
             to be valid.
         floor_to_ceiling_height: A number for the height above the floor where the
-            ceiling begins. Typical values range from 3 to 5 meters.
+            ceiling begins. This should be in the same units system as the input
+            floor_geometry. Typical values range from 3 to 5 meters.
         boundary_conditions: A list of boundary conditions that match the number of
             segments in the input floor_geometry. These will be used to assign
             boundary conditions to each of the walls of the Room in the resulting

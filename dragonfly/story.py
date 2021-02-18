@@ -30,6 +30,7 @@ class Story(_BaseGeometry):
             entire story of a building.
         floor_to_floor_height: A number for the distance from the floor plate of
             this Story to the floor of the story above this one (if it exists).
+            This should be in the same units system as the input room_2d geometry.
             If None, this value will be the maximum floor_to_ceiling_height of the
             input room_2ds plus any difference between the Story floor height
             and the room floor heights. (Default: None)
