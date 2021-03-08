@@ -21,8 +21,8 @@ should get a ``viiiiiiiiiiiiizzzzzzzzz!`` back in response!
 Documentation
 =============
 
-This document includes `Dragonfly API documentation <#dragonfly>`_ and 
-`Dragonfly Command Line Interface <#id1>`_ documentation for ``dragonfly core`` and does
+This document includes `Dragonfly API documentation <#dragonfly>`_ and
+`Dragonfly Command Line Interface <#cli-docs>`_ documentation for ``dragonfly core`` and does
 not include the documentation for dragonfly extensions. For each extension refer to
 extension's documentation page.
 
@@ -31,16 +31,28 @@ Here are a number of popular Dragonfly extensions:
 - `dragonfly-energy <https://ladybug.tools/dragonfly-energy/docs>`_
 
 
+CLI Docs
+=============
+
+For command line interface documentation and API documentation see the pages below.
+
+
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
 
-.. include:: modules.rst
-.. include:: cli.rst
+   cli/index
 
+
+dragonfly
+=============
+
+.. toctree::
+   :maxdepth: 4
+
+   modules
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
