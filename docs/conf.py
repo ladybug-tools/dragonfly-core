@@ -266,11 +266,7 @@ ht_lib_tool = {}
 #                     CLI_filename_4: group_name_4
 #                    }
 # }
-ht_cli_file_group = {
-    'honeybee_radiance': {'mtx': 'mtxop',
-                          'postprocess': 'post_process'
-                          }
-}
+ht_cli_file_group = {}
 
 
 def create_cli_files():
@@ -470,6 +466,7 @@ if custom_cli_docs:
     create_cli_files()
 
 # -----------------------------------------------------------------------------
+
 
 def setup(app):
     """Run custom code with access to the Sphinx application object
