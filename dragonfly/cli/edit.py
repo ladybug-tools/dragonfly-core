@@ -39,12 +39,8 @@ def convert_units(model_json, units, scale, output_file):
             Choose from (Meters, Millimeters, Feet, Inches, Centimeters).
     """
     try:
-        # serialize the Model to Python
-        with open(model_json) as json_file:
-            data = json.load(json_file)
-        parsed_model = Model.from_dict(data)
-
-        # convert the units of the model
+        # serialize the Model and convert the units
+        parsed_model = Model.from_file(model_json)
         if scale:
             parsed_model.convert_to_units(units)
         else:
@@ -89,12 +85,8 @@ def solve_adjacency(model_json, surface, no_intersect, output_file):
         model_json: Full path to a Model JSON file.
     """
     try:
-        # serialize the Model to Python
-        with open(model_json) as json_file:
-            data = json.load(json_file)
-        parsed_model = Model.from_dict(data)
-
-        # check the Model tolerance
+        # serialize the Model and check tolerance
+        parsed_model = Model.from_file(model_json)
         assert parsed_model.tolerance != 0, \
             'Model must have a non-zero tolerance to use solve-adjacency.'
         tol = parsed_model.tolerance

@@ -67,9 +67,7 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
         preparedir(folder, remove_content=False)
 
         # re-serialize the Dragonfly Model
-        with open(model_json) as json_file:
-            data = json.load(json_file)
-        model = Model.from_dict(data)
+        model = Model.from_file(model_json)
         model.convert_to_units('Meters')
 
         # convert Dragonfly Model to Honeybee
