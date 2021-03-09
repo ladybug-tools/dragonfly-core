@@ -2,19 +2,12 @@
 """Dragonfly Model."""
 from __future__ import division
 
-from ._base import _BaseGeometry
-from .properties import ModelProperties
-from .building import Building
-from .context import ContextShade
-from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
-    origin_long_lat_from_location, lon_lat_to_polygon
-from dragonfly.config import folders as df_folders
-import dragonfly.writer.model as writer
-
-from honeybee.model import Model as hb_model
-from honeybee.typing import float_positive
-from honeybee.checkdup import check_duplicate_identifiers
-from honeybee.config import folders
+import os
+import json
+try:  # check if we are in IronPython
+    import cPickle as pickle
+except ImportError:  # wea re in cPython
+    import pickle
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.face import Face3D
@@ -22,9 +15,20 @@ from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug.futil import preparedir
 from ladybug.location import Location
+from honeybee.model import Model as hb_model
+from honeybee.typing import float_positive
+from honeybee.checkdup import check_duplicate_identifiers
+from honeybee.config import folders
 
-import os
-import json
+from ._base import _BaseGeometry
+from .properties import ModelProperties
+from .building import Building
+from .context import ContextShade
+from .windowparameter import SimpleWindowRatio
+from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
+    origin_long_lat_from_location, lon_lat_to_polygon
+from dragonfly.config import folders as df_folders
+import dragonfly.writer.model as writer
 
 
 class Model(_BaseGeometry):
@@ -104,8 +108,8 @@ class Model(_BaseGeometry):
 
     @classmethod
     def from_geojson(cls, geojson_file_path, location=None, point=Point2D(0, 0),
-                     all_polygons_to_buildings=False, units='Meters', tolerance=0,
-                     angle_tolerance=0):
+                     all_polygons_to_buildings=False, existing_to_context=False,
+                     units='Meters', tolerance=None, angle_tolerance=1.0):
         """Make a Model from a geojson file.
 
         Args:
@@ -128,21 +132,27 @@ class Model(_BaseGeometry):
                 * Inches
                 * Centimeters
 
-                Note that this method assumes the point coordinates are in the same
-                units.
-            all_polygons_to_buildings: Boolean to indicate if all geometries in the
-                geojson file should be considered buildings. If False, this method
-                will only generate footprints from geometries that are defined as a
-                'Building' in the type field of its corresponding properties
-                (Default: False).
+                Note that this method assumes the point coordinates are in the
+                same units.
+            all_polygons_to_buildings: Boolean to indicate if all geometries in
+                the geojson file should be considered buildings. If False, this
+                method will only generate footprints from geometries that are
+                defined as a "Building" in the type field of its corresponding
+                properties. (Default: False).
+            existing_to_context: Boolean to indicate whether polygons possessing
+                a building_status of "Existing" under their properties should be
+                imported as ContextShade instead of Building objects. (Default: False).
             tolerance: The maximum difference between x, y, and z values at which
                 vertices are considered equivalent. Zero indicates that no tolerance
                 checks should be performed and certain capabilities like to_honeybee
-                will not be available. Default: 0.
-            angle_tolerance: The max angle difference in degrees that vertices are
-                allowed to differ from one another in order to consider them colinear.
-                Zero indicates that no angle tolerance checks should be performed.
-                Default: 0.
+                will not be available. None indicates that the tolerance will be
+                set based on the units above, with the tolerance consistently being
+                between 1 cm and 1 mm (roughly the tolerance implicit in the OpenStudio
+                SDK). (Default: None).
+            angle_tolerance: The max angle difference in degrees that vertices
+                are allowed to differ from one another in order to consider them
+                colinear. Zero indicates that no angle tolerance checks should
+                be performed. (Default: 1.0).
 
         Returns:
             A tuple with the two items below.
@@ -170,19 +180,16 @@ class Model(_BaseGeometry):
                         bldgs_data.append(bldg_data)
 
         # Check if buildings exist
-        assert len(bldgs_data) > 0, 'No building footprints were found in {}. ' \
-            'Check the geometry coordinates in the file and if the ' \
-            '"all_polygons_to_buildings" ' \
-            'argument is set correctly.'.format(geojson_file_path)
+        assert len(bldgs_data) > 0, 'No building footprints were found in {}.\n' \
+            'Try setting "all_polygons_to_buildings" to True.'.format(geojson_file_path)
 
         # if model units is not Meters, convert non-meter user inputs to meters
         scale_to_meters = hb_model.conversion_factor_to_meters(units)
         if units != 'Meters':
             point = point.scale(scale_to_meters)
 
-        # Get the longitude and latitude point in the geojson that corresponds to the
-        # model origin (point). If location is not passed by user, the coordinates are
-        # taken or derived from the geojson file.
+        # Get long and lat in the geojson that correspond to the model origin (point).
+        # If location is None, derive coordinates from the geojson geometry.
         if location is None:
             point_lon_lat = None
             if 'project' in data:
@@ -200,55 +207,19 @@ class Model(_BaseGeometry):
         convert_facs = 1 / _convert_facs[0], 1 / _convert_facs[1]
 
         # Extract buildings
-        bldgs = []
-        for i, bldg_data in enumerate(bldgs_data):
-            # Set footprints
-            footprint = []
-            geojson_coordinates = bldg_data['geometry']['coordinates']
-
-            if bldg_data['geometry']['type'] == 'Polygon':
-                face3d = cls._geojson_coordinates_to_face3d(
-                    geojson_coordinates, origin_lon_lat, convert_facs)
-                footprint.append(face3d)
-            else:
-                # If MultiPolygon account for multiple polygons
-                for _geojson_coordinates in geojson_coordinates:
-                    face3d = cls._geojson_coordinates_to_face3d(
-                        _geojson_coordinates, origin_lon_lat, convert_facs)
-                    footprint.append(face3d)
-
-            # Set other building properties
-            prop = bldg_data['properties']
-
-            # Define building heights from file or assign default single-storey building
-            if 'maximum_roof_height' in prop and 'number_of_stories' in prop:
-                story_height = prop["maximum_roof_height"] / prop['number_of_stories']
-                story_heights = [story_height] * prop['number_of_stories']
-            elif 'number_of_stories' in prop:
-                story_heights = [3.5 / scale_to_meters] * prop['number_of_stories']
-            else:  # just import it as one story per building
-                story_heights = [3.5 / scale_to_meters]
-
-            # Make Building object
-            bldg_id = 'Building_{}'.format(i) if 'id' not in prop else prop['id']
-            bldg = Building.from_footprint(bldg_id, footprint, story_heights)
-            if 'name' in prop:
-                bldg.display_name = prop['name']
-            bldgs.append(bldg)
-
-        # Define model id and name from file or assign defaults
-        model_id, model_name = 'Model_1', False
-        if 'project' in data:
-            if 'id' in data['project']:
-                model_id = data['project']['id']
-            if 'name' in data['project']:
-                model_name = data['project']['name']
+        bldgs, contexts = cls._objects_from_geojson(
+            bldgs_data, existing_to_context, scale_to_meters, origin_lon_lat,
+            convert_facs)
 
         # Make model, in meters and then convert to user-defined units
-        model = cls(model_id, buildings=bldgs, units='Meters',
+        m_id, m_name = 'Model_1', None
+        if 'project' in data:
+            m_id = data['project']['id'] if 'id' in data['project'] else m_id
+            m_name = data['project']['name'] if 'name' in data['project'] else m_name
+        model = cls(m_id, buildings=bldgs, context_shades=contexts, units='Meters',
                     tolerance=tolerance, angle_tolerance=angle_tolerance)
-        if model_name:
-            model.display_name = model_name
+        if m_name:
+            model.display_name = m_name
         if units != 'Meters':
             model.convert_to_units(units)
 
@@ -290,6 +261,47 @@ class Model(_BaseGeometry):
         # assign extension properties to the model
         model.properties.apply_properties_from_dict(data)
         return model
+
+    @classmethod
+    def from_file(cls, df_file):
+        """Initialize a Model from a DFJSON or DFpkl file, auto-sensing the type.
+
+        Args:
+            df_file: Path to either a DFJSON or DFpkl file.
+        """
+        # sense the file type from the first character to avoid maxing memory with JSON
+        # this is needed since queenbee overwrites all file extensions
+        with open(df_file) as inf:
+            first_char = inf.read(1)
+        is_json = True if first_char == '{' else False
+        # load the file using either DFJSON pathway or DFpkl
+        if is_json:
+            return cls.from_dfjson(df_file)
+        return cls.from_dfpkl(df_file)
+
+    @classmethod
+    def from_dfjson(cls, dfjson_file):
+        """Initialize a Model from a DFJSON file.
+
+        Args:
+            dfjson_file: Path to DFJSON file.
+        """
+        assert os.path.isfile(dfjson_file), 'Failed to find %s' % dfjson_file
+        with open(dfjson_file) as inf:
+            data = json.load(inf)
+        return cls.from_dict(data)
+
+    @classmethod
+    def from_dfpkl(cls, dfpkl_file):
+        """Initialize a Model from a DFpkl file.
+
+        Args:
+            dfpkl_file: Path to DFpkl file.
+        """
+        assert os.path.isfile(dfpkl_file), 'Failed to find %s' % dfpkl_file
+        with open(dfpkl_file, 'rb') as inf:
+            data = pickle.load(inf)
+        return cls.from_dict(data)
 
     @property
     def units(self):
@@ -823,8 +835,59 @@ class Model(_BaseGeometry):
             base['user_data'] = self.user_data
         if df_folders.dragonfly_schema_version is not None:
             base['version'] = df_folders.dragonfly_schema_version_str
-
         return base
+    
+    def to_dfjson(self, name="unnamed", folder=None, indent=0, included_prop=None):
+        """Write Dragonfly model to DFJSON.
+
+        Args:
+            name: A text string for the name of the DFJSON file. (Default: "unnamed").
+            folder: A text string for the direcotry where the DFJSON will be written.
+                If unspecified, the default simulation folder will be used. This
+                is usually at "C:\\Users\\USERNAME\\simulation" on Windows.
+            indent: A positive integer to set the indentation used in the resulting
+                DFJSON file. If 0, the JSON will be a single line. (Default: 0).
+            included_prop: List of properties to filter keys that must be included in
+                output dictionary. For example ['energy'] will include 'energy' key if
+                available in properties to_dict. By default all the keys will be
+                included. To exclude all the keys from extensions use an empty list.
+        """
+        # create dictionary from the Dragonfly Model
+        df_dict = self.to_dict(included_prop=included_prop)
+        # set up a name and folder for the DFJSON
+        file_name = name if name.lower().endswith('.dfjson') or \
+            name.lower().endswith('.json') else '{}.dfjson'.format(name)
+        folder = folder if folder is not None else folders.default_simulation_folder
+        df_file = os.path.join(folder, file_name)
+        # write DFJSON
+        with open(df_file, 'w') as fp:
+            json.dump(df_dict, fp, indent=indent)
+        return df_file
+
+    def to_dfpkl(self, name="unnamed", folder=None, included_prop=None):
+        """Writes Dragonfly model to compressed pickle file (DFpkl).
+
+        Args:
+            name: A text string for the name of the pickle file. (Default: "unnamed").
+            folder: A text string for the direcotry where the pickle will be written.
+                If unspecified, the default simulation folder will be used. This
+                is usually at "C:\\Users\\USERNAME\\simulation."
+            included_prop: List of properties to filter keys that must be included in
+                output dictionary. For example ['energy'] will include 'energy' key if
+                available in properties to_dict. By default all the keys will be
+                included. To exclude all the keys from extensions use an empty list.
+        """
+        # create dictionary from the Dragonfly Model
+        df_dict = self.to_dict(included_prop=included_prop)
+        # set up a name and folder for the DFpkl
+        file_name = name if name.lower().endswith('.dfpkl') or \
+            name.lower().endswith('.pkl') else '{}.dfpkl'.format(name)
+        folder = folder if folder is not None else folders.default_simulation_folder
+        df_file = os.path.join(folder, file_name)
+        # write the Model dictionary into a file
+        with open(df_file, 'wb') as fp:
+            pickle.dump(df_dict, fp)
+        return df_file
 
     @property
     def to(self):
@@ -833,6 +896,77 @@ class Model(_BaseGeometry):
         Use this method to access Writer class to write the model in other formats.
         """
         return writer
+
+    @staticmethod
+    def _objects_from_geojson(bldgs_data, existing_to_context, scale_to_meters,
+                              origin_lon_lat, convert_facs):
+        """Get Dragonfly Building and ContextShade objects from a geoJSON dictionary.
+        
+        Args:
+            bldgs_data: A list of geoJSON object dictionaries, including polygons
+                to be turned into buildings and context.
+            existing_to_context: Boolean to indicate whether polygons possessing
+                a building_status of "Existing" under their properties should be
+                imported as ContextShade instead of Building objects.
+            scale_to_meters: Factor for converting the building heights to meters.
+            origin_lon_lat: An array of two numbers in degrees for origin lat and lon.
+            convert_facs: A tuple with two values used to translate between
+            meters and longitude, latitude.
+        """
+        bldgs, contexts = [], []
+        for i, bldg_data in enumerate(bldgs_data):
+            # get footprints
+            footprint = []
+            geojson_coordinates = bldg_data['geometry']['coordinates']
+            prop = bldg_data['properties']
+
+            if bldg_data['geometry']['type'] == 'Polygon':
+                face3d = Model._geojson_coordinates_to_face3d(
+                    geojson_coordinates, origin_lon_lat, convert_facs)
+                footprint.append(face3d)
+            else:  # if MultiPolygon, account for multiple polygons
+                for _geojson_coordinates in geojson_coordinates:
+                    face3d = Model._geojson_coordinates_to_face3d(
+                        _geojson_coordinates, origin_lon_lat, convert_facs)
+                    footprint.append(face3d)
+
+            # determine whether the footprint should be conext or a building
+            if existing_to_context and 'building_status' in prop \
+                    and prop['building_status'] == 'Existing':
+                ht = prop['maximum_roof_height'] * scale_to_meters \
+                    if 'maximum_roof_height' in prop else 3.5
+                extru_vec = Vector3D(0, 0, ht)
+                geo = [Face3D.from_extrusion(seg, extru_vec) for face3d in footprint
+                       for seg in face3d.boundary_segments]
+                shd_id = 'Context_{}'.format(i) if 'id' not in prop else prop['id']
+                contexts.append(ContextShade(shd_id, geo))
+                continue
+
+            # Define building heights from file or assign default single-storey building
+            if 'maximum_roof_height' in prop and 'number_of_stories' in prop:
+                story_height = (prop['maximum_roof_height'] * scale_to_meters) \
+                    / prop['number_of_stories']
+                story_heights = [story_height] * prop['number_of_stories']
+            elif 'number_of_stories' in prop:
+                story_heights = [3.5] * prop['number_of_stories']
+            else:  # just import it as one story per building
+                story_heights = [3.5]
+
+            # make building object
+            bldg_id = 'Building_{}'.format(i) if 'id' not in prop else prop['id']
+            bldg = Building.from_footprint(bldg_id, footprint, story_heights)
+            if 'name' in prop:
+                bldg.display_name = prop['name']
+
+            # assign windows to the buildings
+            if 'window_to_wall_ratio' in prop:
+                win_par = SimpleWindowRatio(prop['window_to_wall_ratio'])
+                bldg.set_outdoor_window_parameters(win_par)
+
+            # add any extension attributes and add the building to the list
+            bldg.properties.apply_properties_from_geojson_dict(prop)
+            bldgs.append(bldg)
+        return bldgs, contexts
 
     @staticmethod
     def _face3d_to_geojson_coordinates(face3d, origin_lon_lat, convert_facs):

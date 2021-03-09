@@ -571,6 +571,64 @@ def test_to_from_dict_methods():
     assert model_dict == new_model.to_dict()
 
 
+def test_to_from_dfjson_methods():
+    """Test the to/from dfjson methods."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('OfficeBuilding', [story])
+
+    tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
+    tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
+    tree_canopy = ContextShade('TreeCanopy', [tree_canopy_geo1, tree_canopy_geo2])
+
+    model = Model('NewDevelopment', [building], [tree_canopy])
+
+    model_dfjson = model.to_dfjson('test')
+    assert os.path.isfile(model_dfjson)
+    new_model = Model.from_dfjson(model_dfjson)
+    assert isinstance(new_model, Model)
+    os.remove(model_dfjson)
+
+
+def test_to_from_dfpkl_methods():
+    """Test the to/from dfpkl methods."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('OfficeBuilding', [story])
+
+    tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
+    tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
+    tree_canopy = ContextShade('TreeCanopy', [tree_canopy_geo1, tree_canopy_geo2])
+
+    model = Model('NewDevelopment', [building], [tree_canopy])
+
+    model_dfpkl = model.to_dfpkl('test')
+    assert os.path.isfile(model_dfpkl)
+    new_model = Model.from_dfpkl(model_dfpkl)
+    assert isinstance(new_model, Model)
+    os.remove(model_dfpkl)
+
+
 def test_from_dict_nulls():
     """Test the re-serialization of a Model with null extension properties."""
     test_json = './tests/json/model_with_nulls.json'
@@ -764,7 +822,7 @@ def test_from_geojson_units_test():
     assert bldg1.story_count == 3
     assert len(bldg1.unique_stories) == 1
     for story in bldg1.unique_stories:
-        assert (3.0 * m2ft) == pytest.approx(story.floor_to_floor_height, abs=1e-10)
+        assert (3.0) == pytest.approx(story.floor_to_floor_height, abs=1e-10)
 
 
 def test_from_geojson_coordinates_simple_location():

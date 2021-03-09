@@ -38,9 +38,7 @@ def validate_model(model_json):
         schema_model.Model.parse_file(model_json)
         click.echo('Pydantic validation passed.')
         # re-serialize the Model to make sure no errors are found in re-serialization
-        with open(model_json) as json_file:
-            data = json.load(json_file)
-        parsed_model = Model.from_dict(data)
+        parsed_model = Model.from_dfjson(model_json)
         click.echo('Python re-serialization passed.')
         # perform several other checks for key dragonfly model schema rules
         parsed_model.check_duplicate_building_identifiers(raise_exception=True)

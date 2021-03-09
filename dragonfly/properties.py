@@ -421,6 +421,26 @@ class BuildingProperties(_Properties):
         base = self._add_extension_attr_to_dict(base, abridged, include)
         return base
 
+    def apply_properties_from_geojson_dict(self, data):
+        """Apply extension properties to a host Building from a geoJSON dictionary.
+
+        Args:
+            data: A dictionary representation of a geoJSON feature properties.
+                Specifically, this should be the "properties" key describing
+                a Polygon or MultiPolygon object.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'apply_properties_from_geojson_dict'):
+                continue
+            try:
+                var.apply_properties_from_geojson_dict(data)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception(
+                    'Failed to apply {} properties to the Building: {}'.format(atr, e))
+
     def add_prefix(self, prefix):
         """Change the identifier of attributes unique to this object by adding a prefix.
 
