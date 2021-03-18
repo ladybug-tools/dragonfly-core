@@ -15,9 +15,9 @@ from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug.futil import preparedir
 from ladybug.location import Location
-from honeybee.model import Model as hb_model
 from honeybee.typing import float_positive
 from honeybee.checkdup import check_duplicate_identifiers
+from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
 
 from ._base import _BaseGeometry
@@ -84,8 +84,6 @@ class Model(_BaseGeometry):
     """
     __slots__ = ('_buildings', '_context_shades',
                  '_units', '_tolerance', '_angle_tolerance')
-    UNITS = hb_model.UNITS
-    UNITS_TOLERANCES = hb_model.UNITS_TOLERANCES
 
     def __init__(self, identifier, buildings=None, context_shades=None,
                  units='Meters', tolerance=None, angle_tolerance=1.0):
@@ -184,7 +182,7 @@ class Model(_BaseGeometry):
             'Try setting "all_polygons_to_buildings" to True.'.format(geojson_file_path)
 
         # if model units is not Meters, convert non-meter user inputs to meters
-        scale_to_meters = hb_model.conversion_factor_to_meters(units)
+        scale_to_meters = conversion_factor_to_meters(units)
         if units != 'Meters':
             point = point.scale(scale_to_meters)
 
@@ -310,7 +308,7 @@ class Model(_BaseGeometry):
 
     @units.setter
     def units(self, value):
-        assert value in self.UNITS, '{} is not supported as a units system. ' \
+        assert value in UNITS, '{} is not supported as a units system. ' \
             'Choose from the following: {}'.format(value, self.units)
         self._units = value
 
@@ -326,7 +324,7 @@ class Model(_BaseGeometry):
     @tolerance.setter
     def tolerance(self, value):
         self._tolerance = float_positive(value, 'model tolerance') if value is not None \
-            else self.UNITS_TOLERANCES[self.units]
+            else UNITS_TOLERANCES[self.units]
 
     @property
     def angle_tolerance(self):
@@ -556,8 +554,8 @@ class Model(_BaseGeometry):
                 * Centimeters
         """
         if self.units != units:
-            scale_fac1 = hb_model.conversion_factor_to_meters(self.units)
-            scale_fac2 = hb_model.conversion_factor_to_meters(units)
+            scale_fac1 = conversion_factor_to_meters(self.units)
+            scale_fac2 = conversion_factor_to_meters(units)
             scale_fac = scale_fac1 / scale_fac2
             self.scale(scale_fac)
             self.tolerance = self.tolerance * scale_fac
@@ -714,7 +712,7 @@ class Model(_BaseGeometry):
         if self.units != 'Meters':
             model = self.duplicate()  # duplicate to avoid editing this object
             model.convert_to_units('Meters')
-            point = point.scale(hb_model.conversion_factor_to_meters(self.units))
+            point = point.scale(conversion_factor_to_meters(self.units))
 
         # get the conversion factors over to (longitude, latitude)
         origin_lon_lat = origin_long_lat_from_location(location, point)

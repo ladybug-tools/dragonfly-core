@@ -6,6 +6,7 @@ import logging
 import json
 
 from ladybug.futil import preparedir
+from honeybee.units import parse_distance_string
 from honeybee.config import folders as hb_folders
 from dragonfly.model import Model
 
@@ -35,10 +36,11 @@ def translate():
               default=True, show_default=True)
 @click.option('--shade-dist', '-sd', help='An optional number to note the distance '
               'beyond which other buildings shade should not be exported into a Model. '
-              'This number should be in meters regardless of the input model units. '
-              'If None, all other buildings will be included as context shade in '
+              'This can include the units of the distance (eg. 100ft) or, if no units '
+              'are  provided, the value will be interpreted in the dragonfly model '
+              'units. If None, all other buildings will be included as context shade in '
               'each and every Model. Set to 0 to exclude all neighboring buildings '
-              'from the resulting models.', type=float, default=None, show_default=True)
+              'from the resulting models.', type=str, default=None, show_default=True)
 @click.option('--folder', '-f', help='Folder on this computer, into which the HBJSON '
               'files will be written. If None, the files will be output '
               'to the honeybee default simulation folder and placed in a project '
@@ -66,11 +68,10 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
                 hb_folders.default_simulation_folder, proj_name, 'Honeybee')
         preparedir(folder, remove_content=False)
 
-        # re-serialize the Dragonfly Model
+        # re-serialize the Dragonfly Model and convert Dragonfly Model to Honeybee
+        if shade_dist is not None:
+            shade_dist = parse_distance_string(shade_dist)
         model = Model.from_file(model_json)
-        model.convert_to_units('Meters')
-
-        # convert Dragonfly Model to Honeybee
         add_plenum = not no_plenum
         cap = not no_cap
         hb_models = model.to_honeybee(
