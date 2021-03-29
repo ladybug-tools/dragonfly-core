@@ -835,7 +835,7 @@ class Model(_BaseGeometry):
             base['version'] = df_folders.dragonfly_schema_version_str
         return base
     
-    def to_dfjson(self, name="unnamed", folder=None, indent=0, included_prop=None):
+    def to_dfjson(self, name="unnamed", folder=None, indent=None, included_prop=None):
         """Write Dragonfly model to DFJSON.
 
         Args:
@@ -844,7 +844,7 @@ class Model(_BaseGeometry):
                 If unspecified, the default simulation folder will be used. This
                 is usually at "C:\\Users\\USERNAME\\simulation" on Windows.
             indent: A positive integer to set the indentation used in the resulting
-                DFJSON file. If 0, the JSON will be a single line. (Default: 0).
+                DFJSON file. (Default: None).
             included_prop: List of properties to filter keys that must be included in
                 output dictionary. For example ['energy'] will include 'energy' key if
                 available in properties to_dict. By default all the keys will be
