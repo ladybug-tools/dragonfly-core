@@ -121,6 +121,14 @@ class Model(_BaseGeometry):
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
                 expected to be in the expected units of this Model (Default: (0, 0)).
+            all_polygons_to_buildings: Boolean to indicate if all geometries in
+                the geojson file should be considered buildings. If False, this
+                method will only generate footprints from geometries that are
+                defined as a "Building" in the type field of its corresponding
+                properties. (Default: False).
+            existing_to_context: Boolean to indicate whether polygons possessing
+                a building_status of "Existing" under their properties should be
+                imported as ContextShade instead of Building objects. (Default: False).
             units: Text for the units system in which the model geometry
                 exists. Default: 'Meters'. Choose from the following:
 
@@ -132,14 +140,6 @@ class Model(_BaseGeometry):
 
                 Note that this method assumes the point coordinates are in the
                 same units.
-            all_polygons_to_buildings: Boolean to indicate if all geometries in
-                the geojson file should be considered buildings. If False, this
-                method will only generate footprints from geometries that are
-                defined as a "Building" in the type field of its corresponding
-                properties. (Default: False).
-            existing_to_context: Boolean to indicate whether polygons possessing
-                a building_status of "Existing" under their properties should be
-                imported as ContextShade instead of Building objects. (Default: False).
             tolerance: The maximum difference between x, y, and z values at which
                 vertices are considered equivalent. Zero indicates that no tolerance
                 checks should be performed and certain capabilities like to_honeybee
@@ -482,6 +482,27 @@ class Model(_BaseGeometry):
                 raise ValueError(
                     'ContextShade "{}" was not found in the model.'.format(identifier))
         return context_shades
+
+    def separate_top_bottom_floors(self):
+        """Separate top/bottom Stories with non-unity multipliers into their own Stories.
+
+        The resulting first and last Stories will each have a multiplier of 1 and
+        duplicated middle Stories will be added as needed. This method also
+        automatically assigns the first story Room2Ds to have a ground contact
+        floor and the top story Room2Ds to have an outdoor-exposed roof.
+        """
+        for bldg in self._buildings:
+            bldg.separate_top_bottom_floors()
+
+    def set_outdoor_window_parameters(self, window_parameter):
+        """Set all outdoor walls of the Buildings to have the same window parameters."""
+        for bldg in self._buildings:
+            bldg.set_outdoor_window_parameters(window_parameter)
+
+    def set_outdoor_shading_parameters(self, shading_parameter):
+        """Set all outdoor walls of the Buildings to have the same shading parameters."""
+        for bldg in self._buildings:
+            bldg.set_outdoor_shading_parameters(shading_parameter)
 
     def move(self, moving_vec):
         """Move this Model along a vector.
@@ -834,7 +855,7 @@ class Model(_BaseGeometry):
         if df_folders.dragonfly_schema_version is not None:
             base['version'] = df_folders.dragonfly_schema_version_str
         return base
-    
+
     def to_dfjson(self, name="unnamed", folder=None, indent=None, included_prop=None):
         """Write Dragonfly model to DFJSON.
 
@@ -899,7 +920,7 @@ class Model(_BaseGeometry):
     def _objects_from_geojson(bldgs_data, existing_to_context, scale_to_meters,
                               origin_lon_lat, convert_facs):
         """Get Dragonfly Building and ContextShade objects from a geoJSON dictionary.
-        
+
         Args:
             bldgs_data: A list of geoJSON object dictionaries, including polygons
                 to be turned into buildings and context.

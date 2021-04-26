@@ -4,12 +4,16 @@ import sys
 import logging
 import json
 
-from dragonfly.model import Model
+from honeybee.orientation import angles_from_num_orient, orient_index
+from honeybee.boundarycondition import Outdoors
 from honeybee.boundarycondition import boundary_conditions as bcs
 try:
     ad_bc = bcs.adiabatic
 except AttributeError:  # honeybee_energy is not loaded and adiabatic does not exist
     ad_bc = None
+
+from dragonfly.model import Model
+from dragonfly.windowparameter import SimpleWindowRatio
 
 _logger = logging.getLogger(__name__)
 
@@ -111,6 +115,54 @@ def solve_adjacency(model_json, surface, no_intersect, output_file):
         output_file.write(json.dumps(parsed_model.to_dict()))
     except Exception as e:
         _logger.exception('Model solve adjacency failed.\n{}'.format(e))
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
+@edit.command('windows-by-ratio')
+@click.argument('model-json', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.argument('ratio', type=float, nargs=-1)
+@click.option('--output-file', '-f', help='Optional file to output the Model JSON string'
+              ' with windows. By default it will be printed out to stdout',
+              type=click.File('w'), default='-')
+def windows_by_ratio(model_json, ratio, output_file):
+    """Add windows to all outdoor walls of a model given a ratio.
+
+    Note that this method removes any existing WindowParameters.
+
+    \b
+    Args:
+        model_json: Full path to a Dragonfly DFJSON or DFpkl file.
+        ratio: A number between 0 and 1 (but not perfectly equal to 1) for the
+            desired ratio between window area and wall area. If multiple values
+            are input here, different WindowParameters will be assigned based on
+            cardinal direction, starting with north and moving clockwise.
+    """
+    try:
+        # serialize the Model and convert ratios to window parameters
+        model = Model.from_file(model_json)
+        win_par = [SimpleWindowRatio(rat) for rat in ratio]
+
+        # add the window parameters
+        if len(win_par) == 1:  # one window parameter for all
+            model.set_outdoor_window_parameters(win_par[0])
+        else:  # different window parameters by cardinal direction
+            angles = angles_from_num_orient(len(win_par))
+            rooms = [room for bldg in model.buildings for room in bldg.unique_room_2ds]
+            for rm in rooms:
+                room_win_par = []
+                for bc, orient in zip(rm.boundary_conditions, rm.segment_orientations()):
+                    orient_i = orient_index(orient, angles)
+                    win_p = win_par[orient_i] if isinstance(bc, Outdoors) else None
+                    room_win_par.append(win_p)
+                rm.window_parameters = room_win_par
+
+        # write the new model out to the file or stdout
+        output_file.write(json.dumps(model.to_dict()))
+    except Exception as e:
+        _logger.exception('Model windows by ratio failed.\n{}'.format(e))
         sys.exit(1)
     else:
         sys.exit(0)

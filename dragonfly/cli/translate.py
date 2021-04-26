@@ -5,10 +5,14 @@ import os
 import logging
 import json
 
+from ladybug_geometry.geometry2d.pointvector import Point2D
+from ladybug.location import Location
 from ladybug.futil import preparedir
-from honeybee.units import parse_distance_string
+from honeybee.units import parse_distance_string, UNITS_TOLERANCES
 from honeybee.config import folders as hb_folders
+
 from dragonfly.model import Model
+from dragonfly.windowparameter import SimpleWindowRatio
 
 _logger = logging.getLogger(__name__)
 
@@ -94,6 +98,87 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
         log_file.write(json.dumps(hb_jsons, indent=4))
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
+@translate.command('model-from-geojson')
+@click.argument('geojson', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.option('--location', '-l', help='An optional latitude and longitude, formatted '
+              'as two floats separated by a comma, (eg. "42.3601,-71.0589"), defining '
+              'the origin of the geojson file. If nothing is passed, the origin is '
+              'autocalculated as the bottom-left corner of the bounding box of all '
+              'building footprints in the geojson file.', type=str, default=None)
+@click.option('--point', '-p', help='An optional X and Y coordinate, formatted '
+              'as two floats separated by a comma, (eg. "200,200"), defining '
+              'the origin of the geojson file in the space of the dragonfly model. The '
+              'coordinates of this point are expected to be in the expected units '
+              'of this Model.', type=str, default='0,0', show_default=True)
+@click.option('--window-ratio', '-wr', help='A number between 0 and 1 (but not equal '
+              'to 1) for the ratio between aperture area and wall area to be applied to '
+              'all walls of all buildings. If specified, this will override the '
+              'window_ratio key in the geojson', type=float, default=None)
+@click.option('--buildings-only/--all-to-buildings', ' /-all', help='Flag to indicate '
+              'if all geometries in the geojson file should be considered buildings. '
+              'If buildings-only, this method will only generate footprints from '
+              'geometries that are defined as a "Building" in the type field of its '
+              'corresponding properties.', default=True, show_default=True)
+@click.option('--no-context/--existing-to-context', ' /-c', help='Flag to indicate '
+              'whether polygons possessing a building_status of "Existing" under their '
+              'properties should be imported as ContextShade instead of Building '
+              'objects.', default=True, show_default=True)
+@click.option('--separate-top-bottom/--no-separation', ' /-ns', help='Flag to indicate '
+              'whether top/bottom stories of the buildings should not be separated in '
+              'order to account for different boundary conditions of the roof and '
+              'ground floor.', default=True, show_default=True)
+@click.option('--units', '-u', help=' Text for the units system in which the model '
+              'geometry exists. Must be (Meters, Millimeters, Feet, Inches, '
+              'Centimeters).', type=str, default='Meters', show_default=True)
+@click.option('--tolerance', '-t', help='The maximum difference between x, y, and z '
+              'values at which vertices are considered equivalent.',
+              type=float, default=None)
+@click.option('--output-file', '-f', help='Optional file to output the Model JSON '
+              'string. By default it will be printed out to stdout',
+              type=click.File('w'), default='-')
+def model_from_geojson(geojson, location, point, window_ratio, buildings_only,
+                       no_context, separate_top_bottom, units, tolerance, output_file):
+    """Create a Dragonfly model from a geojson file with building footprints.
+
+    \b
+    Args:
+        geojson: Full path to a geoJSON file with building footprints as Polygons
+            or MultiPolygons.
+    """
+    try:
+        # parse the location and point if they are specified
+        if location is not None:
+            lat, lon = [float(num) for num in location.split(',')]
+            location = Location(longitude=lat, latitude=lon)
+        if point is None:
+            point = Point2D(0, 0)
+        else:
+            point = Point2D(*[float(num) for num in point.split(',')])
+
+        # create the model object
+        tolerance = tolerance if tolerance is not None else UNITS_TOLERANCES[units]
+        all_polygons_to_buildings = not buildings_only
+        existing_to_context = not no_context
+        model, _ = Model.from_geojson(
+            geojson, location, point, all_polygons_to_buildings, existing_to_context,
+            units=units, tolerance=tolerance)
+
+        # apply windows if the window ratio and top/bottom separation if specified
+        if window_ratio is not None:
+            model.set_outdoor_window_parameters(SimpleWindowRatio(window_ratio))
+        if separate_top_bottom:
+            model.separate_top_bottom_floors()
+
+        # write the model out to the file or stdout
+        output_file.write(json.dumps(model.to_dict()))
+    except Exception as e:
+        _logger.exception('Model creation from geoJSON failed.\n{}'.format(e))
         sys.exit(1)
     else:
         sys.exit(0)
