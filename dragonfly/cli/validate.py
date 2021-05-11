@@ -32,12 +32,9 @@ def validate_model(model_json):
     Args:
         model_json: Full path to a Model JSON file.
     """
-    try:
-        # first check the JSON against the OpenAPI specification
-        click.echo('Validating Model JSON ...')
-        schema_model.Model.parse_file(model_json)
-        click.echo('Pydantic validation passed.')
+    try:        
         # re-serialize the Model to make sure no errors are found in re-serialization
+        click.echo('Validating Model JSON ...')
         parsed_model = Model.from_dfjson(model_json)
         click.echo('Python re-serialization passed.')
         # perform several other checks for key dragonfly model schema rules
@@ -45,6 +42,9 @@ def validate_model(model_json):
         parsed_model.check_duplicate_context_shade_identifiers(raise_exception=True)
         parsed_model.check_missing_adjacencies(raise_exception=True)
         click.echo('Unique identifier and adjacency checks passed.')
+        # lastly, check the JSON against the OpenAPI specification to get any last errors
+        schema_model.Model.parse_file(model_json)
+        click.echo('Pydantic validation passed.')
         click.echo('Congratulations! Your Model JSON is valid!')
     except Exception as e:
         _logger.exception('Model validation failed.\n{}'.format(e))
