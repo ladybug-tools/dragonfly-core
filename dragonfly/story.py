@@ -10,6 +10,7 @@ import dragonfly.writer.story as writer
 from honeybee.typing import float_positive, int_in_range, clean_string
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.altnumber import autocalculate
 from honeybee.shade import Shade
 from honeybee.room import Room
 
@@ -129,8 +130,10 @@ class Story(_BaseGeometry):
                         bc_to_update._boundary_condition_objects = bc_tup[2]
 
         # process the floor_to_floor_height and the multiplier
-        f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data else None
-        fh = data['floor_height'] if 'floor_height' in data else None
+        f2fh = data['floor_to_floor_height'] if 'floor_to_floor_height' in data \
+            and data['floor_to_floor_height'] != autocalculate.to_dict() else None
+        fh = data['floor_height'] if 'floor_height' in data \
+            and data['floor_height'] != autocalculate.to_dict() else None
         mult = data['multiplier'] if 'multiplier' in data else 1
 
         story = Story(data['identifier'], rooms, f2fh, fh, mult)
