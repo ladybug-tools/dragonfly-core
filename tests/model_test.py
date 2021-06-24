@@ -408,15 +408,15 @@ def test_check_duplicate_identifiers():
     model_1 = Model('NewDevelopment1', [building_1], [tree_canopy_1])
     model_2 = Model('NewDevelopment2', [building_2], [tree_canopy_2])
 
-    assert model_1.check_duplicate_building_identifiers(False)
-    assert model_1.check_duplicate_context_shade_identifiers(False)
+    assert model_1.check_duplicate_building_identifiers(False) == ''
+    assert model_1.check_duplicate_context_shade_identifiers(False) == ''
 
     model_1.add_model(model_2)
 
-    assert not model_1.check_duplicate_building_identifiers(False)
+    assert model_1.check_duplicate_building_identifiers(False) != ''
     with pytest.raises(ValueError):
         model_1.check_duplicate_building_identifiers(True)
-    assert not model_1.check_duplicate_context_shade_identifiers(False)
+    assert model_1.check_duplicate_context_shade_identifiers(False) != ''
     with pytest.raises(ValueError):
         model_1.check_duplicate_context_shade_identifiers(True)
 

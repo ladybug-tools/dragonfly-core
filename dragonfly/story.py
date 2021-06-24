@@ -678,11 +678,12 @@ using-multipliers-zone-and-or-window.html
         try:
             self.rooms_by_identifier(bc_obj_ids)
         except ValueError as e:
+            msg = 'A Room2D has an adjacent object that is missing ' \
+                'from the model:\n{}'.format(e)
             if raise_exception:
-                raise ValueError('A Room2D has an adjacent object that is missing '
-                                 'from the model:\n{}'.format(e))
-            return False
-        return True
+                raise ValueError(msg)
+            return msg
+        return ''
 
     def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01):
         """Convert Dragonfly Story to a list of Honeybee Rooms.
