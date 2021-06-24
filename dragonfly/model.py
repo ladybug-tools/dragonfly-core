@@ -582,6 +582,32 @@ class Model(_BaseGeometry):
             self.tolerance = self.tolerance * scale_fac
             self.units = units
 
+    def check_all(self, raise_exception=True):
+        """Check all of the aspects of the Model for possible errors.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if any Model errors are found. If False, this method will simply
+                return a text string with all errors that were found.
+
+        Returns:
+            A text string with all errors that were found. This string will be empty
+            of no errors were found.
+        """
+        msgs = []
+        # perform checks for key dragonfly model schema rules
+        msgs.append(self.check_duplicate_building_identifiers(False))
+        msgs.append(self.check_duplicate_context_shade_identifiers(False))
+        msgs.append(self.check_missing_adjacencies(False))
+        # check the extension attributes
+        msgs.extend(self._properties._check_extension_attr())
+        # output a final report of errors or raise an exception
+        full_msgs = [msg for msg in msgs if msg != '']
+        full_msg = '\n'.join(full_msgs)
+        if raise_exception and len(full_msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
     def check_duplicate_building_identifiers(self, raise_exception=True):
         """Check that there are no duplicate Building identifiers in the model."""
         return check_duplicate_identifiers(self._buildings, raise_exception, 'Building')
@@ -596,14 +622,16 @@ class Model(_BaseGeometry):
         bldg_ids = []
         for bldg in self._buildings:
             for story in bldg._unique_stories:
-                if not story.check_missing_adjacencies(False):
-                    bldg_ids.append(bldg.identifier)
+                adj_msg = story.check_missing_adjacencies(False)
+                if adj_msg != '':
+                    bldg_ids.append('{} - {}'.format(bldg.identifier, adj_msg))
         if bldg_ids != []:
+            msg = 'The following buildings have missing adjacencies in ' \
+                'the Model:\n{}'.format('\n'.join(bldg_ids))
             if raise_exception:
-                raise ValueError('The following buildings have missing adjacencies in '
-                                 'the Model:\n{}'.format('\n'.join(bldg_ids)))
-            return False
-        return True
+                raise ValueError(msg)
+            return msg
+        return ''
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
                     use_multiplier=True, add_plenum=False, cap=False, tolerance=None):

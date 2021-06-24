@@ -545,7 +545,7 @@ def test_to_honeybee():
     assert room.exterior_wall_area == 30
     assert room.exterior_aperture_area == 15
     assert room.average_floor_height == 3
-    assert room.check_solid(0.01, 1)
+    assert room.check_solid(0.01, 1) == ''
     assert len(room[1].apertures) == 1
     assert len(room[2].apertures) == 0
     assert len(room[3].apertures) == 1

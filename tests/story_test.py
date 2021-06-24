@@ -279,7 +279,7 @@ def test_to_honeybee():
     assert rooms[0].exterior_wall_area == 90
     assert rooms[0].exterior_aperture_area == pytest.approx(90 * 0.4, rel=1e-3)
     assert rooms[0].average_floor_height == 3
-    assert rooms[0].check_solid(0.01, 1)
+    assert rooms[0].check_solid(0.01, 1) == ''
 
     assert isinstance(rooms[0][1].boundary_condition, Outdoors)
     assert isinstance(rooms[0][2].boundary_condition, Surface)
@@ -307,7 +307,7 @@ def test_to_honeybee_different_heights():
     assert rooms[0].exterior_wall_area >= 150
     assert rooms[0].exterior_aperture_area == pytest.approx(150 * 0.4, rel=1e-3)
     assert rooms[0].average_floor_height == 2
-    assert rooms[0].check_solid(0.01, 1)
+    assert rooms[0].check_solid(0.01, 1) == ''
 
     assert isinstance(rooms[0][1].boundary_condition, Outdoors)
     assert not isinstance(rooms[0][2].boundary_condition, Surface)  # bottom

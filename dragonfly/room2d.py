@@ -773,12 +773,12 @@ class Room2D(_BaseGeometry):
         """
         z_vals = tuple(pt.z for pt in self._floor_geometry.vertices)
         if max(z_vals) - min(z_vals) <= tolerance:
-            return True
+            return ''
+        msg = 'Room "{}" is not horizontal to within {} tolerance.'.format(
+            self.display_name, tolerance)
         if raise_exception:
-            raise ValueError(
-                'Room "{}" is not horizontal to within {} tolerance.'.format(
-                    self.display_name, tolerance))
-        return False
+            raise ValueError(msg)
+        return msg
 
     def remove_colinear_vertices(self, tolerance=0.01):
         """Get a version of this Room2D without colinear or duplicate vertices.

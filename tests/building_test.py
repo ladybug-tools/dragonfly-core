@@ -433,7 +433,7 @@ def test_to_honeybee():
     assert hb_model.rooms[0].exterior_wall_area == 90
     assert hb_model.rooms[0].exterior_aperture_area == pytest.approx(90 * 0.4, rel=1e-3)
     assert hb_model.rooms[0].average_floor_height == 3
-    assert hb_model.rooms[0].check_solid(0.01, 1)
+    assert hb_model.rooms[0].check_solid(0.01, 1) == ''
 
     assert isinstance(hb_model.rooms[0][1].boundary_condition, Outdoors)
     assert isinstance(hb_model.rooms[0][2].boundary_condition, Surface)
@@ -442,20 +442,20 @@ def test_to_honeybee():
     assert len(hb_model.rooms[0][1].apertures) == 1
     assert len(hb_model.rooms[0][2].apertures) == 0
 
-    assert hb_model.check_duplicate_room_identifiers()
-    assert hb_model.check_duplicate_face_identifiers()
-    assert hb_model.check_duplicate_sub_face_identifiers()
-    assert hb_model.check_missing_adjacencies()
+    assert hb_model.check_duplicate_room_identifiers() == ''
+    assert hb_model.check_duplicate_face_identifiers() == ''
+    assert hb_model.check_duplicate_sub_face_identifiers() == ''
+    assert hb_model.check_missing_adjacencies() == ''
 
     hb_model = building.to_honeybee(True, 0.01)
     assert len(hb_model.rooms) == 2
     for room in hb_model.rooms:
         assert room.multiplier == 4
 
-    assert hb_model.check_duplicate_room_identifiers()
-    assert hb_model.check_duplicate_face_identifiers()
-    assert hb_model.check_duplicate_sub_face_identifiers()
-    assert hb_model.check_missing_adjacencies()
+    assert hb_model.check_duplicate_room_identifiers() == ''
+    assert hb_model.check_duplicate_face_identifiers() == ''
+    assert hb_model.check_duplicate_sub_face_identifiers() == ''
+    assert hb_model.check_missing_adjacencies() == ''
 
 
 def test_district_to_honeybee():
