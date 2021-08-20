@@ -3,6 +3,7 @@
 from __future__ import division
 
 import os
+import re
 import json
 try:  # check if we are in IronPython
     import cPickle as pickle
@@ -819,10 +820,9 @@ class Model(_BaseGeometry):
             point: A ladybug_geometry Point2D for where the location object exists
                 within the space of a scene. The coordinates of this point are
                 expected to be in the units of this Model. (Default: (0, 0)).
-            folder: Text for the full path to the folder where the OpenStudio
-                model files for each building are written. This is also the location
-                where the geojson will be written. If None, the honeybee default
-                simulation folder will be used (Default: None).
+            folder: Text for the full path to where the geojson file will be written.
+                If None, a sub-folder within the honeybee default simulation
+                folder will be used. (Default: None).
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
@@ -838,14 +838,13 @@ class Model(_BaseGeometry):
         # set the default simulation folder
         if folder is None:
             folder = folders.default_simulation_folder
-        else:
-            preparedir(folder, remove_content=False)
 
         # get the geojson dictionary
         geojson_dict = self.to_geojson_dict(location, point, tolerance)
 
         # write out the dictionary to a geojson file
-        project_folder = os.path.join(folder, self.identifier)
+        project_folder = os.path.join(
+            folder, re.sub(r'[^.A-Za-z0-9_-]', '_', self.display_name))
         preparedir(project_folder, remove_content=False)
         file_path = os.path.join(project_folder, '{}.geojson'.format(self.identifier))
         with open(file_path, 'w') as fp:
@@ -884,11 +883,12 @@ class Model(_BaseGeometry):
             base['version'] = df_folders.dragonfly_schema_version_str
         return base
 
-    def to_dfjson(self, name="unnamed", folder=None, indent=None, included_prop=None):
+    def to_dfjson(self, name=None, folder=None, indent=None, included_prop=None):
         """Write Dragonfly model to DFJSON.
 
         Args:
-            name: A text string for the name of the DFJSON file. (Default: "unnamed").
+            name: A text string for the name of the DFJSON file. If None, the model
+                identifier wil be used. (Default: None).
             folder: A text string for the direcotry where the DFJSON will be written.
                 If unspecified, the default simulation folder will be used. This
                 is usually at "C:\\Users\\USERNAME\\simulation" on Windows.
@@ -902,6 +902,8 @@ class Model(_BaseGeometry):
         # create dictionary from the Dragonfly Model
         df_dict = self.to_dict(included_prop=included_prop)
         # set up a name and folder for the DFJSON
+        if name is None:
+            name = self.identifier
         file_name = name if name.lower().endswith('.dfjson') or \
             name.lower().endswith('.json') else '{}.dfjson'.format(name)
         folder = folder if folder is not None else folders.default_simulation_folder
@@ -911,11 +913,12 @@ class Model(_BaseGeometry):
             json.dump(df_dict, fp, indent=indent)
         return df_file
 
-    def to_dfpkl(self, name="unnamed", folder=None, included_prop=None):
+    def to_dfpkl(self, name=None, folder=None, included_prop=None):
         """Writes Dragonfly model to compressed pickle file (DFpkl).
 
         Args:
-            name: A text string for the name of the pickle file. (Default: "unnamed").
+            name: A text string for the name of the pickle file. If None, the model
+                identifier wil be used. (Default: None).
             folder: A text string for the direcotry where the pickle will be written.
                 If unspecified, the default simulation folder will be used. This
                 is usually at "C:\\Users\\USERNAME\\simulation."
@@ -927,6 +930,8 @@ class Model(_BaseGeometry):
         # create dictionary from the Dragonfly Model
         df_dict = self.to_dict(included_prop=included_prop)
         # set up a name and folder for the DFpkl
+        if name is None:
+            name = self.identifier
         file_name = name if name.lower().endswith('.dfpkl') or \
             name.lower().endswith('.pkl') else '{}.dfpkl'.format(name)
         folder = folder if folder is not None else folders.default_simulation_folder
