@@ -461,8 +461,8 @@ class Building(_BaseGeometry):
         multipliers but one wants to account for the heat exchange of the top
         or bottom floors with the ground or outdoors.
         """
-        new_ground_floor = ()
-        new_top_floor = ()
+        # empty tuples in case no floors are added
+        new_ground_floor, new_top_floor = (), ()
 
         # ensure that the bottom floor is unique
         if self._unique_stories[0].multiplier != 1:
@@ -483,6 +483,50 @@ class Building(_BaseGeometry):
         # assign the is_ground_contact and is_top_exposed properties
         self._unique_stories[0].set_ground_contact()
         self._unique_stories[-1].set_top_exposed()
+
+    def separate_mid_floors(self, tolerance=0.01):
+        """Separate all Stories with non-unity multipliers into two or three Stories.
+
+        This method automatically assigns the first story Room2Ds to have a ground
+        contact floor and will separate the top story of each unique story to
+        have outdoor-exposed roofs when no Room2Ds are sensed above a given room.
+
+        This is particularly helpful when using to_honeybee workflows with
+        multipliers but one wants to account for the heat exchange of the top
+        or bottom floors with the ground or outdoors.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. Default: 0.01,
+                suitable for objects in meters.
+        """
+        # ensure that the bottom floor is unique
+        if self._unique_stories[0].multiplier != 1:
+            story = self._unique_stories[0]
+            new_ground_floor = (self._separated_ground_floor(story),)
+            story.multiplier = story.multiplier - 1
+            story.move(Vector3D(0, 0, story.floor_to_floor_height))  # 2nd floor
+        else:
+            new_ground_floor = (self._unique_stories[0],)
+
+        # ensure that the top floor is unique
+        new_top_floors = []
+        for i, story in enumerate(self._unique_stories):
+            if self._unique_stories[-1].multiplier != 1:
+                new_top_floor = self._separated_top_floor(story)
+                story.multiplier = story.multiplier - 1
+                try:
+                    new_top_floor.set_top_exposed_by_story_above(
+                        self._unique_stories[i + 1], tolerance)
+                except IndexError:
+                    new_top_floor.set_top_exposed()
+                new_top_floors.extend((story, new_top_floor))
+
+        # set the unique stories to include any new top and bottom floors
+        self._unique_stories = new_ground_floor + tuple(new_top_floors)
+
+        # assign the is_ground_contact and is_top_exposed properties
+        self._unique_stories[0].set_ground_contact()
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""

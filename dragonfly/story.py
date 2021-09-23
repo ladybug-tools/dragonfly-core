@@ -15,6 +15,7 @@ from honeybee.shade import Shade
 from honeybee.room import Room
 
 from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry3d.ray import Ray3D
 from ladybug_geometry.geometry3d.polyline import Polyline3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
@@ -587,6 +588,27 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.is_top_exposed = is_top_exposed
+
+    def set_top_exposed_by_story_above(self, story_above, tolerance=0.01):
+        """Set the child Room2Ds of this object to have ceilings exposed to the outdoors.
+
+        Args:
+            story_above: A Story object that sits above this Story. Each Room2D
+                of this Story will be checked to see if it intersects the Story
+                above and the top exposure will be set based on this.
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. Default: 0.01,
+                suitable for objects in meters.
+        """
+        up_vec = Vector3D(0, 0, 1)
+        for room in self._room_2ds:
+            face_ray = Ray3D(room._floor_geometry._point_on_face(tolerance), up_vec)
+            for other_room in story_above._room_2ds:
+                if other_room._floor_geometry.intersect_line_ray(face_ray) is not None:
+                    room.is_top_exposed = False
+                    break
+            else:
+                room.is_top_exposed = True
 
     def make_underground(self):
         """Make this Story underground by setting all Room2D segments to have Ground BCs.
