@@ -1,6 +1,7 @@
 # coding: utf-8
 """Window Parameters with instructions for generating windows."""
 from __future__ import division
+import math
 
 from honeybee.typing import float_in_range, float_positive
 from honeybee.boundarycondition import Surface
@@ -8,6 +9,7 @@ from honeybee.aperture import Aperture
 
 from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
+from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.line import LineSegment3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
@@ -883,6 +885,20 @@ class DetailedWindows(_AsymmetricBase):
                 'Expected Polygon2D for window polygon. Got {}'.format(type(polygon))
         self._polygons = polygons
 
+    @classmethod
+    def from_face3ds(cls, face3ds, segment):
+        """Create DetailedWindows from Face3Ds and a segment they are assigned to.
+
+        Args:
+            face3ds: A list of Face3D objects for the detailed windows.
+            segment: A LineSegment3D that sets the plane in which 3D vertices
+                are located.
+        """
+        plane = Plane(Vector3D(segment.v.y, -segment.v.x, 0), segment.p, segment.v)
+        pt3d = tuple(tuple(pt for pt in face.vertices) for face in face3ds)
+        return cls(tuple(Polygon2D(tuple(plane.xyz_to_xy(pt) for pt in poly))
+                         for poly in pt3d))
+
     @property
     def polygons(self):
         """Get an array of Polygon2Ds with one polygon for each window."""
@@ -907,6 +923,7 @@ class DetailedWindows(_AsymmetricBase):
                 objects in meters.
         """
         wall_plane = face.geometry.plane
+        wall_plane = wall_plane.rotate(wall_plane.n, math.pi, wall_plane.o)
 
         # loop through each window and create its geometry
         for i, polygon in enumerate(self.polygons):
@@ -955,8 +972,17 @@ class DetailedWindows(_AsymmetricBase):
         return DetailedWindows(new_polygons)
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, segment=None):
         """Create DetailedWindows from a dictionary.
+
+        Args:
+            data: A dictionary in the format below. The vertices of the "polygons"
+                can either contain 2 values (indicating they are vertices within
+                the plane of a parent wall segment) or they can contain 3 values
+                (indicating they are 3D world coordinates). If 3 values are used,
+                a segment must be specified below to convert them to the 2D format.
+            segment: A LineSegment3D that sets the plane in which 3D vertices
+                are located.
 
         .. code-block:: python
 
@@ -968,8 +994,17 @@ class DetailedWindows(_AsymmetricBase):
         """
         assert data['type'] == 'DetailedWindows', \
             'Expected DetailedWindows dictionary. Got {}.'.format(data['type'])
-        return cls(tuple(Polygon2D(tuple(Point2D.from_array(pt) for pt in poly))
-                         for poly in data['polygons']))
+        if len(data['polygons'][0][0]) == 2:
+            return cls(tuple(Polygon2D(tuple(Point2D.from_array(pt) for pt in poly))
+                             for poly in data['polygons']))
+        else:
+            assert segment is not None, 'Segment must be specified when using 3D ' \
+                'vertices for DetailedWindows.'
+            plane = Plane(Vector3D(segment.v.y, -segment.v.x, 0), segment.p, segment.v)
+            pt3d = tuple(tuple(Point3D.from_array(pt) for pt in poly)
+                               for poly in data['polygons'])
+            return cls(tuple(Polygon2D(tuple(wall_plane.xyz_to_xy(pt) for pt in poly))
+                             for poly in pt3d))
 
     def to_dict(self):
         """Get DetailedWindows as a dictionary."""
@@ -977,6 +1012,34 @@ class DetailedWindows(_AsymmetricBase):
             'type': 'DetailedWindows',
             'polygons': [[pt.to_array() for pt in poly] for poly in self.polygons]
         }
+
+    @staticmethod
+    def is_face3d_in_segment_plane(
+            face3d, segment, height, tolerance=0.01, angle_tolerance=1):
+        """Check if a given Face3D is in the plane and range of a LineSegment3D.
+
+        Args:
+            face3d: A list of Face3D objects for the detailed windows.
+            segment: A LineSegment3D that sets the plane in which 3D vertices
+                are located.
+            height: A number for the height of the 
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. Default: 0.01,
+                suitable for objects in meters.
+            angle_tolerance: The max angle in degrees that the plane normals can
+                differ from one another in order for them to be considered coplanar.
+                Default: 1 degree.
+        
+        Returns:
+            True if the face3d is in the plane and range of the segment. False
+            if it is not.
+        """
+        plane = Plane(Vector3D(segment.v.y, -segment.v.x, 0), segment.p, segment.v)
+        # test whether the face3d is coplanar
+        if not plane.is_coplanar_tolerance(face3d.plane, tolerance, angle_tolerance):
+            return False
+        seg_face = Face3D.from_rectangle(segment.length, height, plane)
+        return seg_face.is_sub_face(face3d, tolerance, angle_tolerance)
 
     def __copy__(self):
         return DetailedWindows(self._polygons)
