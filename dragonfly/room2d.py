@@ -196,15 +196,19 @@ class Room2D(_BaseGeometry):
         # re-assemble window parameters
         if 'window_parameters' in data and data['window_parameters'] is not None:
             glz_pars = []
-            for glz_dict in data['window_parameters']:
+            for i, glz_dict in enumerate(data['window_parameters']):
                 if glz_dict is not None:
-                    try:
-                        glz_class = getattr(glzpar, glz_dict['type'])
-                    except AttributeError:
-                        raise ValueError(
-                            'Window parameter "{}" is not supported in this honeybee '
-                            'installation.'.format(glz_dict['type']))
-                    glz_pars.append(glz_class.from_dict(glz_dict))
+                    if glz_dict['type'] == 'DetailedWindows':
+                        segment = cls.floor_segment_by_index(floor_geometry, i)
+                        glz_pars.append(DetailedWindows.from_dict(glz_dict, segment))
+                    else:
+                        try:
+                            glz_class = getattr(glzpar, glz_dict['type'])
+                        except AttributeError:
+                            raise ValueError(
+                                'Window parameter "{}" is not supported in this '
+                                'honeybee installation.'.format(glz_dict['type']))
+                        glz_pars.append(glz_class.from_dict(glz_dict))
                 else:
                     glz_pars.append(None)
         else:
@@ -1105,6 +1109,22 @@ class Room2D(_BaseGeometry):
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
         return tuple(intersected_rooms)
+
+    @staticmethod
+    def floor_segment_by_index(geometry, segment_index):
+        """Get a particular LineSegment3D from a Face3D object.
+
+        The logic applied by this method to select the segment is the same that is
+        used to assign lists of values to the floor_geometry (eg. boundary conditions).
+
+        Args:
+            geometry: A Face3D representing floor geometry.
+            segment_index: An integer for the index of the segment to return.
+        """
+        segs = geometry.boundary_segments if geometry.holes is \
+            None else geometry.boundary_segments + \
+            tuple(seg for hole in geometry.hole_segments for seg in hole)
+        return segs[segment_index]
 
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
         """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.
