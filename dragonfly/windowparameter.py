@@ -215,7 +215,7 @@ class SingleWindow(_WindowParameterBase):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'SingleWindow:\n width: {}\n height: {}\n sill_height: {}'.format(
+        return 'SingleWindow: [width: {}] [height: {}] [sill_height: {}]'.format(
             self.width, self.height, self.sill_height)
 
 
@@ -307,7 +307,7 @@ class SimpleWindowRatio(_WindowParameterBase):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'SimpleWindowRatio:\n ratio: {}'.format(self.window_ratio)
+        return 'SimpleWindowRatio: [ratio: {}]'.format(self.window_ratio)
 
 
 class RepeatingWindowRatio(SimpleWindowRatio):
@@ -456,8 +456,8 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'RepeatingWindowRatio:\n ratio: {}\n window_height: {}\n sill_height:' \
-            ' {}\n horizontal: {}\n vertical: {}'.format(
+        return 'RepeatingWindowRatio: [ratio: {}] [window_height: {}] [sill_height:' \
+            ' {}] [horizontal: {}] [vertical: {}]'.format(
                 self._window_ratio, self.window_height, self.sill_height,
                 self.horizontal_separation, self.vertical_separation)
 
@@ -603,8 +603,8 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'RepeatingWindowWidthHeight:\n window_height: {}\n window_width: ' \
-            '{}\n sill_height: {}\n horizontal: {}'.format(
+        return 'RepeatingWindowWidthHeight: [window_height: {}] [window_width: ' \
+            '{}] [sill_height: {}] [horizontal: {}]'.format(
                 self.window_height, self.window_width, self.sill_height,
                 self.horizontal_separation)
 
@@ -823,7 +823,7 @@ class RectangularWindows(_AsymmetricBase):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'RectangularWindows:\n {} windows'.format(len(self.origins))
+        return 'RectangularWindows: [{} windows]'.format(len(self.origins))
 
 
 class DetailedWindows(_AsymmetricBase):
@@ -1058,4 +1058,4 @@ class DetailedWindows(_AsymmetricBase):
         return not self.__eq__(other)
 
     def __repr__(self):
-        return 'DetailedWindows:\n {} windows'.format(len(self._polygons))
+        return 'DetailedWindows: [{} windows]'.format(len(self._polygons))
