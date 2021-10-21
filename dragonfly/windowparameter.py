@@ -147,6 +147,8 @@ class SingleWindow(_WindowParameterBase):
             tolerance: Optional tolerance value. Default: 0.01, suitable for
                 objects in meters.
         """
+        if self._width == 0 or self._height == 0:
+            return None
         width_seg = LineSegment3D.from_end_points(face.geometry[0], face.geometry[1])
         height_seg = LineSegment3D.from_end_points(face.geometry[1], face.geometry[2])
         max_width = width_seg.length * 0.99
@@ -258,6 +260,8 @@ class SimpleWindowRatio(_WindowParameterBase):
             tolerance: Optional tolerance value. Default: 0.01, suitable for
                 objects in meters.
         """
+        if self._window_ratio == 0:
+            return None
         scale_factor = self.window_ratio ** .5
         ap_face = face.geometry.scale(scale_factor, face.geometry.center)
         aperture = Aperture('{}_Glz1'.format(face.identifier), ap_face)
@@ -380,6 +384,8 @@ class RepeatingWindowRatio(SimpleWindowRatio):
                 considered a part of a rectangle. Default: 0.01, suitable for
                 objects in meters.
         """
+        if self._window_ratio == 0:
+            return None
         face.apertures_by_ratio_rectangle(
             self.window_ratio, self.window_height, self.sill_height,
             self.horizontal_separation, self.vertical_separation, tolerance)
@@ -531,6 +537,8 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
                 considered a part of a rectangle. Default: 0.01, suitable for
                 objects in meters.
         """
+        if self._window_width == 0 or self._window_height == 0:
+            return None
         face.apertures_by_width_height_rectangle(
             self.window_height, self.window_width, self.sill_height,
             self.horizontal_separation, tolerance)
@@ -670,6 +678,8 @@ class RectangularWindows(_AsymmetricBase):
 
         assert len(self._origins) == len(self._widths) == len(self._heights), \
             'Number of window origins, widths, and heights must match.'
+        assert len(self._origins) != 0, \
+            'There must be at least one window to use RectangularWindows.'
 
     @property
     def origins(self):
@@ -883,6 +893,8 @@ class DetailedWindows(_AsymmetricBase):
         for polygon in polygons:
             assert isinstance(polygon, Polygon2D), \
                 'Expected Polygon2D for window polygon. Got {}'.format(type(polygon))
+        assert len(polygons) != 0, \
+            'There must be at least one polygon to use DetailedWindows.'
         self._polygons = polygons
 
     @classmethod
