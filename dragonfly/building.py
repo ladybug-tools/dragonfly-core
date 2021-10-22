@@ -69,8 +69,7 @@ class Building(_BaseGeometry):
             assert isinstance(story, Story), \
                 'Expected dragonfly Story. Got {}'.format(type(story))
             story._parent = self
-        flr_hgts = (story.floor_height for story in unique_stories)
-        unique_stories = tuple(x for h, x in sorted(zip(flr_hgts, unique_stories)))
+        unique_stories = tuple(sorted(unique_stories, key=lambda x: x.floor_height))
         self._unique_stories = unique_stories
 
         self._properties = BuildingProperties(self)  # properties for extensions
