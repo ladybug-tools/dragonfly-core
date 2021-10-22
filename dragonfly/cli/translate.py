@@ -69,7 +69,7 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
             proj_name = \
                 os.path.basename(model_json).replace('.json', '').replace('.dfjson', '')
             folder = os.path.join(
-                hb_folders.default_simulation_folder, proj_name, 'Honeybee')
+                hb_folders.default_simulation_folder, proj_name, 'honeybee')
         preparedir(folder, remove_content=False)
 
         # re-serialize the Dragonfly Model and convert Dragonfly Model to Honeybee

@@ -43,10 +43,7 @@ def validate_model(model_json, output_file):
         click.echo('Python re-serialization passed.')
         # perform several other checks for key dragonfly model schema rules
         report = parsed_model.check_all(raise_exception=False)
-        click.echo('Unique identifier and adjacency checks completed.')
-        # lastly, check the JSON against the OpenAPI specification to get any last errors
-        schema_model.Model.parse_file(model_json)
-        click.echo('Pydantic validation passed.')
+        click.echo('Geometry and identifier checks completed.')
         # check the report and write the summary of errors
         if report == '':
             output_file.write('Congratulations! Your Model JSON is valid!')

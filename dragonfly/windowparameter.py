@@ -9,7 +9,7 @@ from honeybee.aperture import Aperture
 
 from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.line import LineSegment3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
@@ -1015,7 +1015,7 @@ class DetailedWindows(_AsymmetricBase):
             plane = Plane(Vector3D(segment.v.y, -segment.v.x, 0), segment.p, segment.v)
             pt3d = tuple(tuple(Point3D.from_array(pt) for pt in poly)
                                for poly in data['polygons'])
-            return cls(tuple(Polygon2D(tuple(wall_plane.xyz_to_xy(pt) for pt in poly))
+            return cls(tuple(Polygon2D(tuple(plane.xyz_to_xy(pt) for pt in poly))
                              for poly in pt3d))
 
     def to_dict(self):
