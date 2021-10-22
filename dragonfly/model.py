@@ -236,8 +236,8 @@ class Model(_BaseGeometry):
             'Got {}.'.format(data['type'])
 
         # import the tolerance values
-        tol = 0 if 'tolerance' not in data else data['tolerance']
-        angle_tol = 0 if 'angle_tolerance' not in data else data['angle_tolerance']
+        tol = None if 'tolerance' not in data else data['tolerance']
+        angle_tol = 1.0 if 'angle_tolerance' not in data else data['angle_tolerance']
 
         buildings = None  # import buildings
         if 'buildings' in data and data['buildings'] is not None:
