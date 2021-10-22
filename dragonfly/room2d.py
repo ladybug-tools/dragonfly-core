@@ -5,7 +5,8 @@ from __future__ import division
 from ._base import _BaseGeometry
 from .properties import Room2DProperties
 import dragonfly.windowparameter as glzpar
-from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase
+from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
+    DetailedWindows
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 import dragonfly.writer.room2d as writer
