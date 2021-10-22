@@ -235,19 +235,21 @@ class Model(_BaseGeometry):
         assert data['type'] == 'Model', 'Expected Model dictionary. ' \
             'Got {}.'.format(data['type'])
 
-        # import the tolerance values
-        tol = None if 'tolerance' not in data else data['tolerance']
-        angle_tol = 1.0 if 'angle_tolerance' not in data else data['angle_tolerance']
+        # import the units and tolerance values
+        units = 'Meters' if 'units' not in data or data['units'] is None \
+            else data['units']
+        tol = UNITS_TOLERANCES[units] if 'tolerance' not in data or \
+            data['tolerance'] is None else data['tolerance']
+        angle_tol = 1.0 if 'angle_tolerance' not in data or \
+            data['angle_tolerance'] is None else data['angle_tolerance']
 
+        # import all of the geometry
         buildings = None  # import buildings
         if 'buildings' in data and data['buildings'] is not None:
             buildings = [Building.from_dict(bldg, tol) for bldg in data['buildings']]
         context_shades = None  # import context shades
         if 'context_shades' in data and data['context_shades'] is not None:
             context_shades = [ContextShade.from_dict(s) for s in data['context_shades']]
-
-        # import the units
-        units = 'Meters' if 'units' not in data else data['units']
 
         # build the model object
         model = Model(data['identifier'], buildings, context_shades,
