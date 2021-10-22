@@ -502,27 +502,34 @@ class Building(_BaseGeometry):
         # ensure that the bottom floor is unique
         if self._unique_stories[0].multiplier != 1:
             story = self._unique_stories[0]
-            new_ground_floor = (self._separated_ground_floor(story),)
+            new_ground_floor = self._separated_ground_floor(story)
             story.multiplier = story.multiplier - 1
             story.move(Vector3D(0, 0, story.floor_to_floor_height))  # 2nd floor
         else:
-            new_ground_floor = (self._unique_stories[0],)
+            new_ground_floor = self._unique_stories[0]
+            if len(self._unique_stories) > 1:
+                new_ground_floor.set_top_exposed_by_story_above(
+                    self._unique_stories[ 1], tolerance)
 
         # ensure that the top floor is unique
         new_top_floors = []
         for i, story in enumerate(self._unique_stories):
-            if self._unique_stories[-1].multiplier != 1:
+            if story.multiplier != 1:
                 new_top_floor = self._separated_top_floor(story)
                 story.multiplier = story.multiplier - 1
                 try:
                     new_top_floor.set_top_exposed_by_story_above(
                         self._unique_stories[i + 1], tolerance)
-                except IndexError:
+                except IndexError:  # this is the last story
                     new_top_floor.set_top_exposed()
                 new_top_floors.extend((story, new_top_floor))
+            else:
+                if i == len(self._unique_stories) - 1:
+                    story.set_top_exposed()
+                new_top_floors.append(story)
 
         # set the unique stories to include any new top and bottom floors
-        self._unique_stories = new_ground_floor + tuple(new_top_floors)
+        self._unique_stories = (new_ground_floor,) + tuple(new_top_floors)
 
         # assign the is_ground_contact and is_top_exposed properties
         self._unique_stories[0].set_ground_contact()

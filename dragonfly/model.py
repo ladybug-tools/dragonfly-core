@@ -20,6 +20,7 @@ from honeybee.typing import float_positive
 from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
+from honeybee.room import Room
 
 from ._base import _BaseGeometry
 from .properties import ModelProperties
@@ -637,7 +638,8 @@ class Model(_BaseGeometry):
         return ''
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
-                    use_multiplier=True, add_plenum=False, cap=False, tolerance=None):
+                    use_multiplier=True, add_plenum=False, cap=False,
+                    solve_ceiling_adjacencies=False, tolerance=None):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
         Args:
@@ -676,6 +678,11 @@ class Model(_BaseGeometry):
                 with a top face. Usually, this is not necessary to account for
                 blocked sun and is only needed when it's important to account for
                 reflected sun off of roofs. (Default: False).
+            solve_ceiling_adjacencies: Boolean to note whether adjacencies should be
+                solved between interior stories when Room2Ds perfectly match one
+                another in their floor plate. This ensures that Surface boundary
+                conditions are used instead of Adiabatic ones. Note that this input
+                has no effect when the object_per_model is Story. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. This must be a
@@ -709,6 +716,12 @@ class Model(_BaseGeometry):
         else:
             raise ValueError('Unrecognized object_per_model input: '
                              '{}'.format(object_per_model))
+
+        # solve ceiling adjacencies if requested
+        if solve_ceiling_adjacencies and \
+                object_per_model.title() in ('Building', 'District'):
+            for model in models:
+                Room.solve_adjacency(model.rooms, tolerance)
 
         # change the tolerance and units systems to match the dragonfly model
         for model in models:
