@@ -38,6 +38,12 @@ def translate():
 @click.option('--no-cap/--cap', ' /-c', help='Flag to indicate whether context shade '
               'buildings should be capped with a top face.',
               default=True, show_default=True)
+@click.option('--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
+              'whether adjacencies should be solved between interior stories when '
+              'Room2Ds perfectly match one another in their floor plate. This ensures '
+              'that Surface boundary conditions are used instead of Adiabatic ones. '
+              'Note that this input has no effect when the object-per-model is Story.',
+              default=True, show_default=True)
 @click.option('--shade-dist', '-sd', help='An optional number to note the distance '
               'beyond which other buildings shade should not be exported into a Model. '
               'This can include the units of the distance (eg. 100ft) or, if no units '
@@ -56,7 +62,7 @@ def translate():
               'including their file paths. By default the list will be printed out to '
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
-                      shade_dist, folder, log_file):
+                      no_ceil_adjacency, shade_dist, folder, log_file):
     """Translate a Dragonfly Model JSON file into several Honeybee Models.
 
     \b
@@ -78,8 +84,9 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
         model = Model.from_file(model_json)
         add_plenum = not no_plenum
         cap = not no_cap
+        ceil_adjacency = not no_ceil_adjacency
         hb_models = model.to_honeybee(
-            obj_per_model, shade_dist, multiplier, add_plenum, cap)
+            obj_per_model, shade_dist, multiplier, add_plenum, cap, ceil_adjacency)
 
         # write out the honeybee JSONs and collect the info about them
         hb_jsons = []
