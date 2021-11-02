@@ -526,6 +526,9 @@ class Building(_BaseGeometry):
             else:
                 if i == len(self._unique_stories) - 1:
                     story.set_top_exposed()
+                else:
+                    story.set_top_exposed_by_story_above(
+                        self._unique_stories[i + 1], tolerance)
                 new_top_floors.append(story)
 
         # set the unique stories to include any new top and bottom floors
