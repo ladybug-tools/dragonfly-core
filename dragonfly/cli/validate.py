@@ -5,16 +5,9 @@ import logging
 import json
 
 from dragonfly.model import Model
+from dragonfly.config import folders
 
 _logger = logging.getLogger(__name__)
-
-try:
-    import dragonfly_schema.model as schema_model
-except ImportError:
-    _logger.exception(
-        'dragonfly_schema is not installed and validation commands are unavailable.\n'
-        'You must use Python 3.7 or above to run validation commands.'
-    )
 
 
 @click.group(help='Commands for validating Dragonfly JSON files.')
@@ -38,15 +31,18 @@ def validate_model(model_json, output_file):
     """
     try:        
         # re-serialize the Model to make sure no errors are found in re-serialization
-        click.echo('Validating Model JSON ...')
+        click.echo(
+            'Validating Model using dragonfly-core=={} and dragonfly-schema=={}'.format(
+                folders.dragonfly_core_version_str, folders.dragonfly_schema_version_str
+            ))
         parsed_model = Model.from_dfjson(model_json)
-        click.echo('Python re-serialization passed.')
+        click.echo('Re-serialization passed.')
         # perform several other checks for key dragonfly model schema rules
         report = parsed_model.check_all(raise_exception=False)
         click.echo('Geometry and identifier checks completed.')
         # check the report and write the summary of errors
         if report == '':
-            output_file.write('Congratulations! Your Model JSON is valid!')
+            output_file.write('Congratulations! Your Model is valid!')
         else:
             error_msg = '\nYour Model is invalid for the following reasons:'
             output_file.write('\n'.join([error_msg, report]))
