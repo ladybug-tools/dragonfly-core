@@ -366,6 +366,8 @@ class Room2D(_BaseGeometry):
     @floor_to_ceiling_height.setter
     def floor_to_ceiling_height(self, value):
         self._floor_to_ceiling_height = float_positive(value, 'floor-to-ceiling height')
+        assert self._floor_to_ceiling_height != 0, 'Room2D floor-to-ceiling height ' \
+            'cannot be zero.'
 
     @property
     def boundary_conditions(self):
