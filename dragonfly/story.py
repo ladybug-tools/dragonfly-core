@@ -7,7 +7,8 @@ from .properties import StoryProperties
 from .room2d import Room2D
 import dragonfly.writer.story as writer
 
-from honeybee.typing import float_positive, int_in_range, clean_string
+from honeybee.typing import float_positive, int_in_range, clean_string, \
+    invalid_dict_error
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import Outdoors, Surface
 from honeybee.altnumber import autocalculate
@@ -103,7 +104,12 @@ class Story(_BaseGeometry):
             'Got {}.'.format(data['type'])
 
         # serialize the rooms
-        rooms = [Room2D.from_dict(r_dict, tolerance) for r_dict in data['room_2ds']]
+        rooms = []
+        for r_dict in data['room_2ds']:
+            try:
+                rooms.append(Room2D.from_dict(r_dict, tolerance))
+            except Exception as e:
+                invalid_dict_error(r_dict, e)
 
         # check if any room boundaries were reversed
         dict_pts = [tuple(room['floor_boundary'][0]) for room in data['room_2ds']]

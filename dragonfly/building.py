@@ -10,7 +10,7 @@ import dragonfly.writer.building as writer
 
 from honeybee.model import Model
 from honeybee.boundarycondition import boundary_conditions as bcs
-from honeybee.typing import clean_string
+from honeybee.typing import clean_string, invalid_dict_error
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
@@ -218,8 +218,12 @@ class Building(_BaseGeometry):
         assert data['type'] == 'Building', 'Expected Building dictionary. ' \
             'Got {}.'.format(data['type'])
 
-        stories = [Story.from_dict(s_dict, tolerance)
-                   for s_dict in data['unique_stories']]
+        stories = []
+        for s_dict in data['unique_stories']:
+            try:
+                stories.append(Story.from_dict(s_dict, tolerance))
+            except Exception as e:
+                invalid_dict_error(s_dict, e)
 
         building = Building(data['identifier'], stories)
         if 'display_name' in data and data['display_name'] is not None:
