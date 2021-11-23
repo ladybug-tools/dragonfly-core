@@ -30,7 +30,7 @@ class _BaseGeometry(object):
 
     @property
     def identifier(self):
-        """Get or set a text string for the unique object identifer.
+        """Get or set a text string for the unique object identifier.
 
         This identifier remains constant as the object is mutated, copied, and
         serialized to different formats (eg. dict, idf, rad). This property is also

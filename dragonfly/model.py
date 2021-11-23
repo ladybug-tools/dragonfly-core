@@ -16,7 +16,7 @@ from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug.futil import preparedir
 from ladybug.location import Location
-from honeybee.typing import float_positive
+from honeybee.typing import float_positive, invalid_dict_error
 from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
@@ -247,10 +247,20 @@ class Model(_BaseGeometry):
         # import all of the geometry
         buildings = None  # import buildings
         if 'buildings' in data and data['buildings'] is not None:
-            buildings = [Building.from_dict(bldg, tol) for bldg in data['buildings']]
+            buildings = []
+            for bldg in data['buildings']:
+                try:
+                    buildings.append(Building.from_dict(bldg, tol))
+                except Exception as e:
+                    invalid_dict_error(bldg, e)
         context_shades = None  # import context shades
         if 'context_shades' in data and data['context_shades'] is not None:
-            context_shades = [ContextShade.from_dict(s) for s in data['context_shades']]
+            context_shades = []
+            for s in data['context_shades']:
+                try:
+                    context_shades.append(ContextShade.from_dict(s))
+                except Exception as e:
+                    invalid_dict_error(s, e)
 
         # build the model object
         model = Model(data['identifier'], buildings, context_shades,
