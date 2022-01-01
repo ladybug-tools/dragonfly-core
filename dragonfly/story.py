@@ -575,6 +575,11 @@ using-multipliers-zone-and-or-window.html
         for room in self._room_2ds:
             room.set_outdoor_shading_parameters(shading_parameter)
 
+    def to_rectangular_windows(self):
+        """Convert all of the windows of the Story to the RectangularWindows format."""
+        for room in self._room_2ds:
+            room.to_rectangular_windows()
+
     def set_ground_contact(self, is_ground_contact=True):
         """Set all child Room2Ds of this object to have floors in contact with the ground.
 

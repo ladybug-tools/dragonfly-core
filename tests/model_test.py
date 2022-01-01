@@ -121,6 +121,7 @@ def test_model_properties_setability():
     building = Building('OfficeBuilding', [story])
 
     model = Model('NewDevelopment', [building])
+    model.to_rectangular_windows()
 
     model.display_name = 'TestBuilding'
     assert model.display_name == 'TestBuilding'
