@@ -518,6 +518,11 @@ class Model(_BaseGeometry):
         for bldg in self._buildings:
             bldg.set_outdoor_shading_parameters(shading_parameter)
 
+    def to_rectangular_windows(self):
+        """Convert all of the windows of the Story to the RectangularWindows format."""
+        for bldg in self._buildings:
+            bldg.to_rectangular_windows()
+
     def move(self, moving_vec):
         """Move this Model along a vector.
 

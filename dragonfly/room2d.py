@@ -600,6 +600,16 @@ class Room2D(_BaseGeometry):
             shd_ps.append(shd_p)
         self._shading_parameters = shd_ps
 
+    def to_rectangular_windows(self):
+        """Convert all of the windows of the Room2D to the RectangularWindows format."""
+        glz_ps = []
+        for seg, glz in zip(self.floor_segments, self._window_parameters):
+            glz_p = None
+            if glz is not None:
+                glz_p = glz.to_rectangular_windows(seg, self.floor_to_ceiling_height)
+            glz_ps.append(glz_p)
+        self._window_parameters = glz_ps
+
     def add_prefix(self, prefix):
         """Change the identifier of this object by inserting a prefix.
 

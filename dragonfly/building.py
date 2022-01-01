@@ -551,6 +551,11 @@ class Building(_BaseGeometry):
         for story in self._unique_stories:
             story.set_outdoor_shading_parameters(shading_parameter)
 
+    def to_rectangular_windows(self):
+        """Convert all of the windows of the Story to the RectangularWindows format."""
+        for story in self._unique_stories:
+            story.to_rectangular_windows()
+
     def move(self, moving_vec):
         """Move this Building along a vector.
 
