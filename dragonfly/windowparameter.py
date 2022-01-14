@@ -941,7 +941,7 @@ class RectangularWindows(_AsymmetricBase):
 
     def __eq__(self, other):
         return isinstance(other, RectangularWindows) and \
-            self.__key() == other.__key()
+            len(self._origins) == len(other._origins)
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -1194,7 +1194,8 @@ class DetailedWindows(_AsymmetricBase):
         return hash(self.__key())
 
     def __eq__(self, other):
-        return isinstance(other, DetailedWindows) and self.__key() == other.__key()
+        return isinstance(other, DetailedWindows) and \
+            len(self._polygons) == len(other._polygons)
 
     def __ne__(self, other):
         return not self.__eq__(other)

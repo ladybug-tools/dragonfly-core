@@ -8,6 +8,7 @@ from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
 
 from honeybee.model import Model
+from honeybee.room import Room
 from honeybee.boundarycondition import Outdoors, Surface
 
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
@@ -562,7 +563,7 @@ def test_to_dict():
 
 
 def test_to_from_dict():
-    """Test the to/from dict of Story objects."""
+    """Test the to/from dict of Building objects."""
     pts_1 = (Point3D(0, 0, 2), Point3D(10, 0, 2), Point3D(10, 10, 2), Point3D(0, 10, 2))
     pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
     room2d_1 = Room2D('Office1', Face3D(pts_1), 5)
@@ -579,6 +580,29 @@ def test_to_from_dict():
     new_building = Building.from_dict(building_dict)
     assert isinstance(new_building, Building)
     assert new_building.to_dict() == building_dict
+
+
+def test_from_honeybee():
+    """Test the from_honeybee method of Building objects."""
+    room_south = Room.from_box('SouthZone', 5, 5, 3, origin=Point3D(0, 0, 0))
+    room_north = Room.from_box('NorthZone', 5, 5, 3, origin=Point3D(0, 5, 0))
+    room_up = Room.from_box('UpZone', 5, 5, 3, origin=Point3D(0, 5, 3))
+    room_south[1].apertures_by_ratio(0.4, 0.01)
+    room_south[3].apertures_by_ratio(0.4, 0.01)
+    room_north[3].apertures_by_ratio(0.4, 0.01)
+    Room.solve_adjacency([room_south, room_north], 0.01)
+    
+    model = Model('Test_Building', [room_south, room_north, room_up], tolerance=0.01)
+    bldg = Building.from_honeybee(model)
+
+    assert bldg.identifier == 'Test_Building'
+    assert len(bldg.unique_stories) == 2
+
+    bound_cs = [b for room in bldg.unique_room_2ds for b in room.boundary_conditions
+                if isinstance(b, Surface)]
+    assert len(bound_cs) == 2
+    assert bound_cs[0].boundary_condition_objects == ('NorthZone..Face4', 'NorthZone')
+    assert bound_cs[1].boundary_condition_objects == ('SouthZone..Face2', 'SouthZone')
 
 
 def test_writer():
