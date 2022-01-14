@@ -6,7 +6,7 @@ from dragonfly.room2d import Room2D
 from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
 
-from honeybee.model import Model
+from honeybee.room import Room
 from honeybee.boundarycondition import Outdoors, Surface
 
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
@@ -393,6 +393,21 @@ def test_from_dict_reversed_surface_bcs():
 
     new_story = Story.from_dict(story_dict)
     assert new_story.to_dict() == story_dict_original
+
+
+def test_from_honeybee():
+    """Test the from_honeybee method of Story objects."""
+    room_south = Room.from_box('Zone1', 5, 5, 3, origin=Point3D(0, 0, 0))
+    room_north = Room.from_box('Zone2', 5, 5, 3, origin=Point3D(0, 5, 0))
+    room_south[3].apertures_by_ratio(0.4, 0.01)
+    Room.solve_adjacency([room_south, room_north], 0.01)
+
+    df_story = Story.from_honeybee('Test_Story', [room_south, room_north], 0.01)
+    bound_cs = [b for room in df_story.room_2ds for b in room.boundary_conditions
+                if isinstance(b, Surface)]
+    assert len(bound_cs) == 2
+    assert bound_cs[0].boundary_condition_objects == ('Zone2..Face4', 'Zone2')
+    assert bound_cs[1].boundary_condition_objects == ('Zone1..Face2', 'Zone1')
 
 
 def test_writer():

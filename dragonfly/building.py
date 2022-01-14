@@ -11,6 +11,7 @@ import dragonfly.writer.building as writer
 from honeybee.model import Model
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string, invalid_dict_error
+from honeybee.units import parse_distance_string
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
@@ -234,6 +235,35 @@ class Building(_BaseGeometry):
         if data['properties']['type'] == 'BuildingProperties':
             building.properties._load_extension_attr_from_dict(data['properties'])
         return building
+
+    @classmethod
+    def from_honeybee(cls, model):
+        """Initialize a Building from a Honeybee Model.
+
+        If each Room has a story, these will be used to determine the separation
+        into Dragonfly stories. Otherwise, stories will be auto-generated
+        based on the floor heights of rooms.
+
+        Args:
+            model: A Honeybee Model to be converted to a Dragonfly Building.
+        """
+        # assign stories if they don't already exist
+        if not all([room.story is not None for room in model.rooms]):
+            min_diff = parse_distance_string('2m', model.units)
+            model.assign_stories_by_floor_height(min_diff)
+        # group the rooms by story and create dragonfly Stories
+        story_dict = {}
+        for room in model.rooms:
+            try:
+                story_dict[room.story].append(room)
+            except KeyError:
+                story_dict[room.story] = [room]
+        stories = [Story.from_honeybee(id, rms, model.tolerance)
+                   for id, rms in story_dict.items()]
+        # create the Bulding object
+        bldg = cls(model.identifier, stories)
+        bldg._display_name = model._display_name
+        return bldg
 
     @property
     def unique_stories(self):

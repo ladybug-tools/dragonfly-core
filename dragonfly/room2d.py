@@ -14,7 +14,8 @@ import dragonfly.writer.room2d as writer
 from honeybee.typing import float_positive, clean_string
 import honeybee.boundarycondition as hbc
 from honeybee.boundarycondition import boundary_conditions as bcs
-from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface
+from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Ground
+from honeybee.facetype import Floor, Wall, AirBoundary, RoofCeiling
 from honeybee.facetype import face_types as ftyp
 from honeybee.face import Face
 from honeybee.room import Room
@@ -24,6 +25,7 @@ from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.line import LineSegment3D
+from ladybug_geometry.geometry3d.polyline import Polyline3D
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 
@@ -125,7 +127,7 @@ class Room2D(_BaseGeometry):
         # process the boundary conditions
         if boundary_conditions is None:
             bc = bcs.outdoors if self.ceiling_height > 0 else bcs.ground
-            self._boundary_conditions = [bc for i in range(len(self))]
+            self._boundary_conditions = [bc] * len(self)
         else:
             value = self._check_wall_assigned_object(
                 boundary_conditions, 'boundary_conditions')
@@ -157,7 +159,7 @@ class Room2D(_BaseGeometry):
 
     @classmethod
     def from_dict(cls, data, tolerance=0):
-        """Initialize an Room2D from a dictionary.
+        """Initialize a Room2D from a dictionary.
 
         Args:
             data: A dictionary representation of a Room2D object.
@@ -249,6 +251,75 @@ class Room2D(_BaseGeometry):
         if data['properties']['type'] == 'Room2DProperties':
             room.properties._load_extension_attr_from_dict(data['properties'])
         return room
+
+    @classmethod
+    def from_honeybee(cls, room, tolerance):
+        """Initialize a Room2D from a Honeybee Room.
+
+        Note that Dragonfly Room2Ds are abstractions of Honeybee Rooms and there
+        will be loss of information if the Honeybee Room is not an extruded floor
+        plate or if extension properties are assigned to individual Faces
+        or Apertures instead of at the Room level.
+
+        If the Honeybee Room contains no Floor Faces, None will be returned.
+
+        Args:
+            room: A Honeybee Room object.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same.
+        """
+        # first extract the room polygon from the joined floor faces
+        flr_faces = [f.geometry for f in room.faces if isinstance(f.type, Floor)]
+        if len(flr_faces) == 0:
+            return None
+        elif len(flr_faces) == 1:
+            flr_geo = flr_faces[0]
+        else:
+            flr_geos = cls.join_floor_geometries(flr_faces, room.geometry.min, tolerance)
+            # TODO: consider returning multiple Room2Ds if there's more than one floor
+            flr_geo = flr_geos[0]
+        flr_geo = flr_geo if flr_geo.normal.z >= 0 else flr_geo.flip()
+
+        # match the segments of the floor geometry to walls of the Room
+        segs = flr_geo.boundary_segments if flr_geo.holes is None else \
+            flr_geo.boundary_segments + \
+            tuple(seg for hole in flr_geo.hole_segments for seg in hole)
+        boundary_conditions = [bcs.outdoors] * len(segs)
+        window_parameters = [None] * len(segs)
+        air_bounds = [False] * len(segs)
+        for i, seg in enumerate(segs):
+            wall_f = cls._segment_wall_face(room, seg, tolerance)
+            if wall_f is not None:
+                boundary_conditions[i] = wall_f.boundary_condition
+                if len(wall_f._apertures) != 0:
+                    w_geos = [ap.geometry for ap in wall_f._apertures]
+                    if abs(wall_f.normal.z) <= 0.01:  # vertical wall
+                        window_parameters[i] = DetailedWindows.from_face3ds(w_geos, seg)
+                    else:  # angled wall; scale the Y to covert to vertical
+                        w_p = Plane(Vector3D(seg.v.y, -seg.v.x, 0), seg.p, seg.v)
+                        w3d = [Face3D([p.project(w_p.n, w_p.o) for p in geo.boundary])
+                               for geo in w_geos]
+                        window_parameters[i] = DetailedWindows.from_face3ds(w3d, seg)
+                if isinstance(wall_f.type, AirBoundary):
+                    air_bounds[i] = True
+
+        # determine the ceiling height, and top/bottom boundary conditions
+        floor_to_ceiling_height = room.geometry.max.z - room.geometry.min.z
+        is_ground_contact = all([isinstance(f.boundary_condition, Ground)
+                                 for f in room.faces if isinstance(f.type, Floor)])
+        is_top_exposed = all([isinstance(f.boundary_condition, Outdoors)
+                              for f in room.faces if isinstance(f.type, RoofCeiling)])
+        
+        # create the Dragonfly Room2D and add the extra attributes
+        room_2d = cls(
+            room.identifier, flr_geo, floor_to_ceiling_height,
+            boundary_conditions, window_parameters, None,
+            is_ground_contact, is_top_exposed, tolerance)
+        room_2d.air_boundaries = air_bounds
+        room_2d._display_name = room._display_name
+        room_2d._user_data = None if room.user_data is None else room.user_data.copy()
+        room_2d.properties.from_honeybee(room.properties)
+        return room_2d
 
     @classmethod
     def from_polygon(cls, identifier, polygon, floor_height, floor_to_ceiling_height,
@@ -1139,6 +1210,55 @@ class Room2D(_BaseGeometry):
             tuple(seg for hole in geometry.hole_segments for seg in hole)
         return segs[segment_index]
 
+    @staticmethod
+    def join_floor_geometries(floor_faces, floor_height, tolerance):
+        """Join a list of Face3Ds together to get as few as possible at the floor_height.
+
+        Args:
+            floor_faces: A list of Face3D objects to be joined together.
+            floor_height:
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same.
+        
+        Returns:
+            A list of horizontal Face3Ds for the minimum number joined together.
+        """
+        # join all of the floor geometries into a single Polyface3D
+        room_floors = []
+        for fg in flr_faces:
+            if fg.is_horizontal(tolerance) and abs(floor_height - face.min) <= tolerance:
+                room_floors.append(face.geometry)
+            else:  # project the face geometry into the XY plane
+                bound = [Point3D(p.x, p.y, floor_height) for p in fg.boundary]
+                holes = None
+                if fg.has_holes:
+                    holes = [[Point3D(p.x, p.y, floor_height) for p in hole]
+                                for hole in fg.holes]
+                room_floors.append(Face3D(bound, holes=holes))
+        flr_pf = Polyface3D.from_faces(room_floors, tolerance)
+
+        # convert the Polyface3D into as few Face3Ds as possible
+        flr_pl = Polyline3D.join_segments(flr_pf.naked_edges, tolerance)
+        if len(plines) == 1:  # can be represented with a single Face3D
+            return [Face3D(flr_pl[0].vertices[:-1])]
+        else:  # need to separate holes from distinct Face3Ds
+            faces = [Face3D(pl.vertices[:-1]) for pl in flr_pl]
+            faces.sort(key=lambda x: x.area, reverse=True)
+            base_face = faces[0]
+            remain_faces = list(faces[1:])
+
+            all_face3ds = []
+            while len(remain_faces) > 0:
+                all_face3ds.append(Room2D._match_holes_to_face(
+                    base_face, remain_faces, tolerance))
+                if len(remain_faces) > 1:
+                    base_face = remain_faces[0]
+                    del remain_faces[0]
+                elif len(remain_faces) == 1:  # lone last Face3D
+                    all_face3ds.append(remain_faces[0])
+                    del remain_faces[0]
+            return all_face3ds
+
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
         """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.
 
@@ -1396,6 +1516,62 @@ class Room2D(_BaseGeometry):
         if glz_par is not None:
             face.remove_apertures()
             glz_par.add_window_to_face(face, tolerance)
+
+    @staticmethod
+    def _match_holes_to_face(base_face, other_faces, tol):
+        """Attempt to merge other faces into a base face as holes.
+
+        Args:
+            base_face: A Face3D to serve as the base.
+            other_faces: A list of other Face3D objects to attempt to merge into
+                the base_face as a hole. This method will delete any faces
+                that are successfully merged into the output from this list.
+            tol: The tolerance to be used for evaluating sub-faces.
+
+        Returns:
+            A Face3D which has holes in it if any of the other_faces is a valid
+            sub face.
+        """
+        holes = []
+        more_to_check = True
+        while more_to_check:
+            for i, r_face in enumerate(other_faces):
+                if base_face.is_sub_face(r_face, tol, 1):
+                    holes.append(r_face)
+                    del other_faces[i]
+                    break
+            else:
+                more_to_check = False
+        if len(holes) == 0:
+            return base_face
+        else:
+            hole_verts = [hole.vertices for hole in holes]
+            return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
+
+    @staticmethod
+    def _segment_wall_face(room, segment, tolerance):
+        """Get a Wall Face that corresponds with a certain wall segment.
+
+        Args:
+            room: A Honeybee Room from which a wall Face will be returned.
+            segment: A LineSegment3D along one of the walls of the room.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same.
+        """
+        for face in room.faces:
+            if isinstance(face.type, (Wall, AirBoundary)):
+                fg = face.geometry
+                try:
+                    verts = fg._remove_colinear(
+                        fg._boundary, fg.boundary_polygon2d, tolerance)
+                except AssertionError:
+                    return None
+                for v1 in verts:
+                    if segment.p1.is_equivalent(v1, tolerance):
+                        p2 = segment.p2
+                        for v2 in verts:
+                            if p2.is_equivalent(v2, tolerance):
+                                return face
 
     def __copy__(self):
         new_r = Room2D(self.identifier, self._floor_geometry,

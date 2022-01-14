@@ -275,6 +275,26 @@ class Model(_BaseGeometry):
         return model
 
     @classmethod
+    def from_honeybee(cls, model):
+        """Initialize a Dragonfly Model from a Honeybee Model.
+
+        Args:
+            model: A Honeybee Model to be converted to a Dragonfly Model.
+        """
+        # translate the rooms to a dragonfly building
+        bldgs = None
+        if len(model.rooms) != 0:
+            bldgs = [Building.from_honeybee(model)]
+        # translate the orphaned shades to context shades
+        shades = None
+        if len(model.orphaned_shades) != 0:
+            shades = [ContextShade.from_honeybee(shd) for shd in model.orphaned_shades]
+        new_model = cls(model.identifier, bldgs, shades, model.units,
+                        model.tolerance, model.angle_tolerance)
+        new_model._display_name = model._display_name
+        return new_model
+
+    @classmethod
     def from_file(cls, df_file):
         """Initialize a Model from a DFJSON or DFpkl file, auto-sensing the type.
 

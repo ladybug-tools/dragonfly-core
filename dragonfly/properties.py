@@ -407,6 +407,29 @@ class ContextShadeProperties(_Properties):
         """
         self._add_prefix_extension_attr(prefix)
 
+    def from_honeybee(self, hb_properties):
+        """Transfer extension attributes from a Honeybee Shade to Dragonfly ContextShade.
+
+        This method should be called within the from_honeybee method.
+
+        Args:
+            hb_properties: The properties of the honeybee Shade that is being
+                translated to a Dragonfly ContextShade.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'from_honeybee') or not \
+                    hasattr(hb_properties, 'from_honeybee'):
+                continue
+            try:
+                hb_var = getattr(hb_properties, atr)
+                setattr(var, '_' + atr, var.from_honeybee(hb_var))
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception(
+                    'Failed to translate {} from_honeybee: {}'.format(var, e))
+
     def __repr__(self):
         """Properties representation."""
         return 'ContextShadeProperties'
@@ -577,6 +600,29 @@ class Room2DProperties(_Properties):
                 attribute identifiers.
         """
         self._add_prefix_extension_attr(prefix)
+
+    def from_honeybee(self, hb_properties):
+        """Transfer extension attributes from a Honeybee Room to Dragonfly Room2D.
+
+        This method should be called within the from_honeybee method.
+
+        Args:
+            hb_properties: The properties of the honeybee Room that is being
+                translated to a Dragonfly Room2D.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'from_honeybee') or not \
+                    hasattr(hb_properties, 'from_honeybee'):
+                continue
+            try:
+                hb_var = getattr(hb_properties, atr)
+                setattr(var, '_' + atr, var.from_honeybee(hb_var))
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception(
+                    'Failed to translate {} from_honeybee: {}'.format(var, e))
 
     def __repr__(self):
         """Properties representation."""

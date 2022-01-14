@@ -71,6 +71,20 @@ class ContextShade(_BaseGeometry):
             shade.properties._load_extension_attr_from_dict(data['properties'])
         return shade
 
+    @classmethod
+    def from_honeybee(cls, shade):
+        """Initialize an ContextShade from a Honeybee Shade.
+
+        Args:
+            shade: A Honeybee Shade object.
+        """
+        con_shade = cls(shade.identifier, [shade.geometry])
+        con_shade._display_name = shade.display_name
+        con_shade._user_data = None if shade.user_data is None \
+            else shade.user_data.copy()
+        con_shade.properties.from_honeybee(shade.properties)
+        return con_shade
+
     @property
     def geometry(self):
         """Get a tuple of Face3D objects that together represent the context shade."""

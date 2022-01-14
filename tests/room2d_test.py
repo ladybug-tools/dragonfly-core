@@ -3,7 +3,7 @@ import pytest
 
 from dragonfly.room2d import Room2D
 from dragonfly.story import Story
-from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow
+from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow, DetailedWindows
 from dragonfly.shadingparameter import Overhang
 
 from honeybee.boundarycondition import Outdoors, Ground, Surface
@@ -781,6 +781,26 @@ def test_to_from_dict():
     new_room = Room2D.from_dict(room_dict)
     assert isinstance(new_room, Room2D)
     assert new_room.to_dict() == room_dict
+
+
+def test_from_honeybee():
+    """Test the from honeybee method."""
+    room = Room.from_box('ShoeBoxZone', 5, 10, 3)
+    south_face = room[3]
+    south_face.apertures_by_ratio(0.5, 0.01)
+    north_face = room[1]
+    north_face.boundary_condition = bcs.ground
+
+    room2d = Room2D.from_honeybee(room, 0.01)
+    assert room2d.boundary_conditions == \
+        (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.outdoors)
+    assert room2d.window_parameters[0] is None
+    assert room2d.window_parameters[1] is None
+    assert room2d.window_parameters[2] is None
+    assert isinstance(room2d.window_parameters[3], DetailedWindows)
+    assert room2d.floor_to_ceiling_height == 3.0
+    assert room2d.is_ground_contact
+    assert room2d.is_top_exposed
 
 
 def test_writer():

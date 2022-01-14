@@ -7,15 +7,16 @@ from dragonfly.story import Story
 from dragonfly.room2d import Room2D
 from dragonfly.context import ContextShade
 from dragonfly.windowparameter import SimpleWindowRatio
-from dragonfly.shadingparameter import Overhang
 from dragonfly.projection import meters_to_long_lat_factors, \
     origin_long_lat_from_location
 
 import honeybee.model as hb_model
-from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.room import Room
+from honeybee.shade import Shade
+from honeybee.boundarycondition import Surface
 
 from ladybug.location import Location
-from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
+from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.plane import Plane
@@ -966,6 +967,38 @@ def test_bottom_left_coordinate_from_geojson():
 
     assert abs(lat - 42.36605353217153) < 1e-13
     assert abs(lon - -71.01947299845268) < 1e-13
+
+
+def test_from_honeybee():
+    """Test the from_honeybee method of Model objects."""
+    room_south = Room.from_box('SouthZone', 5, 5, 3, origin=Point3D(0, 0, 0))
+    room_north = Room.from_box('NorthZone', 5, 5, 3, origin=Point3D(0, 5, 0))
+    room_up = Room.from_box('UpZone', 5, 5, 3, origin=Point3D(0, 5, 3))
+    room_south[1].apertures_by_ratio(0.4, 0.01)
+    room_south[3].apertures_by_ratio(0.4, 0.01)
+    room_north[3].apertures_by_ratio(0.4, 0.01)
+    Room.solve_adjacency([room_south, room_north], 0.01)
+
+    pts = (Point3D(0, -3, 0), Point3D(0, -3, 3), Point3D(1, -3, 3), Point3D(1, -3, 0))
+    shade = Shade('TestShade', Face3D(pts))
+    
+    model = hb_model.Model('Test_Building', [room_south, room_north, room_up],
+                           orphaned_shades=[shade], tolerance=0.01)
+    
+    model = Model.from_honeybee(model)
+
+    assert len(model.context_shades) == 1
+    assert len(model.buildings) == 1
+    bldg = model.buildings[0]
+
+    assert bldg.identifier == 'Test_Building'
+    assert len(bldg.unique_stories) == 2
+
+    bound_cs = [b for room in bldg.unique_room_2ds for b in room.boundary_conditions
+                if isinstance(b, Surface)]
+    assert len(bound_cs) == 2
+    assert bound_cs[0].boundary_condition_objects == ('NorthZone..Face4', 'NorthZone')
+    assert bound_cs[1].boundary_condition_objects == ('SouthZone..Face2', 'SouthZone')
 
 
 def test_writer():

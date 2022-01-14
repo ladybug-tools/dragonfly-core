@@ -15,10 +15,10 @@ from honeybee.altnumber import autocalculate
 from honeybee.shade import Shade
 from honeybee.room import Room
 
+from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D
 from ladybug_geometry.geometry3d.ray import Ray3D
 from ladybug_geometry.geometry3d.polyline import Polyline3D
-from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 
@@ -90,7 +90,7 @@ class Story(_BaseGeometry):
 
     @classmethod
     def from_dict(cls, data, tolerance=0):
-        """Initialize an Story from a dictionary.
+        """Initialize a Story from a dictionary.
 
         Args:
             data: A dictionary representation of a Story object.
@@ -152,6 +152,59 @@ class Story(_BaseGeometry):
         if data['properties']['type'] == 'StoryProperties':
             story.properties._load_extension_attr_from_dict(data['properties'])
         return story
+
+    @classmethod
+    def from_honeybee(cls, identifier, rooms, tolerance):
+        """Initialize a Story from a list of Honeybee Rooms.
+
+        Args:
+            identifier: Text string for a unique Story ID. Must be < 100 characters
+                and not contain any spaces or special characters.
+            rooms: A list of Honeybee Room objects.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same.
+        """
+        # create the Room2Ds from the Honeybee Rooms
+        room_2ds = [Room2D.from_honeybee(hb_room, tolerance) for hb_room in rooms]
+        room_2ds = [room for room in room_2ds if room is not None]
+        # re-set the adjacencies in relation to the Room2D segments
+        all_adj_faces = [[x for x, bc in enumerate(room_1._boundary_conditions)
+                         if isinstance(bc, Surface)] for room_1 in room_2ds]
+        for i, room_1 in enumerate(room_2ds):
+            try:
+                for x, room_2 in enumerate(room_2ds[i + 1:]):
+                    if not Polygon2D.overlapping_bounding_rect(
+                            room_1._floor_geometry.boundary_polygon2d,
+                            room_2._floor_geometry.boundary_polygon2d, tolerance):
+                        continue  # no overlap in bounding rect; adjacency impossible
+                    for j, seg_1 in enumerate(room_1.floor_segments_2d):
+                        for k, seg_2 in enumerate(room_2.floor_segments_2d):
+                            if isinstance(room_2._boundary_conditions[k], Surface):
+                                if seg_1.distance_to_point(seg_2.p1) <= tolerance and \
+                                        seg_1.distance_to_point(seg_2.p2) <= tolerance:
+                                    if abs(seg_1.length - seg_2.length) <= tolerance:
+                                        # set the boundary conditions of the segments
+                                        room_1.set_adjacency(room_2, j, k)
+                                        adj_f_1 = all_adj_faces[i]
+                                        adj_f_2 = all_adj_faces[i + x + 1]
+                                        adj_f_1.pop(adj_f_1.index(j))
+                                        adj_f_2.pop(adj_f_2.index(k))
+                                        break
+            except IndexError:
+                pass  # we have reached the end of the list of zones
+        # set any adjacencies to default that were not set
+        try:
+            default_adj_bc = bcs.adiabatic
+            remove_win = True
+        except AttributeError:
+            default_adj_bc = bcs.outdoors
+            remove_win = False
+        for r_i, adj_faces in enumerate(all_adj_faces):
+            for seg_i in adj_faces:
+                room_2ds[r_i]._boundary_conditions[seg_i] = default_adj_bc
+                if remove_win:
+                    room_2ds[r_i]._window_parameters[seg_i] = None
+        return cls(identifier, room_2ds)
 
     @property
     def room_2ds(self):
@@ -334,17 +387,16 @@ using-multipliers-zone-and-or-window.html
         """
         plines = self.outline_polylines(tolerance)
         if len(plines) == 1:  # can be represented with a single Face3D
-            return [Face3D(plines[0].vertices[:-1], Plane(n=Vector3D(0, 0, 1)))]
+            return [Face3D(plines[0].vertices[:-1])]
         else:  # need to separate holes from distinct Face3Ds
-            faces = [Face3D(pl.vertices[:-1], Plane(n=Vector3D(0, 0, 1)))
-                     for pl in plines]
+            faces = [Face3D(pl.vertices[:-1]) for pl in plines]
             faces.sort(key=lambda x: x.area, reverse=True)
             base_face = faces[0]
             remain_faces = list(faces[1:])
 
             all_face3ds = []
             while len(remain_faces) > 0:
-                all_face3ds.append(self._match_holes_to_face(
+                all_face3ds.append(Room2D._match_holes_to_face(
                     base_face, remain_faces, tolerance))
                 if len(remain_faces) > 1:
                     base_face = remain_faces[0]
@@ -800,37 +852,6 @@ using-multipliers-zone-and-or-window.html
         Use this method to access Writer class to write the story in other formats.
         """
         return writer
-
-    @staticmethod
-    def _match_holes_to_face(base_face, other_faces, tol):
-        """Attempt to merge other faces into a base face as holes.
-
-        Args:
-            base_face: A Face3D to serve as the base.
-            other_faces: A list of other Face3D objects to attempt to merge into
-                the base_face as a hole. This method will delete any faces
-                that are successfully merged into the output from this list.
-            tol: The tolerance to be used for evaluating sub-faces.
-
-        Returns:
-            A Face3D which has holes in it if any of the other_faces is a valid
-            sub face.
-        """
-        holes = []
-        more_to_check = True
-        while more_to_check:
-            for i, r_face in enumerate(other_faces):
-                if base_face.is_sub_face(r_face, tol, 1):
-                    holes.append(r_face)
-                    del other_faces[i]
-                    break
-            else:
-                more_to_check = False
-        if len(holes) == 0:
-            return base_face
-        else:
-            hole_verts = [hole.vertices for hole in holes]
-            return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
 
     def __copy__(self):
         new_s = Story(

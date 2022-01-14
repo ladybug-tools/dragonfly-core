@@ -245,7 +245,7 @@ def test_repeating_window_width_height_add_window_to_face():
 
 
 def test_detailed_rectangular_init():
-    """Test the initalization of RectangularWindows and basic properties."""
+    """Test the initialization of RectangularWindows and basic properties."""
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
@@ -265,7 +265,7 @@ def test_detailed_rectangular_equality():
     heights_alt = (1, 1)
     detailed_window = RectangularWindows(origins, widths, heights)
     detailed_window_dup = detailed_window.duplicate()
-    detailed_window_alt = RectangularWindows(origins, widths, heights_alt)
+    detailed_window_alt = RectangularWindows((Point2D(2, 1),), (1,), (1,))
 
     assert detailed_window is detailed_window
     assert detailed_window is not detailed_window_dup
@@ -351,7 +351,7 @@ def test_detailed_equality():
     pts_3 = (Point2D(5, 0.4), Point2D(8, 0.5), Point2D(8, 2.5), Point2D(5, 2.5))
     detailed_window = DetailedWindows((Polygon2D(pts_1), Polygon2D(pts_2)))
     detailed_window_dup = detailed_window.duplicate()
-    detailed_window_alt = DetailedWindows((Polygon2D(pts_1), Polygon2D(pts_3)))
+    detailed_window_alt = DetailedWindows((Polygon2D(pts_1),))
 
     assert detailed_window is detailed_window
     assert detailed_window is not detailed_window_dup
