@@ -419,11 +419,11 @@ class ContextShadeProperties(_Properties):
         for atr in self._extension_attributes:
             var = getattr(self, atr)
             if not hasattr(var, 'from_honeybee') or not \
-                    hasattr(hb_properties, 'from_honeybee'):
+                    hasattr(hb_properties, atr):
                 continue
             try:
                 hb_var = getattr(hb_properties, atr)
-                setattr(var, '_' + atr, var.from_honeybee(hb_var))
+                var.from_honeybee(hb_var)
             except Exception as e:
                 import traceback
                 traceback.print_exc()
@@ -613,11 +613,11 @@ class Room2DProperties(_Properties):
         for atr in self._extension_attributes:
             var = getattr(self, atr)
             if not hasattr(var, 'from_honeybee') or not \
-                    hasattr(hb_properties, 'from_honeybee'):
+                    hasattr(hb_properties, atr):
                 continue
             try:
                 hb_var = getattr(hb_properties, atr)
-                setattr(var, '_' + atr, var.from_honeybee(hb_var))
+                var.from_honeybee(hb_var)
             except Exception as e:
                 import traceback
                 traceback.print_exc()

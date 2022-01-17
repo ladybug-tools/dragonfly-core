@@ -275,7 +275,8 @@ class Room2D(_BaseGeometry):
         elif len(flr_faces) == 1:
             flr_geo = flr_faces[0]
         else:
-            flr_geos = cls.join_floor_geometries(flr_faces, room.geometry.min, tolerance)
+            flr_geos = cls.join_floor_geometries(
+                flr_faces, room.geometry.min.z, tolerance)
             # TODO: consider returning multiple Room2Ds if there's more than one floor
             flr_geo = flr_geos[0]
         flr_geo = flr_geo if flr_geo.normal.z >= 0 else flr_geo.flip()
@@ -315,7 +316,11 @@ class Room2D(_BaseGeometry):
             room.identifier, flr_geo, floor_to_ceiling_height,
             boundary_conditions, window_parameters, None,
             is_ground_contact, is_top_exposed, tolerance)
-        room_2d.air_boundaries = air_bounds
+        final_ab = []
+        for v, bc in zip(air_bounds, room_2d._boundary_conditions):
+            v_f = v if isinstance(bc, Surface) else False
+            final_ab.append(v_f)
+        room_2d.air_boundaries = final_ab
         room_2d._display_name = room._display_name
         room_2d._user_data = None if room.user_data is None else room.user_data.copy()
         room_2d.properties.from_honeybee(room.properties)
@@ -1225,9 +1230,9 @@ class Room2D(_BaseGeometry):
         """
         # join all of the floor geometries into a single Polyface3D
         room_floors = []
-        for fg in flr_faces:
-            if fg.is_horizontal(tolerance) and abs(floor_height - face.min) <= tolerance:
-                room_floors.append(face.geometry)
+        for fg in floor_faces:
+            if fg.is_horizontal(tolerance) and abs(floor_height - fg.min.z) <= tolerance:
+                room_floors.append(fg)
             else:  # project the face geometry into the XY plane
                 bound = [Point3D(p.x, p.y, floor_height) for p in fg.boundary]
                 holes = None
@@ -1239,7 +1244,7 @@ class Room2D(_BaseGeometry):
 
         # convert the Polyface3D into as few Face3Ds as possible
         flr_pl = Polyline3D.join_segments(flr_pf.naked_edges, tolerance)
-        if len(plines) == 1:  # can be represented with a single Face3D
+        if len(flr_pl) == 1:  # can be represented with a single Face3D
             return [Face3D(flr_pl[0].vertices[:-1])]
         else:  # need to separate holes from distinct Face3Ds
             faces = [Face3D(pl.vertices[:-1]) for pl in flr_pl]
