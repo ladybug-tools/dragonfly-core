@@ -202,6 +202,7 @@ class Story(_BaseGeometry):
         for r_i, adj_faces in enumerate(all_adj_faces):
             for seg_i in adj_faces:
                 room_2ds[r_i]._boundary_conditions[seg_i] = default_adj_bc
+                room_2ds[r_i]._air_boundaries[seg_i] = False
                 if remove_win:
                     room_2ds[r_i]._window_parameters[seg_i] = None
         return cls(identifier, room_2ds)
@@ -815,6 +816,7 @@ using-multipliers-zone-and-or-window.html
                             for face in room.faces:
                                 adj_face = adj[1][-2]
                                 if face.identifier == adj_face:
+                                    self._match_apertures(adj[0], face)
                                     adj[0].set_adjacency(face, tolerance)
                                     adj_set.add(face.identifier)
                                     break
@@ -852,6 +854,16 @@ using-multipliers-zone-and-or-window.html
         Use this method to access Writer class to write the story in other formats.
         """
         return writer
+
+    @staticmethod
+    def _match_apertures(face_1, face2):
+        for ap1, ap2 in zip(face_1.apertures, face2.apertures):
+            ap1._is_operable, ap2._is_operable = False, False
+            try:
+                ap1.properties.energy.vent_opening = None
+                ap2.properties.energy.vent_opening = None
+            except AttributeError:
+                pass  # honeybee-energy extension is not loaded
 
     def __copy__(self):
         new_s = Story(
