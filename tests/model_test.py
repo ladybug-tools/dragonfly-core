@@ -506,6 +506,32 @@ def test_to_honeybee_multiple_models():
     assert len(hb_models[-1].orphaned_shades) == 6
 
 
+def test_to_honeybee_missing_adjacency():
+    """Test the to_honeybee method with a missing adjacency."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(0, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(0, 30, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    story_big = Story('OfficeFloorBig', [room2d_3])
+    Room2D.solve_adjacency([room2d_1, room2d_2])
+    story = Story('OfficeFloor', [room2d_1])
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('OfficeBuilding', [story])
+    story_big.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story_big.multiplier = 4
+    building_big = Building('OfficeBuildingBig', [story_big])
+
+    model = Model('NewDevelopment', [building, building_big])
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+
+    assert len(hb_models) == 1
+    assert isinstance(hb_models[0], hb_model.Model)
+
+
 def test_to_dict():
     """Test the Model to_dict method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
