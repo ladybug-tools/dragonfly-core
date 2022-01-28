@@ -1440,8 +1440,12 @@ class Room2D(_BaseGeometry):
             if not isinstance(bc, Surface):
                 new_faces.append(face)
             else:
-                adj_rm = self._parent.room_by_identifier(
-                    bc.boundary_condition_objects[-1])
+                try:
+                    adj_rm = self._parent.room_by_identifier(
+                        bc.boundary_condition_objects[-1])
+                except ValueError:  # missing adjacency in Story; just pass invalid BC
+                    new_faces.append(face)
+                    continue
                 flr_diff = adj_rm.floor_height - self.floor_height
                 ciel_diff = self.ceiling_height - adj_rm.ceiling_height
                 if flr_diff <= tolerance and ciel_diff <= tolerance:
