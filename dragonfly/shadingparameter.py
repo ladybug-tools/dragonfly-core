@@ -92,8 +92,9 @@ class ExtrudedBorder(_ShadingParameterBase):
             tolerance: An optional value to return None if the overhang has a length less
                 than the tolerance. Default: 0.01, suitable for objects in meters.
         """
-        for ap in face.apertures:
-            ap.extruded_border(self.depth)
+        if self.depth != 0:
+            for ap in face.apertures:
+                ap.extruded_border(self.depth)
 
     def scale(self, factor):
         """Get a scaled version of these ShadingParameters.
@@ -183,7 +184,8 @@ class Overhang(_ShadingParameterBase):
             tolerance: An optional value to return None if the overhang has a length less
                 than the tolerance. Default: 0.01, suitable for objects in meters.
         """
-        face.overhang(self.depth, self.angle, False, tolerance)
+        if self.depth != 0:
+            face.overhang(self.depth, self.angle, False, tolerance)
 
     def scale(self, factor):
         """Get a scaled version of these ShadingParameters.
@@ -382,9 +384,10 @@ class LouversByDistance(_LouversBase):
             tolerance: An optional value to remove any louvers with a length less
                 than the tolerance. Default: 0.01, suitable for objects in meters.
         """
-        face.louvers_by_distance_between(
-            self.distance, self.depth, self.offset, self.angle, self.contour_vector,
-            self.flip_start_side, False, tolerance)
+        if self.depth != 0:
+            face.louvers_by_distance_between(
+                self.distance, self.depth, self.offset, self.angle, self.contour_vector,
+                self.flip_start_side, False, tolerance)
 
     def scale(self, factor):
         """Get a scaled version of these ShadingParameters.
@@ -503,9 +506,10 @@ class LouversByCount(_LouversBase):
             tolerance: An optional value to remove any louvers with a length less
                 than the tolerance. Default: 0.01, suitable for objects in meters.
         """
-        face.louvers_by_count(
-            self.louver_count, self.depth, self.offset, self.angle, self.contour_vector,
-            self.flip_start_side, False, tolerance)
+        if self.depth != 0:
+            face.louvers_by_count(
+                self.louver_count, self.depth, self.offset, self.angle,
+                self.contour_vector, self.flip_start_side, False, tolerance)
 
     def scale(self, factor):
         """Get a scaled version of these ShadingParameters.
