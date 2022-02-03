@@ -1119,7 +1119,7 @@ class Room2D(_BaseGeometry):
         return adj_info
 
     @staticmethod
-    def intersect_adjacency(room_2ds, tolerance=0.01):
+    def intersect_adjacency(room_2ds, tolerance=0.01, preserve_exterior=True):
         """Intersect the line segments of an array of Room2Ds to ensure matching walls.
 
         Note that this method effectively erases all assigned boundary conditions,
@@ -1137,6 +1137,10 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
+            preserve_exterior: Boolean to note whether exterior window paramters
+                and shading parameters should be preserved for exterior wall
+                segments. This will also preserve Ground and Adiabatic boundary
+                conditions for walls. (Default: True).
 
         Returns:
             An array of Room2Ds that have been intersected with one another. Note
@@ -1197,6 +1201,38 @@ class Room2D(_BaseGeometry):
             rebuilt_room._parent = room_2ds[i]._parent
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
+        
+        # transfer the exterior wall window/shading parameters if requested
+        if preserve_exterior:
+            for orig_r, new_r in zip(room_2ds, intersected_rooms):
+                # get the relevant original segments to check for matches
+                rel_segs, rel_bcs, rel_win, rel_shd = [], [], [], []
+                o_zip_props = zip(orig_r.floor_segments, orig_r._boundary_conditions,
+                                  orig_r._window_parameters, orig_r._shading_parameters)
+                for seg, bc, win, shd in o_zip_props:
+                    if not isinstance(bc, Surface):
+                        rel_segs.append(seg)
+                        rel_bcs.append(bc)
+                        rel_win.append(win)
+                        rel_shd.append(shd)
+                # build up new lists of parameters if the segments match
+                new_bcs, new_win, new_shd = [], [], []
+                for seg1 in new_r.floor_segments:
+                    for k, seg2 in enumerate(rel_segs):
+                        if seg1.p1.is_equivalent(seg2.p1, tolerance):
+                            if seg1.p2.is_equivalent(seg2.p2, tolerance):  #it's a match!
+                                new_bcs.append(rel_bcs[k])
+                                new_win.append(rel_win[k])
+                                new_shd.append(rel_shd[k])
+                                break
+                    else:  # the segment could not be matched
+                        new_bcs.append(bcs.outdoors)
+                        new_win.append(None)
+                        new_shd.append(None)
+                new_r.boundary_conditions = new_bcs
+                new_r.window_parameters = new_win
+                new_r.shading_parameters = new_shd
+        
         return tuple(intersected_rooms)
 
     @staticmethod
