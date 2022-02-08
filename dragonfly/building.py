@@ -543,7 +543,7 @@ class Building(_BaseGeometry):
             new_ground_floor = self._unique_stories[0]
             if len(self._unique_stories) > 1:
                 new_ground_floor.set_top_exposed_by_story_above(
-                    self._unique_stories[ 1], tolerance)
+                    self._unique_stories[1], tolerance)
 
         # ensure that the top floor is unique
         new_top_floors = []

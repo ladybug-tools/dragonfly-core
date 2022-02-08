@@ -310,7 +310,7 @@ class Room2D(_BaseGeometry):
                                  for f in room.faces if isinstance(f.type, Floor)])
         is_top_exposed = all([isinstance(f.boundary_condition, Outdoors)
                               for f in room.faces if isinstance(f.type, RoofCeiling)])
-        
+
         # create the Dragonfly Room2D and add the extra attributes
         room_2d = cls(
             room.identifier, flr_geo, floor_to_ceiling_height,
@@ -1201,7 +1201,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._parent = room_2ds[i]._parent
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
-        
+
         # transfer the exterior wall window/shading parameters if requested
         if preserve_exterior:
             for orig_r, new_r in zip(room_2ds, intersected_rooms):
@@ -1220,7 +1220,7 @@ class Room2D(_BaseGeometry):
                 for seg1 in new_r.floor_segments:
                     for k, seg2 in enumerate(rel_segs):
                         if seg1.p1.is_equivalent(seg2.p1, tolerance):
-                            if seg1.p2.is_equivalent(seg2.p2, tolerance):  #it's a match!
+                            if seg1.p2.is_equivalent(seg2.p2, tolerance):  # a match!
                                 new_bcs.append(rel_bcs[k])
                                 new_win.append(rel_win[k])
                                 new_shd.append(rel_shd[k])
@@ -1232,7 +1232,7 @@ class Room2D(_BaseGeometry):
                 new_r.boundary_conditions = new_bcs
                 new_r.window_parameters = new_win
                 new_r.shading_parameters = new_shd
-        
+
         return tuple(intersected_rooms)
 
     @staticmethod
@@ -1260,7 +1260,7 @@ class Room2D(_BaseGeometry):
             floor_height:
             tolerance: The maximum difference between values at which point vertices
                 are considered to be the same.
-        
+
         Returns:
             A list of horizontal Face3Ds for the minimum number joined together.
         """
@@ -1274,7 +1274,7 @@ class Room2D(_BaseGeometry):
                 holes = None
                 if fg.has_holes:
                     holes = [[Point3D(p.x, p.y, floor_height) for p in hole]
-                                for hole in fg.holes]
+                             for hole in fg.holes]
                 room_floors.append(Face3D(bound, holes=holes))
         flr_pf = Polyface3D.from_faces(room_floors, tolerance)
 

@@ -563,28 +563,34 @@ using-multipliers-zone-and-or-window.html
         for room in rooms_2ds:
             self.add_room_2d(room)
 
-    def solve_room_2d_adjacency(self, tolerance=0.01):
+    def solve_room_2d_adjacency(self, tolerance=0.01, intersect=False):
         """Automatically solve adjacencies across the Room2Ds in this story.
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered adjacent. Default: 0.01,
-                suitable for objects in meters.
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+            intersect: Boolean to note wether the Room2Ds should be intersected
+                to obtain matching wall segments before solving adjacency. Note
+                that setting this to True will result in the loss of windows and
+                shades assigned to intersected segments. (Default: False)
         """
+        if intersect:
+            self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
         Room2D.solve_adjacency(self._room_2ds, tolerance)
 
     def intersect_room_2d_adjacency(self, tolerance=0.01):
         """Automatically intersect the line segments of the Story's Room2Ds.
 
-        Note that this method effectively erases all assigned boundary conditions,
-        window parameters and shading parameters as the original segments are
-        subdivided. As such, it is recommended that this method be used before all
-        other steps when creating a Story.
+        Note that this method effectively erases window parameters and shading
+        parameters for any intersected segments as the original segments are
+        subdivided. As such, it is recommended that this method be used before
+        assigning window or shading parameters.
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                at which they can be considered adjacent. Default: 0.01,
-                suitable for objects in meters.
+                at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
         """
         self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
 
