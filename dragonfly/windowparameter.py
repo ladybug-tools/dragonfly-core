@@ -1144,7 +1144,7 @@ class DetailedWindows(_AsymmetricBase):
                 'vertices for DetailedWindows.'
             plane = Plane(Vector3D(segment.v.y, -segment.v.x, 0), segment.p, segment.v)
             pt3d = tuple(tuple(Point3D.from_array(pt) for pt in poly)
-                               for poly in data['polygons'])
+                         for poly in data['polygons'])
             return cls(tuple(Polygon2D(tuple(plane.xyz_to_xy(pt) for pt in poly))
                              for poly in pt3d))
 
@@ -1164,14 +1164,14 @@ class DetailedWindows(_AsymmetricBase):
             face3d: A list of Face3D objects for the detailed windows.
             segment: A LineSegment3D that sets the plane in which 3D vertices
                 are located.
-            height: A number for the height of the 
+            height: A number for the height of the wall formed by extruding the segment.
             tolerance: The minimum difference between the coordinate values of two
                 vertices at which they can be considered equivalent. Default: 0.01,
                 suitable for objects in meters.
             angle_tolerance: The max angle in degrees that the plane normals can
                 differ from one another in order for them to be considered coplanar.
                 Default: 1 degree.
-        
+
         Returns:
             True if the face3d is in the plane and range of the segment. False
             if it is not.
