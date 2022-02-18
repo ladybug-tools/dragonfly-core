@@ -79,6 +79,9 @@ class Story(_BaseGeometry):
                 'Expected dragonfly Room2D. Got {}'.format(type(room))
             room._parent = self
         self._room_2ds = room_2ds
+        assert self.room_2d_story_geometry_valid(room_2ds), 'Room2D geometries ' \
+            'for Story "{}" have floor elevations that are too different from one ' \
+            'another to be a part of the same Story.'.format(identifier)
 
         # process the input properties
         self.floor_height = floor_height
@@ -860,6 +863,26 @@ using-multipliers-zone-and-or-window.html
         Use this method to access Writer class to write the story in other formats.
         """
         return writer
+
+    @staticmethod
+    def room_2d_story_geometry_valid(room_2ds):
+        """Check that a set of Room2Ds have geometry that makes a valid Story.
+
+        This means that all of the floors of the Room2Ds are close enough to
+        one another in elevation that their walls could touch each other.
+
+        Args:
+            room_2ds: An array of Room2Ds that will be checked to ensure their
+                geometry makes a valid Story.
+
+        Returns:
+            True if the Room2D geometries make a valid Story. False if they do not.
+        """
+        if len(room_2ds) == 1:
+            return True
+        flr_hts = sorted([rm.floor_height for rm in room_2ds])
+        min_flr_to_ceil = min([rm.floor_to_ceiling_height for rm in room_2ds])
+        return True if flr_hts[-1] - flr_hts[0] < min_flr_to_ceil else False
 
     @staticmethod
     def _match_apertures(face_1, face2):

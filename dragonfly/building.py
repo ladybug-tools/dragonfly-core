@@ -9,6 +9,7 @@ from .room2d import Room2D
 import dragonfly.writer.building as writer
 
 from honeybee.model import Model
+from honeybee.room import Room
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string, invalid_dict_error
 from honeybee.units import parse_distance_string
@@ -248,9 +249,11 @@ class Building(_BaseGeometry):
             model: A Honeybee Model to be converted to a Dragonfly Building.
         """
         # assign stories if they don't already exist
+        min_diff = parse_distance_string('2m', model.units)
+        remove_stories = False
         if not all([room.story is not None for room in model.rooms]):
-            min_diff = parse_distance_string('2m', model.units)
             model.assign_stories_by_floor_height(min_diff)
+            remove_stories = True
         # group the rooms by story and create dragonfly Stories
         story_dict = {}
         for room in model.rooms:
@@ -258,12 +261,44 @@ class Building(_BaseGeometry):
                 story_dict[room.story].append(room)
             except KeyError:
                 story_dict[room.story] = [room]
-        stories = [Story.from_honeybee(id, rms, model.tolerance)
-                   for id, rms in story_dict.items()]
-        # create the Bulding object
+        # evaluate floor heights to see if floors should be split
+        removed_flrs, new_flrs = [], {}
+        for s_id, rms in story_dict.items():
+            if not cls._room_story_geometry_valid(rms):
+                rm_grps, flr_hts = Room.group_by_floor_height(rms, min_diff)
+                for grp, ht in zip(rm_grps, flr_hts):
+                    new_flrs['{}_{}'.format(s_id, ht)] = grp
+                removed_flrs.append(s_id)
+        for r_flr in removed_flrs:
+            story_dict.pop(r_flr)
+        story_dict.update(new_flrs)
+        # create the Story and Bulding objects
+        stories = [Story.from_honeybee(str(s_id), rms, model.tolerance)
+                   for s_id, rms in story_dict.items()]
         bldg = cls(model.identifier, stories)
         bldg._display_name = model._display_name
+        # if stories were auto-generated, remove them to avoid editing the input
+        if remove_stories:
+            for rm in model.rooms:
+                rm.story = None
         return bldg
+
+    @staticmethod
+    def _room_story_geometry_valid(rooms):
+        """Check that a set of Honeybee Rooms have geometry that makes a valid Story.
+
+        Args:
+            rooms: An array of Honeybee Rooms that will be checked to ensure their
+                geometry makes a valid Story.
+
+        Returns:
+            True if the Room geometries make a valid Story. False if they do not.
+        """
+        if len(rooms) == 1:
+            return True
+        flr_hts = sorted([rm.geometry.min.z for rm in rooms])
+        min_flr_to_ceil = min([rm.geometry.max.z - rm.geometry.min.z for rm in rooms])
+        return True if flr_hts[-1] - flr_hts[0] < min_flr_to_ceil else False
 
     @property
     def unique_stories(self):
