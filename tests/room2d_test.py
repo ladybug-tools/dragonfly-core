@@ -524,6 +524,52 @@ def test_room2d_intersect_adjacency():
         '{}..Face3'.format(room2d_1.identifier)
 
 
+def test_group_by_adjacency():
+    """Test the Room2D group_by_adjacency method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(10, 30, 3))
+    room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('SquareShoebox3', Face3D(pts_3), 3)
+    Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
+
+    all_rooms = [room2d_1, room2d_2, room2d_3]
+
+    grouped_rooms = Room2D.group_by_adjacency(all_rooms)
+
+    assert len(grouped_rooms) == 2
+    assert len(grouped_rooms[0]) == 2
+    assert len(grouped_rooms[1]) == 1
+
+
+def test_group_by_air_boundary_adjacency():
+    """Test the Room2D group_by_air_boundary_adjacency method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 20, 3), Point3D(10, 20, 3))
+    room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('SquareShoebox3', Face3D(pts_3), 3)
+    adj_info = Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
+
+    for room_pair in adj_info:
+        for room_adj in room_pair:
+            room, wall_i = room_adj
+            air_bnd = list(room.air_boundaries)
+            air_bnd[wall_i] = True
+            room.air_boundaries = air_bnd
+
+    all_rooms = [room2d_1, room2d_2, room2d_3]
+    Room2D.solve_adjacency(all_rooms, 0.01)
+
+    grouped_rooms = Room2D.group_by_air_boundary_adjacency(all_rooms)
+
+    assert len(grouped_rooms) == 2
+    assert len(grouped_rooms[0]) == 2
+    assert len(grouped_rooms[1]) == 1
+
+
 def test_to_honeybee():
     """Test the to_honeybee method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
