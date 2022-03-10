@@ -1075,9 +1075,11 @@ class Room2D(_BaseGeometry):
         hb_plenums = self._honeybee_plenums(hb_room, tolerance=tolerance)
         for hb_plenum in hb_plenums:  # transfer the parent's construction set
             hb_plenum._properties = self.properties.to_honeybee(hb_plenum)
+            hb_plenum.exclude_floor_area = True
             try:  # set the program to unconditioned plenum and assign infiltration
                 hb_plenum.properties.energy.program_type = None
                 hb_plenum.properties.energy.hvac = None
+                hb_plenum.properties.energy._shw = None
                 hb_plenum.properties.energy.infiltration = \
                     hb_room.properties.energy.infiltration
             except AttributeError:
