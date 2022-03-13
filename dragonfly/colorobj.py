@@ -26,6 +26,7 @@ class ColorRoom2D(_ColorObject):
         * attr_name_end
         * attributes
         * attributes_unique
+        * attributes_original
         * floor_faces
         * graphic_container
         * min_point
