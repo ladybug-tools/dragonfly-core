@@ -298,6 +298,47 @@ def test_room2d_set_outdoor_window_shading_parameters():
     assert room2d.exterior_aperture_area == 60 * 0.4
 
 
+def test_room2d_remove_duplicate_vertices():
+    """Test the Room2D remove_duplicate_vertices method."""
+    pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 0, 3.001),
+           Point3D(10, 10, 3), Point3D(0, 10, 3))
+    ashrae_base = SimpleWindowRatio(0.4)
+    overhang = Overhang(1)
+    boundarycs = (bcs.outdoors, bcs.ground, bcs.ground, bcs.outdoors, bcs.ground)
+    window = (ashrae_base, None, None, ashrae_base, None)
+    shading = (overhang, None, None, None, None)
+    room2d = Room2D('SquareShoebox', Face3D(pts), 3, boundarycs, window, shading)
+
+    assert len(room2d.boundary_conditions) == 5
+    assert len(room2d.window_parameters) == 5
+    assert len(room2d.shading_parameters) == 5
+
+    room2d.remove_duplicate_vertices(0.01)
+
+    assert len(room2d.boundary_conditions) == 4
+    assert len(room2d.window_parameters) == 4
+    assert len(room2d.shading_parameters) == 4
+
+    pts = (Point3D(0, 0, 3), Point3D(10, 0, 3),
+           Point3D(10, 10, 3), Point3D(0, 10, 3), Point3D(0, 0.0001, 3))
+    ashrae_base = SimpleWindowRatio(0.4)
+    overhang = Overhang(1)
+    boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground, bcs.outdoors)
+    window = (ashrae_base, None, ashrae_base, None, ashrae_base)
+    shading = (overhang, None, None, None, overhang)
+    room2d = Room2D('SquareShoebox', Face3D(pts), 3, boundarycs, window, shading)
+
+    assert len(room2d.boundary_conditions) == 5
+    assert len(room2d.window_parameters) == 5
+    assert len(room2d.shading_parameters) == 5
+
+    room2d.remove_duplicate_vertices(0.01)
+
+    assert len(room2d.boundary_conditions) == 4
+    assert len(room2d.window_parameters) == 4
+    assert len(room2d.shading_parameters) == 4
+
+
 def test_generate_grid():
     """Test the generate_grid method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))

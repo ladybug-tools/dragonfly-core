@@ -887,28 +887,29 @@ class Room2D(_BaseGeometry):
         exist_abs = self.air_boundaries
         new_bound, new_bcs, new_win, new_shd, new_abs = [], [], [], [], []
         b_pts = self.floor_geometry.boundary
-        b_pts = [b_pts[-1]] + b_pts[1:]
+        b_pts = b_pts[1:] + (b_pts[0],)
         for i, vert in enumerate(b_pts):
-            if not vert.is_equivalent(b_pts[-1], tolerance):
-                new_bound.append(vert)
+            if not vert.is_equivalent(b_pts[i - 1], tolerance):
+                new_bound.append(b_pts[i - 1])
                 new_bcs.append(self._boundary_conditions[i])
                 new_win.append(self._window_parameters[i])
                 new_shd.append(self._shading_parameters[i])
                 new_abs.append(exist_abs[i])
         new_holes = None
         if self.floor_geometry.has_holes:
-            new_holes = []
+            new_holes, seg_count = [], len(b_pts)
             for hole in self.floor_geometry.holes:
                 new_h_pts = []
-                h_pts = [hole[-1]] + hole[1:]
+                h_pts = hole[1:] + (hole[0],)
                 for i, vert in enumerate(h_pts):
-                    if not vert.is_equivalent(h_pts[-1], tolerance):
-                        new_h_pts.append(vert)
-                        new_bcs.append(self._boundary_conditions[i])
-                        new_win.append(self._window_parameters[i])
-                        new_shd.append(self._shading_parameters[i])
+                    if not vert.is_equivalent(h_pts[i - 1], tolerance):
+                        new_h_pts.append(h_pts[i - 1])
+                        new_bcs.append(self._boundary_conditions[seg_count + i])
+                        new_win.append(self._window_parameters[seg_count + i])
+                        new_shd.append(self._shading_parameters[seg_count + i])
                         new_abs.append(exist_abs[i])
                 new_holes.append(new_h_pts)
+                seg_count += len(h_pts)
 
         # assign the geometry and properties
         self._floor_geometry = Face3D(new_bound, self.floor_geometry.plane, new_holes)
