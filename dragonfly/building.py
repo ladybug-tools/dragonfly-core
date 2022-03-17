@@ -273,7 +273,7 @@ class Building(_BaseGeometry):
             story_dict.pop(r_flr)
         story_dict.update(new_flrs)
         # create the Story and Bulding objects
-        stories = [Story.from_honeybee(str(s_id), rms, model.tolerance)
+        stories = [Story.from_honeybee(clean_string(str(s_id)), rms, model.tolerance)
                    for s_id, rms in story_dict.items()]
         bldg = cls(model.identifier, stories)
         bldg._display_name = model._display_name

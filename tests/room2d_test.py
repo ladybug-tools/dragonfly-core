@@ -160,13 +160,14 @@ def test_room2d_init_clockwise():
                   bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground)
     window = (ashrae_base, ashrae_base, None, None, ashrae_base, ashrae_base, None, None)
     shading = (overhang, None, None, None, overhang, None, None, None)
-    room2d = Room2D('TestZone', Face3D(pts, holes=[pts_hole]), 3, boundarycs, window, shading)
+    room2d = Room2D('TestZone', Face3D(pts, holes=[pts_hole]),
+                    3, boundarycs, window, shading)
 
     assert room2d.floor_geometry.boundary == tuple(reversed(pts))
     assert room2d.floor_geometry.holes[0] == pts_hole
     assert room2d.boundary_conditions == \
         (bcs.ground, bcs.ground, bcs.outdoors, bcs.outdoors,
-        bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground)
+         bcs.outdoors, bcs.outdoors, bcs.ground, bcs.ground)
     assert room2d.window_parameters == \
         (None, None, ashrae_base, ashrae_base, ashrae_base, ashrae_base, None, None)
     assert room2d.shading_parameters == \
@@ -486,7 +487,8 @@ def test_room2d_remove_colinear_vertices():
 def test_room2d_solve_adjacency():
     """Test the Room2D solve_adjacency method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3),
+             Point3D(20, 10, 3), Point3D(10, 10, 3))
     room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
     room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
     Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
@@ -502,7 +504,8 @@ def test_room2d_solve_adjacency():
 def test_solve_adjacency_aperture():
     """Test the Room2D solve_adjacency method with an interior aperture."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3),
+             Point3D(20, 10, 3), Point3D(10, 10, 3))
     ashrae_base = SimpleWindowRatio(0.4)
     window_1 = (None, ashrae_base, None, None)
     window_2 = (None, None, None, ashrae_base)
@@ -524,7 +527,8 @@ def test_solve_adjacency_aperture():
 def test_solve_adjacency_air_boundary():
     """Test the Room2D solve_adjacency method with an air boundary."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3),
+             Point3D(20, 10, 3), Point3D(10, 10, 3))
     room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
     room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
     adj_info = Room2D.solve_adjacency([room2d_1, room2d_2], 0.01)
@@ -547,7 +551,8 @@ def test_solve_adjacency_air_boundary():
 def test_room2d_intersect_adjacency():
     """Test the Room2D intersect_adjacency method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    pts_2 = (Point3D(10, 5, 2), Point3D(20, 5, 2), Point3D(20, 15, 2), Point3D(10, 15, 2))
+    pts_2 = (Point3D(10, 5, 2), Point3D(20, 5, 2),
+             Point3D(20, 15, 2), Point3D(10, 15, 2))
     room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
     room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
     room2d_1, room2d_2 = Room2D.intersect_adjacency([room2d_1, room2d_2], 0.01)
@@ -568,8 +573,10 @@ def test_room2d_intersect_adjacency():
 def test_group_by_adjacency():
     """Test the Room2D group_by_adjacency method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    pts_3 = (Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 30, 3), Point3D(10, 30, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3),
+             Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(10, 20, 3), Point3D(20, 20, 3),
+             Point3D(20, 30, 3), Point3D(10, 30, 3))
     room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
     room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
     room2d_3 = Room2D('SquareShoebox3', Face3D(pts_3), 3)
@@ -587,8 +594,10 @@ def test_group_by_adjacency():
 def test_group_by_air_boundary_adjacency():
     """Test the Room2D group_by_air_boundary_adjacency method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3), Point3D(10, 10, 3))
-    pts_3 = (Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 20, 3), Point3D(10, 20, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3),
+             Point3D(20, 10, 3), Point3D(10, 10, 3))
+    pts_3 = (Point3D(10, 10, 3), Point3D(20, 10, 3),
+             Point3D(20, 20, 3), Point3D(10, 20, 3))
     room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
     room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
     room2d_3 = Room2D('SquareShoebox3', Face3D(pts_3), 3)
@@ -689,7 +698,7 @@ def test_honeybee_ceiling_plenum():
         elif face.identifier == 'R2-2m_ceiling_plenum..Face4':
             assert _is_adiabatic(face.boundary_condition)
         elif face.identifier == 'R2-2m_ceiling_plenum..Face5':
-            assert isinstance(face.boundary_condition, Outdoors) # Roof exposed outdoors
+            assert isinstance(face.boundary_condition, Outdoors)  # Roof exposed outdoors
         else:
             assert False
 
@@ -739,7 +748,6 @@ def test_honeybee_floor_plenum():
     assert len(plenum_5m[:]) == 6
 
     for i, face in enumerate(plenum_5m.faces):
-        #print(face.identifier, '-', face.boundary_condition)
         if face.identifier == 'R2-5m_floor_plenum..Face0':
             assert _is_adiabatic(face.boundary_condition)
         elif face.identifier == 'R2-5m_floor_plenum..Face1':
@@ -824,7 +832,8 @@ def test_to_dict():
     boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
     window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
-    room = Room2D('ShoeBoxZone', Face3D(pts), 3, boundarycs, window, shading, True, False)
+    room = Room2D('ShoeBoxZone', Face3D(pts),
+                  3, boundarycs, window, shading, True, False)
 
     rd = room.to_dict()
     assert rd['type'] == 'Room2D'
