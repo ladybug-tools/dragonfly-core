@@ -21,6 +21,7 @@ from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
 from honeybee.room import Room
+from honeybee.model import Model as HBModel
 
 from ._base import _BaseGeometry
 from .properties import ModelProperties
@@ -733,7 +734,10 @@ class Model(_BaseGeometry):
             'Model tolerance must be non-zero to use Model.to_honeybee.'
 
         # create the model objects
-        if object_per_model is None or object_per_model.title() == 'Building':
+        if len(self.buildings) == 0:  # model containing only context shade
+            hb_shades = [s for shd in self.context_shades for s in shd.to_honeybee()]
+            models = [HBModel(self.identifier, orphaned_shades=hb_shades)]
+        elif object_per_model is None or object_per_model.title() == 'Building':
             models = Building.buildings_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
                 use_multiplier, add_plenum, cap, tolerance=tolerance)
