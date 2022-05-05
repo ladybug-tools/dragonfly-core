@@ -51,6 +51,11 @@ def translate():
               'units. If None, all other buildings will be included as context shade in '
               'each and every Model. Set to 0 to exclude all neighboring buildings '
               'from the resulting models.', type=str, default=None, show_default=True)
+@click.option('--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
+              'whether an exception should be raised if an adjacency between two '
+              'Room2Ds is invalid or if the check should be bypassed and the invalid '
+              'Surface boundary condition should be replaced with an Outdoor boundary '
+              'condition.', default=True, show_default=True)
 @click.option('--folder', '-f', help='Folder on this computer, into which the HBJSON '
               'files will be written. If None, the files will be output '
               'to the honeybee default simulation folder and placed in a project '
@@ -62,7 +67,8 @@ def translate():
               'including their file paths. By default the list will be printed out to '
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
-                      no_ceil_adjacency, shade_dist, folder, log_file):
+                      no_ceil_adjacency, shade_dist, enforce_adj_check,
+                      folder, log_file):
     """Translate a Dragonfly Model JSON file into several Honeybee Models.
 
     \b
@@ -86,7 +92,8 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
         cap = not no_cap
         ceil_adjacency = not no_ceil_adjacency
         hb_models = model.to_honeybee(
-            obj_per_model, shade_dist, multiplier, add_plenum, cap, ceil_adjacency)
+            obj_per_model, shade_dist, multiplier, add_plenum, cap, ceil_adjacency,
+            enforce_adj=enforce_adj_check)
 
         # write out the honeybee JSONs and collect the info about them
         hb_jsons = []

@@ -801,7 +801,8 @@ using-multipliers-zone-and-or-window.html
             raise ValueError(full_msg)
         return full_msg
 
-    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01):
+    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
+                    enforce_adj=True):
         """Convert Dragonfly Story to a list of Honeybee Rooms.
 
         Args:
@@ -814,8 +815,12 @@ using-multipliers-zone-and-or-window.html
                 be auto-generated for the Rooms. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-                If None, no splitting will occur. Default: 0.01, suitable for
-                objects in meters.
+                If None, no splitting will occur. (Default: 0.01, suitable for
+                objects in meters).
+            enforce_adj: Boolean to note whether an exception should be raised if
+                an adjacency between two Room2Ds is invalid (True) or if the invalid
+                Surface boundary condition should be replaced with an Outdoor
+                boundary condition (False). (Default: True).
 
         Returns:
             A list of honeybee Rooms that represent the Story.
@@ -847,7 +852,13 @@ using-multipliers-zone-and-or-window.html
                                 adj_face = adj[1][-2]
                                 if face.identifier == adj_face:
                                     self._match_apertures(adj[0], face)
-                                    adj[0].set_adjacency(face, tolerance)
+                                    try:
+                                        adj[0].set_adjacency(face, tolerance)
+                                    except (AssertionError, ValueError) as e:
+                                        if enforce_adj:
+                                            raise e
+                                        face.boundary_condition = bcs.outdoors
+                                        adj[0].boundary_condition = bcs.outdoors
                                     adj_set.add(face.identifier)
                                     break
                             break
