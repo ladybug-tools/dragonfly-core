@@ -664,9 +664,9 @@ class Model(_BaseGeometry):
             for story in bldg._unique_stories:
                 adj_msg = story.check_missing_adjacencies(False)
                 if adj_msg != '':
-                    bldg_ids.append('{} - {}'.format(bldg.identifier, adj_msg))
+                    bldg_ids.append('{}\n {}'.format(story.identifier, adj_msg))
         if bldg_ids != []:
-            msg = 'The following buildings have missing adjacencies in ' \
+            msg = 'The following Stories have missing adjacencies in ' \
                 'the Model:\n{}'.format('\n'.join(bldg_ids))
             if raise_exception:
                 raise ValueError(msg)

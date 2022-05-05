@@ -765,20 +765,41 @@ using-multipliers-zone-and-or-window.html
 
     def check_missing_adjacencies(self, raise_exception=True):
         """Check that all Room2Ds have adjacent objects that exist within this Story."""
-        bc_obj_ids = []
+        # gather all of the Surface boundary conditions
+        srf_bc_dict = {}
         for room in self._room_2ds:
-            for bc in room._boundary_conditions:
+            for bc, w_par in zip(room._boundary_conditions, room._window_parameters):
                 if isinstance(bc, Surface):
-                    bc_obj_ids.append(bc.boundary_condition_objects[-1])
-        try:
-            self.rooms_by_identifier(bc_obj_ids)
-        except ValueError as e:
-            msg = 'A Room2D has an adjacent object that is missing ' \
-                'from the model:\n{}'.format(e)
-            if raise_exception:
-                raise ValueError(msg)
-            return msg
-        return ''
+                    bc_objs = bc.boundary_condition_objects
+                    bc_ind = int(bc_objs[0].split('..Face')[-1]) - 1
+                    srf_bc_dict[(bc_objs[-1], bc_ind)] = \
+                        (room.identifier, bc_objs[0], w_par)
+        # check the adjacencies for all Surface boundary conditions
+        msgs = []
+        for key, val in srf_bc_dict.items():
+            rm_id = key[0]
+            for room in self._room_2ds:
+                if room.identifier == rm_id:
+                    rm_bc = room._boundary_conditions[key[1]]
+                    rm_w_par = room._window_parameters[key[1]]
+                    if not isinstance(rm_bc, Surface):
+                        msg = 'Room2D "{}" does not have a Surface boundary condition ' \
+                            'at "{}".'.format(rm_id, val[1])
+                        msgs.append(msg)
+                    if val[2] != rm_w_par:
+                        msg = 'Window parameters do not match between ' \
+                            'adjacent Room2Ds "{}" and "{}".'.format(val[0], rm_id)
+                        msgs.append(msg)
+                    break
+            else:
+                msg = 'Room2D "{}" has a missing adjacency for Room2D "{}".'.format(
+                    val[0], rm_id)
+                msgs.append(msg)
+        # report any errors
+        full_msg = '\n '.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
 
     def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01):
         """Convert Dragonfly Story to a list of Honeybee Rooms.
