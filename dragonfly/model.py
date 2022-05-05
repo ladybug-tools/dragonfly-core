@@ -675,7 +675,7 @@ class Model(_BaseGeometry):
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
                     use_multiplier=True, add_plenum=False, cap=False,
-                    solve_ceiling_adjacencies=False, tolerance=None):
+                    solve_ceiling_adjacencies=False, tolerance=None, enforce_adj=True):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
         Args:
@@ -723,7 +723,11 @@ class Model(_BaseGeometry):
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. This must be a
                 positive, non-zero number. If None, the Model's own tolerance
-                will be used. Default: None.
+                will be used. (Default: None).
+            enforce_adj: Boolean to note whether an exception should be raised if
+                an adjacency between two Room2Ds is invalid (True) or if the invalid
+                Surface boundary condition should be replaced with an Outdoor
+                boundary condition (False). (Default: True).
 
         Returns:
             An array of Honeybee Models that together represent this Dragonfly Model.
@@ -740,14 +744,17 @@ class Model(_BaseGeometry):
         elif object_per_model is None or object_per_model.title() == 'Building':
             models = Building.buildings_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
-                use_multiplier, add_plenum, cap, tolerance=tolerance)
+                use_multiplier, add_plenum, cap, tolerance=tolerance,
+                enforce_adj=enforce_adj)
         elif object_per_model.title() == 'Story':
             models = Building.stories_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
-                use_multiplier, add_plenum, cap, tolerance=tolerance)
+                use_multiplier, add_plenum, cap, tolerance=tolerance,
+                enforce_adj=enforce_adj)
         elif object_per_model.title() == 'District':
             models = [Building.district_to_honeybee(
-                self._buildings, use_multiplier, add_plenum, tolerance=tolerance)]
+                self._buildings, use_multiplier, add_plenum, tolerance=tolerance,
+                enforce_adj=enforce_adj)]
             for shd_group in self._context_shades:
                 for shd in shd_group.to_honeybee():
                     for model in models:

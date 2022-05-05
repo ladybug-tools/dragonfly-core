@@ -666,7 +666,8 @@ class Building(_BaseGeometry):
             story.scale(factor, origin)
         self.properties.scale(factor, origin)
 
-    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01):
+    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
+                    enforce_adj=True):
         """Convert Dragonfly Building to a Honeybee Model.
 
         Args:
@@ -681,16 +682,25 @@ class Building(_BaseGeometry):
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
+            enforce_adj: Boolean to note whether an exception should be raised if
+                an adjacency between two Room2Ds is invalid (True) or if the invalid
+                Surface boundary condition should be replaced with an Outdoor
+                boundary condition (False). (Default: True).
+
+        Returns:
+            A honeybee Model that represent the Building.
         """
         hb_rooms = []
         if use_multiplier:
             for story in self._unique_stories:
                 hb_rooms.extend(story.to_honeybee(
-                    True, add_plenum=add_plenum, tolerance=tolerance))
+                    True, add_plenum=add_plenum, tolerance=tolerance,
+                    enforce_adj=enforce_adj))
         else:
             for story in self.all_stories():
                 hb_rooms.extend(story.to_honeybee(
-                    False, add_plenum=add_plenum, tolerance=tolerance))
+                    False, add_plenum=add_plenum, tolerance=tolerance,
+                    enforce_adj=enforce_adj))
         hb_mod = Model(self.identifier, hb_rooms)
         hb_mod._display_name = self._display_name
         hb_mod._user_data = self._user_data
@@ -728,7 +738,8 @@ class Building(_BaseGeometry):
 
     @staticmethod
     def district_to_honeybee(
-            buildings, use_multiplier=True, add_plenum=False, tolerance=0.01):
+            buildings, use_multiplier=True, add_plenum=False, tolerance=0.01,
+            enforce_adj=True):
         """Convert an array of Building objects into a single district honeybee Model.
 
         Args:
@@ -745,20 +756,30 @@ class Building(_BaseGeometry):
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
+            enforce_adj: Boolean to note whether an exception should be raised if
+                an adjacency between two Room2Ds is invalid (True) or if the invalid
+                Surface boundary condition should be replaced with an Outdoor
+                boundary condition (False). (Default: True).
+
+        Returns:
+            A honeybee Model that represent the district.
         """
         # create a base model to which everything will be added
         base_model = buildings[0].to_honeybee(
-            use_multiplier, add_plenum=add_plenum, tolerance=tolerance)
+            use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
+            enforce_adj=enforce_adj)
         # loop through each Building, create a model, and add it to the base one
         for bldg in buildings[1:]:
             base_model.add_model(bldg.to_honeybee(
-                use_multiplier, add_plenum=add_plenum, tolerance=tolerance))
+                use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
+                enforce_adj=enforce_adj))
         return base_model
 
     @staticmethod
     def buildings_to_honeybee(
             buildings, context_shades=None, shade_distance=None,
-            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01):
+            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01,
+            enforce_adj=True):
         """Convert an array of Buildings into several honeybee Models with self-shading.
 
         Each input Building will be exported into its own Model. For each Model,
@@ -794,6 +815,13 @@ class Building(_BaseGeometry):
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
+            enforce_adj: Boolean to note whether an exception should be raised if
+                an adjacency between two Room2Ds is invalid (True) or if the invalid
+                Surface boundary condition should be replaced with an Outdoor
+                boundary condition (False). (Default: True).
+
+        Returns:
+            A list of honeybee Models that represent the Building.
         """
         # create lists with all context representations of the buildings + shade
         bldg_shades, bldg_pts, con_shades, con_pts = Building._honeybee_shades(
@@ -803,7 +831,8 @@ class Building(_BaseGeometry):
         num_bldg = len(buildings)
         for i, bldg in enumerate(buildings):
             model = bldg.to_honeybee(
-                use_multiplier, add_plenum=add_plenum, tolerance=tolerance)
+                use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
+                enforce_adj=enforce_adj)
             Building._add_context_to_honeybee(model, bldg_shades, bldg_pts, con_shades,
                                               con_pts, shade_distance, num_bldg, i)
             models.append(model)  # append to the final list of Models
@@ -812,7 +841,8 @@ class Building(_BaseGeometry):
     @staticmethod
     def stories_to_honeybee(
             buildings, context_shades=None, shade_distance=None,
-            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01):
+            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01,
+            enforce_adj=True):
         """Convert an array of Buildings into one honeybee Model per story.
 
         Each Story of each input Building will be exported into its own Model. For each
@@ -849,6 +879,13 @@ class Building(_BaseGeometry):
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
+            enforce_adj: Boolean to note whether an exception should be raised if
+                an adjacency between two Room2Ds is invalid (True) or if the invalid
+                Surface boundary condition should be replaced with an Outdoor
+                boundary condition (False). (Default: True).
+
+        Returns:
+            A list of honeybee Models that represent the Stories.
         """
         # create lists with all context representations of the buildings + shade
         bldg_shades, bldg_pts, con_shades, con_pts = Building._honeybee_shades(
@@ -864,7 +901,8 @@ class Building(_BaseGeometry):
             bldg_con = list(dummy_model.orphaned_shades)
             if use_multiplier:
                 for j, story in enumerate(bldg.unique_stories):
-                    hb_rooms = story.to_honeybee(True, add_plenum, tolerance=tolerance)
+                    hb_rooms = story.to_honeybee(
+                        True, add_plenum, tolerance=tolerance, enforce_adj=enforce_adj)
                     shds = bldg_con + bldg.shade_representation(j, cap, tolerance)
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
                     models.append(model)  # append to the final list of Models
@@ -880,7 +918,8 @@ class Building(_BaseGeometry):
                         mult_shd.extend([s for s_ar in self_shds[j + 1:] for s in s_ar])
                         full_shades.append(mult_shd)
                 for story, shades in zip(bldg.all_stories(), full_shades):
-                    hb_rooms = story.to_honeybee(True, add_plenum, tolerance=tolerance)
+                    hb_rooms = story.to_honeybee(
+                        True, add_plenum, tolerance=tolerance, enforce_adj=enforce_adj)
                     shds = bldg_con + shades
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
                     models.append(model)  # append to the final list of Models
