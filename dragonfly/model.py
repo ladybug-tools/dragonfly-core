@@ -118,7 +118,7 @@ class Model(_BaseGeometry):
                 Model.
             location: An optional ladybug location object with longitude and
                 latitude data defining the origin of the geojson file. If nothing
-                is passed, the origin is autocalculated as the bottom-left corner
+                is passed, the origin is autocalcualted as the bottom-left corner
                 of the bounding box of all building footprints in the geojson file
                 (Default: None).
             point: A ladybug_geometry Point2D for where the location object exists
@@ -622,49 +622,131 @@ class Model(_BaseGeometry):
             self.tolerance = self.tolerance * scale_fac
             self.units = units
 
-    def check_all(self, raise_exception=True):
+    def check_all(self, raise_exception=True, detailed=False):
         """Check all of the aspects of the Model for possible errors.
 
         Args:
             raise_exception: Boolean to note whether a ValueError should be raised
                 if any Model errors are found. If False, this method will simply
-                return a text string with all errors that were found.
+                return a text string with all errors that were found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
 
         Returns:
             A text string with all errors that were found. This string will be empty
             of no errors were found.
         """
+        # set up defaults to ensure the method runs correctly
+        detailed = False if raise_exception else detailed
         msgs = []
         # perform checks for key dragonfly model schema rules
-        msgs.append(self.check_duplicate_building_identifiers(False))
-        msgs.append(self.check_duplicate_context_shade_identifiers(False))
-        msgs.append(self.check_missing_adjacencies(False))
+        msgs.append(self.check_duplicate_context_shade_identifiers(False, detailed))
+        msgs.append(self.check_duplicate_room_2d_identifiers(False, detailed))
+        msgs.append(self.check_duplicate_story_identifiers(False, detailed))
+        msgs.append(self.check_duplicate_building_identifiers(False, detailed))
+        msgs.append(self.check_missing_adjacencies(False, detailed))
         # check the extension attributes
-        msgs.extend(self._properties._check_extension_attr())
+        ext_msgs = self._properties._check_extension_attr()
+        if detailed:
+            ext_msgs = [m for m in ext_msgs if isinstance(m, list)]
+        msgs.extend(ext_msgs)
         # output a final report of errors or raise an exception
-        full_msgs = [msg for msg in msgs if msg != '']
+        full_msgs = [msg for msg in msgs if msg]
+        if detailed:
+            return [m for msg in full_msgs for m in msg]
         full_msg = '\n'.join(full_msgs)
         if raise_exception and len(full_msgs) != 0:
             raise ValueError(full_msg)
         return full_msg
 
-    def check_duplicate_building_identifiers(self, raise_exception=True):
-        """Check that there are no duplicate Building identifiers in the model."""
-        return check_duplicate_identifiers(self._buildings, raise_exception, 'Building')
+    def check_duplicate_building_identifiers(self, raise_exception=True, detailed=False):
+        """Check that there are no duplicate Building identifiers in the model.
 
-    def check_duplicate_context_shade_identifiers(self, raise_exception=True):
-        """Check that there are no duplicate ContextShade identifiers in the model."""
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if duplicate identifiers are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
         return check_duplicate_identifiers(
-            self._context_shades, raise_exception, 'ContextShade')
+            self._buildings, raise_exception, 'Building', detailed, '100004', 'Core',
+            'Duplicate Building Identifier')
 
-    def check_missing_adjacencies(self, raise_exception=True):
-        """Check that all Room2Ds have adjacent objects that exist within each Story."""
+    def check_duplicate_story_identifiers(self, raise_exception=True, detailed=False):
+        """Check that there are no duplicate Story identifiers in the model.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if duplicate identifiers are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        return check_duplicate_identifiers(
+            self.stories, raise_exception, 'Story', detailed, '100003', 'Core',
+            'Duplicate Story Identifier')
+
+    def check_duplicate_room_2d_identifiers(self, raise_exception=True, detailed=False):
+        """Check that there are no duplicate Room2D identifiers in the model.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if duplicate identifiers are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        return check_duplicate_identifiers(
+            self.room_2ds, raise_exception, 'Room2D', detailed, '100002', 'Core',
+            'Duplicate Room2D Identifier')
+
+    def check_duplicate_context_shade_identifiers(
+            self, raise_exception=True, detailed=False):
+        """Check that there are no duplicate ContextShade identifiers in the model.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if duplicate identifiers are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        return check_duplicate_identifiers(
+            self._context_shades, raise_exception, 'ContextShade', detailed,
+            '100001', 'Core', 'Duplicate ContextShade Identifier')
+
+    def check_missing_adjacencies(self, raise_exception=True, detailed=False):
+        """Check that all Room2Ds have adjacent objects that exist within each Story.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if missing or invalid adjacencies are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
         bldg_ids = []
         for bldg in self._buildings:
             for story in bldg._unique_stories:
-                adj_msg = story.check_missing_adjacencies(False)
-                if adj_msg != '':
-                    bldg_ids.append('{}\n {}'.format(story.identifier, adj_msg))
+                adj_msg = story.check_missing_adjacencies(False, detailed)
+                if adj_msg:
+                    if detailed:
+                        bldg_ids.extend(adj_msg)
+                    else:
+                        bldg_ids.append('{}\n {}'.format(story.identifier, adj_msg))
+        if detailed:
+            return bldg_ids
         if bldg_ids != []:
             msg = 'The following Stories have missing adjacencies in ' \
                 'the Model:\n{}'.format('\n'.join(bldg_ids))

@@ -4,12 +4,14 @@ from click.testing import CliRunner
 from dragonfly.cli import viz
 from dragonfly.cli.edit import convert_units, solve_adjacency, windows_by_ratio
 from dragonfly.cli.translate import model_to_honeybee, model_from_geojson
+from dragonfly.cli.validate import validate_model
 
 from dragonfly.model import Model
 from honeybee.boundarycondition import Surface
 
 import json
 import os
+import sys
 
 
 def test_viz():
@@ -72,3 +74,35 @@ def test_model_from_geojson():
     model_dict = json.loads(result.output)
     df_model = Model.from_dict(model_dict)
     assert isinstance(df_model, Model)
+
+
+def test_validate_model():
+    input_model = './tests/json/sample_revit_model.dfjson'
+    incorrect_input_model = './tests/json/bad_adjacency_model.dfjson'
+    if (sys.version_info >= (3, 7)):
+        runner = CliRunner()
+        result = runner.invoke(validate_model, [input_model])
+        assert result.exit_code == 0
+        runner = CliRunner()
+        result = runner.invoke(validate_model, [incorrect_input_model])
+        outp = result.output
+        assert 'Your Model is invalid for the following reasons' in outp
+        assert 'does not have a Surface boundary condition' in outp
+
+
+def test_validate_model_json():
+    input_model = './tests/json/sample_revit_model.dfjson'
+    incorrect_input_model = './tests/json/bad_adjacency_model.dfjson'
+    if (sys.version_info >= (3, 7)):
+        runner = CliRunner()
+        result = runner.invoke(validate_model, [input_model, '--json'])
+        assert result.exit_code == 0
+        outp = result.output
+        valid_report = json.loads(outp)
+        assert valid_report['valid']
+        runner = CliRunner()
+        result = runner.invoke(validate_model, [incorrect_input_model, '--json'])
+        outp = result.output
+        valid_report = json.loads(outp)
+        assert not valid_report['valid']
+        assert len(valid_report['errors']) != 0
