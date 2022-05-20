@@ -763,8 +763,19 @@ using-multipliers-zone-and-or-window.html
         self._floor_height = self._floor_height * factor
         self.properties.scale(factor, origin)
 
-    def check_missing_adjacencies(self, raise_exception=True):
-        """Check that all Room2Ds have adjacent objects that exist within this Story."""
+    def check_missing_adjacencies(self, raise_exception=True, detailed=False):
+        """Check that all Room2Ds have adjacent objects that exist within this Story.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if missing or invalid adjacencies are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        detailed = False if raise_exception else detailed
         # gather all of the Surface boundary conditions
         srf_bc_dict = {}
         for room in self._room_2ds:
@@ -773,7 +784,7 @@ using-multipliers-zone-and-or-window.html
                     bc_objs = bc.boundary_condition_objects
                     bc_ind = int(bc_objs[0].split('..Face')[-1]) - 1
                     srf_bc_dict[(bc_objs[-1], bc_ind)] = \
-                        (room.identifier, bc_objs[0], w_par)
+                        (room.identifier, bc_objs[0], w_par, room)
         # check the adjacencies for all Surface boundary conditions
         msgs = []
         for key, val in srf_bc_dict.items():
@@ -784,18 +795,28 @@ using-multipliers-zone-and-or-window.html
                     rm_w_par = room._window_parameters[key[1]]
                     if not isinstance(rm_bc, Surface):
                         msg = 'Room2D "{}" does not have a Surface boundary condition ' \
-                            'at "{}".'.format(rm_id, val[1])
+                            'at "{}" but its adjacent object does.'.format(rm_id, val[1])
+                        msg = self._validation_message_child(
+                            msg, room, detailed, '100201',
+                            error_type='Mismatched Adjacency')
                         msgs.append(msg)
                     if val[2] != rm_w_par:
                         msg = 'Window parameters do not match between ' \
                             'adjacent Room2Ds "{}" and "{}".'.format(val[0], rm_id)
+                        msg = self._validation_message_child(
+                            msg, room, detailed, '100202',
+                            error_type='Mismatched WindowParameter Adjacency')
                         msgs.append(msg)
                     break
             else:
                 msg = 'Room2D "{}" has a missing adjacency for Room2D "{}".'.format(
                     val[0], rm_id)
+                msg = self._validation_message_child(
+                    msg, val[3], detailed, '100203', error_type='Missing Adjacency')
                 msgs.append(msg)
         # report any errors
+        if detailed:
+            return msgs
         full_msg = '\n '.join(msgs)
         if raise_exception and len(msgs) != 0:
             raise ValueError(full_msg)

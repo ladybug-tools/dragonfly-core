@@ -84,6 +84,55 @@ class _BaseGeometry(object):
         return self.__copy__()
 
     @staticmethod
+    def _validation_message_child(
+            message, child_obj, detailed=False, code='000000', extension='Core',
+            error_type='Unknown Error'):
+        """Process a validation error message of a child object.
+
+        Args:
+            message: Text for the error message.
+            child_obj: The child object instance for which the error message is for.
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+            code: Text for the error code. (Default: 000000).
+            extension: Text for the name of the Dragonfly extension for which duplicate
+                identifiers are being evaluated. (Default: Core).
+            error_type: Text for the type of error. This should be directly linked
+                to the error code and should simply be a human-readable version of
+                the error code. (Default: Unknown Error).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        # first check whether an exception should be raised or the message returned
+        if not detailed:
+            return message
+        # if not, then assemble a dictionary with detailed error information
+        error_dict = {
+            'type': 'ValidationError',
+            'code': code,
+            'error_type': error_type,
+            'extension_type': extension,
+            'element_type': child_obj.__class__.__name__,
+            'element_id': child_obj.identifier,
+            'element_name': child_obj.display_name,
+            'message': message
+        }
+        # add parents to the error dictionary
+        parents = []
+        rel_obj = child_obj
+        while getattr(rel_obj, '_parent', None) is not None:
+            rel_obj = getattr(rel_obj, '_parent')
+            par_dict = {
+                'parent_type': rel_obj.__class__.__name__,
+                'id': rel_obj.identifier,
+                'name': rel_obj.display_name
+            }
+            parents.append(par_dict)
+        error_dict['parents'] = parents
+        return error_dict
+
+    @staticmethod
     def _calculate_min(geometry_objects):
         """Calculate min Point2D around an array of geometry with min attributes.
 

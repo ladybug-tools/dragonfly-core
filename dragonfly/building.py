@@ -147,7 +147,7 @@ class Building(_BaseGeometry):
         """Initialize a Building from an array of Face3Ds arrays representing all floors.
 
         This method will test to see which of the stories are geometrically unique
-        (accouting for both the floor plate geometry and the floor_to_floor_heights).
+        (accoutring for both the floor plate geometry and the floor_to_floor_heights).
         It will only include the unique floor geometries in the resulting Building.
 
         All of the resulting Room2Ds will have a floor-to-ceiling height equal to the
