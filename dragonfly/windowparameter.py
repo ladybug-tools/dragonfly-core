@@ -364,7 +364,7 @@ class RepeatingWindowRatio(SimpleWindowRatio):
             ratio is too large for the height, the ratio will take precedence
             and the sill_height will be smaller than this value.
         horizontal_separation: A number for the target separation between
-            individual window centerlines.  If this number is larger than
+            individual window center lines.  If this number is larger than
             the parent rectangle base, only one window will be produced.
         vertical_separation: An optional number to create a single vertical
             separation between top and bottom windows. Default: 0.
@@ -402,7 +402,7 @@ class RepeatingWindowRatio(SimpleWindowRatio):
 
     @property
     def horizontal_separation(self):
-        """Get a number for the separation between individual window centerlines."""
+        """Get a number for the separation between individual window center lines."""
         return self._horizontal_separation
 
     @property
@@ -548,7 +548,7 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
             is too large for the sill_height to fit within the rectangle,
             the window_height will take precedence.
         horizontal_separation: A number for the target separation between
-            individual window centerlines.  If this number is larger than
+            individual window center lines.  If this number is larger than
             the parent rectangle base, only one window will be produced.
 
     Properties:
@@ -585,7 +585,7 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
 
     @property
     def horizontal_separation(self):
-        """Get a number for the separation between individual window centerlines."""
+        """Get a number for the separation between individual window center lines."""
         return self._horizontal_separation
 
     def area_from_segment(self, segment, floor_to_ceiling_height):
@@ -820,6 +820,24 @@ class RectangularWindows(_AsymmetricBase):
 
         return sum(areas)
 
+    def check_valid_for_segment(self, segment, floor_to_ceiling_height):
+        """Check that these window parameters are valid for a given LineSegment3D.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+
+        Returns:
+            A string with the message. Will be an empty string if valid.
+        """
+        total_area = segment.length * floor_to_ceiling_height
+        win_area = self.area_from_segment(segment, floor_to_ceiling_height)
+        if win_area >= total_area:
+            return 'Total area of windows [{}] is greater than the area of the ' \
+                'parent wall [{}].'.format(win_area, total_area)
+        return ''
+
     def to_rectangular_windows(self, segment, floor_to_ceiling_height):
         """Get a version of these WindowParameters as RectangularWindows.
 
@@ -1040,6 +1058,39 @@ class DetailedWindows(_AsymmetricBase):
         """
         return sum(polygon.area for polygon in self._polygons)
 
+    def check_valid_for_segment(self, segment, floor_to_ceiling_height):
+        """Check that these window parameters are valid for a given LineSegment3D.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+
+        Returns:
+            A string with the message. Will be an empty string if valid.
+        """
+        # first check that the total window area isn't larger than the wall
+        max_width = segment.length
+        total_area = max_width * floor_to_ceiling_height
+        win_area = self.area_from_segment(segment, floor_to_ceiling_height)
+        if win_area >= total_area:
+            return 'Total area of windows [{}] is greater than the area of the ' \
+                'parent wall [{}].'.format(win_area, total_area)
+        # next, check to be sure that no window is out of the wall boundary
+        msg_template = 'Vertex 2D {} coordinate [{}] is outside the range allowed ' \
+            'by the parent wall segment.'
+        for p_gon in self.polygons:
+            min_pt, max_pt = p_gon.min, p_gon.max
+            if min_pt.x <= 0:
+                return msg_template.format('X', min_pt.x)
+            if min_pt.y <= 0:
+                return msg_template.format('Y', min_pt.y)
+            if max_pt.x >= max_width:
+                return msg_template.format('X', max_pt.x)
+            if max_pt.y >= floor_to_ceiling_height:
+                return msg_template.format('Y', max_pt.y)
+        return ''
+
     def to_rectangular_windows(self, segment, floor_to_ceiling_height):
         """Get a version of these WindowParameters as RectangularWindows.
 
@@ -1106,7 +1157,7 @@ class DetailedWindows(_AsymmetricBase):
         normal = Vector2D(1, 0)
         origin = Point2D(seg_length / 2, 0)
 
-        # loop through the polygons and reflect them across the midplane of the wall
+        # loop through the polygons and reflect them across the mid plane of the wall
         new_polygons = []
         for polygon in self.polygons:
             new_verts = tuple(pt.reflect(normal, origin) for pt in polygon.vertices)

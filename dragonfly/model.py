@@ -644,6 +644,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_duplicate_room_2d_identifiers(False, detailed))
         msgs.append(self.check_duplicate_story_identifiers(False, detailed))
         msgs.append(self.check_duplicate_building_identifiers(False, detailed))
+        msgs.append(self.check_window_parameters_valid(False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
@@ -723,6 +724,36 @@ class Model(_BaseGeometry):
         return check_duplicate_identifiers(
             self._context_shades, raise_exception, 'ContextShade', detailed,
             '100001', 'Core', 'Duplicate ContextShade Identifier')
+
+    def check_window_parameters_valid(self, raise_exception=True, detailed=False):
+        """Check that all Room2Ds have window parameters produce valid apertures.
+
+        This means that the resulting Apertures are completely bounded by their
+        parent wall Face.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if the window parameters are not valid.
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        detailed = False if raise_exception else detailed
+        msgs = []
+        for room in self.room_2ds:
+            msg = room.check_window_parameters_valid(False, detailed)
+            if detailed:
+                msgs.extend(msg)
+            elif msg != '':
+                msgs.append(msg)
+        if detailed:
+            return msgs
+        full_msg = '\n'.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
 
     def check_missing_adjacencies(self, raise_exception=True, detailed=False):
         """Check that all Room2Ds have adjacent objects that exist within each Story.
