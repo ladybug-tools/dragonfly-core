@@ -229,7 +229,7 @@ class Story(_BaseGeometry):
 
     @property
     def floor_height(self):
-        """Get or set a number for the abolute floor height of the Story.
+        """Get or set a number for the absolute floor height of the Story.
 
         This will be the minimum floor height of all the Story's room_2ds unless
         specified otherwise.
@@ -248,7 +248,7 @@ class Story(_BaseGeometry):
 
         Multipliers are used to speed up the calculation when similar Stories are
         repeated more than once. Essentially, a given simulation with the
-        Story is run once and then the result is mutliplied by the multiplier.
+        Story is run once and then the result is multiplied by the multiplier.
         This comes with some inaccuracy. However, this error might not be too large
         if the Stories are similar enough and it can often be worth it since it can
         greatly speed up the calculation.
@@ -531,7 +531,7 @@ using-multipliers-zone-and-or-window.html
         into one Model (like making a model of repeated stories) since all objects
         within a Model must have unique identifiers.
 
-        This method is used internally to convert from a Story with a mutliplier
+        This method is used internally to convert from a Story with a multiplier
         to fully-detailed Stories with unique identifiers.
 
         Args:

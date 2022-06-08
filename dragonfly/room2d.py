@@ -6,7 +6,7 @@ from ._base import _BaseGeometry
 from .properties import Room2DProperties
 import dragonfly.windowparameter as glzpar
 from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
-    DetailedWindows
+    RectangularWindows, DetailedWindows
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 import dragonfly.writer.room2d as writer
@@ -873,6 +873,41 @@ class Room2D(_BaseGeometry):
             raise ValueError(msg)
         return msg
 
+    def check_window_parameters_valid(self, raise_exception=True, detailed=False):
+        """Check whether the Room2D's window parameters produce valid apertures.
+
+        This means that the resulting Apertures are completely bounded by their
+        parent wall Face.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if the window parameters are not valid.
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        detailed = False if raise_exception else detailed
+        msgs = []
+        checkable_par = (RectangularWindows, DetailedWindows)
+        for i, (wp, seg) in enumerate(zip(self._window_parameters, self.floor_segments)):
+            if wp is not None and isinstance(wp, checkable_par):
+                msg = wp.check_valid_for_segment(seg, self.floor_to_ceiling_height)
+                if msg != '':
+                    msgs.append(' Segment [{}] - {}'.format(i, msg))
+        if len(msgs) == 0:
+            return [] if detailed else ''
+        full_msg = 'Room2D "{}" contains invalid window parameters.' \
+            '\n  {}'.format(self.display_name, '\n  '.join(msgs))
+        full_msg = self._validation_message_child(
+            full_msg, self, detailed, '100101', error_type='Invalid Window Parameters')
+        if detailed:
+            return [full_msg]
+        if raise_exception:
+            raise ValueError(full_msg)
+        return full_msg
+
     def remove_duplicate_vertices(self, tolerance=0.01):
         """Remove duplicate vertices from this Room2D.
 
@@ -926,7 +961,7 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum distance between a vertex and the line it lies
                 upon at which point the vertex is considered colinear. Default: 0.01,
                 suitable for objects in meters.
-            preserve_wall_props: Boolean to note whether exterior window paramters,
+            preserve_wall_props: Boolean to note whether exterior window parameters,
                 shading parameters and boundary conditions should be preserved
                 as vertices are removed. Doing so will take longer. (Default: True).
         """
@@ -1200,7 +1235,7 @@ class Room2D(_BaseGeometry):
 
         Also note that this method does not actually set the walls that are next to one
         another to be adjacent. The solve_adjacency method must be used for this after
-        runing this method.
+        running this method.
 
         Args:
             room_2ds: A list of Room2Ds for which adjacent segments will be
@@ -1208,7 +1243,7 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
-            preserve_exterior: Boolean to note whether exterior window paramters
+            preserve_exterior: Boolean to note whether exterior window parameters
                 and shading parameters should be preserved for exterior wall
                 segments. This will also preserve Ground and Adiabatic boundary
                 conditions for walls. (Default: True).
@@ -1563,7 +1598,7 @@ class Room2D(_BaseGeometry):
             new_win_pars = new_win_pars + win_pars[bound_len:]
             new_shd_pars = new_shd_pars + shd_pars[bound_len:]
 
-        # retrun the flipped lists
+        # return the flipped lists
         return new_bcs, new_win_pars, new_shd_pars
 
     def _split_walls_along_height(self, hb_room, tolerance):
@@ -1654,7 +1689,7 @@ class Room2D(_BaseGeometry):
         return new_faces
 
     def _reassign_split_windows(self, face, i, tolerance):
-        """Re-assign WindowParamters to any base surface that has been split.
+        """Re-assign WindowParameters to any base surface that has been split.
 
         Args:
             face: Honeybee Face to which windows will be re-assigned.
