@@ -55,7 +55,9 @@ def translate():
               'whether an exception should be raised if an adjacency between two '
               'Room2Ds is invalid or if the check should be bypassed and the invalid '
               'Surface boundary condition should be replaced with an Outdoor boundary '
-              'condition.', default=True, show_default=True)
+              'condition. If bypass is selected, any Walls containing WindowParameters '
+              'and an illegal boundary condition will also be replaced with an '
+              'Outdoor boundary condition.', default=True, show_default=True)
 @click.option('--folder', '-f', help='Folder on this computer, into which the HBJSON '
               'files will be written. If None, the files will be output '
               'to the honeybee default simulation folder and placed in a project '
@@ -63,7 +65,7 @@ def translate():
               default=None, show_default=True,
               type=click.Path(file_okay=False, dir_okay=True, resolve_path=True))
 @click.option('--log-file', '-log', help='Optional log file to output a JSON array of '
-              'dictionaries with information about each of the genrated HBJSONs, '
+              'dictionaries with information about each of the generated HBJSONs, '
               'including their file paths. By default the list will be printed out to '
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,

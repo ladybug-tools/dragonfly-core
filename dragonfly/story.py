@@ -841,7 +841,9 @@ using-multipliers-zone-and-or-window.html
             enforce_adj: Boolean to note whether an exception should be raised if
                 an adjacency between two Room2Ds is invalid (True) or if the invalid
                 Surface boundary condition should be replaced with an Outdoor
-                boundary condition (False). (Default: True).
+                boundary condition (False). If False, any Walls containing
+                WindowParameters and an illegal boundary condition will also
+                be replaced with an Outdoor boundary condition. (Default: True).
 
         Returns:
             A list of honeybee Rooms that represent the Story.
@@ -854,7 +856,7 @@ using-multipliers-zone-and-or-window.html
         adjacencies = []
         for room in self._room_2ds:
             hb_room, adj = room.to_honeybee(
-                mult, add_plenum=add_plenum, tolerance=tolerance)
+                mult, add_plenum=add_plenum, tolerance=tolerance, enforce_bc=enforce_adj)
             if isinstance(hb_room, Room):
                 hb_rooms.append(hb_room)
             else:  # list of rooms with plenums

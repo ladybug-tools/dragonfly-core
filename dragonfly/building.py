@@ -272,7 +272,7 @@ class Building(_BaseGeometry):
         for r_flr in removed_flrs:
             story_dict.pop(r_flr)
         story_dict.update(new_flrs)
-        # create the Story and Bulding objects
+        # create the Story and Building objects
         stories = [Story.from_honeybee(clean_string(str(s_id)), rms, model.tolerance)
                    for s_id, rms in story_dict.items()]
         bldg = cls(model.identifier, stories)
@@ -451,7 +451,7 @@ class Building(_BaseGeometry):
 
         The footprint is derived from the lowest story of the building and, if
         all Room2Ds of this story can be joined into a single continuous polyface,
-        then only one Face3D will be contined in the list output from this method.
+        then only one Face3D will be contained in the list output from this method.
         Otherwise, several Face3Ds may be output.
 
         Args:
@@ -593,7 +593,9 @@ class Building(_BaseGeometry):
                     new_top_floor.set_top_exposed()
                 new_top_floors.extend((story, new_top_floor))
             else:
-                if i == len(self._unique_stories) - 1:
+                if i == 0:
+                    continue
+                elif i == len(self._unique_stories) - 1:
                     story.set_top_exposed()
                 else:
                     story.set_top_exposed_by_story_above(
@@ -685,7 +687,9 @@ class Building(_BaseGeometry):
             enforce_adj: Boolean to note whether an exception should be raised if
                 an adjacency between two Room2Ds is invalid (True) or if the invalid
                 Surface boundary condition should be replaced with an Outdoor
-                boundary condition (False). (Default: True).
+                boundary condition (False). If False, any Walls containing
+                WindowParameters and an illegal boundary condition will also
+                be replaced with an Outdoor boundary condition. (Default: True).
 
         Returns:
             A honeybee Model that represent the Building.
@@ -759,7 +763,9 @@ class Building(_BaseGeometry):
             enforce_adj: Boolean to note whether an exception should be raised if
                 an adjacency between two Room2Ds is invalid (True) or if the invalid
                 Surface boundary condition should be replaced with an Outdoor
-                boundary condition (False). (Default: True).
+                boundary condition (False). If False, any Walls containing
+                WindowParameters and an illegal boundary condition will also
+                be replaced with an Outdoor boundary condition. (Default: True).
 
         Returns:
             A honeybee Model that represent the district.
@@ -818,7 +824,9 @@ class Building(_BaseGeometry):
             enforce_adj: Boolean to note whether an exception should be raised if
                 an adjacency between two Room2Ds is invalid (True) or if the invalid
                 Surface boundary condition should be replaced with an Outdoor
-                boundary condition (False). (Default: True).
+                boundary condition (False). If False, any Walls containing
+                WindowParameters and an illegal boundary condition will also
+                be replaced with an Outdoor boundary condition. (Default: True).
 
         Returns:
             A list of honeybee Models that represent the Building.
@@ -882,7 +890,9 @@ class Building(_BaseGeometry):
             enforce_adj: Boolean to note whether an exception should be raised if
                 an adjacency between two Room2Ds is invalid (True) or if the invalid
                 Surface boundary condition should be replaced with an Outdoor
-                boundary condition (False). (Default: True).
+                boundary condition (False). If False, any Walls containing
+                WindowParameters and an illegal boundary condition will also
+                be replaced with an Outdoor boundary condition. (Default: True).
 
         Returns:
             A list of honeybee Models that represent the Stories.
@@ -927,7 +937,7 @@ class Building(_BaseGeometry):
 
     @staticmethod
     def _honeybee_shades(buildings, context_shades, shade_distance, cap, tolerance):
-        """Get lists of Honeybee shades from Building and ContectShade objects."""
+        """Get lists of Honeybee shades from Building and ContextShade objects."""
         bldg_shades, bldg_pts = [], []
         con_shades, con_pts = [], []
         if shade_distance is None or shade_distance > 0:
@@ -1058,7 +1068,7 @@ class Building(_BaseGeometry):
     def _bound_rect_in_dist(bound_pts1, bound_pts2, distance):
         """Check if the bounding rectangles of two footprints overlap within a distance.
 
-        Checking the overlap of the bounding rectangels is extremely quick given this
+        Checking the overlap of the bounding rectangles is extremely quick given this
         method's use of the Separating Axis Theorem.
 
         Args:
