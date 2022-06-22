@@ -14,13 +14,14 @@ from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
+from ladybug_geometry.geometry3d.polyface import Polyface3D
 from ladybug.futil import preparedir
 from ladybug.location import Location
 from honeybee.typing import float_positive, invalid_dict_error
 from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
-from honeybee.room import Room
+from honeybee.facetype import Floor, RoofCeiling
 from honeybee.model import Model as HBModel
 
 from ._base import _BaseGeometry
@@ -840,7 +841,9 @@ class Model(_BaseGeometry):
             enforce_adj: Boolean to note whether an exception should be raised if
                 an adjacency between two Room2Ds is invalid (True) or if the invalid
                 Surface boundary condition should be replaced with an Outdoor
-                boundary condition (False). (Default: True).
+                boundary condition (False). If False, any Walls containing
+                WindowParameters and an illegal boundary condition will also
+                be replaced with an Outdoor boundary condition. (Default: True).
 
         Returns:
             An array of Honeybee Models that together represent this Dragonfly Model.
@@ -880,7 +883,7 @@ class Model(_BaseGeometry):
         if solve_ceiling_adjacencies and \
                 object_per_model.title() in ('Building', 'District'):
             for model in models:
-                Room.solve_adjacency(model.rooms, tolerance)
+                self._solve_ceil_adj(model.rooms, tolerance)
 
         # change the tolerance and units systems to match the dragonfly model
         for model in models:
@@ -1063,7 +1066,7 @@ class Model(_BaseGeometry):
         Args:
             name: A text string for the name of the DFJSON file. If None, the model
                 identifier wil be used. (Default: None).
-            folder: A text string for the direcotry where the DFJSON will be written.
+            folder: A text string for the directory where the DFJSON will be written.
                 If unspecified, the default simulation folder will be used. This
                 is usually at "C:\\Users\\USERNAME\\simulation" on Windows.
             indent: A positive integer to set the indentation used in the resulting
@@ -1093,7 +1096,7 @@ class Model(_BaseGeometry):
         Args:
             name: A text string for the name of the pickle file. If None, the model
                 identifier wil be used. (Default: None).
-            folder: A text string for the direcotry where the pickle will be written.
+            folder: A text string for the directory where the pickle will be written.
                 If unspecified, the default simulation folder will be used. This
                 is usually at "C:\\Users\\USERNAME\\simulation."
             included_prop: List of properties to filter keys that must be included in
@@ -1122,6 +1125,27 @@ class Model(_BaseGeometry):
         Use this method to access Writer class to write the model in other formats.
         """
         return writer
+
+    @staticmethod
+    def _solve_ceil_adj(rooms, tolerance=0.01):
+        """Solve Floor/Ceiling adjacencies between a list of rooms."""
+        relevant_types = (Floor, RoofCeiling)
+        # solve all adjacencies between rooms
+        for i, room_1 in enumerate(rooms):
+            try:
+                for room_2 in rooms[i + 1:]:
+                    if not Polyface3D.overlapping_bounding_boxes(
+                            room_1.geometry, room_2.geometry, tolerance):
+                        continue  # no overlap in bounding box; adjacency impossible
+                    for face_1 in room_1._faces:
+                        for face_2 in room_2._faces:
+                            if isinstance(face_2.type, relevant_types):
+                                if face_1.geometry.is_centered_adjacent(
+                                        face_2.geometry, tolerance):
+                                    face_1.set_adjacency(face_2)
+                                    break
+            except IndexError:
+                pass  # we have reached the end of the list of zones
 
     @staticmethod
     def _objects_from_geojson(bldgs_data, existing_to_context, scale_to_meters,
@@ -1156,7 +1180,7 @@ class Model(_BaseGeometry):
                         _geojson_coordinates, origin_lon_lat, convert_facs)
                     footprint.append(face3d)
 
-            # determine whether the footprint should be conext or a building
+            # determine whether the footprint should be context or a building
             if existing_to_context and 'building_status' in prop \
                     and prop['building_status'] == 'Existing':
                 ht = prop['maximum_roof_height'] * scale_to_meters \

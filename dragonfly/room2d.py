@@ -1001,7 +1001,8 @@ class Room2D(_BaseGeometry):
             rebuilt_room.air_boundaries = new_abs
         return rebuilt_room
 
-    def to_honeybee(self, multiplier=1, add_plenum=False, tolerance=0.01):
+    def to_honeybee(self, multiplier=1, add_plenum=False,
+                    tolerance=0.01, enforce_bc=True):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -1022,6 +1023,10 @@ class Room2D(_BaseGeometry):
                 This is also used in the generation of Windows, and to check if the
                 Room ceiling is adjacent to the upper floor of the Story before
                 generating a plenum. Default: 0.01, suitable for objects in meters.
+            enforce_bc: Boolean to note whether an exception should be raised if
+                apertures are assigned to Wall with an illegal boundary conditions
+                (True) or if the invalid boundary condition should be replaced
+                with an Outdoor boundary condition (False). (Default: True).
 
         Returns:
             A tuple with the two items below.
@@ -1048,7 +1053,8 @@ class Room2D(_BaseGeometry):
         # create the honeybee Room
         room_polyface = Polyface3D.from_offset_face(
             self._floor_geometry, self.floor_to_ceiling_height)
-        hb_room = Room.from_polyface3d(self.identifier, room_polyface)
+        hb_room = Room.from_polyface3d(
+            self.identifier, room_polyface, ground_depth=self.floor_height - 1)
 
         # assign BCs and record any Surface conditions to be set on the story level
         adjacencies = []
@@ -1061,7 +1067,13 @@ class Room2D(_BaseGeometry):
         # assign windows, shading, and air boundary properties to walls
         for i, glz_par in enumerate(self._window_parameters):
             if glz_par is not None:
-                glz_par.add_window_to_face(hb_room[i + 1], tolerance)
+                try:
+                    glz_par.add_window_to_face(hb_room[i + 1], tolerance)
+                except AssertionError as e:
+                    if enforce_bc:
+                        raise e
+                    hb_room[i + 1]._boundary_condition = bcs.outdoors
+                    glz_par.add_window_to_face(hb_room[i + 1], tolerance)
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
                 shd_par.add_shading_to_face(hb_room[i + 1], tolerance)
