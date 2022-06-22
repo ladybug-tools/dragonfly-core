@@ -1098,7 +1098,7 @@ class Room2D(_BaseGeometry):
 
         # set the story, multiplier, display_name, and user_data
         if self.has_parent:
-            hb_room.story = self.parent.identifier
+            hb_room.story = self.parent.display_name
         hb_room.multiplier = multiplier
         hb_room._display_name = self._display_name
         hb_room._user_data = self._user_data
