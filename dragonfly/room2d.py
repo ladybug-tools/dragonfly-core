@@ -2,14 +2,21 @@
 """Dragonfly Room2D."""
 from __future__ import division
 
-from ._base import _BaseGeometry
-from .properties import Room2DProperties
-import dragonfly.windowparameter as glzpar
-from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
-    RectangularWindows, DetailedWindows
-import dragonfly.shadingparameter as shdpar
-from dragonfly.shadingparameter import _ShadingParameterBase
-import dragonfly.writer.room2d as writer
+import math
+
+from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
+from ladybug_geometry.geometry2d.ray import Ray2D
+from ladybug_geometry.geometry2d.line import LineSegment2D
+from ladybug_geometry.geometry2d.polygon import Polygon2D
+from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
+from ladybug_geometry.geometry3d.plane import Plane
+from ladybug_geometry.geometry3d.ray import Ray3D
+from ladybug_geometry.geometry3d.line import LineSegment3D
+from ladybug_geometry.geometry3d.polyline import Polyline3D
+from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
+    closest_point3d_on_line3d_infinite
 
 from honeybee.typing import float_positive, clean_string
 import honeybee.boundarycondition as hbc
@@ -20,16 +27,14 @@ from honeybee.facetype import face_types as ftyp
 from honeybee.face import Face
 from honeybee.room import Room
 
-from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.line import LineSegment3D
-from ladybug_geometry.geometry3d.polyline import Polyline3D
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.polyface import Polyface3D
-
-import math
+from ._base import _BaseGeometry
+from .properties import Room2DProperties
+import dragonfly.windowparameter as glzpar
+from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
+    RectangularWindows, DetailedWindows
+import dragonfly.shadingparameter as shdpar
+from dragonfly.shadingparameter import _ShadingParameterBase
+import dragonfly.writer.room2d as writer
 
 
 class Room2D(_BaseGeometry):
@@ -786,6 +791,12 @@ class Room2D(_BaseGeometry):
             'Air boundaries must be assigned to walls with Surface boundary conditions.'
         self._air_boundaries[seg_index] = True
 
+    def reset_adjacency(self):
+        """Set all Surface boundary conditions of this Room2D to be Outdoors."""
+        for i, bc in enumerate(self._boundary_conditions):
+            if isinstance(bc, Surface):
+                self._boundary_conditions[i] = bcs.outdoors
+
     def move(self, moving_vec):
         """Move this Room2D along a vector.
 
@@ -854,6 +865,223 @@ class Room2D(_BaseGeometry):
 
         self.properties.scale(factor, origin)
 
+    def align(self, line_ray, distance):
+        """Move any Room2D vertices within a given distance of a line to be on that line.
+
+        This is useful to clean up cases where wall segments have a lot of
+        zig zags in them.
+
+        All properties assigned to the Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            line_ray: A ladybug_geometry Ray2D or LineSegment2D to which the Room2D
+                vertices will be aligned. Ray2Ds will be interpreted as being infinite
+                in both directions while LineSegment2Ds will be interpreted as only
+                existing between two points.
+            distance: The maximum distance between a vertex and the line_ray where
+                the vertex will be moved to lie on the line_ray. Vertices beyond
+                this distance will be left as they are.
+        """
+        # create a 3D version of the line_ray for the closes point calculation
+        if isinstance(line_ray, Ray2D):
+            line_ray_3d = Ray3D(
+                Point3D(line_ray.p.x, line_ray.p.y, self.floor_height),
+                Vector3D(line_ray.v.x, line_ray.v.y, 0)
+            )
+            closest_func = closest_point3d_on_line3d_infinite
+        elif isinstance(line_ray, LineSegment2D):
+            line_ray_3d = LineSegment3D(
+                Point3D(line_ray.p.x, line_ray.p.y, self.floor_height),
+                Vector3D(line_ray.v.x, line_ray.v.y, 0)
+            )
+            closest_func = closest_point3d_on_line3d
+        else:
+            msg = 'Expected Ray2D or LineSegment2D. Got {}.'.format(type(line_ray))
+            raise TypeError(msg)
+
+        # loop through the vertices and align them
+        new_boundary, new_holes = [], None
+        for pt in self._floor_geometry.boundary:
+            close_pt = closest_func(pt, line_ray_3d)
+            if pt.distance_to_point(close_pt) <= distance:
+                new_boundary.append(close_pt)
+            else:
+                new_boundary.append(pt)
+        if self._floor_geometry.holes is not None:
+            new_holes = []
+            for hole in self._floor_geometry.holes:
+                new_hole = []
+                for pt in hole:
+                    close_pt = closest_func(pt, line_ray_3d)
+                    if pt.distance_to_point(close_pt) <= distance:
+                        new_hole.append(close_pt)
+                    else:
+                        new_hole.append(pt)
+                new_holes.append(new_hole)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            new_boundary, self._floor_geometry.plane, new_holes)
+
+    def remove_duplicate_vertices(self, tolerance=0.01):
+        """Remove duplicate vertices from this Room2D.
+
+        All properties assigned to the Room2D will be preserved.
+
+        Args:
+            tolerance: The minimum distance between a vertex and the line it lies
+                upon at which point the vertex is considered colinear. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of integers for the indices of segments that have been removed.
+        """
+        # loop through the vertices and remove any duplicates
+        exist_abs = self.air_boundaries
+        new_bound, new_bcs, new_win, new_shd, new_abs = [], [], [], [], []
+        b_pts = self.floor_geometry.boundary
+        b_pts = b_pts[1:] + (b_pts[0],)
+        removed_indices = []
+        for i, vert in enumerate(b_pts):
+            if not vert.is_equivalent(b_pts[i - 1], tolerance):
+                new_bound.append(b_pts[i - 1])
+                new_bcs.append(self._boundary_conditions[i])
+                new_win.append(self._window_parameters[i])
+                new_shd.append(self._shading_parameters[i])
+                new_abs.append(exist_abs[i])
+            else:
+                removed_indices.append(i)
+        new_holes = None
+        if self.floor_geometry.has_holes:
+            new_holes, seg_count = [], len(b_pts)
+            for hole in self.floor_geometry.holes:
+                new_h_pts = []
+                h_pts = hole[1:] + (hole[0],)
+                for i, vert in enumerate(h_pts):
+                    if not vert.is_equivalent(h_pts[i - 1], tolerance):
+                        new_h_pts.append(h_pts[i - 1])
+                        new_bcs.append(self._boundary_conditions[seg_count + i])
+                        new_win.append(self._window_parameters[seg_count + i])
+                        new_shd.append(self._shading_parameters[seg_count + i])
+                        new_abs.append(exist_abs[i])
+                    else:
+                        removed_indices.append(i)
+                new_holes.append(new_h_pts)
+                seg_count += len(h_pts)
+
+        # assign the geometry and properties
+        try:
+            self._floor_geometry = Face3D(
+                new_bound, self.floor_geometry.plane, new_holes)
+        except AssertionError as e:  # usually a sliver face of some kind
+            raise ValueError(
+                'Room2D "{}" is degenerate with dimensions less than the '
+                'tolerance.\n{}'.format(self.display_name, e))
+        self._segment_count = len(new_bcs)
+        self._boundary_conditions = new_bcs
+        self._window_parameters = new_win
+        self._shading_parameters = new_shd
+        self._air_boundaries = new_abs
+        return removed_indices
+
+    def remove_colinear_vertices(self, tolerance=0.01, preserve_wall_props=True):
+        """Get a version of this Room2D without colinear or duplicate vertices.
+
+        Args:
+            tolerance: The minimum distance between a vertex and the line it lies
+                upon at which point the vertex is considered colinear. Default: 0.01,
+                suitable for objects in meters.
+            preserve_wall_props: Boolean to note whether exterior window parameters,
+                shading parameters and boundary conditions should be preserved
+                as vertices are removed. Doing so will take longer. (Default: True).
+        """
+        # remove colinear vertices from the Room2D
+        try:
+            new_geo = self.floor_geometry.remove_colinear_vertices(tolerance)
+        except AssertionError as e:  # usually a sliver face of some kind
+            raise ValueError(
+                'Room2D "{}" is degenerate with dimensions less than the '
+                'tolerance.\n{}'.format(self.display_name, e))
+        rebuilt_room = Room2D(
+            self.identifier, new_geo, self.floor_to_ceiling_height,
+            is_ground_contact=self.is_ground_contact,
+            is_top_exposed=self.is_top_exposed)
+        rebuilt_room._display_name = self.display_name
+        rebuilt_room._user_data = self._user_data
+        rebuilt_room._parent = self._parent
+        rebuilt_room._properties._duplicate_extension_attr(self._properties)
+
+        # transfer the exterior wall window/shading parameters if requested
+        if preserve_wall_props:
+            # build up new lists of parameters if the segments match
+            exist_abs = self.air_boundaries
+            new_bcs, new_win, new_shd, new_abs = [], [], [], []
+            for seg1 in rebuilt_room.floor_segments:
+                for k, seg2 in enumerate(self.floor_segments):
+                    if seg1.p1.is_equivalent(seg2.p1, tolerance):
+                        if seg1.p2.is_equivalent(seg2.p2, tolerance):  # a match!
+                            new_bcs.append(self._boundary_conditions[k])
+                            new_win.append(self._window_parameters[k])
+                            new_shd.append(self._shading_parameters[k])
+                            new_abs.append(exist_abs[k])
+                            break
+                else:  # the segment could not be matched
+                    new_bcs.append(bcs.outdoors)
+                    new_win.append(None)
+                    new_shd.append(None)
+                    new_abs.append(False)
+            rebuilt_room.boundary_conditions = new_bcs
+            rebuilt_room.window_parameters = new_win
+            rebuilt_room.shading_parameters = new_shd
+            rebuilt_room.air_boundaries = new_abs
+        return rebuilt_room
+
+    def remove_degenerate_holes(self):
+        """Remove any holes in this Room2D with an area that evaluates to zero.
+
+        All properties assigned to the Room2D will be preserved.
+        """
+        if self.floor_geometry.has_holes:
+            # first identify any zero-area holes
+            holes_to_remove = []
+            for i, hole in enumerate(self.floor_geometry.holes):
+                test_face = Face3D(hole, self.floor_geometry.plane)
+                if test_face.area == 0:
+                    holes_to_remove.append(i)
+            # if zero-area holes were found, rebuild the Room2D
+            if len(holes_to_remove) > 0:
+                # first collect the properties of the boundary
+                exist_abs = self.air_boundaries
+                new_bcs, new_win, new_shd, new_abs = [], [], [], []
+                seg_count = len(self.floor_geometry.boundary)
+                for i in range(seg_count):
+                    new_bcs.append(self._boundary_conditions[i])
+                    new_win.append(self._window_parameters[i])
+                    new_shd.append(self._shading_parameters[i])
+                    new_abs.append(exist_abs[i])
+                # collect the properties of the new holes
+                new_holes = []
+                for hi, hole in enumerate(self.floor_geometry.holes):
+                    if hi not in holes_to_remove:
+                        for i, vert in enumerate(hole):
+                            new_bcs.append(self._boundary_conditions[seg_count + i])
+                            new_win.append(self._window_parameters[seg_count + i])
+                            new_shd.append(self._shading_parameters[seg_count + i])
+                            new_abs.append(exist_abs[i])
+                        new_holes.append(hole)
+                    seg_count += len(hole)
+                # reset the properties of the Room2D
+                self._floor_geometry = Face3D(
+                    self.floor_geometry.boundary, self.floor_geometry.plane, new_holes)
+                self._segment_count = len(new_bcs)
+                self._boundary_conditions = new_bcs
+                self._window_parameters = new_win
+                self._shading_parameters = new_shd
+                self._air_boundaries = new_abs
+
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horizontal within a tolerance.
 
@@ -907,99 +1135,6 @@ class Room2D(_BaseGeometry):
         if raise_exception:
             raise ValueError(full_msg)
         return full_msg
-
-    def remove_duplicate_vertices(self, tolerance=0.01):
-        """Remove duplicate vertices from this Room2D.
-
-        All properties assigned to the Room2D will be preserved.
-
-        Args:
-            tolerance: The minimum distance between a vertex and the line it lies
-                upon at which point the vertex is considered colinear. Default: 0.01,
-                suitable for objects in meters)
-        """
-        # get a list of unique vertices
-        exist_abs = self.air_boundaries
-        new_bound, new_bcs, new_win, new_shd, new_abs = [], [], [], [], []
-        b_pts = self.floor_geometry.boundary
-        b_pts = b_pts[1:] + (b_pts[0],)
-        for i, vert in enumerate(b_pts):
-            if not vert.is_equivalent(b_pts[i - 1], tolerance):
-                new_bound.append(b_pts[i - 1])
-                new_bcs.append(self._boundary_conditions[i])
-                new_win.append(self._window_parameters[i])
-                new_shd.append(self._shading_parameters[i])
-                new_abs.append(exist_abs[i])
-        new_holes = None
-        if self.floor_geometry.has_holes:
-            new_holes, seg_count = [], len(b_pts)
-            for hole in self.floor_geometry.holes:
-                new_h_pts = []
-                h_pts = hole[1:] + (hole[0],)
-                for i, vert in enumerate(h_pts):
-                    if not vert.is_equivalent(h_pts[i - 1], tolerance):
-                        new_h_pts.append(h_pts[i - 1])
-                        new_bcs.append(self._boundary_conditions[seg_count + i])
-                        new_win.append(self._window_parameters[seg_count + i])
-                        new_shd.append(self._shading_parameters[seg_count + i])
-                        new_abs.append(exist_abs[i])
-                new_holes.append(new_h_pts)
-                seg_count += len(h_pts)
-
-        # assign the geometry and properties
-        self._floor_geometry = Face3D(new_bound, self.floor_geometry.plane, new_holes)
-        self._segment_count = len(new_bcs)
-        self._boundary_conditions = new_bcs
-        self._window_parameters = new_win
-        self._shading_parameters = new_shd
-        self._air_boundaries = new_abs
-
-    def remove_colinear_vertices(self, tolerance=0.01, preserve_wall_props=True):
-        """Get a version of this Room2D without colinear or duplicate vertices.
-
-        Args:
-            tolerance: The minimum distance between a vertex and the line it lies
-                upon at which point the vertex is considered colinear. Default: 0.01,
-                suitable for objects in meters.
-            preserve_wall_props: Boolean to note whether exterior window parameters,
-                shading parameters and boundary conditions should be preserved
-                as vertices are removed. Doing so will take longer. (Default: True).
-        """
-        # remove colinear vertices from the Room2D
-        new_geo = self.floor_geometry.remove_colinear_vertices(tolerance)
-        rebuilt_room = Room2D(
-            self.identifier, new_geo, self.floor_to_ceiling_height,
-            is_ground_contact=self.is_ground_contact,
-            is_top_exposed=self.is_top_exposed)
-        rebuilt_room._display_name = self.display_name
-        rebuilt_room._user_data = self._user_data
-        rebuilt_room._parent = self._parent
-        rebuilt_room._properties._duplicate_extension_attr(self._properties)
-
-        # transfer the exterior wall window/shading parameters if requested
-        if preserve_wall_props:
-            # build up new lists of parameters if the segments match
-            exist_abs = self.air_boundaries
-            new_bcs, new_win, new_shd, new_abs = [], [], [], []
-            for seg1 in rebuilt_room.floor_segments:
-                for k, seg2 in enumerate(self.floor_segments):
-                    if seg1.p1.is_equivalent(seg2.p1, tolerance):
-                        if seg1.p2.is_equivalent(seg2.p2, tolerance):  # a match!
-                            new_bcs.append(self._boundary_conditions[k])
-                            new_win.append(self._window_parameters[k])
-                            new_shd.append(self._shading_parameters[k])
-                            new_abs.append(exist_abs[k])
-                            break
-                else:  # the segment could not be matched
-                    new_bcs.append(bcs.outdoors)
-                    new_win.append(None)
-                    new_shd.append(None)
-                    new_abs.append(False)
-            rebuilt_room.boundary_conditions = new_bcs
-            rebuilt_room.window_parameters = new_win
-            rebuilt_room.shading_parameters = new_shd
-            rebuilt_room.air_boundaries = new_abs
-        return rebuilt_room
 
     def to_honeybee(self, multiplier=1, add_plenum=False,
                     tolerance=0.01, enforce_bc=True):
@@ -1203,8 +1338,8 @@ class Room2D(_BaseGeometry):
         Args:
             room_2ds: A list of Room2Ds for which adjacencies will be solved.
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered adjacent. Default: 0.01,
-                suitable for objects in meters.
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
 
         Returns:
             A list of tuples with each tuple containing 2 sub-tuples for wall
@@ -1233,7 +1368,44 @@ class Room2D(_BaseGeometry):
                                     adj_info.append(((room_1, j), (room_2, k)))
                                     break
             except IndexError:
-                pass  # we have reached the end of the list of zones
+                pass  # we have reached the end of the list of rooms
+        return adj_info
+
+    @staticmethod
+    def find_adjacency(room_2ds, tolerance=0.01):
+        """Get a list with all adjacent pairs of segments between input Room2Ds.
+
+        Note that this method does not change any boundary conditions of the input
+        Room2Ds or mutate them in any way. It's purely a geometric analysis of the
+        segments between Room2Ds.
+
+        Args:
+            room_2ds: A list of Room2Ds for which adjacencies will be solved.
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of tuples for each discovered adjacency. Each tuple contains
+            2 sub-tuples with two elements. The first element is the Room2D and
+            the second is the index of the wall segment that is adjacent.
+        """
+        adj_info = []  # lists of adjacencies to track
+        for i, room_1 in enumerate(room_2ds):
+            try:
+                for room_2 in room_2ds[i + 1:]:
+                    if not Polygon2D.overlapping_bounding_rect(
+                            room_1._floor_geometry.boundary_polygon2d,
+                            room_2._floor_geometry.boundary_polygon2d, tolerance):
+                        continue  # no overlap in bounding rect; adjacency impossible
+                    for j, seg_1 in enumerate(room_1.floor_segments_2d):
+                        for k, seg_2 in enumerate(room_2.floor_segments_2d):
+                            if seg_1.distance_to_point(seg_2.p1) <= tolerance and \
+                                    seg_1.distance_to_point(seg_2.p2) <= tolerance:
+                                adj_info.append(((room_1, j), (room_2, k)))
+                                break
+            except IndexError:
+                pass  # we have reached the end of the list of rooms
         return adj_info
 
     @staticmethod

@@ -2,7 +2,8 @@
 from click.testing import CliRunner
 
 from dragonfly.cli import viz
-from dragonfly.cli.edit import convert_units, solve_adjacency, windows_by_ratio
+from dragonfly.cli.edit import convert_units, solve_adjacency, align_room_2ds, \
+    windows_by_ratio
 from dragonfly.cli.translate import model_to_honeybee, model_from_geojson
 from dragonfly.cli.validate import validate_model
 
@@ -42,6 +43,22 @@ def test_edit_solve_adjacency():
     result_model = Model.from_dict(json.loads(result.output))
     rooms = result_model.buildings[0].unique_room_2ds
     assert isinstance(rooms[0].boundary_conditions[0], Surface)
+
+
+def test_align_room_2ds():
+    input_model = './tests/json/Level03.dfjson'
+    input_lines = './tests/json/line_rays.json'
+    output_model = './tests/json/FixedLevel03.dfjson'
+    runner = CliRunner()
+    cmds = [input_model, input_lines, '--output-file', output_model]
+    result = runner.invoke(align_room_2ds, cmds)
+    assert result.exit_code == 0
+
+    assert os.path.isfile(output_model)
+    result_model = Model.from_file(output_model)
+    rooms = result_model.buildings[0].unique_room_2ds
+    assert len(rooms) == 144
+    os.remove(output_model)
 
 
 def test_windows_by_ratio():
