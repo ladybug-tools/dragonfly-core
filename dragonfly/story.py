@@ -2,10 +2,12 @@
 """Dragonfly Story."""
 from __future__ import division
 
-from ._base import _BaseGeometry
-from .properties import StoryProperties
-from .room2d import Room2D
-import dragonfly.writer.story as writer
+from ladybug_geometry.geometry2d.polygon import Polygon2D
+from ladybug_geometry.geometry3d.pointvector import Vector3D
+from ladybug_geometry.geometry3d.ray import Ray3D
+from ladybug_geometry.geometry3d.polyline import Polyline3D
+from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry3d.polyface import Polyface3D
 
 from honeybee.typing import float_positive, int_in_range, clean_string, \
     invalid_dict_error
@@ -15,12 +17,11 @@ from honeybee.altnumber import autocalculate
 from honeybee.shade import Shade
 from honeybee.room import Room
 
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Vector3D
-from ladybug_geometry.geometry3d.ray import Ray3D
-from ladybug_geometry.geometry3d.polyline import Polyline3D
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ._base import _BaseGeometry
+from .room2d import Room2D
+from .windowparameter import DetailedWindows
+from .properties import StoryProperties
+import dragonfly.writer.story as writer
 
 
 class Story(_BaseGeometry):
@@ -566,21 +567,191 @@ using-multipliers-zone-and-or-window.html
         for room in rooms_2ds:
             self.add_room_2d(room)
 
-    def solve_room_2d_adjacency(self, tolerance=0.01, intersect=False):
-        """Automatically solve adjacencies across the Room2Ds in this story.
+    def align_room_2ds(self, line_ray, distance):
+        """Move Room2D vertices within a given distance of a line to be on that line.
+
+        Note that, when there are small Room2Ds next to the input line_ray,
+        this method can create degenerate Room2Ds and so it may be wise to run
+        the delete_degenerate_room_2ds method after running this one.
+
+        Args:
+            line_ray: A ladybug_geometry Ray2D or LineSegment2D to which the Room2D
+                vertices will be aligned. Ray2Ds will be interpreted as being infinite
+                in both directions while LineSegment2Ds will be interpreted as only
+                existing between two points.
+            distance: The maximum distance between a vertex and the line_ray where
+                the vertex will be moved to lie on the line_ray. Vertices beyond
+                this distance will be left as they are.
+        """
+        for room in self.room_2ds:
+            room.align(line_ray, distance)
+
+    def remove_room_2d_duplicate_vertices(self, tolerance=0.01, delete_degenerate=False):
+        """Remove duplicate vertices from all Room2Ds in this Story.
+
+        All properties assigned to the Room2D will be preserved and any changed
+        Surface boundary conditions will be automatically updated based on the
+        removed wall segment indices.
+
+        Args:
+            tolerance: The minimum distance between a vertex and the line it lies
+                upon at which point the vertex is considered duplicated. Default: 0.01,
+                suitable for objects in meters).
+            delete_degenerate: Boolean to note whether degenerate Room2Ds (with floor
+                geometries that evaluate to less than 3 vertices at the tolerance)
+                should be deleted from the Story instead of raising a ValueError.
+                Note that using this option frequently creates invalid missing
+                adjacencies, requiring the run of reset_adjacencies followed
+                by re-running solve_adjacency. (Default: False).
+
+        Returns:
+            A list of all degenerate Room2Ds that were removed if delete_degenerate
+            is True. Will be None if delete_degenerate is False.
+        """
+        # remove vertices from the rooms and track the removed indices
+        removed_dict, removed_rooms = {}, None
+        if delete_degenerate:
+            new_room_2ds, removed_rooms = [], []
+            for room in self.room_2ds:
+                try:
+                    removed_dict[room.identifier] = \
+                        room.remove_duplicate_vertices(tolerance)
+                    new_room_2ds.append(room)
+                except ValueError:  # degenerate room found!
+                    removed_rooms.append(room)
+            assert len(new_room_2ds) > 0, 'All Room2Ds of Story "{}" are '\
+                'degenerate.'.format(self.display_name)
+            self._room_2ds = tuple(new_room_2ds)
+        else:
+            for room in self.room_2ds:
+                removed_dict[room.identifier] = \
+                    room.remove_duplicate_vertices(tolerance)
+
+        # go through the rooms and update any changed Surface boundary conditions
+        if len(self.room_2ds) != 1:
+            for room in self.room_2ds:
+                for j, bc in enumerate(room._boundary_conditions):
+                    if isinstance(bc, Surface):
+                        adj_wall, adj_room = bc.boundary_condition_objects
+                        try:
+                            removed_i = removed_dict[adj_room]
+                        except KeyError:  # illegal boundary condition; just ignore
+                            continue
+                        if len(removed_i) == 0:  # no removed vertices in room
+                            continue
+                        current_i = int(adj_wall.split('..Face')[-1]) - 1
+                        if removed_i[0] <= current_i:  # surface bc to be updated
+                            bef_count = len([k for k in removed_i if k <= current_i])
+                            new_i = current_i - bef_count
+                            new_bc = Surface(
+                                ('{}..Face{}'.format(adj_room, new_i + 1), adj_room)
+                            )
+                            room._boundary_conditions[j] = new_bc
+        return removed_rooms
+
+    def remove_room_2d_colinear_vertices(
+            self, tolerance=0.01, preserve_wall_props=True, delete_degenerate=False):
+        """Automatically remove colinear or duplicate vertices for the Story's Room2Ds.
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered adjacent. (Default: 0.01,
-                suitable for objects in meters).
-            intersect: Boolean to note wether the Room2Ds should be intersected
-                to obtain matching wall segments before solving adjacency. Note
-                that setting this to True will result in the loss of windows and
-                shades assigned to intersected segments. (Default: False)
+                faces at which they can be considered adjacent. Default: 0.01,
+                suitable for objects in meters.
+            preserve_wall_props: Boolean to note whether exterior window parameters,
+                shading parameters and boundary conditions should be preserved
+                as vertices are removed. Doing so will take longer and Surface
+                boundary conditions will still likely be incorrect but they can
+                usually be repaired using reset_adjacency followed by
+                solve_adjacency. (Default: True).
+            delete_degenerate: Boolean to note whether degenerate Room2Ds (with
+                floor geometries that evaluate to less than 3 vertices at the
+                tolerance) should be deleted from the Story instead of raising
+                a ValueError. (Default: False).
+
+        Returns:
+            A list of all degenerate Room2Ds that were removed if delete_degenerate
+            is True. Will be None if delete_degenerate is False.
         """
-        if intersect:
-            self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
-        Room2D.solve_adjacency(self._room_2ds, tolerance)
+        # remove vertices from the rooms and track the removed indices
+        if delete_degenerate:
+            new_room_2ds, removed_rooms = [], []
+            for room in self.room_2ds:
+                try:
+                    new_r = room.remove_colinear_vertices(tolerance, preserve_wall_props)
+                    new_room_2ds.append(new_r)
+                except ValueError:  # degenerate room found!
+                    removed_rooms.append(room)
+            assert len(new_room_2ds) > 0, 'All Room2Ds of Story "{}" are '\
+                'degenerate.'.format(self.display_name)
+            self._room_2ds = tuple(new_room_2ds)
+            return removed_rooms
+        else:
+            new_room_2ds = []
+            for room in self.room_2ds:
+                new_room = room.remove_colinear_vertices(tolerance, preserve_wall_props)
+                new_room_2ds.append(new_room)
+            self._room_2ds = tuple(new_room_2ds)
+
+    def delete_degenerate_room_2ds(self):
+        """Remove all Room2Ds with a floor_area of zero from this Story.
+
+        This method will also automatically remove any degenerate holes in Room2D
+        floor geometries, which have an area less than zero.
+
+        Returns:
+            A list of all degenerate Room2Ds that were removed.
+        """
+        new_room_2ds, removed_rooms = [], []
+        for room in self.room_2ds:
+            if room.floor_geometry.area == 0:
+                removed_rooms.append(room)
+            else:
+                room.remove_degenerate_holes()
+                new_room_2ds.append(room)
+        assert len(new_room_2ds) > 0, 'All Room2Ds of Story "{}" are '\
+            'degenerate.'.format(self.display_name)
+        self._room_2ds = tuple(new_room_2ds)
+        return removed_rooms
+
+    def rebuild_detailed_windows(self, tolerance=0.01):
+        """Rebuild all detailed windows such that they are bounded by their parent walls.
+
+        This method will also ensure that all interior windows on adjacent wall
+        segments are matched correctly with one another.
+
+        This is useful to run after situations where Room2D vertices have been moved,
+        which can otherwise disrupt the pattern of detailed windows.
+
+        Args:
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        adj_dict = {}
+        for room in self.room_2ds:
+            new_w_pars = []
+            zip_items = zip(
+                room._window_parameters, room.floor_segments, room._boundary_conditions)
+            for i, (w_par, seg, bc) in enumerate(zip_items):
+                if isinstance(w_par, DetailedWindows):
+                    new_w_par = w_par.adjust_for_segment(
+                        seg, room.floor_to_ceiling_height, tolerance)
+                    if isinstance(bc, Surface):
+                        try:
+                            adj_seg = bc.boundary_condition_objects[0]
+                            new_w_par = adj_dict[adj_seg].flip(seg.length)
+                        except KeyError:  # first of the two adjacencies
+                            this_seg = '{}..Face{}'.format(room.identifier, i + 1)
+                            adj_dict[this_seg] = new_w_par
+                else:
+                    new_w_par = w_par
+                new_w_pars.append(new_w_par)
+            room._window_parameters = new_w_pars
+
+    def reset_adjacency(self):
+        """Set all Surface boundary conditions on the Story to be Outdoors."""
+        for room in self.room_2ds:
+            room.reset_adjacency()
 
     def intersect_room_2d_adjacency(self, tolerance=0.01):
         """Automatically intersect the line segments of the Story's Room2Ds.
@@ -597,21 +768,21 @@ using-multipliers-zone-and-or-window.html
         """
         self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
 
-    def remove_room_2d_colinear_vertices(self, tolerance=0.01):
-        """Automatically remove colinear or duplicate vertices for the Story's Room2Ds.
-
-        Note that this method effectively erases all assigned boundary conditions,
-        window parameters and shading parameters as many of the original segments
-        may be deleted. As such, it is recommended that this method be used before
-        all other steps when creating a Story.
+    def solve_room_2d_adjacency(self, tolerance=0.01, intersect=False):
+        """Automatically solve adjacencies across the Room2Ds in this Story.
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered adjacent. Default: 0.01,
-                suitable for objects in meters.
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+            intersect: Boolean to note wether the Room2Ds should be intersected
+                to obtain matching wall segments before solving adjacency. Note
+                that setting this to True will result in the loss of windows and
+                shades assigned to intersected segments. (Default: False)
         """
-        self._room_2ds = tuple(room.remove_colinear_vertices(tolerance)
-                               for room in self._room_2ds)
+        if intersect:
+            self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
+        Room2D.solve_adjacency(self._room_2ds, tolerance)
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters.

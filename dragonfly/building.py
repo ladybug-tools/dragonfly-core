@@ -2,17 +2,10 @@
 """Dragonfly Building."""
 from __future__ import division
 
-from ._base import _BaseGeometry
-from .properties import BuildingProperties
-from .story import Story
-from .room2d import Room2D
-import dragonfly.writer.building as writer
-
-from honeybee.model import Model
-from honeybee.room import Room
-from honeybee.boundarycondition import boundary_conditions as bcs
-from honeybee.typing import clean_string, invalid_dict_error
-from honeybee.units import parse_distance_string
+try:
+    from itertools import izip as zip  # python 2
+except ImportError:
+    xrange = range  # python 3
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
@@ -20,10 +13,17 @@ from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
 
-try:
-    from itertools import izip as zip  # python 2
-except ImportError:
-    xrange = range  # python 3
+from honeybee.model import Model
+from honeybee.room import Room
+from honeybee.boundarycondition import boundary_conditions as bcs
+from honeybee.typing import clean_string, invalid_dict_error
+from honeybee.units import parse_distance_string
+
+from ._base import _BaseGeometry
+from .properties import BuildingProperties
+from .story import Story
+from .room2d import Room2D
+import dragonfly.writer.building as writer
 
 
 class Building(_BaseGeometry):

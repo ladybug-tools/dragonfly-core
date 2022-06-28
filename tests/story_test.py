@@ -8,6 +8,7 @@ from dragonfly.shadingparameter import Overhang
 
 from honeybee.room import Room
 from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.boundarycondition import boundary_conditions as bcs
 
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.line import LineSegment3D
@@ -257,6 +258,29 @@ def test_reflect():
     assert test_1.room_2ds[0].floor_geometry[1].x == pytest.approx(0, rel=1e-3)
     assert test_1.room_2ds[0].floor_geometry[1].y == pytest.approx(2, rel=1e-3)
     assert test_1.room_2ds[0].floor_geometry[1].z == pytest.approx(2, rel=1e-3)
+
+
+def test_story_remove_room_2d_duplicate_vertices():
+    """Test the Story remove_duplicate_vertices method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0.0001, 0, 3), Point3D(10, 0, 3),
+             Point3D(10, 10, 3), Point3D(0, 10, 3), Point3D(0, 0.0001, 3))
+    room2d_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
+    pts_2 = (Point3D(10, 0, 3), Point3D(20, 0, 3),
+             Point3D(20, 10, 3), Point3D(10, 10, 3))
+    room2d_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
+
+    story = Story('OfficeFloor', [room2d_1, room2d_2])
+    story.solve_room_2d_adjacency(0.01)
+    story.remove_room_2d_duplicate_vertices(0.01)
+
+    assert len(room2d_1.boundary_conditions) == 4
+    assert len(room2d_2.boundary_conditions) == 4
+    assert isinstance(room2d_1.boundary_conditions[1], Surface)
+    assert isinstance(room2d_2.boundary_conditions[3], Surface)
+    assert room2d_1.boundary_conditions[1].boundary_condition_objects[0] == \
+        'SquareShoebox2..Face4'
+    assert room2d_2.boundary_conditions[3].boundary_condition_objects[0] == \
+        'SquareShoebox1..Face2'
 
 
 def test_to_honeybee():

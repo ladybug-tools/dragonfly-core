@@ -1091,6 +1091,46 @@ class DetailedWindows(_AsymmetricBase):
                 return msg_template.format('Y', max_pt.y)
         return ''
 
+    def adjust_for_segment(self, segment, floor_to_ceiling_height, tolerance=0.01):
+        """Get these parameters with vertices excluded beyond the domain of a given line.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+
+        Returns:
+            A new DetailedWindows object that fits entirely in the domain of the
+            input line segment and floor_to_ceiling_height.
+        """
+        # compute the maximum width and height
+        max_width = segment.length - tolerance
+        max_height = floor_to_ceiling_height - tolerance
+        # loop through the vertices and adjust them
+        new_polygons = []
+        for p_gon in self.polygons:
+            new_verts, verts_moved = [], []
+            for vert in p_gon:
+                x_val, y_val, v_moved = vert.x, vert.y, False
+                if x_val <= tolerance:
+                    x_val, v_moved = tolerance, True
+                if y_val <= tolerance:
+                    y_val, v_moved = tolerance, True
+                if x_val >= max_width:
+                    x_val, v_moved = max_width, True
+                if y_val >= max_height:
+                    y_val, v_moved = max_height, True
+                new_verts.append(Point2D(x_val, y_val))
+                verts_moved.append(v_moved)
+            if not all(verts_moved):
+                new_polygons.append(Polygon2D(new_verts))
+        # return the final window parameters
+        if len(new_polygons) != 0:
+            return DetailedWindows(new_polygons)
+
     def to_rectangular_windows(self, segment, floor_to_ceiling_height):
         """Get a version of these WindowParameters as RectangularWindows.
 

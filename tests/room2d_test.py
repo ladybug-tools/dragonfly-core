@@ -314,11 +314,12 @@ def test_room2d_remove_duplicate_vertices():
     assert len(room2d.window_parameters) == 5
     assert len(room2d.shading_parameters) == 5
 
-    room2d.remove_duplicate_vertices(0.01)
+    remove_i = room2d.remove_duplicate_vertices(0.01)
 
     assert len(room2d.boundary_conditions) == 4
     assert len(room2d.window_parameters) == 4
     assert len(room2d.shading_parameters) == 4
+    assert len(remove_i) == 1
 
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3),
            Point3D(10, 10, 3), Point3D(0, 10, 3), Point3D(0, 0.0001, 3))
@@ -333,11 +334,12 @@ def test_room2d_remove_duplicate_vertices():
     assert len(room2d.window_parameters) == 5
     assert len(room2d.shading_parameters) == 5
 
-    room2d.remove_duplicate_vertices(0.01)
+    remove_i = room2d.remove_duplicate_vertices(0.01)
 
     assert len(room2d.boundary_conditions) == 4
     assert len(room2d.window_parameters) == 4
     assert len(room2d.shading_parameters) == 4
+    assert len(remove_i) == 1
 
 
 def test_generate_grid():
