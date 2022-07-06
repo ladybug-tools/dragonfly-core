@@ -1,0 +1,607 @@
+[
+    {
+        "display_name": "Test_1", 
+        "identifier": "Test_1_e1adaed3", 
+        "floor_boundary": [
+            [
+                -15.0, 
+                95.0
+            ], 
+            [
+                -57.0, 
+                95.0
+            ], 
+            [
+                -57.0, 
+                89.0
+            ], 
+            [
+                -63.0, 
+                89.0
+            ], 
+            [
+                -63.0, 
+                41.0
+            ], 
+            [
+                -15.0, 
+                41.0
+            ]
+        ], 
+        "is_ground_contact": false, 
+        "is_top_exposed": false, 
+        "floor_to_ceiling_height": 10.0, 
+        "type": "Room2D", 
+        "floor_height": 0.0, 
+        "boundary_conditions": [
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }
+        ], 
+        "properties": {
+            "type": "Room2DProperties"
+        }
+    },
+    {
+        "display_name": "Test_2", 
+        "identifier": "Test_2_db84890b", 
+        "floor_boundary": [
+            [
+                -111.0, 
+                41.0
+            ], 
+            [
+                -63.0, 
+                41.0
+            ], 
+            [
+                -63.0, 
+                89.0
+            ], 
+            [
+                -69.0, 
+                89.0
+            ], 
+            [
+                -69.0, 
+                95.0
+            ], 
+            [
+                -111.0, 
+                95.0
+            ]
+        ], 
+        "is_ground_contact": false, 
+        "is_top_exposed": false, 
+        "floor_to_ceiling_height": 10.0, 
+        "type": "Room2D", 
+        "floor_height": 0.0, 
+        "boundary_conditions": [
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }
+        ], 
+        "properties": {
+            "type": "Room2DProperties"
+        }
+    },
+    {
+        "display_name": "Test_3", 
+        "identifier": "Test_3_f021376e", 
+        "floor_boundary": [
+            [
+                8.3434097106128462, 
+                59.336174902359161
+            ], 
+            [
+                9.8776307415137481, 
+                60.619204842906683
+            ], 
+            [
+                26.557019968631508, 
+                40.674331441194951
+            ], 
+            [
+                30.392572545883766, 
+                43.881906292563748
+            ], 
+            [
+                32.958632426978809, 
+                40.813464230761944
+            ], 
+            [
+                29.123079849726551, 
+                37.605889379393147
+            ], 
+            [
+                35.538229552464145, 
+                29.934784224888631
+            ], 
+            [
+                66.222650170482197, 
+                55.595383035839035
+            ], 
+            [
+                37.99599147843675, 
+                89.348245715658891
+            ], 
+            [
+                5.777349829517803, 
+                62.404616964160965
+            ]
+        ], 
+        "is_ground_contact": false, 
+        "is_top_exposed": false, 
+        "floor_to_ceiling_height": 10.0, 
+        "type": "Room2D", 
+        "floor_height": 0.0, 
+        "boundary_conditions": [
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }
+        ], 
+        "properties": {
+            "type": "Room2DProperties"
+        }
+    },
+    {
+        "display_name": "Test_4", 
+        "identifier": "Test_4_0b754ff8", 
+        "floor_boundary": [
+            [
+                -25.0, 
+                -56.0
+            ], 
+            [
+                15.0, 
+                -17.0
+            ], 
+            [
+                -7.0, 
+                31.0
+            ], 
+            [
+                -13.0, 
+                14.0
+            ], 
+            [
+                -15.0, 
+                8.0
+            ], 
+            [
+                -21.0, 
+                8.0
+            ], 
+            [
+                -23.0, 
+                4.0
+            ], 
+            [
+                -26.0, 
+                6.0
+            ], 
+            [
+                -55.0, 
+                -12.0
+            ]
+        ], 
+        "is_ground_contact": false, 
+        "is_top_exposed": false, 
+        "floor_to_ceiling_height": 10.0, 
+        "type": "Room2D", 
+        "floor_height": 0.0, 
+        "boundary_conditions": [
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }
+        ], 
+        "properties": {
+            "type": "Room2DProperties"
+        }
+    },
+    {
+        "display_name": "EQUIPMENT STORAGE 3089", 
+        "identifier": "Room_07a90242-c850-400b-93dd-74671bd14c00-00136c24", 
+        "floor_boundary": [
+            [
+                -67.489443459750916, 
+                42.260434729958199
+            ], 
+            [
+                -67.21303639165879, 
+                42.260434729958199
+            ], 
+            [
+                -66.908037209750844, 
+                42.260434729958192
+            ], 
+            [
+                -64.163037209750868, 
+                42.26043472995817
+            ], 
+            [
+                -64.16303720975084, 
+                48.925463154687399
+            ], 
+            [
+                -64.469633755996512, 
+                48.925463154687399
+            ], 
+            [
+                -65.53394111799156, 
+                48.925463154687399
+            ], 
+            [
+                -65.726162436994031, 
+                48.925463154687399
+            ], 
+            [
+                -65.726162436994031, 
+                49.020775658382945
+            ], 
+            [
+                -68.85241243699403, 
+                49.020775658382959
+            ], 
+            [
+                -68.85241243699403, 
+                48.925463154687428
+            ], 
+            [
+                -70.301162436994034, 
+                48.925463154687428
+            ], 
+            [
+                -70.301162436994034, 
+                44.852934729958207
+            ], 
+            [
+                -67.489443459750916, 
+                44.852934729958186
+            ], 
+            [
+                -67.489443459750916, 
+                42.322044729958201
+            ]
+        ], 
+        "is_ground_contact": false, 
+        "is_top_exposed": false, 
+        "floor_to_ceiling_height": 5.4900000000000002, 
+        "user_data": {}, 
+        "type": "Room2D", 
+        "window_parameters": [
+            null, 
+            null, 
+            null, 
+            null, 
+            null, 
+            null, 
+            null, 
+            null, 
+            {
+                "type": "DetailedWindows", 
+                "polygons": [
+                    [
+                        [
+                            2.8720833333333302, 
+                            0.76408854166682338
+                        ], 
+                        [
+                            2.0523958332316647, 
+                            0.76408854166682338
+                        ], 
+                        [
+                            2.0523958332316647, 
+                            3.9634114583333346
+                        ], 
+                        [
+                            2.8720833333333302, 
+                            3.9634114583333302
+                        ]
+                    ], 
+                    [
+                        [
+                            1.9888541665650039, 
+                            0.76408854166682338
+                        ], 
+                        [
+                            1.1373958334350047, 
+                            0.76408854166682338
+                        ], 
+                        [
+                            1.1373958334350047, 
+                            3.9634114583333346
+                        ], 
+                        [
+                            1.9888541665650039, 
+                            3.9634114583333346
+                        ]
+                    ], 
+                    [
+                        [
+                            1.0738541667683352, 
+                            0.76408854166682338
+                        ], 
+                        [
+                            0.25416666666666954, 
+                            0.76408854166682338
+                        ], 
+                        [
+                            0.25416666666666954, 
+                            3.9634114583333346
+                        ], 
+                        [
+                            1.0738541667683352, 
+                            3.9634114583333302
+                        ]
+                    ]
+                ]
+            }, 
+            null, 
+            null, 
+            null, 
+            null, 
+            null, 
+            null
+        ], 
+        "floor_height": 11.285, 
+        "boundary_conditions": [
+            {
+                "type": "Ground"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_66db521c-45d6-4a52-8359-ae7015cca4b6-002e0ba0..Face11", 
+                    "Room_66db521c-45d6-4a52-8359-ae7015cca4b6-002e0ba0"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_66db521c-45d6-4a52-8359-ae7015cca4b6-002e0b95..Face1", 
+                    "Room_66db521c-45d6-4a52-8359-ae7015cca4b6-002e0b95"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "type": "Ground"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe231..Face6", 
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe231"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe22e..Face2", 
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe22e"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe22e..Face1", 
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe22e"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_3045a02f-8baa-4cc3-a010-7a4085f8eabd-003cdd48..Face2", 
+                    "Room_3045a02f-8baa-4cc3-a010-7a4085f8eabd-003cdd48"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "type": "Ground"
+            }, 
+            {
+                "type": "Ground"
+            }
+        ], 
+        "properties": {
+            "type": "Room2DProperties"
+        }
+    },
+    {
+        "display_name": "EQUIPMENT STOR. 3119", 
+        "identifier": "Room_07a90242-c850-400b-93dd-74671bd14c00-00136c0f", 
+        "floor_boundary": [
+            [
+                -50.58894866808425, 
+                11.796971188291474
+            ], 
+            [
+                -50.588948668084285, 
+                5.6620232716248218
+            ], 
+            [
+                -44.542959084751011, 
+                5.6620232716248022
+            ], 
+            [
+                -44.542959084751011, 
+                5.7382810489606095
+            ], 
+            [
+                -44.542959084751011, 
+                8.100434729958133
+            ], 
+            [
+                -44.542959084751004, 
+                10.043221188291474
+            ], 
+            [
+                -44.542959084751004, 
+                11.911338410955675
+            ], 
+            [
+                -44.542959084751004, 
+                11.987596188291484
+            ], 
+            [
+                -50.512690890748452, 
+                11.987596188291503
+            ], 
+            [
+                -50.58894866808425, 
+                11.987596188291503
+            ]
+        ], 
+        "is_ground_contact": false, 
+        "is_top_exposed": false, 
+        "floor_to_ceiling_height": 5.0833333333333321, 
+        "user_data": {}, 
+        "type": "Room2D", 
+        "floor_height": 11.285, 
+        "boundary_conditions": [
+            {
+                "boundary_condition_objects": [
+                    "Room_07a90242-c850-400b-93dd-74671bd14c00-00136c09..Face11", 
+                    "Room_07a90242-c850-400b-93dd-74671bd14c00-00136c09"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_24715737-3c73-41f8-afe6-5323158eff6f-0013a0be..Face5", 
+                    "Room_24715737-3c73-41f8-afe6-5323158eff6f-0013a0be"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Ground"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_5eec677f-8dbf-4567-ba57-b8a0b5d0269e-0018f721..Face3", 
+                    "Room_5eec677f-8dbf-4567-ba57-b8a0b5d0269e-0018f721"
+                ], 
+                "type": "Surface"
+            }, 
+            {
+                "type": "Ground"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "type": "Ground"
+            }, 
+            {
+                "type": "Outdoors"
+            }, 
+            {
+                "boundary_condition_objects": [
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe1f8..Face1", 
+                    "Room_bae618e7-c288-4910-b807-70e22182332e-004fe1f8"
+                ], 
+                "type": "Surface"
+            }
+        ], 
+        "properties": {
+            "type": "Room2DProperties"
+        }
+    }
+]
