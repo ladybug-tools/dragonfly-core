@@ -1,5 +1,6 @@
 # coding=utf-8
 import pytest
+import json
 
 from dragonfly.room2d import Room2D
 from dragonfly.story import Story
@@ -484,6 +485,38 @@ def test_room2d_remove_colinear_vertices():
     assert len(new_room.boundary_conditions) == 4
     assert len(new_room.window_parameters) == 4
     assert len(new_room.shading_parameters) == 4
+
+
+def test_room2d_remove_short_segments():
+    """Test the Room2D remove_short_segments method."""
+    test_json = './tests/json/short_seg_room2ds.json'
+    with open(test_json) as json_file:
+        data = json.load(json_file)
+    room1, room2, room3, room4, room5, room6 = [Room2D.from_dict(rd) for rd in data]
+
+    new_room1 = room1.remove_short_segments(7)
+    assert len(room1) == 6
+    assert len(new_room1) == 4
+
+    new_room2 = room2.remove_short_segments(7)
+    assert len(room2) == 6
+    assert len(new_room2) == 4
+
+    new_room3 = room3.remove_short_segments(7)
+    assert len(room3) == 10
+    assert len(new_room3) == 6
+
+    new_room4 = room4.remove_short_segments(7)
+    assert len(room4) == 9
+    assert len(new_room4) == 5
+
+    new_room5 = room5.remove_short_segments(0.1)
+    assert len(room5) == 15
+    assert len(new_room5) == 15
+
+    new_room6 = room6.remove_short_segments(0.2)
+    assert len(room6) == 10
+    assert len(new_room6) == 8
 
 
 def test_room2d_solve_adjacency():

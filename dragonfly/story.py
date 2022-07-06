@@ -692,6 +692,40 @@ using-multipliers-zone-and-or-window.html
                 new_room_2ds.append(new_room)
             self._room_2ds = tuple(new_room_2ds)
 
+    def remove_room_2d_short_segments(self, distance, angle_tolerance=1.0):
+        """Remove consecutive short segments on this Story's Room2Ds.
+
+        To patch over the removed segments, an attempt will first be made to find the
+        intersection of the two neighboring segments. If these two lines are parallel,
+        they will simply be connected with a segment.
+
+        Properties assigned to the Room2Ds will be preserved for the segments that
+        are not removed. Room2Ds that have all of their walls shorter than the
+        distance will be removed from the Story.
+
+        Args:
+            distance: The maximum length of a segment below which the segment
+                will be considered for removal.
+            angle_tolerance: The max angle difference in degrees that vertices
+                are allowed to differ from one another in order to consider them
+                colinear. (Default: 1).
+
+        Returns:
+            A list of all small Room2Ds that were removed.
+        """
+        # remove vertices from the rooms and track the removed indices
+        new_room_2ds, removed_rooms = [], []
+        for room in self.room_2ds:
+            nr = room.remove_short_segments(distance, angle_tolerance)
+            if nr is not None:
+                new_room_2ds.append(nr)
+            else:
+                removed_rooms.append(room)
+        assert len(new_room_2ds) > 0, 'All Room2Ds of Story "{}" are '\
+            'are shorter than the distance {}.'.format(self.display_name, distance)
+        self._room_2ds = tuple(new_room_2ds)
+        return removed_rooms
+
     def delete_degenerate_room_2ds(self):
         """Remove all Room2Ds with a floor_area of zero from this Story.
 

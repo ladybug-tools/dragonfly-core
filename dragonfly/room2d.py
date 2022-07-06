@@ -1039,6 +1039,125 @@ class Room2D(_BaseGeometry):
             rebuilt_room.air_boundaries = new_abs
         return rebuilt_room
 
+    def remove_short_segments(self, distance, angle_tolerance=1.0):
+        """Get a version of this Room2D with consecutive short segments removed.
+
+        To patch over the segments, an attempt will first be made to find the
+        intersection of the two neighboring segments. If these two lines are parallel,
+        they will simply be connected with a segment.
+
+        Properties assigned to the Room2D will be preserved for the segments that
+        are not removed.
+
+        Args:
+            distance: The maximum length of a segment below which the segment
+                will be considered for removal.
+            angle_tolerance: The max angle difference in degrees that vertices
+                are allowed to differ from one another in order to consider them
+                colinear. (Default: 1).
+        """
+        # first check if there are contiguous short segments to be removed
+        segs = [self._floor_geometry.boundary_segments]
+        if self._floor_geometry.has_holes:
+            for hole in self._floor_geometry.hole_segments:
+                segs.append(hole)
+        sh_seg_i = [[i for i, s in enumerate(sg) if s.length <= distance] for sg in segs]
+        if len(segs[0]) - len(sh_seg_i[0]) < 3:
+            return None  # large distance means the whole Face becomes removed
+        if all(len(s) <= 1 for s in sh_seg_i):
+            return self  # no short segments to remove
+        del_seg_i = []
+        for sh_seg in sh_seg_i:
+            del_seg = set()
+            for i, seg_i in enumerate(sh_seg):
+                test_val = seg_i - sh_seg[i - 1]
+                if test_val == 1 or (seg_i == 0 and test_val < 0):
+                    del_seg.add(sh_seg[i - 1])
+                    del_seg.add(seg_i)
+            if 0 in sh_seg and len(sh_seg) - 1 in sh_seg:
+                del_seg.add(0)
+                del_seg.add(len(sh_seg) - 1)
+            del_seg_i.append(sorted(list(del_seg)))
+        if all(len(s) == 0 for s in del_seg_i):
+            return self  # there are short segments but they're not contiguous
+
+        # contiguous short segments found
+        # collect the vertices and indices of properties to be removed
+        a_tol = math.radians(angle_tolerance)
+        prev_i, final_pts, del_prop_i = 0, [], []
+        for p_segs, del_i in zip(segs, del_seg_i):
+            if len(del_i) != 0:
+                # set up variables to handle getting the last vertex to connect to
+                new_points, in_del, post_del = [], False, False
+                if 0 in del_i and len(p_segs) - 1 in del_i:
+                    last_i, in_del = -1, True
+                    try:
+                        while del_i[last_i] - del_i[last_i - 1] == 1:
+                            last_i -= 1
+                    except IndexError:  # entire hole to be removed
+                        for i in range(len(p_segs)):
+                            del_prop_i.append(prev_i + i)
+                        p_segs = []
+                # loop through the segments and delete the short ones
+                for i, lin in enumerate(p_segs):
+                    if i in del_i:
+                        if not in_del:
+                            last_i = i
+                        in_del = True
+                        del_prop_i.append(prev_i + i)
+                        rel_i = i + 1 if i + 1 != len(p_segs) else 0
+                        if rel_i not in del_i:  # we are at the end of the deletion
+                            # see if we can repair the hole by extending segments
+                            l3a, l3b = p_segs[last_i - 1], p_segs[rel_i]
+                            l2a = Ray2D(Point2D(l3a.p.x, l3a.p.y),
+                                        Vector2D(l3a.v.x, l3a.v.y))
+                            l2b = Ray2D(Point2D(l3b.p.x, l3b.p.y),
+                                        Vector2D(l3b.v.x, l3b.v.y))
+                            v_ang = l2a.v.angle(l2b.v)
+                            if v_ang <= a_tol or v_ang >= math.pi - a_tol:  # parallel
+                                new_points.append(p_segs[last_i].p)
+                                del_prop_i.pop(-1)  # put back the last property
+                            else:  # extend lines to the intersection
+                                int_pt = self._intersect_line2d_infinite(l2a, l2b)
+                                int_pt3 = Point3D(int_pt.x, int_pt.y, self.floor_height)
+                                new_points.append(int_pt3)
+                                post_del = True
+                            in_del = False
+                    else:
+                        if not post_del:
+                            new_points.append(lin.p)
+                        post_del = False
+                if post_del:
+                    new_points.pop(0)  # put back the last property
+                if len(new_points) != 0:
+                    final_pts.append(new_points)
+            else:  # no short segments to remove on this hole or boundary
+                final_pts.append([lin.p for lin in p_segs])
+            prev_i += len(p_segs)
+
+        # create the geometry and convert properties for the new segments
+        holes = None if len(final_pts) == 1 else final_pts[1:]
+        new_geo = Face3D(final_pts[0], self.floor_geometry.plane, holes)
+        new_bcs = self._boundary_conditions[:]
+        new_win = self._window_parameters[:]
+        new_shd = self._shading_parameters[:]
+        new_abs = list(self.air_boundaries)
+        all_props = (new_bcs, new_win, new_shd, new_abs)
+        for prop_list in all_props:
+            for di in reversed(del_prop_i):
+                prop_list.pop(di)
+
+        # create the final rebuilt Room2D and return it
+        rebuilt_room = Room2D(
+            self.identifier, new_geo, self.floor_to_ceiling_height, new_bcs, new_win,
+            new_shd, self.is_ground_contact, self.is_top_exposed)
+        rebuilt_room._air_boundaries = new_abs
+        rebuilt_room._display_name = self.display_name
+        rebuilt_room._user_data = self._user_data
+        rebuilt_room._parent = self._parent
+        rebuilt_room._properties._duplicate_extension_attr(self._properties)
+        return rebuilt_room
+
     def remove_degenerate_holes(self):
         """Remove any holes in this Room2D with an area that evaluates to zero.
 
@@ -2004,6 +2123,26 @@ class Room2D(_BaseGeometry):
             if ab and isinstance(bc, Surface):
                 adj_rooms.append(bc.boundary_condition_objects[-1])
         return adj_rooms
+
+    @staticmethod
+    def _intersect_line2d_infinite(line_ray_a, line_ray_b):
+        """Get the intersection between a Ray2Ds extended infinitely.
+
+        Args:
+            line_ray_a: A Ray2D object.
+            line_ray_b: Another Ray2D object.
+
+        Returns:
+            Point2D of intersection if it exists. None if lines are parallel.
+        """
+        d = line_ray_b.v.y * line_ray_a.v.x - line_ray_b.v.x * line_ray_a.v.y
+        if d == 0:
+            return None
+        dy = line_ray_a.p.y - line_ray_b.p.y
+        dx = line_ray_a.p.x - line_ray_b.p.x
+        ua = (line_ray_b.v.x * dy - line_ray_b.v.y * dx) / d
+        return Point2D(line_ray_a.p.x + ua * line_ray_a.v.x,
+                       line_ray_a.p.y + ua * line_ray_a.v.y)
 
     def __copy__(self):
         new_r = Room2D(self.identifier, self._floor_geometry,

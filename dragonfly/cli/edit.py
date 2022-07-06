@@ -210,6 +210,68 @@ def align_room_2ds(model_file, line_ray_file, distance, story, output_file, log_
         sys.exit(0)
 
 
+@edit.command('remove-short-segments')
+@click.argument('model-file', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.option(
+    '--distance', '-d', help='The maximum length of a segment below which the '
+    'segment will be considered for removal. This input can include the units '
+    'of the distance (eg. 3ft) or, if no units are provided, the value will be '
+    'interpreted in the honeybee model units.',
+    type=str, default='0.5m', show_default=True)
+@click.option(
+    '--story', '-s', multiple=True, help='An optional identifier of a particular '
+    'Story to be aligned in the model. If unspecified, all stories in the model '
+    'will be aligned.')
+@click.option(
+    '--output-file', '-f', help='Optional file to output the Model JSON string'
+    ' with aligned Room2Ds. By default it will be printed out to stdout',
+    type=click.File('w'), default='-')
+@click.option(
+    '--log-file', '-log', help='Optional file to output the list of any Room2Ds that '
+    'became degenerate and were deleted after alignment. By default it will be '
+    'printed out to stdout', type=click.File('w'), default='-')
+def remove_short_segments(model_file, distance, story, output_file, log_file):
+    """Remove consecutive short segments on a Model's Room2Ds.
+
+    \b
+    Args:
+        model_file: Full path to a Model JSON or Pkl file.
+    """
+    try:
+        # serialize the Model and check tolerance
+        model = Model.from_file(model_file)
+        assert model.angle_tolerance != 0, \
+            'Model must have a non-zero angle_tolerance to use solve-adjacency.'
+        # interpret the distance input
+        distance = parse_distance_string(distance)
+
+        # filter the stories if --story is specified
+        all_stories = model.stories
+        if len(story) != 0:
+            all_stories = [s for s in all_stories if s.identifier in story]
+
+        # loop through the stories and align them
+        for d_story in all_stories:
+            del_rooms = d_story.remove_room_2d_short_segments(
+                distance, model.angle_tolerance)
+            # report any deleted rooms
+            if len(del_rooms) != 0:
+                del_ids = ['{}[{}]'.format(r.display_name, r.identifier)
+                           for r in del_rooms]
+                msg = 'The following Room2Ds were degenerate after aligning and ' \
+                    'were deleted:\n{}'.format('\n'.join(del_ids))
+                log_file.write(msg)
+
+        # write the new model out to the file or stdout
+        output_file.write(json.dumps(model.to_dict()))
+    except Exception as e:
+        _logger.exception('Model align failed.\n{}'.format(e))
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
 @edit.command('windows-by-ratio')
 @click.argument('model-file', type=click.Path(
     exists=True, file_okay=True, dir_okay=False, resolve_path=True))

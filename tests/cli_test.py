@@ -3,7 +3,7 @@ from click.testing import CliRunner
 
 from dragonfly.cli import viz
 from dragonfly.cli.edit import convert_units, solve_adjacency, align_room_2ds, \
-    windows_by_ratio
+    remove_short_segments, windows_by_ratio
 from dragonfly.cli.translate import model_to_honeybee, model_from_geojson
 from dragonfly.cli.validate import validate_model
 
@@ -58,6 +58,22 @@ def test_align_room_2ds():
     result_model = Model.from_file(output_model)
     rooms = result_model.buildings[0].unique_room_2ds
     assert len(rooms) == 144
+    os.remove(output_model)
+
+
+def test_remove_room_2d_short_segments():
+    input_model = './tests/json/Level03.dfjson'
+    output_model = './tests/json/CleanerLevel03.dfjson'
+    runner = CliRunner()
+    cmds = [input_model, '--output-file', output_model]
+    result = runner.invoke(remove_short_segments, cmds)
+
+    assert result.exit_code == 0
+
+    assert os.path.isfile(output_model)
+    result_model = Model.from_file(output_model)
+    rooms = result_model.buildings[0].unique_room_2ds
+    assert len(rooms) == 138
     os.remove(output_model)
 
 
