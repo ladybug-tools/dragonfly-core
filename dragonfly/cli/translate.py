@@ -87,9 +87,9 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
         preparedir(folder, remove_content=False)
 
         # re-serialize the Dragonfly Model and convert Dragonfly Model to Honeybee
-        if shade_dist is not None:
-            shade_dist = parse_distance_string(shade_dist)
         model = Model.from_file(model_json)
+        if shade_dist is not None:
+            shade_dist = parse_distance_string(shade_dist, model.units)
         add_plenum = not no_plenum
         cap = not no_cap
         ceil_adjacency = not no_ceil_adjacency

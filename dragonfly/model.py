@@ -505,6 +505,32 @@ class Model(_BaseGeometry):
                     'Building "{}" was not found in the model.'.format(identifier))
         return buildings
 
+    def stories_by_identifier(self, identifiers):
+        """Get a list of Story objects in the model given Story identifiers."""
+        stories, model_stories = [], self.stories
+        for identifier in identifiers:
+            for story in model_stories:
+                if story.identifier == identifier:
+                    stories.append(story)
+                    break
+            else:
+                raise ValueError(
+                    'Story "{}" was not found in the model.'.format(identifier))
+        return stories
+
+    def room_2ds_by_identifier(self, identifiers):
+        """Get a list of Room2D objects in the model given Room2D identifiers."""
+        room_2ds, model_room_2ds = [], self.room_2ds
+        for identifier in identifiers:
+            for room in model_room_2ds:
+                if room.identifier == identifier:
+                    room_2ds.append(room)
+                    break
+            else:
+                raise ValueError(
+                    'Room2D "{}" was not found in the model.'.format(identifier))
+        return room_2ds
+
     def context_shade_by_identifier(self, identifiers):
         """Get a list of ContextShade objects in the model given ContextShade identifiers.
         """
