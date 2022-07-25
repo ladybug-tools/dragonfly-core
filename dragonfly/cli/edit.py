@@ -136,9 +136,11 @@ def solve_adjacency(model_file, surface, no_intersect, output_file):
     'interpreted in the honeybee model units.',
     type=str, default='0.5m', show_default=True)
 @click.option(
-    '--story', '-s', multiple=True, help='An optional identifier of a particular '
-    'Story to be aligned in the model. If unspecified, all stories in the model '
-    'will be aligned.')
+    '--remove-distance', '-r', help='An optional number for the maximum length of a '
+    'segment below which the segment will be removed. This operation is performed '
+    'before the alignment. This input can include the units of the distance (eg. 3ft) '
+    'or, if no units are provided, the value will be interpreted in the honeybee '
+    'model units.', type=str, default=None, show_default=True)
 @click.option(
     '--output-file', '-f', help='Optional file to output the Model JSON string'
     ' with aligned Room2Ds. By default it will be printed out to stdout',
@@ -147,8 +149,12 @@ def solve_adjacency(model_file, surface, no_intersect, output_file):
     '--log-file', '-log', help='Optional file to output the list of any Room2Ds that '
     'became degenerate and were deleted after alignment. By default it will be '
     'printed out to stdout', type=click.File('w'), default='-')
-def align_room_2ds(model_file, line_ray_file, distance, story, output_file, log_file):
+def align_room_2ds(model_file, line_ray_file, distance, remove_distance,
+                   output_file, log_file):
     """Move Room2D vertices within a given distance of a line or ray to be on that line.
+
+    By default, all Stories in the Model will be aligned but the input line-ray-file
+    can be structured to only specify line-rays for specific stories if desired.
 
     \b
     Args:
@@ -157,49 +163,66 @@ def align_room_2ds(model_file, line_ray_file, distance, story, output_file, log_
             Ray2D or LineSegment2D objects to which the Room2D vertices will be
             aligned. Ray2Ds will be interpreted as being infinite in both directions
             while LineSegment2Ds will be interpreted as only existing between two points.
+            This JSON can also be a dictionary where the keys are the identifiers
+            of Stories in the Model and the values are arrays of Ray2D or LineSegment2D
+            objects to be applied only to that Story. This dictionary can also contain
+            an __all__ key, which can contain a list of Ray2D or LineSegment2D to be
+            applied to all Stories in the Model.
     """
     try:
         # serialize the Model and check tolerance
         model = Model.from_file(model_file)
         assert model.tolerance != 0, \
             'Model must have a non-zero tolerance to use solve-adjacency.'
+        # interpret the distance input
+        distance = parse_distance_string(distance, model.units)
         # serialize the line_ray_file
-        line_rays = []
         with open(line_ray_file) as inf:
             data = json.load(inf)
-            for geo_obj in data:
-                if geo_obj['type'] == 'LineSegment2D':
-                    line_rays.append(LineSegment2D.from_dict(geo_obj))
-                elif geo_obj['type'] == 'Ray2D':
-                    line_rays.append(Ray2D.from_dict(geo_obj))
+        if isinstance(data, list):
+            rel_stories = model.stories
+            story_lines = [_serialize_line_rays(data)] * len(rel_stories)
+        elif isinstance(data, dict):
+            story_ids, story_lines, all_story_lines = [], [], None
+            for st_id, st_lin in data.items():
+                if st_id == '__all__':
+                    all_story_lines = _serialize_line_rays(st_lin)
                 else:
-                    msg = 'Objects in line-ray-file must be LineSegment2D or Ray2D. ' \
-                        'Not {}'.format(geo_obj['type'])
-                    raise TypeError(msg)
-        # interpret the distance input
-        distance = parse_distance_string(distance)
+                    story_ids.append(st_id)
+                    story_lines.append(_serialize_line_rays(st_lin))
+            rel_stories = model.stories_by_identifier(story_ids)
+            if all_story_lines is not None:
+                for story in model.stories:
+                    rel_stories.append(story)
+                    story_lines.append(all_story_lines)
 
-        # filter the stories if --story is specified
-        all_stories = model.stories
-        if len(story) != 0:
-            all_stories = [s for s in all_stories if s.identifier in story]
+        # remove short segments if requested
+        del_rooms = []
+        if remove_distance is not None and remove_distance != '':
+            rem_dist = parse_distance_string(remove_distance, model.units)
+            for d_story in model.stories:
+                d_rooms = d_story.remove_room_2d_short_segments(
+                    rem_dist, model.angle_tolerance)
+                del_rooms.extend(d_rooms)
 
         # loop through the stories and align them
-        for d_story in all_stories:
+        for d_story, line_rays in zip(rel_stories, story_lines):
             for line in line_rays:
                 d_story.align_room_2ds(line, distance)
             # perform some extra cleanup operations
-            del_rooms = d_story.remove_room_2d_duplicate_vertices(
+            d_rooms = d_story.remove_room_2d_duplicate_vertices(
                 model.tolerance, delete_degenerate=True)
-            del_rooms.extend(d_story.delete_degenerate_room_2ds())
+            d_rooms.extend(d_story.delete_degenerate_room_2ds())
             d_story.rebuild_detailed_windows(model.tolerance)
-            # report any deleted rooms
-            if len(del_rooms) != 0:
-                del_ids = ['{}[{}]'.format(r.display_name, r.identifier)
-                           for r in del_rooms]
-                msg = 'The following Room2Ds were degenerate after aligning and ' \
-                    'were deleted:\n{}'.format('\n'.join(del_ids))
-                log_file.write(msg)
+            del_rooms.extend(d_rooms)
+
+        # report any deleted rooms
+        if len(del_rooms) != 0:
+            del_ids = ['{}[{}]'.format(r.display_name, r.identifier)
+                       for r in del_rooms]
+            msg = 'The following Room2Ds were degenerate after the operation and ' \
+                'were deleted:\n{}'.format('\n'.join(del_ids))
+            log_file.write(msg)
 
         # write the new model out to the file or stdout
         output_file.write(json.dumps(model.to_dict()))
@@ -208,6 +231,21 @@ def align_room_2ds(model_file, line_ray_file, distance, story, output_file, log_
         sys.exit(1)
     else:
         sys.exit(0)
+
+
+def _serialize_line_rays(line_ray_dicts):
+    """Serialize an array of LineSegment2Ds and Ray2Ds."""
+    line_rays = []
+    for geo_obj in line_ray_dicts:
+        if geo_obj['type'] == 'LineSegment2D':
+            line_rays.append(LineSegment2D.from_dict(geo_obj))
+        elif geo_obj['type'] == 'Ray2D':
+            line_rays.append(Ray2D.from_dict(geo_obj))
+        else:
+            msg = 'Objects in line-ray-file must be LineSegment2D or Ray2D. ' \
+                'Not {}'.format(geo_obj['type'])
+            raise TypeError(msg)
+    return line_rays
 
 
 @edit.command('remove-short-segments')
@@ -220,10 +258,6 @@ def align_room_2ds(model_file, line_ray_file, distance, story, output_file, log_
     'interpreted in the honeybee model units.',
     type=str, default='0.5m', show_default=True)
 @click.option(
-    '--story', '-s', multiple=True, help='An optional identifier of a particular '
-    'Story to be aligned in the model. If unspecified, all stories in the model '
-    'will be aligned.')
-@click.option(
     '--output-file', '-f', help='Optional file to output the Model JSON string'
     ' with aligned Room2Ds. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
@@ -231,7 +265,7 @@ def align_room_2ds(model_file, line_ray_file, distance, story, output_file, log_
     '--log-file', '-log', help='Optional file to output the list of any Room2Ds that '
     'became degenerate and were deleted after alignment. By default it will be '
     'printed out to stdout', type=click.File('w'), default='-')
-def remove_short_segments(model_file, distance, story, output_file, log_file):
+def remove_short_segments(model_file, distance, output_file, log_file):
     """Remove consecutive short segments on a Model's Room2Ds.
 
     \b
@@ -244,29 +278,27 @@ def remove_short_segments(model_file, distance, story, output_file, log_file):
         assert model.angle_tolerance != 0, \
             'Model must have a non-zero angle_tolerance to use solve-adjacency.'
         # interpret the distance input
-        distance = parse_distance_string(distance)
+        distance = parse_distance_string(distance, model.units)
 
-        # filter the stories if --story is specified
-        all_stories = model.stories
-        if len(story) != 0:
-            all_stories = [s for s in all_stories if s.identifier in story]
-
-        # loop through the stories and align them
-        for d_story in all_stories:
-            del_rooms = d_story.remove_room_2d_short_segments(
+        # loop through the stories and remove the short segments
+        del_rooms = []
+        for d_story in model.stories:
+            d_rooms = d_story.remove_room_2d_short_segments(
                 distance, model.angle_tolerance)
-            # report any deleted rooms
-            if len(del_rooms) != 0:
-                del_ids = ['{}[{}]'.format(r.display_name, r.identifier)
-                           for r in del_rooms]
-                msg = 'The following Room2Ds were degenerate after aligning and ' \
-                    'were deleted:\n{}'.format('\n'.join(del_ids))
-                log_file.write(msg)
+            del_rooms.extend(d_rooms)
+
+        # report any deleted rooms
+        if len(del_rooms) != 0:
+            del_ids = ['{}[{}]'.format(r.display_name, r.identifier)
+                       for r in del_rooms]
+            msg = 'The following Room2Ds were degenerate after the operation and ' \
+                'were deleted:\n{}'.format('\n'.join(del_ids))
+            log_file.write(msg)
 
         # write the new model out to the file or stdout
         output_file.write(json.dumps(model.to_dict()))
     except Exception as e:
-        _logger.exception('Model align failed.\n{}'.format(e))
+        _logger.exception('Model remove-short-segments failed.\n{}'.format(e))
         sys.exit(1)
     else:
         sys.exit(0)
