@@ -22,19 +22,23 @@ class ContextShade(_BaseGeometry):
             and not contain any spaces or special characters.
         geometry: An array of ladybug_geometry Face3D objects that together
             represent the context shade.
+        is_detached: Boolean to note whether this object is detached from other
+            geometry. Cases where this should be True include shade representing
+            surrounding buildings or context. (Default: True).
 
     Properties:
         * identifier
         * display_name
         * geometry
+        * is_detached
         * area
         * min
         * max
         * user_data
     """
-    __slots__ = ('_geometry',)
+    __slots__ = ('_geometry', '_is_detached')
 
-    def __init__(self, identifier, geometry):
+    def __init__(self, identifier, geometry, is_detached=True):
         """A Context Shade object defined by an array of Face3Ds."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
 
@@ -46,6 +50,7 @@ class ContextShade(_BaseGeometry):
             assert isinstance(shd_geo, Face3D), \
                 'Expected ladybug_geometry Face3D. Got {}'.format(type(shd_geo))
         self._geometry = geometry
+        self.is_detached = is_detached
 
         self._properties = ContextShadeProperties(self)  # properties for extensions
 
@@ -60,8 +65,9 @@ class ContextShade(_BaseGeometry):
         assert data['type'] == 'ContextShade', 'Expected ContextShade dictionary. ' \
             'Got {}.'.format(data['type'])
 
+        is_detached = data['is_detached'] if 'is_detached' in data else True
         geometry = tuple(Face3D.from_dict(shd_geo) for shd_geo in data['geometry'])
-        shade = cls(data['identifier'], geometry)
+        shade = cls(data['identifier'], geometry, is_detached)
         if 'display_name' in data and data['display_name'] is not None:
             shade.display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -78,7 +84,7 @@ class ContextShade(_BaseGeometry):
         Args:
             shade: A Honeybee Shade object.
         """
-        con_shade = cls(shade.identifier, [shade.geometry])
+        con_shade = cls(shade.identifier, [shade.geometry], shade.is_detached)
         con_shade._display_name = shade.display_name
         con_shade._user_data = None if shade.user_data is None \
             else shade.user_data.copy()
@@ -89,6 +95,20 @@ class ContextShade(_BaseGeometry):
     def geometry(self):
         """Get a tuple of Face3D objects that together represent the context shade."""
         return self._geometry
+
+    @property
+    def is_detached(self):
+        """Get or set a boolean for whether this object is detached from other geometry.
+        """
+        return self._is_detached
+
+    @is_detached.setter
+    def is_detached(self, value):
+        try:
+            self._is_detached = bool(value)
+        except TypeError:
+            raise TypeError(
+                'Expected boolean for ContextShade.is_detached. Got {}.'.format(value))
 
     @property
     def area(self):
@@ -179,7 +199,8 @@ class ContextShade(_BaseGeometry):
         shades = []
         for i, shd_geo in enumerate(self._geometry):
             # create the shade object
-            shade = Shade('{}_{}'.format(self.identifier, i), shd_geo, is_detached=True)
+            shade = Shade('{}_{}'.format(self.identifier, i), shd_geo,
+                          is_detached=self.is_detached)
             shade.display_name = '{}_{}'.format(self.display_name, i)
             # transfer any extension properties assigned to the Shade
             shade._properties = self.properties.to_honeybee(shade)
@@ -205,6 +226,8 @@ class ContextShade(_BaseGeometry):
         enforce_upper_left = True if 'energy' in base['properties'] else False
         base['geometry'] = [shd_geo.to_dict(False, enforce_upper_left)
                             for shd_geo in self._geometry]
+        if not self.is_detached:
+            base['is_detached'] = self.is_detached
         if self.user_data is not None:
             base['user_data'] = self.user_data
         return base
@@ -218,7 +241,7 @@ class ContextShade(_BaseGeometry):
         return writer
 
     def __copy__(self):
-        new_shd = ContextShade(self.identifier, self._geometry)
+        new_shd = ContextShade(self.identifier, self._geometry, self.is_detached)
         new_shd._display_name = self.display_name
         new_shd._user_data = None if self.user_data is None else self.user_data.copy()
         new_shd._properties._duplicate_extension_attr(self._properties)
