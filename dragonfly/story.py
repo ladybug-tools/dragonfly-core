@@ -151,7 +151,7 @@ class Story(_BaseGeometry):
         if 'display_name' in data and data['display_name'] is not None:
             story._display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
-            room.user_data = data['user_data']
+            story.user_data = data['user_data']
 
         if data['properties']['type'] == 'StoryProperties':
             story.properties._load_extension_attr_from_dict(data['properties'])
