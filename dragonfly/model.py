@@ -923,7 +923,7 @@ class Model(_BaseGeometry):
 
         return models
 
-    def to_geojson_dict(self, location, point=Point2D(0, 0), tolerance=0.01):
+    def to_geojson_dict(self, location, point=Point2D(0, 0), tolerance=None):
         """Convert Dragonfly Model to a geoJSON-style Python dictionary.
 
         This dictionary can be written into a JSON, which is then a valid geoJSON
@@ -937,8 +937,8 @@ class Model(_BaseGeometry):
                 within the space of a scene. The coordinates of this point are
                 expected to be in the units of this Model. (Default: (0, 0)).
             tolerance: The minimum distance between points at which they are
-                not considered touching. Default: 0.01, suitable for objects
-                in meters.
+                not considered touching. If None, the Model's own tolerance
+                will be used. (Default: None).
 
         Returns:
             A Python dictionary in a geoJSON style with each Building in the Model
@@ -946,6 +946,13 @@ class Model(_BaseGeometry):
         """
         # set up the base dictionary for the geoJSON
         geojson_dict = {'type': 'FeatureCollection', 'features': [], 'mappers': []}
+
+        # ensure that the Model we are working with is in meters
+        model = self
+        if self.units != 'Meters':
+            model = self.duplicate()  # duplicate to avoid editing this object
+            model.convert_to_units('Meters')
+            point = point.scale(conversion_factor_to_meters(self.units))
 
         # assign the site information in the project key
         project_dict = {
@@ -956,20 +963,15 @@ class Model(_BaseGeometry):
             'elevation': location.elevation,
             'latitude': location.latitude,
             'longitude': location.longitude,
-            'time_zone': location.time_zone
+            'time_zone': location.time_zone,
+            'cad_coordinates': [point.x, point.y]
         }
         geojson_dict['project'] = project_dict
-
-        # ensure that the Model we are working with is in meters
-        model = self
-        if self.units != 'Meters':
-            model = self.duplicate()  # duplicate to avoid editing this object
-            model.convert_to_units('Meters')
-            point = point.scale(conversion_factor_to_meters(self.units))
 
         # get the conversion factors over to (longitude, latitude)
         origin_lon_lat = origin_long_lat_from_location(location, point)
         convert_facs = meters_to_long_lat_factors(origin_lon_lat)
+        tolerance = self.tolerance if tolerance is None else tolerance
 
         # export each building as a feature in the file
         for _, bldg in enumerate(model.buildings):
@@ -1010,7 +1012,7 @@ class Model(_BaseGeometry):
 
         return geojson_dict
 
-    def to_geojson(self, location, point=Point2D(0, 0), folder=None, tolerance=0.01):
+    def to_geojson(self, location, point=Point2D(0, 0), folder=None, tolerance=None):
         """Convert Dragonfly Model to a geoJSON of buildings footprints.
 
         This geoJSON will be in a format that is compatible with the URBANopt SDK,
@@ -1027,8 +1029,8 @@ class Model(_BaseGeometry):
                 If None, a sub-folder within the honeybee default simulation
                 folder will be used. (Default: None).
             tolerance: The minimum distance between points at which they are
-                not considered touching. Default: 0.01, suitable for objects
-                in meters.
+                not considered touching. If None, the Model's own tolerance
+                will be used. (Default: None).
 
         Returns:
             The path to a geoJSON file that contains polygons for all of the
