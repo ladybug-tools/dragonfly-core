@@ -24,7 +24,7 @@ class _BaseGeometry(object):
     def __init__(self, identifier):
         """Initialize base object."""
         self.identifier = identifier
-        self._display_name = self._identifier
+        self._display_name = None
         self._properties = None
         self._user_data = None
 
@@ -48,14 +48,18 @@ class _BaseGeometry(object):
 
         If not set, this will be equal to the identifier.
         """
+        if self._display_name is None:
+            return self._identifier
         return self._display_name
 
     @display_name.setter
     def display_name(self, value):
-        try:
-            self._display_name = str(value)
-        except UnicodeEncodeError:  # Python 2 machine lacking the character set
-            self._display_name = value  # keep it as unicode
+        if value is not None:
+            try:
+                value = str(value)
+            except UnicodeEncodeError:  # Python 2 machine lacking the character set
+                self._display_name = value  # keep it as unicode
+        self._display_name = value
 
     @property
     def properties(self):
