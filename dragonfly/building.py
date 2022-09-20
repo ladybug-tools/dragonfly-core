@@ -347,7 +347,10 @@ class Building(_BaseGeometry):
     def height_above_ground(self):
         """Get a the height difference between the roof and first floor above the ground.
         """
-        return self.height - self.unique_stories_above_ground[0].floor_height
+        try:
+            return self.height - self.unique_stories_above_ground[0].floor_height
+        except IndexError:  # building completely below ground
+            return 0
 
     @property
     def height_from_first_floor(self):
