@@ -11,7 +11,8 @@ from ladybug_geometry.geometry2d.pointvector import Point2D
 from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
+from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons, \
+    perimeter_core_by_offset
 
 from honeybee.model import Model
 from honeybee.room import Room
@@ -1007,10 +1008,31 @@ class Building(_BaseGeometry):
             assert perim_offset > 0, 'perimeter_offset cannot be less than than 0.'
             new_face3d_array = []
             for floor_face in face3d_array:
+                z_val = floor_face[0].z
                 if floor_face.has_holes:  # holes are not managed well in polyskel
-                    new_face3d_array.append(floor_face)  # just use existing floor
+                    bound_p = Polygon2D([Point2D(p.x, p.y) for p in floor_face.boundary])
+                    if bound_p.is_clockwise:
+                        bound_p = bound_p.reverse()
+                    hole_p = []
+                    for hole in floor_face.holes:
+                        hp = Polygon2D([Point2D(p.x, p.y) for p in hole])
+                        if hp.is_clockwise:
+                            hp = hp.reverse()
+                        hole_p.append(hp)
+                    subp_perim, subp_core = \
+                        perimeter_core_by_offset(bound_p, perim_offset, hole_p)
+                    if subp_core is None:  # failed to offset the Face3D with holes
+                        new_face3d_array.append(floor_face)  # just use existing floor
+                    else:
+                        core_b = [Point3D(p.x, p.y, z_val) for p in subp_core[0]]
+                        core_h = [[Point3D(p.x, p.y, z_val) for p in hole]
+                                  for hole in subp_core[1:]]
+                        core_face = Face3D(core_b, holes=core_h)
+                        new_face3d_array.append(core_face)
+                        for spl in subp_perim:
+                            sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in spl])
+                            new_face3d_array.append(sub_face)
                 else:
-                    z_val = floor_face[0].z
                     base_p = Polygon2D([Point2D(p.x, p.y) for p in floor_face.boundary])
                     try:
                         sub_polys_perim, sub_polys_core = perimeter_core_subpolygons(
