@@ -478,6 +478,8 @@ class Model(_BaseGeometry):
         """Add another Dragonfly Model object to this one."""
         assert isinstance(other_model, Model), \
             'Expected Dragonfly Model. Got {}.'.format(type(other_model))
+        if self.units != other_model.units:
+            other_model.convert_to_units(self.units)
         self._buildings = self._buildings + other_model._buildings
         self._context_shades = self._context_shades + other_model._context_shades
 
