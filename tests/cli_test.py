@@ -2,8 +2,8 @@
 from click.testing import CliRunner
 
 from dragonfly.cli import viz
-from dragonfly.cli.edit import convert_units, solve_adjacency, align_room_2ds, \
-    remove_short_segments, windows_by_ratio
+from dragonfly.cli.edit import convert_units, solve_adjacency, reset_room_boundaries, \
+    align_room_2ds, remove_short_segments, windows_by_ratio
 from dragonfly.cli.translate import model_to_honeybee, model_from_geojson
 from dragonfly.cli.validate import validate_model
 
@@ -43,6 +43,25 @@ def test_edit_solve_adjacency():
     result_model = Model.from_dict(json.loads(result.output))
     rooms = result_model.buildings[0].unique_room_2ds
     assert isinstance(rooms[0].boundary_conditions[0], Surface)
+
+
+def test_reset_room_boundaries():
+    input_model = './tests/json/Level03.dfjson'
+    input_pgons = './tests/json/polygons.json'
+    output_model = './tests/json/EnvelopeLevel03.dfjson'
+    runner = CliRunner()
+    cmds = [input_model, input_pgons, '--output-file', output_model]
+    result = runner.invoke(reset_room_boundaries, cmds)
+    print(result.output)
+    assert result.exit_code == 0
+
+    assert os.path.isfile(output_model)
+    result_model = Model.from_file(output_model)
+    rooms = result_model.buildings[0].unique_room_2ds
+    assert len(rooms) == 1
+    assert rooms[0].identifier == 'Floor_3_Envelope'
+    assert rooms[0].display_name == 'Floor 3'
+    os.remove(output_model)
 
 
 def test_align_room_2ds():

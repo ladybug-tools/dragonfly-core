@@ -48,6 +48,29 @@ class _WindowParameterBase(object):
         """
         return self
 
+    @staticmethod
+    def merge_to_rectangular(window_parameters, segments, floor_to_ceiling_height):
+        """Merge any window parameters together into rectangular windows.
+
+        Args:
+            window_parameters: A list of WindowParameters to be merged.
+            segments: The segments to which the window parameters are assigned.
+                These should be in order as they appear on the parent Room2D.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+        """
+        base_x = 0
+        origins, widths, heights = [], [], []
+        for wp, s in zip(window_parameters, segments):
+            if wp is not None:
+                rwp = wp.to_rectangular_windows(s, floor_to_ceiling_height)
+                for o, w, h in zip(rwp.origins, rwp.widths, rwp.heights):
+                    origins.append(Point2D(o.x + base_x, o.y))
+                    widths.append(w)
+                    heights.append(h)
+            base_x += s.length
+        return RectangularWindows(origins, widths, heights)
+
     @classmethod
     def from_dict(cls, data):
         """Create WindowParameterBase from a dictionary.
@@ -145,7 +168,7 @@ class SingleWindow(_WindowParameterBase):
         Args:
             segment: A LineSegment3D to which these parameters are applied.
             floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
-                to which the segment belongs.
+                to which the segments belong.
         """
         max_width = segment.length * 0.99
         max_height = (floor_to_ceiling_height * 0.99) - self.sill_height
@@ -192,6 +215,35 @@ class SingleWindow(_WindowParameterBase):
         """
         return SingleWindow(
             self.width * factor, self.height * factor, self.sill_height * factor)
+
+    @staticmethod
+    def merge(window_parameters, segments, floor_to_ceiling_height):
+        """Merge SingleWindow parameters together using their assigned segments.
+
+        Args:
+            window_parameters: A list of WindowParameters to be merged.
+            segments: The segments to which the window parameters are assigned.
+                These should be in order as they appear on the parent Room2D.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segments belong.
+        """
+        width = 0
+        weights, heights, sill_heights = [], [], [], []
+        for wp, s in zip(window_parameters, segments):
+            if wp is not None:
+                if isinstance(wp, SingleWindow):
+                    weights.append(s.length)
+                    width += wp.width
+                    heights.append(wp.height)
+                    sill_heights.append(wp.length)
+                else:  # not all windows are of the same type; convert all to rectangular
+                    return _WindowParameterBase.merge_to_rectangular(
+                        window_parameters, segments, floor_to_ceiling_height)
+        tw = sum(weights)
+        weights = [w / tw for w in weights]
+        height = sum([h * w for h, w in zip(heights, weights)])
+        sill_height = sum([h * w for h, w in zip(sill_heights, weights)])
+        return SingleWindow(width, height, sill_height)
 
     @classmethod
     def from_dict(cls, data):
@@ -308,6 +360,29 @@ class SimpleWindowRatio(_WindowParameterBase):
             adj_ap_id = '{}_Glz1'.format(ids[0])
             final_ids = (adj_ap_id,) + ids
             aperture.boundary_condition = Surface(final_ids, True)
+
+    @staticmethod
+    def merge(window_parameters, segments, floor_to_ceiling_height):
+        """Merge SimpleWindowRatio parameters together using their assigned segments.
+
+        Args:
+            window_parameters: A list of WindowParameters to be merged.
+            segments: The segments to which the window parameters are assigned.
+                These should be in order as they appear on the parent Room2D.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segments belong.
+        """
+        win_area, wall_area = 0, 0
+        for wp, s in zip(window_parameters, segments):
+            if wp is not None:
+                wall_a = s.length * floor_to_ceiling_height
+                wall_area += wall_a
+                if isinstance(wp, SimpleWindowRatio):
+                    win_area += (wall_area * wp.window_ratio)
+                else:  # not all windows are of the same type; convert all to rectangular
+                    return _WindowParameterBase.merge_to_rectangular(
+                        window_parameters, segments, floor_to_ceiling_height)
+        return SimpleWindowRatio(win_area / wall_area)
 
     @classmethod
     def from_dict(cls, data):
@@ -469,6 +544,42 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         return RepeatingWindowRatio(
             self.window_ratio, self.window_height * factor, self.sill_height * factor,
             self.horizontal_separation * factor, self.vertical_separation * factor)
+
+    @staticmethod
+    def merge(window_parameters, segments, floor_to_ceiling_height):
+        """Merge RepeatingWindowRatio parameters together using their assigned segments.
+
+        Args:
+            window_parameters: A list of WindowParameters to be merged.
+            segments: The segments to which the window parameters are assigned.
+                These should be in order as they appear on the parent Room2D.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segments belong.
+        """
+        weights, heights, sill_heights, h_seps, v_seps = [], [], [], [], []
+        win_area, wall_area = 0, 0
+        for wp, s in zip(window_parameters, segments):
+            if wp is not None:
+                wall_a = s.length * floor_to_ceiling_height
+                wall_area += wall_a
+                if isinstance(wp, RepeatingWindowRatio):
+                    win_area += (wall_area * wp.window_ratio)
+                    weights.append(s.length)
+                    heights.append(wp.window_height)
+                    sill_heights.append(wp.sill_height)
+                    h_seps.append(wp.horizontal_separation)
+                    v_seps.append(wp.vertical_separation)
+                else:  # not all windows are of the same type; convert all to rectangular
+                    return _WindowParameterBase.merge_to_rectangular(
+                        window_parameters, segments, floor_to_ceiling_height)
+        window_ratio = win_area / wall_area
+        tw = sum(weights)
+        weights = [w / tw for w in weights]
+        height = sum([h * w for h, w in zip(heights, weights)])
+        sill_height = sum([h * w for h, w in zip(sill_heights, weights)])
+        h_sep = sum([s * w for s, w in zip(h_seps, weights)])
+        v_sep = sum([s * w for s, w in zip(v_seps, weights)])
+        return RepeatingWindowRatio(window_ratio, height, sill_height, h_sep, v_sep)
 
     @classmethod
     def from_dict(cls, data):
@@ -665,6 +776,37 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
         return RepeatingWindowWidthHeight(
             self.window_height * factor, self.window_width * factor,
             self.sill_height * factor, self.horizontal_separation * factor)
+
+    @staticmethod
+    def merge(window_parameters, segments, floor_to_ceiling_height):
+        """Merge RepeatingWindowWidthHeight parameters using their assigned segments.
+
+        Args:
+            window_parameters: A list of WindowParameters to be merged.
+            segments: The segments to which the window parameters are assigned.
+                These should be in order as they appear on the parent Room2D.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segments belong.
+        """
+        weights, heights, widths, sill_heights, h_seps = [], [], [], [], []
+        for wp, s in zip(window_parameters, segments):
+            if wp is not None:
+                if isinstance(wp, RepeatingWindowWidthHeight):
+                    weights.append(s.length)
+                    heights.append(wp.window_height)
+                    widths.append(wp.window_width)
+                    sill_heights.append(wp.sill_height)
+                    h_seps.append(wp.horizontal_separation)
+                else:  # not all windows are of the same type; convert all to rectangular
+                    return _WindowParameterBase.merge_to_rectangular(
+                        window_parameters, segments, floor_to_ceiling_height)
+        tw = sum(weights)
+        weights = [w / tw for w in weights]
+        height = sum([h * w for h, w in zip(heights, weights)])
+        width = sum([x * w for x, w in zip(widths, weights)])
+        sill_height = sum([h * w for h, w in zip(sill_heights, weights)])
+        h_sep = sum([s * w for s, w in zip(h_seps, weights)])
+        return RepeatingWindowWidthHeight(height, width, sill_height, h_sep)
 
     @classmethod
     def from_dict(cls, data):
@@ -920,6 +1062,20 @@ class RectangularWindows(_AsymmetricBase):
                 new_origins.append(Point2D(new_x, o.y))
                 new_heights.append(height)
         return RectangularWindows(new_origins, new_widths, new_heights)
+
+    @staticmethod
+    def merge(window_parameters, segments, floor_to_ceiling_height):
+        """Merge RectangularWindows parameters together using their assigned segments.
+
+        Args:
+            window_parameters: A list of WindowParameters to be merged.
+            segments: The segments to which the window parameters are assigned.
+                These should be in order as they appear on the parent Room2D.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segments belong.
+        """
+        return _WindowParameterBase.merge_to_rectangular(
+            window_parameters, segments, floor_to_ceiling_height)
 
     @classmethod
     def from_dict(cls, data):
@@ -1203,6 +1359,31 @@ class DetailedWindows(_AsymmetricBase):
             new_verts = tuple(pt.reflect(normal, origin) for pt in polygon.vertices)
             new_polygons.append(Polygon2D(tuple(reversed(new_verts))))
         return DetailedWindows(new_polygons)
+
+    @staticmethod
+    def merge(window_parameters, segments, floor_to_ceiling_height):
+        """Merge DetailedWindows parameters together using their assigned segments.
+
+        Args:
+            window_parameters: A list of WindowParameters to be merged.
+            segments: The segments to which the window parameters are assigned.
+                These should be in order as they appear on the parent Room2D.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+        """
+        base_x = 0
+        polygons = []
+        for wp, s in zip(window_parameters, segments):
+            if wp is not None:
+                if isinstance(wp, DetailedWindows):
+                    for p_gon in wp.polygons:
+                        new_pts = [Point2D(pt.x + base_x, pt.y) for pt in p_gon.vertices]
+                        polygons.append(Polygon2D(new_pts))
+                else:  # not all windows are of the same type; convert all to rectangular
+                    return _WindowParameterBase.merge_to_rectangular(
+                        window_parameters, segments, floor_to_ceiling_height)
+            base_x += s.length
+        return DetailedWindows(polygons)
 
     @classmethod
     def from_dict(cls, data, segment=None):

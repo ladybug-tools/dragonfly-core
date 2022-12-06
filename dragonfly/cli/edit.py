@@ -4,8 +4,7 @@ import sys
 import logging
 import json
 
-from ladybug_geometry.geometry2d.ray import Ray2D
-from ladybug_geometry.geometry2d.line import LineSegment2D
+from ladybug_geometry.geometry2d import Ray2D, LineSegment2D, Polygon2D
 from honeybee.orientation import angles_from_num_orient, orient_index
 from honeybee.boundarycondition import Outdoors
 from honeybee.boundarycondition import boundary_conditions as bcs
@@ -123,6 +122,140 @@ def solve_adjacency(model_file, surface, no_intersect, output_file):
         sys.exit(0)
 
 
+@edit.command('reset-room-boundaries')
+@click.argument('model-file', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.argument('polygon-file', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.option(
+    '--distance', '-d', help='A number for the maximum distance between a vertex '
+    'and the polygon where the vertex will be moved to lie on the polygon. Setting '
+    'this to zero assumes that all relevant Room2D segments are completely colinear '
+    'with the polygons within the Model tolerance. This input can include the units '
+    'of the distance (eg. 1ft) or, if no units are provided, the value will be '
+    'interpreted in the dragonfly model units.',
+    type=str, default='0.15m', show_default=True)
+@click.option(
+    '--keep-colinear/--merge-colinear', ' /-c', help='Flag to note whether colinear '
+    'wall segments of the resulting Room2Ds should be merged with one another after '
+    'the room boundaries have been reset. This is particularly helpful when the '
+    'input polygon file represents an exterior envelope or when the solve adjacencies '
+    'command is to be run on the output model.', default=True, show_default=True)
+@click.option(
+    '--output-file', '-f', help='Optional file to output the Model JSON string'
+    ' with aligned Room2Ds. By default it will be printed out to stdout',
+    type=click.File('w'), default='-')
+def reset_room_boundaries(
+        model_file, polygon_file, distance, keep_colinear, output_file):
+    """Move Room2D vertices within a given distance of a line or ray to be on that line.
+
+    By default, all Stories in the Model will be aligned but the input line-ray-file
+    can be structured to only specify line-rays for specific stories if desired.
+
+    \b
+    Args:
+        model_file: Full path to a Dragonfly Model JSON or Pkl file.
+        polygon_file: Full path to a JSON file containing an array of ladybug_geometry
+            Polygon2D objects to which the Room2D segments will be reset. The array
+            of Polygon2Ds can contain both outer boundaries and holes in the floor
+            plate and this command will automatically distinguish holes from boundaries.
+            This JSON can also be a dictionary where the keys are the identifiers
+            of Stories in the Model and the values are arrays of Polygon2D objects
+            to be applied only to that Story. This dictionary can also contain
+            an __all__ key, which can contain a list of Polygon2D to be applied to
+            all Stories in the Model. Any Polygon2Ds JSON objects that contain
+            "identifier" or "display_name" keys will be used to determine the
+            identifier and display_name of the resulting Room2Ds. Otherwise, these
+            identifiers are generated automatically from the Story identifier.
+    """
+    try:
+        # serialize the Model and check tolerance
+        model = Model.from_file(model_file)
+        tol = model.tolerance
+        assert tol != 0, \
+            'Model must have a non-zero tolerance to use reset-room-boundaries.'
+        # interpret the distance input
+        distance = parse_distance_string(distance, model.units)
+        # serialize the polygon_file
+        with open(polygon_file) as inf:
+            data = json.load(inf)
+        if isinstance(data, list):
+            rel_stories = model.stories
+            p_geo, p_ids, p_names = _serialize_polygons(data, tol)
+            polygons = [p_geo] * len(rel_stories)
+            identifiers = [p_ids] * len(rel_stories)
+            names = [p_names] * len(rel_stories)
+        elif isinstance(data, dict):
+            story_ids, polygons, identifiers, names = [], [], [], []
+            all_polygons, all_identifiers, all_names = None, None, None
+            for st_id, st_lin in data.items():
+                if st_id == '__all__':
+                    all_polygons, all_identifiers, all_names = \
+                        _serialize_polygons(st_lin, tol)
+                else:
+                    story_ids.append(st_id)
+                    p_geo, p_ids, p_names = _serialize_polygons(st_lin, tol)
+                    polygons.append(p_geo)
+                    identifiers.append(p_ids)
+                    names.append(p_names)
+            rel_stories = model.stories_by_identifier(story_ids)
+            if all_polygons is not None:
+                for story in model.stories:
+                    rel_stories.append(story)
+                    polygons.append(all_polygons)
+                    identifiers.append(all_identifiers)
+                    names.append(all_names)
+
+        # loop through the stories and reset the rooms
+        for d_story, p_gons, p_is, p_n in zip(rel_stories, polygons, identifiers, names):
+            # align the rooms to the polygon segments
+            if distance != 0:
+                line_rays = []
+                for p_gon in p_gons:
+                    line_rays.extend(p_gon.segments)
+                for line in line_rays:
+                    d_story.align_room_2ds(line, distance)
+            # perform some extra cleanup operations
+            d_story.remove_room_2d_duplicate_vertices(tol, delete_degenerate=True)
+            d_story.delete_degenerate_room_2ds()
+            d_story.rebuild_detailed_windows(tol)
+            # reset the room boundaries
+            d_story.reset_room_2d_boundaries(p_gons, p_is, p_n, tolerance=tol)
+            if not keep_colinear:
+                d_story.remove_room_2d_colinear_vertices(tolerance=tol)
+
+        # write the new model out to the file or stdout
+        output_file.write(json.dumps(model.to_dict()))
+    except Exception as e:
+        _logger.exception('Model reset-room-boundaries failed.\n{}'.format(e))
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
+def _serialize_polygons(polygon_dicts, tol):
+    """Serialize an array of Polygon2Ds."""
+    polygons, p_ids, p_names = [], [], []
+    for geo_obj in polygon_dicts:
+        if geo_obj['type'] == 'Polygon2D':
+            p_geo = Polygon2D.from_dict(geo_obj)
+            p_geo = p_geo.remove_colinear_vertices(tol)
+            polygons.append(p_geo)
+            if 'identifier' in geo_obj:
+                p_ids.append(geo_obj['identifier'])
+            else:
+                p_ids.append(None)
+            if 'display_name' in geo_obj:
+                p_names.append(geo_obj['display_name'])
+            else:
+                p_names.append(None)
+        else:
+            msg = 'Objects in polygon-file must be Polygon2D. ' \
+                'Not {}'.format(geo_obj['type'])
+            raise TypeError(msg)
+    return polygons, p_ids, p_names
+
+
 @edit.command('align')
 @click.argument('model-file', type=click.Path(
     exists=True, file_okay=True, dir_okay=False, resolve_path=True))
@@ -133,13 +266,13 @@ def solve_adjacency(model_file, surface, no_intersect, output_file):
     'and the line_ray where the vertex will be moved to lie on the line_ray. Vertices '
     'beyond this distance will be left as they are. This input can include the units '
     'of the distance (eg. 3ft) or, if no units are provided, the value will be '
-    'interpreted in the honeybee model units.',
+    'interpreted in the dragonfly model units.',
     type=str, default='0.5m', show_default=True)
 @click.option(
     '--remove-distance', '-r', help='An optional number for the maximum length of a '
     'segment below which the segment will be removed. This operation is performed '
     'before the alignment. This input can include the units of the distance (eg. 3ft) '
-    'or, if no units are provided, the value will be interpreted in the honeybee '
+    'or, if no units are provided, the value will be interpreted in the dragonfly '
     'model units.', type=str, default=None, show_default=True)
 @click.option(
     '--output-file', '-f', help='Optional file to output the Model JSON string'
@@ -173,7 +306,7 @@ def align_room_2ds(model_file, line_ray_file, distance, remove_distance,
         # serialize the Model and check tolerance
         model = Model.from_file(model_file)
         assert model.tolerance != 0, \
-            'Model must have a non-zero tolerance to use solve-adjacency.'
+            'Model must have a non-zero tolerance to use align.'
         # interpret the distance input
         distance = parse_distance_string(distance, model.units)
         # serialize the line_ray_file
@@ -255,7 +388,7 @@ def _serialize_line_rays(line_ray_dicts):
     '--distance', '-d', help='The maximum length of a segment below which the '
     'segment will be considered for removal. This input can include the units '
     'of the distance (eg. 3ft) or, if no units are provided, the value will be '
-    'interpreted in the honeybee model units.',
+    'interpreted in the dragonfly model units.',
     type=str, default='0.5m', show_default=True)
 @click.option(
     '--output-file', '-f', help='Optional file to output the Model JSON string'
@@ -276,7 +409,7 @@ def remove_short_segments(model_file, distance, output_file, log_file):
         # serialize the Model and check tolerance
         model = Model.from_file(model_file)
         assert model.angle_tolerance != 0, \
-            'Model must have a non-zero angle_tolerance to use solve-adjacency.'
+            'Model must have a non-zero angle_tolerance to use remove-short-segments.'
         # interpret the distance input
         distance = parse_distance_string(distance, model.units)
 

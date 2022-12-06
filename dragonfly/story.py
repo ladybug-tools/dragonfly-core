@@ -567,6 +567,70 @@ using-multipliers-zone-and-or-window.html
         for room in rooms_2ds:
             self.add_room_2d(room)
 
+    def reset_room_2d_boundaries(
+            self, polygons, identifiers=None, display_names=None, tolerance=0.01):
+        """Join the Room2Ds of the Story together using boundary Polygons.
+
+        All existing properties of segments along the boundary polygons will be
+        preserved, including all window geometries. The first room that is
+        identified within each of the boundary polygons will determine the
+        extension properties of the resulting Room2D.
+
+        It is recommended that the Room2Ds be aligned to the boundaries of the
+        polygon and duplicate vertices be removed before using this method.
+
+        Args:
+            polygons: A list of ladybug_geometry Polygon2D, which will become
+                the new boundaries of the Story's Room2Ds. Note that it is
+                acceptable to include hole polygons in this list and they will
+                automatically be sensed by their relationship to the other
+                polygons.
+            identifiers: An optional list of text that align with the
+                polygons and will dictate the identifiers of the Story's Rooms.
+                If None, the new Room2D identifiers will be automatically generated
+                from the Story identifier. (Default: None).
+            display_names: An optional list of text that align with the
+                polygons and will dictate the display_names of the Story's Rooms.
+                If None, the new Room2D display_names will be the same as the
+                identifiers. (Default: None).
+            tolerance: The minimum distance between a vertex and the polygon
+                boundary at which point the vertex is considered to lie on the
+                polygon. (Default: 0.01, suitable for objects in meters).
+        """
+        # set defaults for identifiers and display_names
+        if identifiers is None:
+            identifiers = [None] * len(polygons)
+        if display_names is None:
+            display_names = [None] * len(polygons)
+        # sort the polygons so they can be correctly interpreted as holes
+        p_areas = [p.area for p in polygons]
+        sort_ind = [i for _, i in sorted(zip(p_areas, range(len(p_areas))))]
+        sort_ind.reverse()
+        sort_poly = [polygons[i] for i in sort_ind]
+        sort_ids = [identifiers[i] for i in sort_ind]
+        sort_names = [display_names[i] for i in sort_ind]
+        # loop through the polygons and make the Room2Ds
+        new_room_2ds = []
+        skip_i = []  # list to track hole polygons to be skipped
+        for i, (poly, r_id, r_nm) in enumerate(zip(sort_poly, sort_ids, sort_names)):
+            if i in skip_i:
+                continue
+            holes = []
+            for j, o_poly in enumerate(sort_poly[i + 1:]):
+                if poly.is_polygon_inside(o_poly):
+                    holes.append(o_poly)
+                    skip_i.append(i + j + 1)
+            if r_id is None:
+                r_id = '{}_Room{}'.format(self.identifier, i)
+            new_room = Room2D.join_by_boundary(
+                r_id, self._room_2ds, poly, holes, tolerance)
+            if r_nm is not None:
+                new_room.display_name = r_nm
+            else:
+                new_room.display_name = '{} Room {}'.format(self.display_name, i)
+            new_room_2ds.append(new_room)
+        self._room_2ds = tuple(new_room_2ds)
+
     def align_room_2ds(self, line_ray, distance):
         """Move Room2D vertices within a given distance of a line to be on that line.
 
@@ -657,12 +721,14 @@ using-multipliers-zone-and-or-window.html
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
-            preserve_wall_props: Boolean to note whether exterior window parameters,
-                shading parameters and boundary conditions should be preserved
-                as vertices are removed. Doing so will take longer and Surface
-                boundary conditions will still likely be incorrect but they can
-                usually be repaired using reset_adjacency followed by
-                solve_adjacency. (Default: True).
+            preserve_wall_props: Boolean to note whether existing window parameters
+                and Ground boundary conditions should be preserved as vertices are
+                removed. If False, all boundary conditions are replaced with Outdoors,
+                all window parameters are erased, and this method will execute quickly.
+                If True, an attempt will be made to merge window parameters together
+                across colinear segments, translating simple window parameters to
+                rectangular ones if necessary. Also, existing Ground boundary
+                conditions will be kept. (Default: True).
             delete_degenerate: Boolean to note whether degenerate Room2Ds (with
                 floor geometries that evaluate to less than 3 vertices at the
                 tolerance) should be deleted from the Story instead of raising

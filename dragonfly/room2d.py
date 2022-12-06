@@ -31,7 +31,7 @@ from ._base import _BaseGeometry
 from .properties import Room2DProperties
 import dragonfly.windowparameter as glzpar
 from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
-    RectangularWindows, DetailedWindows
+    SimpleWindowRatio, RectangularWindows, DetailedWindows
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 import dragonfly.writer.room2d as writer
@@ -95,6 +95,7 @@ class Room2D(_BaseGeometry):
         * exterior_aperture_area
         * min
         * max
+        * center
         * user_data
     """
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
@@ -649,6 +650,15 @@ class Room2D(_BaseGeometry):
         """
         return self._floor_geometry.boundary_polygon2d.max
 
+    @property
+    def center(self):
+        """Get a Point2D for the center bounding rectangle vertex in the XY plane.
+
+        This is useful in calculations to determine if this Room2D is inside
+        other polygons.
+        """
+        return self._floor_geometry.boundary_polygon2d.center
+
     def segment_orientations(self, north_vector=Vector2D(0, 1)):
         """A list of numbers between 0 and 360 for the orientation of the segments.
 
@@ -994,49 +1004,73 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum distance between a vertex and the line it lies
                 upon at which point the vertex is considered colinear. Default: 0.01,
                 suitable for objects in meters.
-            preserve_wall_props: Boolean to note whether exterior window parameters,
-                shading parameters and boundary conditions should be preserved
-                as vertices are removed. Doing so will take longer. (Default: True).
+            preserve_wall_props: Boolean to note whether existing window parameters
+                and Ground boundary conditions should be preserved as vertices are
+                removed. If False, all boundary conditions are replaced with Outdoors,
+                all window parameters are erased, and this method will execute quickly.
+                If True, an attempt will be made to merge window parameters together
+                across colinear segments, translating simple window parameters to
+                rectangular ones if necessary. Also, existing Ground boundary
+                conditions will be kept. (Default: True).
         """
-        # remove colinear vertices from the Room2D
-        try:
-            new_geo = self.floor_geometry.remove_colinear_vertices(tolerance)
-        except AssertionError as e:  # usually a sliver face of some kind
-            raise ValueError(
-                'Room2D "{}" is degenerate with dimensions less than the '
-                'tolerance.\n{}'.format(self.display_name, e))
-        rebuilt_room = Room2D(
-            self.identifier, new_geo, self.floor_to_ceiling_height,
-            is_ground_contact=self.is_ground_contact,
-            is_top_exposed=self.is_top_exposed)
+        if not preserve_wall_props:
+            try:  # remove colinear vertices from the Room2D
+                new_geo = self.floor_geometry.remove_colinear_vertices(tolerance)
+            except AssertionError as e:  # usually a sliver face of some kind
+                raise ValueError(
+                    'Room2D "{}" is degenerate with dimensions less than the '
+                    'tolerance.\n{}'.format(self.display_name, e))
+            rebuilt_room = Room2D(
+                self.identifier, new_geo, self.floor_to_ceiling_height,
+                is_ground_contact=self.is_ground_contact,
+                is_top_exposed=self.is_top_exposed)
+        else:
+            ftc_height = self.floor_to_ceiling_height
+            if not self.floor_geometry.has_holes:  # only need to evaluate one list
+                pts_3d = self.floor_geometry.vertices
+                pts_2d = self.floor_geometry.polygon2d
+                segs_2d = pts_2d.segments
+                bound_cds = self.boundary_conditions
+                win_pars = self.window_parameters
+                bound_verts, new_bcs, new_w_par = self._remove_colinear_props(
+                    pts_3d, pts_2d, segs_2d, bound_cds, win_pars, ftc_height, tolerance)
+                holes = None
+            else:
+                pts_3d = self.floor_geometry.boundary
+                pts_2d = self.floor_geometry.boundary_polygon2d
+                segs_2d = pts_2d.segments
+                st_i = len(pts_3d)
+                bound_cds = self.boundary_conditions[:st_i]
+                win_pars = self.window_parameters[:st_i]
+                bound_verts, new_bcs, new_w_par = self._remove_colinear_props(
+                    pts_3d, pts_2d, segs_2d, bound_cds, win_pars, ftc_height, tolerance)
+                holes = []
+                for i, pts_3d in enumerate(self.floor_geometry.holes):
+                    pts_2d = self.floor_geometry.hole_polygon2d[i]
+                    segs_2d = pts_2d.segments
+                    bound_cds = self.boundary_conditions[st_i:st_i + len(pts_3d)]
+                    win_pars = self.window_parameters[st_i:st_i + len(pts_3d)]
+                    st_i += len(pts_3d)
+                    h_verts, h_bcs, h_w_par = self._remove_colinear_props(
+                        pts_3d, pts_2d, segs_2d, bound_cds, win_pars,
+                        ftc_height, tolerance)
+                    holes.append(h_verts)
+                    new_bcs.extend(h_bcs)
+                    new_w_par.extend(h_w_par)
+
+            # create the new Room2D
+            new_geo = Face3D(bound_verts, holes=holes)
+            rebuilt_room = Room2D(
+                self.identifier, new_geo, self.floor_to_ceiling_height,
+                boundary_conditions=new_bcs, window_parameters=new_w_par,
+                is_ground_contact=self.is_ground_contact,
+                is_top_exposed=self.is_top_exposed)
+
+        # assign overall properties to the rebuilt room
         rebuilt_room._display_name = self.display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
-
-        # transfer the exterior wall window/shading parameters if requested
-        if preserve_wall_props:
-            # build up new lists of parameters if the segments match
-            exist_abs = self.air_boundaries
-            new_bcs, new_win, new_shd, new_abs = [], [], [], []
-            for seg1 in rebuilt_room.floor_segments:
-                for k, seg2 in enumerate(self.floor_segments):
-                    if seg1.p1.is_equivalent(seg2.p1, tolerance):
-                        if seg1.p2.is_equivalent(seg2.p2, tolerance):  # a match!
-                            new_bcs.append(self._boundary_conditions[k])
-                            new_win.append(self._window_parameters[k])
-                            new_shd.append(self._shading_parameters[k])
-                            new_abs.append(exist_abs[k])
-                            break
-                else:  # the segment could not be matched
-                    new_bcs.append(bcs.outdoors)
-                    new_win.append(None)
-                    new_shd.append(None)
-                    new_abs.append(False)
-            rebuilt_room.boundary_conditions = new_bcs
-            rebuilt_room.window_parameters = new_win
-            rebuilt_room.shading_parameters = new_shd
-            rebuilt_room.air_boundaries = new_abs
         return rebuilt_room
 
     def remove_short_segments(self, distance, angle_tolerance=1.0):
@@ -1678,6 +1712,107 @@ class Room2D(_BaseGeometry):
             rooms, Room2D._find_adjacent_air_boundary_rooms)
 
     @staticmethod
+    def join_by_boundary(identifier, room_2ds, polygon, hole_polygons=None,
+                         tolerance=0.01):
+        """Join several Room2D together using a boundary Polygon as a guide.
+
+        All properties of segments along the boundary polygon will be preserved.
+        The first room that is identified within the boundary polygon will determine
+        the extension properties of the resulting Room.
+
+        It is recommended that the Room2Ds be aligned to the boundaries
+        of the polygon and duplicate vertices be removed before passing them
+        through this method. This helps ensure that relevant Room2D segments
+        are aligned to the polygon.
+
+        Args:
+            identifier: An identifier for new joined Room2D to be returned.
+            room_2ds: A list of Room2Ds which will be joined together using the polygon.
+            polygon: A ladybug_geometry Polygon2D which will become the boundary
+                of the output joined Room2D.
+            hole_polygons: An optional list of hole polygons, which will add
+                holes into the output joined Room2D polygon.
+            tolerance: The minimum distance between a vertex and the polygon
+                boundary at which point the vertex is considered to lie on the
+                polygon. (Default: 0.01, suitable for objects in meters).
+        """
+        tol = tolerance
+        # ensure that all polygons are counterclockwise
+        polygon = polygon.reverse() if polygon.is_clockwise else polygon
+        if hole_polygons is not None:
+            cc_hole_polygons = []
+            for p in hole_polygons:
+                p = p.reverse() if p.is_clockwise else p
+                cc_hole_polygons.append(p)
+            hole_polygons = cc_hole_polygons
+
+        # identify all Room2Ds inside of the polygon
+        rel_rooms, rel_grd, rel_top, rel_flr_hgt, rel_cel_hgt = [], [], [], [], []
+        test_vec = Vector2D(0.99, 0.01)
+        for room in room_2ds:
+            if polygon.is_point_inside_bound_rect(room.center, test_vec):
+                rel_rooms.append(room)
+                rel_grd.append(room.is_ground_contact)
+                rel_top.append(room.is_top_exposed)
+                rel_flr_hgt.append(room.floor_height)
+                rel_cel_hgt.append(room.floor_to_ceiling_height)
+
+        # determine the new room properties using averages/maximums of relevant rooms
+        assert len(rel_rooms) != 0, 'No Room2Ds were found inside the boundary polygon.'
+        new_flr_height = sum(rel_flr_hgt) / len(rel_flr_hgt)
+        new_ftc = max(rel_cel_hgt)
+        new_ground = all(rel_grd)
+        new_top = all(rel_top)
+
+        # gather all segments and properties of relevant rooms
+        rel_segs, rel_bcs, rel_win, rel_shd, rel_abs = [], [], [], [], []
+        for room in rel_rooms:
+            rel_segs.extend(room.floor_segments_2d)
+            rel_bcs.extend(room.boundary_conditions)
+            rel_shd.extend(room.shading_parameters)
+            rel_abs.extend(room.air_boundaries)
+            w_par = room.window_parameters
+            in_range = new_ftc - tol < room.floor_to_ceiling_height < new_ftc + tol
+            if not in_range:  # adjust window ratios to preserve area
+                new_w_par = []
+                for i, wp in enumerate(w_par):
+                    if isinstance(wp, SimpleWindowRatio):
+                        w_area = wp.area_from_segment(
+                            rel_segs[i], room.floor_to_ceiling_height)
+                        new_ratio = w_area / (new_ftc * rel_segs[i].length)
+                        new_wp = wp.duplicate()
+                        new_wp._window_ratio = new_ratio
+                        new_w_par.append(new_wp)
+                    else:
+                        new_w_par.append(wp)
+                w_par = new_w_par
+            rel_win.extend(w_par)
+
+        # find all of the Room2Ds segments that lie on each polygon segment
+        new_bcs, new_win, new_shd, new_abs = [], [], [], []
+        bound_verts = Room2D._segments_along_polygon(
+            polygon, rel_segs, rel_bcs, rel_win, rel_shd, rel_abs,
+            new_bcs, new_win, new_shd, new_abs, new_flr_height, tol)
+        if hole_polygons is not None and len(hole_polygons) != 0:
+            all_hole_verts = []
+            for hole in hole_polygons:
+                hole_verts = Room2D._segments_along_polygon(
+                    hole, rel_segs, rel_bcs, rel_win, rel_shd, rel_abs,
+                    new_bcs, new_win, new_shd, new_abs, new_flr_height, tol)
+                all_hole_verts.append(hole_verts)
+            new_geo = Face3D(bound_verts, holes=all_hole_verts)
+        else:
+            new_geo = Face3D(bound_verts)
+
+        # join all segments and properties that were found into a single Room2D
+        new_room = Room2D(
+            identifier, new_geo, new_ftc,
+            new_bcs, new_win, new_shd, new_ground, new_top, tol)
+        new_room.air_boundaries = new_abs
+        new_room._properties._duplicate_extension_attr(rel_rooms[0]._properties)
+        return new_room
+
+    @staticmethod
     def floor_segment_by_index(geometry, segment_index):
         """Get a particular LineSegment3D from a Face3D object.
 
@@ -1699,7 +1834,8 @@ class Room2D(_BaseGeometry):
 
         Args:
             floor_faces: A list of Face3D objects to be joined together.
-            floor_height:
+            floor_height: a number for the floor_height of the resulting horizontal
+                Face3Ds.
             tolerance: The maximum difference between values at which point vertices
                 are considered to be the same.
 
@@ -1858,6 +1994,37 @@ class Room2D(_BaseGeometry):
                 plenum_hb_room[0].boundary_condition = interior_bc
 
         return plenum_hb_room
+
+    def _match_and_transfer_wall_props(self, other_room, tolerance):
+        """Transfer wall properties for matching segments between this room and another.
+
+        This includes boundary conditions, window/shading parameters, and the
+        air boundary property.
+
+        Args:
+            other_room: An other Room2D to which wall properties will be transferred.
+        """
+        # build up new lists of parameters if the segments match
+        exist_abs = self.air_boundaries
+        new_bcs, new_win, new_shd, new_abs = [], [], [], []
+        for seg1 in other_room.floor_segments:
+            for k, seg2 in enumerate(self.floor_segments):
+                if seg1.p1.is_equivalent(seg2.p1, tolerance):
+                    if seg1.p2.is_equivalent(seg2.p2, tolerance):  # a match!
+                        new_bcs.append(self._boundary_conditions[k])
+                        new_win.append(self._window_parameters[k])
+                        new_shd.append(self._shading_parameters[k])
+                        new_abs.append(exist_abs[k])
+                        break
+            else:  # the segment could not be matched
+                new_bcs.append(bcs.outdoors)
+                new_win.append(None)
+                new_shd.append(None)
+                new_abs.append(False)
+        other_room.boundary_conditions = new_bcs
+        other_room.window_parameters = new_win
+        other_room.shading_parameters = new_shd
+        other_room.air_boundaries = new_abs
 
     def _check_wall_assigned_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""
@@ -2061,6 +2228,55 @@ class Room2D(_BaseGeometry):
                                 return face
 
     @staticmethod
+    def _remove_colinear_props(
+            pts_3d, pts_2d, segs_2d, bound_cds, win_pars, ftc_height, tolerance):
+        """Remove colinear vertices across a boundary while merging window properties."""
+        new_vertices, new_bcs, new_w_par = [], [], []
+        skip = 0  # track the number of vertices being skipped/removed
+        m_segs, m_bcs, m_w_par = [], [], []
+        # loop through vertices and remove all cases of colinear verts
+        for i, _v in enumerate(pts_2d):
+            m_segs.append(segs_2d[i - 2])
+            m_bcs.append(bound_cds[i - 2])
+            m_w_par.append(win_pars[i - 2])
+            _a = pts_2d[i - 2 - skip].determinant(pts_2d[i - 1]) + \
+                pts_2d[i - 1].determinant(_v) + _v.determinant(pts_2d[i - 2 - skip])
+            if abs(_a) >= tolerance:  # vertex is not colinear; add vertex and merge
+                new_vertices.append(pts_3d[i - 1])
+                if all(not isinstance(bc, Ground) for bc in m_bcs):
+                    new_bcs.append(bcs.outdoors)
+                    if all(wp is None for wp in m_w_par):
+                        new_w_par.append(None)
+                    elif len(m_w_par) == 1:
+                        new_w_par.append(m_w_par[0])
+                    else:
+                        new_wp = DetailedWindows.merge(m_w_par, m_segs, ftc_height)
+                        new_w_par.append(new_wp)
+                else:
+                    new_bcs.append(bcs.ground)
+                    new_w_par.append(None)
+                skip = 0
+                m_bcs, m_w_par, m_segs = [], [], []
+            else:  # vertex is colinear; continue
+                skip += 1
+        # catch case of last two vertices being equal but distinct from first point
+        if skip != 0 and pts_3d[-2].is_equivalent(pts_3d[-1], tolerance):
+            _a = pts_2d[-3].determinant(pts_2d[-1]) + \
+                pts_2d[-1].determinant(pts_2d[0]) + pts_2d[0].determinant(pts_2d[-3])
+            if abs(_a) >= tolerance:
+                new_vertices.append(pts_3d[-1])
+                if not isinstance(bound_cds[-2], Ground):
+                    new_bcs.append(bcs.outdoors)
+                    new_w_par.append(win_pars[-2])
+                else:
+                    new_bcs.append(bcs.ground)
+                    new_w_par.append(None)
+        # move the first properties to the end to match with the vertices
+        new_bcs.append(new_bcs.pop(0))
+        new_w_par.append(new_w_par.pop(0))
+        return new_vertices, new_bcs, new_w_par
+
+    @staticmethod
     def _adjacency_grouping(rooms, adj_finding_function):
         """Group Room2Ds together according to an adjacency finding function.
 
@@ -2123,6 +2339,66 @@ class Room2D(_BaseGeometry):
             if ab and isinstance(bc, Surface):
                 adj_rooms.append(bc.boundary_condition_objects[-1])
         return adj_rooms
+
+    @staticmethod
+    def _segments_along_polygon(
+            polygon, rel_segs, rel_bcs, rel_win, rel_shd, rel_abs,
+            new_bcs, new_win, new_shd, new_abs, new_flr_height, tol):
+        """Find the segments along a polygon and add their properties to new lists."""
+        new_segs = []
+        for seg in polygon.segments:
+            seg_segs, seg_bcs, seg_win, seg_shd, seg_abs = [], [], [], [], []
+            # collect the room segments and properties along the boundary
+            for i, rs in enumerate(rel_segs):
+                if seg.distance_to_point(rs.p1) <= tol and \
+                        seg.distance_to_point(rs.p2) <= tol:  # colinear
+                    seg_segs.append(rs)
+                    seg_bcs.append(rel_bcs[i])
+                    seg_win.append(rel_win[i])
+                    seg_shd.append(rel_shd[i])
+                    seg_abs.append(rel_abs[i])
+            if len(seg_segs) == 0:
+                Room2D._add_dummy_segment(
+                    seg.p1, seg.p2, new_segs, new_bcs, new_win, new_shd, new_abs)
+                continue
+            # sort the Room2D segments along the polygon segment
+            seg_dists = [seg.p1.distance_to_point(s.p1) for s in seg_segs]
+            sort_ind = [i for _, i in sorted(zip(seg_dists, range(len(seg_dists))))]
+            seg_segs = [seg_segs[i] for i in sort_ind]
+            seg_bcs = [seg_bcs[i] for i in sort_ind]
+            seg_win = [seg_win[i] for i in sort_ind]
+            seg_shd = [seg_shd[i] for i in sort_ind]
+            seg_abs = [seg_abs[i] for i in sort_ind]
+            # identify any gaps and add dummy segments
+            p1_dists = sorted(seg_dists)
+            p2_dists = [seg.p1.distance_to_point(s.p2) for s in seg_segs]
+            last_d, last_seg = 0, None
+            for i, (p1d, p2d) in enumerate(zip(p1_dists, p2_dists)):
+                if p1d < last_d - tol:  # overlapping segment; ignore it
+                    continue
+                elif p1d > last_d + tol:  # add a dummy segment for the gap
+                    st_pt = last_seg.p2 if last_seg is not None else seg.p1
+                    Room2D._add_dummy_segment(
+                        st_pt, seg_segs[i].p1, new_segs, new_bcs,
+                        new_win, new_shd, new_abs)
+                # add the segment
+                new_segs.append(seg_segs[i])
+                new_bcs.append(seg_bcs[i])
+                new_win.append(seg_win[i])
+                new_shd.append(seg_shd[i])
+                new_abs.append(seg_abs[i])
+                last_d = p2d
+                last_seg = seg_segs[i]
+        return [Point3D(s.p1.x, s.p1.y, new_flr_height) for s in new_segs]
+
+    @staticmethod
+    def _add_dummy_segment(p1, p2, new_segs, new_bcs, new_win, new_shd, new_abs):
+        """Add a dummy segment to lists of properties that are being built."""
+        new_segs.append(LineSegment2D.from_end_points(p1, p2))
+        new_bcs.append(bcs.outdoors)
+        new_win.append(None)
+        new_shd.append(None)
+        new_abs.append(False)
 
     @staticmethod
     def _intersect_line2d_infinite(line_ray_a, line_ray_b):
