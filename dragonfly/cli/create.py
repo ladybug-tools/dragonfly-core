@@ -24,7 +24,7 @@ def create():
     '--output-file', '-f', help='Optional file to output the Model JSON string'
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
-def convert_units(base_model, other_model, output_file):
+def merge_models(base_model, other_model, output_file):
     """Create a Dragonfly Model by merging multiple models together.
 
     \b
