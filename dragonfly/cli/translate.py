@@ -157,8 +157,9 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
     '--output-file', '-f', help='Optional file to output the Honeybee Model JSON string'
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
-def convert_units(base_model, dragonfly_model, honeybee_model, multiplier,
-                  no_plenum, no_ceil_adjacency, enforce_adj_check, output_file):
+def merge_models_to_honeybee(
+        base_model, dragonfly_model, honeybee_model, multiplier,
+        no_plenum, no_ceil_adjacency, enforce_adj_check, output_file):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
     \b
