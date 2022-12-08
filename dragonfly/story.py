@@ -568,7 +568,8 @@ using-multipliers-zone-and-or-window.html
             self.add_room_2d(room)
 
     def reset_room_2d_boundaries(
-            self, polygons, identifiers=None, display_names=None, tolerance=0.01):
+            self, polygons, identifiers=None, display_names=None,
+            floor_to_ceiling_heights=None, tolerance=0.01):
         """Join the Room2Ds of the Story together using boundary Polygons.
 
         All existing properties of segments along the boundary polygons will be
@@ -593,6 +594,14 @@ using-multipliers-zone-and-or-window.html
                 polygons and will dictate the display_names of the Story's Rooms.
                 If None, the new Room2D display_names will be the same as the
                 identifiers. (Default: None).
+            floor_to_ceiling_heights: An optional list of numbers that align with the
+                polygons and will dictate the the floor-to-ceiling heights of the
+                resulting Room2Ds. If None, it will be the maximum of the Room2Ds
+                that are found inside each of the polygon, which ensures
+                that all window geometries are included in the output. If specified
+                and it is lower than the maximum Room2D height, any detailed
+                windows will be automatically trimmed to accommodate the new
+                floor-to-ceiling height. (Default: None).
             tolerance: The minimum distance between a vertex and the polygon
                 boundary at which point the vertex is considered to lie on the
                 polygon. (Default: 0.01, suitable for objects in meters).
@@ -602,6 +611,8 @@ using-multipliers-zone-and-or-window.html
             identifiers = [None] * len(polygons)
         if display_names is None:
             display_names = [None] * len(polygons)
+        if floor_to_ceiling_heights is None:
+            floor_to_ceiling_heights = [None] * len(polygons)
         # sort the polygons so they can be correctly interpreted as holes
         p_areas = [p.area for p in polygons]
         sort_ind = [i for _, i in sorted(zip(p_areas, range(len(p_areas))))]
@@ -609,10 +620,12 @@ using-multipliers-zone-and-or-window.html
         sort_poly = [polygons[i] for i in sort_ind]
         sort_ids = [identifiers[i] for i in sort_ind]
         sort_names = [display_names[i] for i in sort_ind]
+        sort_ftcs = [floor_to_ceiling_heights[i] for i in sort_ind]
         # loop through the polygons and make the Room2Ds
         new_room_2ds = []
         skip_i = []  # list to track hole polygons to be skipped
-        for i, (poly, r_id, r_nm) in enumerate(zip(sort_poly, sort_ids, sort_names)):
+        zip_obj = zip(sort_poly, sort_ids, sort_names, sort_ftcs)
+        for i, (poly, r_id, r_nm, ftc) in enumerate(zip_obj):
             if i in skip_i:
                 continue
             holes = []
@@ -623,7 +636,7 @@ using-multipliers-zone-and-or-window.html
             if r_id is None:
                 r_id = '{}_Room{}'.format(self.identifier, i)
             new_room = Room2D.join_by_boundary(
-                r_id, self._room_2ds, poly, holes, tolerance)
+                r_id, self._room_2ds, poly, holes, ftc, tolerance=tolerance)
             if r_nm is not None:
                 new_room.display_name = r_nm
             else:
@@ -813,7 +826,7 @@ using-multipliers-zone-and-or-window.html
         self._room_2ds = tuple(new_room_2ds)
         return removed_rooms
 
-    def rebuild_detailed_windows(self, tolerance=0.01):
+    def rebuild_detailed_windows(self, tolerance=0.01, match_adjacency=False):
         """Rebuild all detailed windows such that they are bounded by their parent walls.
 
         This method will also ensure that all interior windows on adjacent wall
@@ -826,6 +839,11 @@ using-multipliers-zone-and-or-window.html
             tolerance: The minimum distance between a vertex and the edge of the
                 wall segment that is considered not touching. (Default: 0.01, suitable
                 for objects in meters).
+            match_adjacency: A boolean to note whether this method should ensure
+                that all interior windows on adjacent wall segments are matched
+                correctly with one another. This is desirable when the existing
+                adjacencies across the model are correct but it can create several
+                unwanted cases when the adjacencies are not correct. (Default: False).
         """
         adj_dict = {}
         for room in self.room_2ds:
@@ -836,7 +854,7 @@ using-multipliers-zone-and-or-window.html
                 if isinstance(w_par, DetailedWindows):
                     new_w_par = w_par.adjust_for_segment(
                         seg, room.floor_to_ceiling_height, tolerance)
-                    if isinstance(bc, Surface):
+                    if match_adjacency and isinstance(bc, Surface):
                         try:
                             adj_seg = bc.boundary_condition_objects[0]
                             new_w_par = adj_dict[adj_seg].flip(seg.length)

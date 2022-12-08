@@ -52,7 +52,6 @@ def test_reset_room_boundaries():
     runner = CliRunner()
     cmds = [input_model, input_pgons, '--output-file', output_model]
     result = runner.invoke(reset_room_boundaries, cmds)
-    print(result.output)
     assert result.exit_code == 0
 
     assert os.path.isfile(output_model)
