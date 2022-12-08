@@ -163,10 +163,17 @@ def reset_room_boundaries(
             of Stories in the Model and the values are arrays of Polygon2D objects
             to be applied only to that Story. This dictionary can also contain
             an __all__ key, which can contain a list of Polygon2D to be applied to
-            all Stories in the Model. Any Polygon2Ds JSON objects that contain
-            "identifier" or "display_name" keys will be used to determine the
-            identifier and display_name of the resulting Room2Ds. Otherwise, these
+            all Stories in the Model. Any Polygon2D JSON objects that contain
+            "identifier" or "display_name" properties will be used to determine the
+            identifier and display_name of the resulting Room2D. Otherwise, these
             identifiers are generated automatically from the Story identifier.
+            Any Polygon2D JSON objects that contain a "floor_to_ceiling_height"
+            property will be used to determine the floor_to_ceiling_height of
+            the resulting Room2D. Otherwise, it will be the maximum of the Room2Ds
+            that are found inside the polygon, which ensures that all window
+            geometries are included in the output. If the specified height is
+            lower than the maximum Room2D height, any detailed windows will be
+            automatically trimmed to accommodate the new floor-to-ceiling height.
     """
     try:
         # serialize the Model and check tolerance
@@ -181,23 +188,25 @@ def reset_room_boundaries(
             data = json.load(inf)
         if isinstance(data, list):
             rel_stories = model.stories
-            p_geo, p_ids, p_names = _serialize_polygons(data, tol)
+            p_geo, p_ids, p_names, p_ftc = _serialize_polygons(data, tol)
             polygons = [p_geo] * len(rel_stories)
             identifiers = [p_ids] * len(rel_stories)
             names = [p_names] * len(rel_stories)
+            ftcs = [p_ftc] * len(rel_stories)
         elif isinstance(data, dict):
-            story_ids, polygons, identifiers, names = [], [], [], []
+            story_ids, polygons, identifiers, names, ftcs = [], [], [], [], []
             all_polygons, all_identifiers, all_names = None, None, None
             for st_id, st_lin in data.items():
                 if st_id == '__all__':
-                    all_polygons, all_identifiers, all_names = \
+                    all_polygons, all_identifiers, all_names, all_ftc = \
                         _serialize_polygons(st_lin, tol)
                 else:
                     story_ids.append(st_id)
-                    p_geo, p_ids, p_names = _serialize_polygons(st_lin, tol)
+                    p_geo, p_ids, p_names, p_ftc = _serialize_polygons(st_lin, tol)
                     polygons.append(p_geo)
                     identifiers.append(p_ids)
                     names.append(p_names)
+                    ftcs.append(p_ftc)
             rel_stories = model.stories_by_identifier(story_ids)
             if all_polygons is not None:
                 for story in model.stories:
@@ -205,9 +214,11 @@ def reset_room_boundaries(
                     polygons.append(all_polygons)
                     identifiers.append(all_identifiers)
                     names.append(all_names)
+                    ftcs.append(all_ftc)
 
         # loop through the stories and reset the rooms
-        for d_story, p_gons, p_is, p_n in zip(rel_stories, polygons, identifiers, names):
+        zip_obj = zip(rel_stories, polygons, identifiers, names, ftcs)
+        for d_story, p_gons, p_id, p_n, ftc in zip_obj:
             # align the rooms to the polygon segments
             if distance != 0:
                 line_rays = []
@@ -220,7 +231,7 @@ def reset_room_boundaries(
             d_story.delete_degenerate_room_2ds()
             d_story.rebuild_detailed_windows(tol)
             # reset the room boundaries
-            d_story.reset_room_2d_boundaries(p_gons, p_is, p_n, tolerance=tol)
+            d_story.reset_room_2d_boundaries(p_gons, p_id, p_n, ftc, tolerance=tol)
             if not keep_colinear:
                 d_story.remove_room_2d_colinear_vertices(tolerance=tol)
 
@@ -235,7 +246,7 @@ def reset_room_boundaries(
 
 def _serialize_polygons(polygon_dicts, tol):
     """Serialize an array of Polygon2Ds."""
-    polygons, p_ids, p_names = [], [], []
+    polygons, p_ids, p_names, p_ftc = [], [], [], []
     for geo_obj in polygon_dicts:
         if geo_obj['type'] == 'Polygon2D':
             p_geo = Polygon2D.from_dict(geo_obj)
@@ -249,11 +260,15 @@ def _serialize_polygons(polygon_dicts, tol):
                 p_names.append(geo_obj['display_name'])
             else:
                 p_names.append(None)
+            if 'floor_to_ceiling_height' in geo_obj:
+                p_ftc.append(geo_obj['floor_to_ceiling_height'])
+            else:
+                p_ftc.append(None)
         else:
             msg = 'Objects in polygon-file must be Polygon2D. ' \
                 'Not {}'.format(geo_obj['type'])
             raise TypeError(msg)
-    return polygons, p_ids, p_names
+    return polygons, p_ids, p_names, p_ftc
 
 
 @edit.command('align')

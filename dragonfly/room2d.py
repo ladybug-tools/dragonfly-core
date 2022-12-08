@@ -1713,7 +1713,7 @@ class Room2D(_BaseGeometry):
 
     @staticmethod
     def join_by_boundary(identifier, room_2ds, polygon, hole_polygons=None,
-                         tolerance=0.01):
+                         floor_to_ceiling_height=None, tolerance=0.01):
         """Join several Room2D together using a boundary Polygon as a guide.
 
         All properties of segments along the boundary polygon will be preserved.
@@ -1732,6 +1732,13 @@ class Room2D(_BaseGeometry):
                 of the output joined Room2D.
             hole_polygons: An optional list of hole polygons, which will add
                 holes into the output joined Room2D polygon.
+            floor_to_ceiling_height: An optional number to set the floor-to-ceiling
+                height of the resulting Room2D. If None, it will be the maximum
+                of the Room2Ds that are found inside the polygon, which ensures
+                that all window geometries are included in the output. If specified
+                and it is lower than the maximum Room2D height, any detailed
+                windows will be automatically trimmed to accommodate the new
+                floor-to-ceiling height. (Default: None).
             tolerance: The minimum distance between a vertex and the polygon
                 boundary at which point the vertex is considered to lie on the
                 polygon. (Default: 0.01, suitable for objects in meters).
@@ -1747,22 +1754,28 @@ class Room2D(_BaseGeometry):
             hole_polygons = cc_hole_polygons
 
         # identify all Room2Ds inside of the polygon
-        rel_rooms, rel_grd, rel_top, rel_flr_hgt, rel_cel_hgt = [], [], [], [], []
+        rel_rooms, rel_a, rel_fh, rel_ch = [], [], [], []
         test_vec = Vector2D(0.99, 0.01)
         for room in room_2ds:
-            if polygon.is_point_inside_bound_rect(room.center, test_vec):
+            if room.floor_geometry.is_convex:
+                rm_pt = room.center
+            else:
+                rm_pt_3d = room.floor_geometry._point_on_face(tol)
+                rm_pt = Point2D(rm_pt_3d.x, rm_pt_3d.y)
+            if polygon.is_point_inside_bound_rect(rm_pt, test_vec):
                 rel_rooms.append(room)
-                rel_grd.append(room.is_ground_contact)
-                rel_top.append(room.is_top_exposed)
-                rel_flr_hgt.append(room.floor_height)
-                rel_cel_hgt.append(room.floor_to_ceiling_height)
+                rel_a.append(room.floor_area)
+                rel_fh.append(room.floor_height)
+                rel_ch.append(room.floor_to_ceiling_height)
 
-        # determine the new room properties using averages/maximums of relevant rooms
+        # determine the new floor heights using max/average across relevant rooms
         assert len(rel_rooms) != 0, 'No Room2Ds were found inside the boundary polygon.'
-        new_flr_height = sum(rel_flr_hgt) / len(rel_flr_hgt)
-        new_ftc = max(rel_cel_hgt)
-        new_ground = all(rel_grd)
-        new_top = all(rel_top)
+        new_flr_height = sum(rel_fh) / len(rel_fh)
+        max_ftc = max(rel_ch)
+        new_ftc = max_ftc if floor_to_ceiling_height is None else floor_to_ceiling_height
+        # determine a primary room to set help set properties or the resulting room
+        sort_inds = [i for _, i in sorted(zip(rel_a, range(len(rel_a))))]
+        primary_room = rel_rooms[sort_inds[-1]]
 
         # gather all segments and properties of relevant rooms
         rel_segs, rel_bcs, rel_win, rel_shd, rel_abs = [], [], [], [], []
@@ -1781,7 +1794,7 @@ class Room2D(_BaseGeometry):
                             rel_segs[i], room.floor_to_ceiling_height)
                         new_ratio = w_area / (new_ftc * rel_segs[i].length)
                         new_wp = wp.duplicate()
-                        new_wp._window_ratio = new_ratio
+                        new_wp._window_ratio = new_ratio if new_ratio <= 0.99 else 0.99
                         new_w_par.append(new_wp)
                     else:
                         new_w_par.append(wp)
@@ -1804,12 +1817,28 @@ class Room2D(_BaseGeometry):
         else:
             new_geo = Face3D(bound_verts)
 
-        # join all segments and properties that were found into a single Room2D
+        # merge all segments and properties into a single Room2D
         new_room = Room2D(
-            identifier, new_geo, new_ftc,
-            new_bcs, new_win, new_shd, new_ground, new_top, tol)
+            identifier, new_geo, new_ftc, new_bcs, new_win, new_shd,
+            primary_room.is_ground_contact, primary_room.is_top_exposed, tol)
         new_room.air_boundaries = new_abs
-        new_room._properties._duplicate_extension_attr(rel_rooms[0]._properties)
+        new_room._properties._duplicate_extension_attr(primary_room._properties)
+
+        # if the floor-to-ceiling height is lower than the max, re-trim windows
+        if new_ftc < max_ftc:
+            new_w_pars = []
+            zip_items = zip(
+                new_room._window_parameters,
+                new_room.floor_segments,
+                new_room._boundary_conditions)
+            for i, (w_par, seg, bc) in enumerate(zip_items):
+                if isinstance(w_par, DetailedWindows):
+                    new_w_par = w_par.adjust_for_segment(seg, new_ftc, tolerance)
+                else:
+                    new_w_par = w_par
+                new_w_pars.append(new_w_par)
+            new_room._window_parameters = new_w_pars
+
         return new_room
 
     @staticmethod
