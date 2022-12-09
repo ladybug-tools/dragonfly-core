@@ -13,3 +13,4 @@ tox.ini
 .eggs
 *.code-workspace
 dragonfly.log*
+build

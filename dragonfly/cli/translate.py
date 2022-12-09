@@ -120,6 +120,65 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
         sys.exit(0)
 
 
+@translate.command('model-to-honeybee-file')
+@click.argument('model-file', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.option(
+    '--multiplier/--full-geometry', ' /-fg', help='Flag to note if the '
+    'multipliers on each Building story should be passed along to the '
+    'generated Honeybee Room objects or if full geometry objects should be '
+    'written for each story in the building.', default=True, show_default=True)
+@click.option(
+    '--no-plenum/--plenum', ' /-p', help='Flag to indicate whether '
+    'ceiling/floor plenums should be auto-generated for the Rooms.',
+    default=True, show_default=True)
+@click.option(
+    '--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
+    'whether adjacencies should be solved between interior stories when '
+    'Room2Ds perfectly match one another in their floor plate. This ensures '
+    'that Surface boundary conditions are used instead of Adiabatic ones. '
+    'Note that this input has no effect when the object-per-model is Story.',
+    default=True, show_default=True)
+@click.option(
+    '--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
+    'whether an exception should be raised if an adjacency between two '
+    'Room2Ds is invalid or if the check should be bypassed and the invalid '
+    'Surface boundary condition should be replaced with an Outdoor boundary '
+    'condition. If bypass is selected, any Walls containing WindowParameters '
+    'and an illegal boundary condition will also be replaced with an '
+    'Outdoor boundary condition.', default=True, show_default=True)
+@click.option(
+    '--output-file', '-f', help='Optional file to output the Honeybee Model JSON string'
+    ' with solved adjacency. By default it will be printed out to stdout',
+    type=click.File('w'), default='-')
+def model_to_honeybee_file(
+        model_file, multiplier, no_plenum, no_ceil_adjacency, enforce_adj_check,
+        output_file):
+    """Translate a Dragonfly Model into a single Honeybee Model.
+
+    \b
+    Args:
+        model_file: Full path to a Dragonfly Model JSON or Pkl file.
+    """
+    try:
+        # serialize the Model
+        parsed_model = Model.from_file(model_file)
+        # convert the dragonfly Model to Honeybee
+        hb_model = add_plenum = not no_plenum
+        ceil_adjacency = not no_ceil_adjacency
+        hb_model = parsed_model.to_honeybee(
+            object_per_model='District', use_multiplier=multiplier,
+            add_plenum=add_plenum, solve_ceiling_adjacencies=ceil_adjacency,
+            enforce_adj=enforce_adj_check)
+        # write the new model out to the file or stdout
+        output_file.write(json.dumps(hb_model.to_dict()))
+    except Exception as e:
+        _logger.exception('Model translation failed.\n{}'.format(e))
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
 @translate.command('merge-models-to-honeybee')
 @click.argument('base-model', type=click.Path(
     exists=True, file_okay=True, dir_okay=False, resolve_path=True))
@@ -173,7 +232,7 @@ def merge_models_to_honeybee(
         other_models = [Model.from_file(m) for m in dragonfly_model]
         for o_model in other_models:
             parsed_model.add_model(o_model)
-        
+
         # convert the dragonfly Model to Honeybee
         hb_model = add_plenum = not no_plenum
         ceil_adjacency = not no_ceil_adjacency

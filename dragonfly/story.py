@@ -884,7 +884,8 @@ using-multipliers-zone-and-or-window.html
         """
         self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
 
-    def solve_room_2d_adjacency(self, tolerance=0.01, intersect=False):
+    def solve_room_2d_adjacency(
+            self, tolerance=0.01, intersect=False, resolve_window_conflicts=True):
         """Automatically solve adjacencies across the Room2Ds in this Story.
 
         Args:
@@ -894,11 +895,16 @@ using-multipliers-zone-and-or-window.html
             intersect: Boolean to note wether the Room2Ds should be intersected
                 to obtain matching wall segments before solving adjacency. Note
                 that setting this to True will result in the loss of windows and
-                shades assigned to intersected segments. (Default: False)
+                shades assigned to intersected segments. (Default: False).
+            resolve_window_conflicts: Boolean to note whether conflicts between
+                window parameters of adjacent segments should be resolved during
+                adjacency setting or an error should be raised about the mismatch.
+                Resolving conflicts will default to the window parameters with the
+                larger are and assign them to the other segment. (Default: True).
         """
         if intersect:
             self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
-        Room2D.solve_adjacency(self._room_2ds, tolerance)
+        Room2D.solve_adjacency(self._room_2ds, tolerance, resolve_window_conflicts)
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters.
