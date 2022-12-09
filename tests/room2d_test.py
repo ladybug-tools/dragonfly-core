@@ -556,7 +556,7 @@ def test_solve_adjacency_aperture():
         '{}..Face2'.format(room2d_1.identifier)
 
     with pytest.raises(AssertionError):
-        Room2D.solve_adjacency([room2d_1, room2d_3], 0.01)
+        Room2D.solve_adjacency([room2d_1, room2d_3], 0.01, False)
 
 
 def test_solve_adjacency_air_boundary():

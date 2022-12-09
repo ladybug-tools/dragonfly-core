@@ -216,6 +216,25 @@ class SingleWindow(_WindowParameterBase):
         return SingleWindow(
             self.width * factor, self.height * factor, self.sill_height * factor)
 
+    def split(self, segments, tolerance=0.01):
+        """Split SingleWindow parameters across a list of ordered segments.
+
+        Args:
+            segments: The segments to which the window parameters are being
+                split across. These should be in order as they appear on the
+                parent Room2D.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        lengths = [s.length for s in segments]
+        total_len = sum(lengths)
+        new_w_par = []
+        for length in lengths:
+            new_w = (length / total_len) * self.width
+            new_w_par.append(SingleWindow(new_w, self.height, self.sill_height))
+        return new_w_par
+
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
         """Merge SingleWindow parameters together using their assigned segments.
@@ -361,6 +380,24 @@ class SimpleWindowRatio(_WindowParameterBase):
             final_ids = (adj_ap_id,) + ids
             aperture.boundary_condition = Surface(final_ids, True)
 
+    def split(self, segments, tolerance=0.01):
+        """Split SimpleWindowRatio parameters across a list of ordered segments.
+
+        Args:
+            segments: The segments to which the window parameters are being
+                split across. These should be in order as they appear on the
+                parent Room2D.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        # if one of the segments is much larger than the others, add all windows to that
+        new_ratios = self._all_to_primary_segment(segments)
+        if new_ratios is not None:
+            return new_ratios
+        # otherwise, just distribute the windows evenly
+        return [self] * len(segments)
+
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
         """Merge SimpleWindowRatio parameters together using their assigned segments.
@@ -403,6 +440,25 @@ class SimpleWindowRatio(_WindowParameterBase):
         """Get SimpleWindowRatio as a dictionary."""
         return {'type': 'SimpleWindowRatio',
                 'window_ratio': self.window_ratio}
+
+    def _all_to_primary_segment(self, segments, prim_ratio=0.95):
+        """Determine if one segment is primary and should get all the windows."""
+        if self.window_ratio <= prim_ratio:
+            lengths = [s.length for s in segments]
+            total_len = sum(lengths)
+            prim_len = prim_ratio + 0.01
+            all_to_one_i = None
+            for i, sl in enumerate(lengths):
+                if sl / total_len > prim_len:
+                    all_to_one_i = i
+                    all_to_one_ratio = self.window_ratio * (total_len / sl)
+                    break
+            if all_to_one_i is not None:
+                new_ratios = [None] * len(segments)
+                new_par = self.duplicate()
+                new_par._window_ratio = all_to_one_ratio
+                new_ratios[all_to_one_i] = new_par
+                return new_ratios
 
     def __copy__(self):
         return SimpleWindowRatio(self.window_ratio)
@@ -544,6 +600,24 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         return RepeatingWindowRatio(
             self.window_ratio, self.window_height * factor, self.sill_height * factor,
             self.horizontal_separation * factor, self.vertical_separation * factor)
+
+    def split(self, segments, tolerance=0.01):
+        """Split RepeatingWindowRatio parameters across a list of ordered segments.
+
+        Args:
+            segments: The segments to which the window parameters are being
+                split across. These should be in order as they appear on the
+                parent Room2D.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        # if one of the segments is much larger than the others, add all windows to that
+        new_ratios = self._all_to_primary_segment(segments)
+        if new_ratios is not None:
+            return new_ratios
+        # otherwise, just distribute the windows evenly
+        return [self] * len(segments)
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
@@ -776,6 +850,20 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
         return RepeatingWindowWidthHeight(
             self.window_height * factor, self.window_width * factor,
             self.sill_height * factor, self.horizontal_separation * factor)
+
+    def split(self, segments, tolerance=0.01):
+        """Split RepeatingWindowWidthHeight parameters across a list of ordered segments.
+
+        Args:
+            segments: The segments to which the window parameters are being
+                split across. These should be in order as they appear on the
+                parent Room2D.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        # just distribute the windows evenly
+        return [self] * len(segments)
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
@@ -1063,6 +1151,53 @@ class RectangularWindows(_AsymmetricBase):
                 new_heights.append(height)
         return RectangularWindows(new_origins, new_widths, new_heights)
 
+    def split(self, segments, tolerance=0.01):
+        """Split DetailedWindows parameters across a list of ordered segments.
+
+        Args:
+            segments: The segments to which the window parameters are being
+                split across. These should be in order as they appear on the
+                parent Room2D.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        new_win_pars = []
+        rel_pt, rel_w, rel_h = self.origins, self.widths, self.heights
+        for segment in segments:
+            # loop through the vertices and adjust them to the max width
+            seg_len = segment.length
+            max_width = seg_len - tolerance
+            new_pts, new_w, new_h = [], [], []
+            out_pts, out_w, out_h = [], [], []
+            for pt, w, h in zip(rel_pt, rel_w, rel_h):
+                x_val = pt.x
+                if x_val >= max_width:  # completely outside of the segment
+                    out_pts.append(Point2D(x_val - seg_len, pt.y))
+                    out_w.append(w)
+                    out_h.append(h)
+                elif x_val + w >= max_width:  # split by segment
+                    split_dist = max_width - x_val
+                    new_pts.append(Point2D(x_val, pt.y))
+                    new_w.append(split_dist - tolerance)
+                    new_h.append(h)
+                    out_pts.append(Point2D(tolerance, pt.y))
+                    out_w.append(w - split_dist - (2 * tolerance))
+                    out_h.append(h)
+                else:  # completely inside segment
+                    new_pts.append(pt)
+                    new_w.append(w)
+                    new_h.append(h)
+
+            # build the final window parameters from the adjusted windows
+            if len(new_pts) != 0:
+                new_win_pars.append(RectangularWindows(new_pts, new_w, new_h))
+            else:
+                new_win_pars.append(None)
+            # shift all windows to be relevant for the next segment
+            rel_pt, rel_w, rel_h = out_pts, out_w, out_h
+        return new_win_pars
+
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
         """Merge RectangularWindows parameters together using their assigned segments.
@@ -1097,11 +1232,12 @@ class RectangularWindows(_AsymmetricBase):
 
     def to_dict(self):
         """Get RectangularWindows as a dictionary."""
-        return {'type': 'RectangularWindows',
-                'origins': [pt.to_array() for pt in self.origins],
-                'widths': self.widths,
-                'heights': self.heights
-                }
+        return {
+            'type': 'RectangularWindows',
+            'origins': [pt.to_array() for pt in self.origins],
+            'widths': self.widths,
+            'heights': self.heights
+        }
 
     def __copy__(self):
         return RectangularWindows(self.origins, self.widths, self.heights)
@@ -1359,6 +1495,51 @@ class DetailedWindows(_AsymmetricBase):
             new_verts = tuple(pt.reflect(normal, origin) for pt in polygon.vertices)
             new_polygons.append(Polygon2D(tuple(reversed(new_verts))))
         return DetailedWindows(new_polygons)
+
+    def split(self, segments, tolerance=0.01):
+        """Split DetailedWindows parameters across a list of ordered segments.
+
+        Args:
+            segments: The segments to which the window parameters are being
+                split across. These should be in order as they appear on the
+                parent Room2D.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        new_win_pars, rel_polygons = [], self.polygons
+        for segment in segments:
+            # loop through the vertices and adjust them to the max width
+            max_width = segment.length - tolerance
+            new_polygons, out_polygons = [], []
+            for p_gon in rel_polygons:
+                new_verts, verts_moved = [], []
+                for vert in p_gon:
+                    x_val, v_moved = vert.x, False
+                    if x_val <= tolerance:
+                        x_val, v_moved = tolerance, True
+                    if x_val >= max_width:
+                        x_val, v_moved = max_width, True
+                    new_verts.append(Point2D(x_val, vert.y))
+                    verts_moved.append(v_moved)
+                if not all(verts_moved):
+                    new_polygons.append(Polygon2D(new_verts))
+                    if True in verts_moved:  # outside of the segment
+                        out_polygons.append(p_gon)
+                else:
+                    out_polygons.append(p_gon)
+            # build the final window parameters from the adjusted polygons
+            if len(new_polygons) != 0:
+                new_win_pars.append(DetailedWindows(new_polygons))
+            else:
+                new_win_pars.append(None)
+            # shift all polygons to be relevant for the next segment
+            shift_dist = segment.length
+            rel_polygons = []
+            for p_gon in out_polygons:
+                new_v = [Point2D(p.x - shift_dist, p.y) for p in p_gon]
+                rel_polygons.append(Polygon2D(new_v))
+        return new_win_pars
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):

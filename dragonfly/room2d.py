@@ -742,7 +742,9 @@ class Room2D(_BaseGeometry):
         """
         return self.floor_geometry.mesh_grid(x_dim, y_dim, offset, False)
 
-    def set_adjacency(self, other_room_2d, self_seg_index, other_seg_index):
+    def set_adjacency(
+            self, other_room_2d, self_seg_index, other_seg_index,
+            resolve_window_conflicts=True):
         """Set a segment of this Room2D to be adjacent to another and vice versa.
 
         Note that, adjacent segments must possess matching WindowParameters in
@@ -754,6 +756,11 @@ class Room2D(_BaseGeometry):
                 will be set adjacent to the other_room_2d.
             other_seg_index:An integer for the wall segment of the other_room_2d
                 that will be set adjacent to this Room2D.
+            resolve_window_conflicts: Boolean to note whether conflicts between
+                window parameters of adjacent segments should be resolved during
+                adjacency setting or an error should be raised about the mismatch.
+                Resolving conflicts will default to the window parameters with the
+                larger are and assign them to the other segment. (Default: True).
         """
         assert isinstance(other_room_2d, Room2D), \
             'Expected dragonfly Room2D. Got {}.'.format(type(other_room_2d))
@@ -765,12 +772,29 @@ class Room2D(_BaseGeometry):
         self._boundary_conditions[self_seg_index] = Surface(ids_2)
         other_room_2d._boundary_conditions[other_seg_index] = Surface(ids_1)
         # check that the window parameters match between segments
-        if self._window_parameters[self_seg_index] is not None or \
-                other_room_2d._window_parameters[other_seg_index] is not None:
-            assert self._window_parameters[self_seg_index] == \
-                other_room_2d._window_parameters[other_seg_index], \
-                'Window parameters do not match between adjacent Room2Ds "{}" and ' \
-                '"{}".'.format(self.identifier, other_room_2d.identifier)
+        wp1 = self._window_parameters[self_seg_index]
+        wp2 = other_room_2d._window_parameters[other_seg_index]
+        if wp1 is not None or wp2 is not None:
+            if wp1 != wp2:
+                if resolve_window_conflicts:
+                    ftc1 = self.floor_to_ceiling_height
+                    ftc2 = other_room_2d.floor_to_ceiling_height
+                    min_ftc = min((ftc1, ftc2))
+                    seg1 = self.floor_segments[self_seg_index]
+                    a1 = wp1.area_from_segment(seg1, min_ftc) if wp1 is not None else 0
+                    seg2 = other_room_2d.floor_segments[other_seg_index]
+                    a2 = wp2.area_from_segment(seg2, min_ftc) if wp2 is not None else 0
+                    if a1 > a2:
+                        other_room_2d._window_parameters[other_seg_index] = \
+                            wp1.flip(seg2.length) if isinstance(wp1, _AsymmetricBase) \
+                            else wp1
+                    else:
+                        self._window_parameters[self_seg_index] = \
+                            wp2.flip(seg1.length) if isinstance(wp2, _AsymmetricBase) else wp2
+                else:
+                    msg = 'Window parameters do not match between adjacent Rooms "{}"' \
+                        ' and "{}".'.format(self.identifier, other_room_2d.identifier)
+                    raise AssertionError(msg)
 
     def set_boundary_condition(self, seg_index, boundary_condition):
         """Set a single segment of this Room2D to have a certain boundary condition.
@@ -1485,7 +1509,7 @@ class Room2D(_BaseGeometry):
         return writer
 
     @staticmethod
-    def solve_adjacency(room_2ds, tolerance=0.01):
+    def solve_adjacency(room_2ds, tolerance=0.01, resolve_window_conflicts=True):
         """Solve for all adjacencies between a list of input Room2Ds.
 
         Args:
@@ -1493,6 +1517,11 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered adjacent. (Default: 0.01,
                 suitable for objects in meters).
+            resolve_window_conflicts: Boolean to note whether conflicts between
+                window parameters of adjacent segments should be resolved during
+                adjacency setting or an error should be raised about the mismatch.
+                Resolving conflicts will default to the window parameters with the
+                larger are and assign them to the other segment. (Default: True).
 
         Returns:
             A list of tuples with each tuple containing 2 sub-tuples for wall
@@ -1503,6 +1532,7 @@ class Room2D(_BaseGeometry):
             interior windows, assigning air boundaries, or custom boundary
             conditions).
         """
+        rwc = resolve_window_conflicts
         adj_info = []
         for i, room_1 in enumerate(room_2ds):
             try:
@@ -1517,7 +1547,7 @@ class Room2D(_BaseGeometry):
                                 if seg_1.distance_to_point(seg_2.p1) <= tolerance and \
                                         seg_1.distance_to_point(seg_2.p2) <= tolerance:
                                     # set the boundary conditions of the segments
-                                    room_1.set_adjacency(room_2, j, k)
+                                    room_1.set_adjacency(room_2, j, k, rwc)
                                     adj_info.append(((room_1, j), (room_2, k)))
                                     break
             except IndexError:
@@ -1562,7 +1592,7 @@ class Room2D(_BaseGeometry):
         return adj_info
 
     @staticmethod
-    def intersect_adjacency(room_2ds, tolerance=0.01, preserve_exterior=True):
+    def intersect_adjacency(room_2ds, tolerance=0.01, preserve_wall_props=True):
         """Intersect the line segments of an array of Room2Ds to ensure matching walls.
 
         Note that this method effectively erases all assigned boundary conditions,
@@ -1580,10 +1610,13 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered adjacent. Default: 0.01,
                 suitable for objects in meters.
-            preserve_exterior: Boolean to note whether exterior window parameters
-                and shading parameters should be preserved for exterior wall
-                segments. This will also preserve Ground and Adiabatic boundary
-                conditions for walls. (Default: True).
+            preserve_wall_props: Boolean to note whether existing window parameters,
+                shading parameters and boundary conditions should be preserved as
+                vertices are added during intersection. If False, all boundary
+                conditions are replaced with Outdoors, all window parameters are
+                erased, and this method will execute quickly. If True, an attempt
+                will be made to split window parameters new across colinear segments.
+                Existing boundary conditions will also be kept. (Default: True).
 
         Returns:
             An array of Room2Ds that have been intersected with one another. Note
@@ -1597,6 +1630,7 @@ class Room2D(_BaseGeometry):
         move_dists = []
         is_holes = []
         polygon_2ds = []
+        tol = tolerance
 
         # map all Room geometry into the same 2D space
         for room in room_2ds:
@@ -1613,7 +1647,7 @@ class Room2D(_BaseGeometry):
                     polygon_2ds.append(hole)
 
         # intersect the Room2D polygons within the 2D space
-        int_poly = Polygon2D.intersect_polygon_segments(polygon_2ds, tolerance)
+        int_poly = Polygon2D.intersect_polygon_segments(polygon_2ds, tol)
 
         # convert the resulting coordinates back to 3D space
         face_pts = []
@@ -1645,36 +1679,47 @@ class Room2D(_BaseGeometry):
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
 
-        # transfer the exterior wall window/shading parameters if requested
-        if preserve_exterior:
+        # transfer the wall properties if requested
+        if preserve_wall_props:
             for orig_r, new_r in zip(room_2ds, intersected_rooms):
                 # get the relevant original segments to check for matches
                 rel_segs, rel_bcs, rel_win, rel_shd = [], [], [], []
                 o_zip_props = zip(orig_r.floor_segments, orig_r._boundary_conditions,
                                   orig_r._window_parameters, orig_r._shading_parameters)
                 for seg, bc, win, shd in o_zip_props:
+                    rel_segs.append(seg)
+                    rel_win.append(win)
+                    rel_shd.append(shd)
                     if not isinstance(bc, Surface):
-                        rel_segs.append(seg)
                         rel_bcs.append(bc)
-                        rel_win.append(win)
-                        rel_shd.append(shd)
+                    else:
+                        rel_bcs.append(bcs.outdoors)
                 # build up new lists of parameters if the segments match
-                new_bcs, new_win, new_shd = [], [], []
-                for seg1 in new_r.floor_segments:
-                    for k, seg2 in enumerate(rel_segs):
-                        if seg1.p1.is_equivalent(seg2.p1, tolerance):
-                            if seg1.p2.is_equivalent(seg2.p2, tolerance):  # a match!
-                                new_bcs.append(rel_bcs[k])
-                                new_win.append(rel_win[k])
-                                new_shd.append(rel_shd[k])
-                                break
-                    else:  # the segment could not be matched
-                        new_bcs.append(bcs.outdoors)
-                        new_win.append(None)
-                        new_shd.append(None)
-                new_r.boundary_conditions = new_bcs
-                new_r.window_parameters = new_win
-                new_r.shading_parameters = new_shd
+                new_bcs, new_win, new_shd = {}, {}, {}
+                for k, seg1 in enumerate(rel_segs):
+                    m_win_segs, m_i = [], []
+                    for i, seg2 in enumerate(new_r.floor_segments):
+                        if seg1.distance_to_point(seg2.p1) <= tol and \
+                                seg1.distance_to_point(seg2.p2) <= tol:  # colinear
+                            new_bcs[i] = rel_bcs[k]
+                            new_shd[i] = rel_shd[k]
+                            m_win_segs.append(seg2)
+                            m_i.append(i)
+                    # split the window parameters across the matched segments
+                    wp_par_to_split = rel_win[k]
+                    if wp_par_to_split is None:
+                        for i in m_i:
+                            new_win[i] = None
+                    elif len(m_i) == 1:
+                        new_win[m_i[0]] = wp_par_to_split
+                    else:
+                        split_par = wp_par_to_split.split(m_win_segs)
+                        for i, w_par in zip(m_i, split_par):
+                            new_win[i] = w_par
+
+                new_r.boundary_conditions = [new_bcs[i] for i in range(len(new_r))]
+                new_r.window_parameters = [new_win[i] for i in range(len(new_r))]
+                new_r.shading_parameters = [new_shd[i] for i in range(len(new_r))]
 
         return tuple(intersected_rooms)
 

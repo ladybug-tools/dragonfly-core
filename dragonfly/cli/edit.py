@@ -70,10 +70,17 @@ def convert_units(model_file, units, scale, output_file):
 @click.option('--no-intersect/--intersect', ' /-i', help='Flag to note whether the '
               'segments of the Room2Ds should be intersected with one another before '
               'the adjacencies are solved.', default=True, show_default=True)
+@click.option('--resolve-window-conflicts/--show-window-conflicts', ' /-w',
+              help='Flag to note whether conflicts between window parameters of '
+              'adjacent segments should be resolved during adjacency setting or an '
+              'error should be raised about the mismatch. Resolving conflicts will '
+              'default to the window parameters with the larger are and assign them '
+              'to the other segment.', default=True, show_default=True)
 @click.option('--output-file', '-f', help='Optional file to output the Model JSON string'
               ' with solved adjacency. By default it will be printed out to stdout',
               type=click.File('w'), default='-')
-def solve_adjacency(model_file, surface, no_intersect, output_file):
+def solve_adjacency(
+        model_file, surface, no_intersect, resolve_window_conflicts, output_file):
     """Solve adjacency between Room2Ds of a Model JSON file.
 
     This involves setting Surface or Adiabatic boundary conditions for all matching
@@ -107,7 +114,8 @@ def solve_adjacency(model_file, surface, no_intersect, output_file):
         # solve the adjacency of each story
         for bldg in parsed_model.buildings:
             for story in bldg.unique_stories:
-                adj_info = story.solve_room_2d_adjacency(tol)
+                adj_info = story.solve_room_2d_adjacency(
+                    tol, resolve_window_conflicts=resolve_window_conflicts)
                 if not surface and ad_bc:
                     for face_pair in adj_info:
                         face_pair[0][0].set_boundary_condition(face_pair[0][1], ad_bc)
