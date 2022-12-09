@@ -570,11 +570,11 @@ using-multipliers-zone-and-or-window.html
     def reset_room_2d_boundaries(
             self, polygons, identifiers=None, display_names=None,
             floor_to_ceiling_heights=None, tolerance=0.01):
-        """Join the Room2Ds of the Story together using boundary Polygons.
+        """Rebuild the Room2Ds of the Story using boundary Polygons.
 
         All existing properties of segments along the boundary polygons will be
-        preserved, including all window geometries. The first room that is
-        identified within each of the boundary polygons will determine the
+        preserved, including all window geometries. By default, the largest room
+        that is identified within each of the boundary polygons will determine the
         extension properties of the resulting Room2D.
 
         It is recommended that the Room2Ds be aligned to the boundaries of the

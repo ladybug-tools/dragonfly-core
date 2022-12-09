@@ -147,10 +147,12 @@ def solve_adjacency(model_file, surface, no_intersect, output_file):
     type=click.File('w'), default='-')
 def reset_room_boundaries(
         model_file, polygon_file, distance, keep_colinear, output_file):
-    """Move Room2D vertices within a given distance of a line or ray to be on that line.
+    """Rebuild the Room2Ds of a Model using boundary Polygons.
 
-    By default, all Stories in the Model will be aligned but the input line-ray-file
-    can be structured to only specify line-rays for specific stories if desired.
+    All existing properties of segments along the boundary polygons will be preserved,
+    including all window geometries. By default, the largest room that is identified
+    within each of the boundary polygons will determine the extension properties
+    of the resulting Room2D.
 
     \b
     Args:
