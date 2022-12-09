@@ -166,7 +166,7 @@ def reset_room_boundaries(
             all Stories in the Model. Any Polygon2D JSON objects that contain
             "identifier" or "display_name" properties will be used to determine the
             identifier and display_name of the resulting Room2D. Otherwise, these
-            identifiers are generated automatically from the Story identifier.
+            identifiers are taken from the largest existing Room2D inside each polygon.
             Any Polygon2D JSON objects that contain a "floor_to_ceiling_height"
             property will be used to determine the floor_to_ceiling_height of
             the resulting Room2D. Otherwise, it will be the maximum of the Room2Ds

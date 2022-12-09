@@ -18,7 +18,7 @@ from ladybug_geometry.geometry3d.polyface import Polyface3D
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite
 
-from honeybee.typing import float_positive, clean_string
+from honeybee.typing import float_positive, clean_string, clean_and_id_string
 import honeybee.boundarycondition as hbc
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Ground
@@ -1712,21 +1712,22 @@ class Room2D(_BaseGeometry):
             rooms, Room2D._find_adjacent_air_boundary_rooms)
 
     @staticmethod
-    def join_by_boundary(identifier, room_2ds, polygon, hole_polygons=None,
-                         floor_to_ceiling_height=None, tolerance=0.01):
+    def join_by_boundary(
+            room_2ds, polygon, hole_polygons=None, floor_to_ceiling_height=None,
+            identifier=None, display_name=None, tolerance=0.01):
         """Join several Room2D together using a boundary Polygon as a guide.
 
         All properties of segments along the boundary polygon will be preserved.
-        The first room that is identified within the boundary polygon will determine
-        the extension properties of the resulting Room.
+        The largest Room2D that is identified within the boundary polygon will
+        determine the extension properties of the resulting Room unless the supplied
+        identifier matches an existing Room2D inside the polygon.
 
         It is recommended that the Room2Ds be aligned to the boundaries
         of the polygon and duplicate vertices be removed before passing them
         through this method. This helps ensure that relevant Room2D segments
-        are aligned to the polygon.
+        are colinear with the polygon and so they can influence the result.
 
         Args:
-            identifier: An identifier for new joined Room2D to be returned.
             room_2ds: A list of Room2Ds which will be joined together using the polygon.
             polygon: A ladybug_geometry Polygon2D which will become the boundary
                 of the output joined Room2D.
@@ -1739,6 +1740,16 @@ class Room2D(_BaseGeometry):
                 and it is lower than the maximum Room2D height, any detailed
                 windows will be automatically trimmed to accommodate the new
                 floor-to-ceiling height. (Default: None).
+            identifier: An optional text string for the identifier of the new
+                joined Room2D. If this matches an existing Room2D inside of the
+                polygon, the existing Room2D will be used to set the extension
+                properties of the output Room2D. If None, the identifier
+                and extension properties of the output Room2D will be those of
+                the largest Room2D found inside of the polygon. (Default: None).
+            display_name: An optional text string for the display_name of the new
+                joined Room2D. If None, the display_name will be taken from the
+                largest existing Room2D inside the polygon or the existing
+                Room2D matching the identifier above. (Default: None).
             tolerance: The minimum distance between a vertex and the polygon
                 boundary at which point the vertex is considered to lie on the
                 polygon. (Default: 0.01, suitable for objects in meters).
@@ -1754,7 +1765,7 @@ class Room2D(_BaseGeometry):
             hole_polygons = cc_hole_polygons
 
         # identify all Room2Ds inside of the polygon
-        rel_rooms, rel_a, rel_fh, rel_ch = [], [], [], []
+        rel_rooms, rel_ids, rel_a, rel_fh, rel_ch = [], [], [], [], []
         test_vec = Vector2D(0.99, 0.01)
         for room in room_2ds:
             if room.floor_geometry.is_convex:
@@ -1764,18 +1775,45 @@ class Room2D(_BaseGeometry):
                 rm_pt = Point2D(rm_pt_3d.x, rm_pt_3d.y)
             if polygon.is_point_inside_bound_rect(rm_pt, test_vec):
                 rel_rooms.append(room)
+                rel_ids.append(room.identifier)
                 rel_a.append(room.floor_area)
                 rel_fh.append(room.floor_height)
                 rel_ch.append(room.floor_to_ceiling_height)
 
+        # if no rooms were found inside the polygon, just return a dummy room
+        if len(rel_rooms) == 0:
+            fh = sum([r.floor_height for r in room_2ds]) / len(room_2ds)
+            ftc = sum([r.floor_to_ceiling_height for r in room_2ds]) / len(room_2ds) \
+                if floor_to_ceiling_height is None else floor_to_ceiling_height
+            bound_verts = [Point3D(p.x, p.y, fh) for p in polygon.vertices]
+            all_hole_verts = None
+            if hole_polygons is not None and len(hole_polygons) != 0:
+                all_hole_verts = []
+                for hole in hole_polygons:
+                    all_hole_verts.append([Point3D(p.x, p.y, fh) for p in hole.vertices])
+            new_geo = Face3D(bound_verts, holes=all_hole_verts)
+            r_id = clean_and_id_string('Room') if identifier is None else identifier
+            return Room2D(r_id, new_geo, ftc)
+
         # determine the new floor heights using max/average across relevant rooms
-        assert len(rel_rooms) != 0, 'No Room2Ds were found inside the boundary polygon.'
         new_flr_height = sum(rel_fh) / len(rel_fh)
         max_ftc = max(rel_ch)
         new_ftc = max_ftc if floor_to_ceiling_height is None else floor_to_ceiling_height
+
         # determine a primary room to set help set properties or the resulting room
-        sort_inds = [i for _, i in sorted(zip(rel_a, range(len(rel_a))))]
-        primary_room = rel_rooms[sort_inds[-1]]
+        if identifier is None or identifier not in rel_ids:
+            # find the largest room of the relevant rooms
+            sort_inds = [i for _, i in sorted(zip(rel_a, range(len(rel_a))))]
+            primary_room = rel_rooms[sort_inds[-1]]
+            if identifier is None:
+                identifier = primary_room.identifier
+        else:  # draw properties from the room with the matching identifier
+            for r_id, rm in zip(rel_ids, rel_rooms):
+                if r_id == identifier:
+                    primary_room = rm
+                    break
+        if display_name is None:
+            display_name = primary_room.display_name
 
         # gather all segments and properties of relevant rooms
         rel_segs, rel_bcs, rel_win, rel_shd, rel_abs = [], [], [], [], []
@@ -1821,6 +1859,7 @@ class Room2D(_BaseGeometry):
         new_room = Room2D(
             identifier, new_geo, new_ftc, new_bcs, new_win, new_shd,
             primary_room.is_ground_contact, primary_room.is_top_exposed, tol)
+        new_room.display_name = display_name
         new_room.air_boundaries = new_abs
         new_room._properties._duplicate_extension_attr(primary_room._properties)
 

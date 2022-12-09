@@ -586,14 +586,18 @@ using-multipliers-zone-and-or-window.html
                 acceptable to include hole polygons in this list and they will
                 automatically be sensed by their relationship to the other
                 polygons.
-            identifiers: An optional list of text that align with the
-                polygons and will dictate the identifiers of the Story's Rooms.
-                If None, the new Room2D identifiers will be automatically generated
-                from the Story identifier. (Default: None).
+            identifiers: An optional list of text that align with the polygons
+                and will dictate the identifiers of the Story's Rooms. If this
+                matches an existing Room2D inside of the polygon, the existing
+                Room2D will be used to set the extension properties of the output
+                Room2D. If None, the identifier and extension properties of the
+                output Room2D will be those of the largest Room2D found inside
+                of the polygon. (Default: None).
             display_names: An optional list of text that align with the
                 polygons and will dictate the display_names of the Story's Rooms.
-                If None, the new Room2D display_names will be the same as the
-                identifiers. (Default: None).
+                If None, the display_name will be taken from the
+                largest existing Room2D inside the polygon or the existing
+                Room2D matching the identifier above. (Default: None).
             floor_to_ceiling_heights: An optional list of numbers that align with the
                 polygons and will dictate the the floor-to-ceiling heights of the
                 resulting Room2Ds. If None, it will be the maximum of the Room2Ds
@@ -633,14 +637,8 @@ using-multipliers-zone-and-or-window.html
                 if poly.is_polygon_inside(o_poly):
                     holes.append(o_poly)
                     skip_i.append(i + j + 1)
-            if r_id is None:
-                r_id = '{}_Room{}'.format(self.identifier, i)
             new_room = Room2D.join_by_boundary(
-                r_id, self._room_2ds, poly, holes, ftc, tolerance=tolerance)
-            if r_nm is not None:
-                new_room.display_name = r_nm
-            else:
-                new_room.display_name = '{} Room {}'.format(self.display_name, i)
+                self._room_2ds, poly, holes, ftc, r_id, r_nm, tolerance=tolerance)
             new_room_2ds.append(new_room)
         self._room_2ds = tuple(new_room_2ds)
 
