@@ -968,7 +968,9 @@ using-multipliers-zone-and-or-window.html
         """
         up_vec = Vector3D(0, 0, 1)
         for room in self._room_2ds:
-            face_ray = Ray3D(room._floor_geometry._point_on_face(tolerance), up_vec)
+            rm_pt = room.floor_geometry.center if room.floor_geometry.is_convex else \
+                room.floor_geometry.pole_of_inaccessibility(tolerance)
+            face_ray = Ray3D(rm_pt, up_vec)
             for other_room in story_above._room_2ds:
                 if other_room._floor_geometry.intersect_line_ray(face_ray) is not None:
                     room.is_top_exposed = False
