@@ -1034,6 +1034,8 @@ class Building(_BaseGeometry):
                             new_face3d_array.append(sub_face)
                 else:
                     base_p = Polygon2D([Point2D(p.x, p.y) for p in floor_face.boundary])
+                    if base_p.is_clockwise:
+                        base_p = base_p.reverse()
                     try:
                         sub_polys_perim, sub_polys_core = perimeter_core_subpolygons(
                             polygon=base_p, distance=perim_offset, tol=tolerance)
