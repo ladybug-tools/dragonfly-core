@@ -24,6 +24,7 @@ from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Ground
 from honeybee.facetype import Floor, Wall, AirBoundary, RoofCeiling
 from honeybee.facetype import face_types as ftyp
+from honeybee.door import Door
 from honeybee.face import Face
 from honeybee.room import Room
 
@@ -298,15 +299,19 @@ class Room2D(_BaseGeometry):
             wall_f = cls._segment_wall_face(room, seg, tolerance)
             if wall_f is not None:
                 boundary_conditions[i] = wall_f.boundary_condition
-                if len(wall_f._apertures) != 0:
-                    w_geos = [ap.geometry for ap in wall_f._apertures]
+                if len(wall_f._apertures) != 0 or len(wall_f._doors) != 0:
+                    sf_objs = wall_f._apertures + wall_f._doors
+                    w_geos = [sf.geometry for sf in sf_objs]
+                    is_drs = [isinstance(sf, Door) for sf in sf_objs]
                     if abs(wall_f.normal.z) <= 0.01:  # vertical wall
-                        window_parameters[i] = DetailedWindows.from_face3ds(w_geos, seg)
+                        window_parameters[i] = DetailedWindows.from_face3ds(
+                            w_geos, seg, is_drs)
                     else:  # angled wall; scale the Y to covert to vertical
                         w_p = Plane(Vector3D(seg.v.y, -seg.v.x, 0), seg.p, seg.v)
                         w3d = [Face3D([p.project(w_p.n, w_p.o) for p in geo.boundary])
                                for geo in w_geos]
-                        window_parameters[i] = DetailedWindows.from_face3ds(w3d, seg)
+                        window_parameters[i] = DetailedWindows.from_face3ds(
+                            w3d, seg, is_drs)
                 if isinstance(wall_f.type, AirBoundary):
                     air_bounds[i] = True
 
@@ -789,8 +794,8 @@ class Room2D(_BaseGeometry):
                             wp1.flip(seg2.length) if isinstance(wp1, _AsymmetricBase) \
                             else wp1
                     else:
-                        self._window_parameters[self_seg_index] = \
-                            wp2.flip(seg1.length) if isinstance(wp2, _AsymmetricBase) else wp2
+                        self._window_parameters[self_seg_index] = wp2.flip(seg1.length) \
+                            if isinstance(wp2, _AsymmetricBase) else wp2
                 else:
                     msg = 'Window parameters do not match between adjacent Rooms "{}"' \
                         ' and "{}".'.format(self.identifier, other_room_2d.identifier)
@@ -1385,6 +1390,7 @@ class Room2D(_BaseGeometry):
                     if enforce_bc:
                         raise e
                     hb_room[i + 1]._boundary_condition = bcs.outdoors
+                    hb_room[i + 1].remove_sub_faces()
                     glz_par.add_window_to_face(hb_room[i + 1], tolerance)
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
@@ -1396,7 +1402,7 @@ class Room2D(_BaseGeometry):
 
         # ensure matching adjacent Faces across the Story if tolerance is input
         if self._parent is not None:
-            new_faces = self._split_walls_along_height(hb_room, tolerance)
+            new_faces = self._split_walls_along_height(hb_room, tolerance, add_plenum)
             if len(new_faces) != len(hb_room):
                 # rebuild the room with split surfaces
                 hb_room = Room(self.identifier, new_faces, tolerance, 0.1)
@@ -2184,13 +2190,16 @@ class Room2D(_BaseGeometry):
         # return the flipped lists
         return new_bcs, new_win_pars, new_shd_pars
 
-    def _split_walls_along_height(self, hb_room, tolerance):
+    def _split_walls_along_height(self, hb_room, tolerance, plenums=False):
         """Split adjacent walls to ensure matching surface areas in to_honeybee workflow.
 
         Args:
             hb_room: A non-split Honeybee Room representation of this Room2D.
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
+            plenums: A boolean to note whether the resulting model has auto-generated
+                plenums, which will determine the default boundary condition of
+                any split wall segments. (Default: False).
         """
         new_faces = [hb_room[0]]
         for i, bc in enumerate(self._boundary_conditions):
@@ -2227,10 +2236,15 @@ class Room2D(_BaseGeometry):
                     below_face = Face('{}_Below'.format(face.identifier), below)
                     above_face = Face('{}_Above'.format(face.identifier), above)
                     try:
-                        below_face.boundary_condition = bcs.adiabatic
-                        above_face.boundary_condition = bcs.adiabatic
+                        below_face.boundary_condition = bcs.ground \
+                            if self.is_ground_contact and not plenums else bcs.adiabatic
                     except AttributeError:
-                        pass  # honeybee_energy is not loaded
+                        pass  # honeybee_energy is not loaded; no adiabatic BC
+                    try:
+                        below_face.boundary_condition = bcs.outdoors \
+                            if adj_rm.is_top_exposed and not plenums else bcs.adiabatic
+                    except AttributeError:
+                        pass  # honeybee_energy is not loaded; no adiabatic BC
                     new_faces.extend([below_face, mid_face, above_face])
                 elif flr_diff > tolerance:
                     # split the face into to 2 smaller faces along its height
@@ -2246,9 +2260,10 @@ class Room2D(_BaseGeometry):
                     self._reassign_split_windows(mid_face, i, tolerance)
                     below_face = Face('{}_Below'.format(face.identifier), below)
                     try:
-                        below_face.boundary_condition = bcs.adiabatic
+                        below_face.boundary_condition = bcs.ground \
+                            if self.is_ground_contact and not plenums else bcs.adiabatic
                     except AttributeError:
-                        pass  # honeybee_energy is not loaded
+                        pass  # honeybee_energy is not loaded; no adiabatic BC
                     new_faces.extend([below_face, mid_face])
                 elif ciel_diff > tolerance:
                     # split the face into to 2 smaller faces along its height
@@ -2264,9 +2279,10 @@ class Room2D(_BaseGeometry):
                     self._reassign_split_windows(mid_face, i, tolerance)
                     above_face = Face('{}_Above'.format(face.identifier), above)
                     try:
-                        above_face.boundary_condition = bcs.adiabatic
+                        above_face.boundary_condition = bcs.outdoors \
+                            if adj_rm.is_top_exposed and not plenums else bcs.adiabatic
                     except AttributeError:
-                        pass  # honeybee_energy is not loaded
+                        pass  # honeybee_energy is not loaded; no adiabatic BC
                     new_faces.extend([mid_face, above_face])
         new_faces.append(hb_room[-1])
         return new_faces
@@ -2281,7 +2297,7 @@ class Room2D(_BaseGeometry):
         """
         glz_par = self._window_parameters[i]
         if glz_par is not None:
-            face.remove_apertures()
+            face.remove_sub_faces()
             glz_par.add_window_to_face(face, tolerance)
 
     @staticmethod
