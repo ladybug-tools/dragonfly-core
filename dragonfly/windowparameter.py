@@ -487,7 +487,7 @@ class RepeatingWindowRatio(SimpleWindowRatio):
     """Instructions for repeating windows derived from an area ratio with the base surface.
 
     Args:
-        window_ratio: A number between 0 and 1 for the ratio between the window
+        window_ratio: A number between 0 and 0.95 for the ratio between the window
             area and the total facade area.
         window_height: A number for the target height of the windows.
             Note that, if the window ratio is too large for the height, the
@@ -1335,8 +1335,9 @@ class DetailedWindows(_AsymmetricBase):
 
     Usage:
         Note that, if you are starting from 3D vertices of windows, you can
-        use this class to represent them. Below is some sample code to convert from
-        vertices in the same 3D space as a vertical wall to vertices in the 2D
+        use this class to represent them. The DetailedWindows.from_face3ds is the
+        simplest way to do this. Otherwise, below is some sample code to convert
+        from vertices in the same 3D space as a vertical wall to vertices in the 2D
         plane of the wall (as this class interprets it).
 
         In the code, 'seg_p1' is the first point of a given wall segment and

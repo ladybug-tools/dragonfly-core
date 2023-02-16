@@ -7,12 +7,12 @@ from dragonfly.story import Story
 from dragonfly.room2d import Room2D
 from dragonfly.context import ContextShade
 from dragonfly.windowparameter import SimpleWindowRatio
-from dragonfly.projection import meters_to_long_lat_factors, \
-    origin_long_lat_from_location
+from dragonfly.projection import meters_to_long_lat_factors
 
 import honeybee.model as hb_model
 from honeybee.room import Room
 from honeybee.shade import Shade
+from honeybee.facetype import RoofCeiling
 from honeybee.boundarycondition import Surface
 
 from ladybug.location import Location
@@ -532,6 +532,28 @@ def test_to_honeybee_missing_adjacency():
     assert isinstance(hb_models[0], hb_model.Model)
 
 
+def test_to_honeybee_doors_skylights():
+    """Test the to_honeybee method with doors and skylights."""
+    model_file = './tests/json/model_with_doors_skylights.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+
+    assert len(hb_models) == 1
+    assert isinstance(hb_models[0], hb_model.Model)
+
+    skylights = [
+        f.apertures for f in hb_models[0].faces
+        if isinstance(f.type, RoofCeiling) and len(f.apertures) != 0]
+    assert len(skylights) == 2
+    assert len(skylights[0]) == 1
+
+    int_doors = [
+        f.doors for f in hb_models[0].faces
+        if isinstance(f.boundary_condition, Surface) and len(f.doors) != 0]
+    assert len(int_doors) != 0
+
+
 def test_to_dict():
     """Test the Model to_dict method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
@@ -1007,10 +1029,10 @@ def test_from_honeybee():
 
     pts = (Point3D(0, -3, 0), Point3D(0, -3, 3), Point3D(1, -3, 3), Point3D(1, -3, 0))
     shade = Shade('TestShade', Face3D(pts))
-    
+
     model = hb_model.Model('Test_Building', [room_south, room_north, room_up],
                            orphaned_shades=[shade], tolerance=0.01)
-    
+
     model = Model.from_honeybee(model)
 
     assert len(model.context_shades) == 1
@@ -1036,6 +1058,3 @@ def test_writer():
     writers = [mod for mod in dir(model.to) if not mod.startswith('_')]
     for writer in writers:
         assert callable(getattr(model.to, writer))
-
-
-
