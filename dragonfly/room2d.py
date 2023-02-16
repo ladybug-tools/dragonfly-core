@@ -33,6 +33,8 @@ from .properties import Room2DProperties
 import dragonfly.windowparameter as glzpar
 from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
     SimpleWindowRatio, RectangularWindows, DetailedWindows
+import dragonfly.skylightparameter as skypar
+from dragonfly.skylightparameter import _SkylightParameterBase, DetailedSkylights
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 import dragonfly.writer.room2d as writer
@@ -82,6 +84,7 @@ class Room2D(_BaseGeometry):
         * air_boundaries
         * is_ground_contact
         * is_top_exposed
+        * skylight_parameters
         * parent
         * has_parent
         * floor_segments
@@ -101,7 +104,8 @@ class Room2D(_BaseGeometry):
     """
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
                  '_boundary_conditions', '_window_parameters', '_shading_parameters',
-                 '_air_boundaries', '_is_ground_contact', '_is_top_exposed', '_parent')
+                 '_air_boundaries', '_is_ground_contact', '_is_top_exposed',
+                 '_skylight_parameters', '_parent')
 
     def __init__(self, identifier, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
@@ -159,6 +163,7 @@ class Room2D(_BaseGeometry):
         # process the top and bottom exposure properties
         self.is_ground_contact = is_ground_contact
         self.is_top_exposed = is_top_exposed
+        self._skylight_parameters = None
 
         self._air_boundaries = None  # will be set if it's ever used
         self._parent = None  # _parent will be set when Room2D is added to a Story
@@ -216,8 +221,8 @@ class Room2D(_BaseGeometry):
                             glz_class = getattr(glzpar, glz_dict['type'])
                         except AttributeError:
                             raise ValueError(
-                                'Window parameter "{}" is not supported in this '
-                                'honeybee installation.'.format(glz_dict['type']))
+                                'Window parameter "{}" is not recognized.'.format(
+                                    glz_dict['type']))
                         glz_pars.append(glz_class.from_dict(glz_dict))
                 else:
                     glz_pars.append(None)
@@ -233,8 +238,8 @@ class Room2D(_BaseGeometry):
                         shd_class = getattr(shdpar, shd_dict['type'])
                     except AttributeError:
                         raise ValueError(
-                            'Shading parameter "{}" is not supported in this honeybee '
-                            'installation.'.format(shd_dict['type']))
+                            'Shading parameter "{}" is not recognized.'.format(
+                                shd_dict['type']))
                     shd_pars.append(shd_class.from_dict(shd_dict))
                 else:
                     shd_pars.append(None)
@@ -245,9 +250,22 @@ class Room2D(_BaseGeometry):
         grnd = data['is_ground_contact'] if 'is_ground_contact' in data else False
         top = data['is_top_exposed'] if 'is_top_exposed' in data else False
 
+        # create the Room2D object
         room = Room2D(data['identifier'], floor_geometry,
                       data['floor_to_ceiling_height'],
                       b_conditions, glz_pars, shd_pars, grnd, top, tolerance)
+
+        # assign any skylight parameters if they are specified
+        if 'skylight_parameters' in data and data['skylight_parameters'] is not None:
+            try:
+                sky_class = getattr(skypar, data['skylight_parameters']['type'])
+            except AttributeError:
+                raise ValueError(
+                    'Skylight parameter "{}" is not recognized.'.format(
+                        data['skylight_parameters']['type']))
+            room.skylight_parameters = sky_class.from_dict(data['skylight_parameters'])
+
+        # set all of the other optional properties
         if 'air_boundaries' in data and data['air_boundaries'] is not None:
             room.air_boundaries = data['air_boundaries']
         if 'display_name' in data and data['display_name'] is not None:
@@ -322,11 +340,25 @@ class Room2D(_BaseGeometry):
         is_top_exposed = all([isinstance(f.boundary_condition, Outdoors)
                               for f in room.faces if isinstance(f.type, RoofCeiling)])
 
-        # create the Dragonfly Room2D and add the extra attributes
+        # create the Dragonfly Room2D
         room_2d = cls(
             room.identifier, flr_geo, floor_to_ceiling_height,
             boundary_conditions, window_parameters, None,
             is_ground_contact, is_top_exposed, tolerance)
+
+        # check if there are any skylights to be added
+        skylights, are_doors = [], []
+        for f in room.faces:
+            if isinstance(f.type, RoofCeiling):
+                sf_objs = f._apertures + f._doors
+                for sf in sf_objs:
+                    verts2d = tuple(Point2D(pt.x, pt.y) for pt in sf.geometry.boundary)
+                    skylights.append(Polygon2D(verts2d))
+                    are_doors.append(isinstance(sf, Door))
+        if len(skylights) != 0:
+            room_2d.skylight_parameters = DetailedSkylights(skylights, are_doors)
+
+        # add the extra optional attributes
         final_ab = []
         for v, bc in zip(air_bounds, room_2d._boundary_conditions):
             v_f = v if isinstance(bc, Surface) else False
@@ -555,6 +587,19 @@ class Room2D(_BaseGeometry):
     @is_top_exposed.setter
     def is_top_exposed(self, value):
         self._is_top_exposed = bool(value)
+
+    @property
+    def skylight_parameters(self):
+        """Get or set SkylightParameters describing how to generate skylights.
+        """
+        return self._skylight_parameters
+
+    @skylight_parameters.setter
+    def skylight_parameters(self, value):
+        if value is not None:
+            assert isinstance(value, _SkylightParameterBase), \
+                'Expected Skylight Parameters. Got {}'.format(type(value))
+        self._skylight_parameters = value
 
     @property
     def parent(self):
@@ -844,6 +889,8 @@ class Room2D(_BaseGeometry):
                 to move the room.
         """
         self._floor_geometry = self._floor_geometry.move(moving_vec)
+        if isinstance(self._skylight_parameters, DetailedSkylights):
+            self._skylight_parameters = self._skylight_parameters.move(moving_vec)
         self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
@@ -856,6 +903,8 @@ class Room2D(_BaseGeometry):
         """
         self._floor_geometry = self._floor_geometry.rotate_xy(
             math.radians(angle), origin)
+        if isinstance(self._skylight_parameters, DetailedSkylights):
+            self._skylight_parameters = self._skylight_parameters.rotate(angle, origin)
         self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
@@ -875,6 +924,8 @@ class Room2D(_BaseGeometry):
             self._window_parameters = new_win_pars
             self._shading_parameters = new_shd_pars
             self._floor_geometry = self._floor_geometry.flip()
+        if isinstance(self._skylight_parameters, DetailedSkylights):
+            self._skylight_parameters = self._skylight_parameters.reflect(plane)
         self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
@@ -901,6 +952,12 @@ class Room2D(_BaseGeometry):
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
                 self._shading_parameters[i] = shd_par.scale(factor)
+
+        # scale the skylight parameters
+        if self._skylight_parameters is not None:
+            self._skylight_parameters = self._skylight_parameters.scale(factor, origin) \
+                if isinstance(self._skylight_parameters, DetailedSkylights) else \
+                self._skylight_parameters.scale(factor)
 
         self.properties.scale(factor, origin)
 
@@ -1096,6 +1153,7 @@ class Room2D(_BaseGeometry):
                 is_top_exposed=self.is_top_exposed)
 
         # assign overall properties to the rebuilt room
+        rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self.display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
@@ -1215,6 +1273,7 @@ class Room2D(_BaseGeometry):
             self.identifier, new_geo, self.floor_to_ceiling_height, new_bcs, new_win,
             new_shd, self.is_ground_contact, self.is_top_exposed)
         rebuilt_room._air_boundaries = new_abs
+        rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self.display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
@@ -1306,6 +1365,10 @@ class Room2D(_BaseGeometry):
                 msg = wp.check_valid_for_segment(seg, self.floor_to_ceiling_height)
                 if msg != '':
                     msgs.append(' Segment [{}] - {}'.format(i, msg))
+        if self._skylight_parameters is not None:
+            msg = self._skylight_parameters.check_valid_for_face(self.floor_geometry)
+            if msg != '':
+                msgs.append(' Skylights - {}'.format(msg))
         if len(msgs) == 0:
             return [] if detailed else ''
         full_msg = 'Room2D "{}" contains invalid window parameters.' \
@@ -1318,8 +1381,8 @@ class Room2D(_BaseGeometry):
             raise ValueError(full_msg)
         return full_msg
 
-    def to_honeybee(self, multiplier=1, add_plenum=False,
-                    tolerance=0.01, enforce_bc=True):
+    def to_honeybee(
+            self, multiplier=1, add_plenum=False, tolerance=0.01, enforce_bc=True):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -1435,6 +1498,10 @@ class Room2D(_BaseGeometry):
         # transfer any extension properties assigned to the Room2D and return result
         hb_room._properties = self.properties.to_honeybee(hb_room)
         if not add_plenum:
+            if self._skylight_parameters is not None:
+                if self._is_top_exposed:
+                    self._skylight_parameters.add_skylight_to_face(
+                        hb_room[-1], tolerance)
             return hb_room, adjacencies
 
         # add plenums if requested and return results
@@ -1450,6 +1517,19 @@ class Room2D(_BaseGeometry):
                     hb_room.properties.energy.infiltration
             except AttributeError:
                 pass  # honeybee-energy is not loaded; ignore all these energy properties
+
+        # set the skylights if top is exposed and there's no ceiling plenum
+        if self._skylight_parameters is not None:
+            if self._is_top_exposed:
+                if len(hb_plenums) == 0:
+                    self._skylight_parameters.add_skylight_to_face(
+                        hb_room[-1], tolerance)
+                elif len(hb_plenums) == 1 and \
+                        hb_plenums[0].identifier.endswith('floor_plenum'):
+                    self._skylight_parameters.add_skylight_to_face(
+                        hb_room[-1], tolerance)
+
+        # return the rooms and the adjacency information
         return [hb_room] + hb_plenums, adjacencies
 
     def to_dict(self, abridged=False, included_prop=None):
@@ -1500,6 +1580,9 @@ class Room2D(_BaseGeometry):
         if self._air_boundaries is not None:
             if not all((not param for param in self._air_boundaries)):
                 base['air_boundaries'] = self._air_boundaries
+
+        if self._skylight_parameters is not None:
+            base['skylight_parameters'] = self.skylight_parameters.to_dict()
 
         if self.user_data is not None:
             base['user_data'] = self.user_data
@@ -1678,6 +1761,7 @@ class Room2D(_BaseGeometry):
                 room_2ds[i].identifier, new_geo, room_2ds[i].floor_to_ceiling_height,
                 is_ground_contact=room_2ds[i].is_ground_contact,
                 is_top_exposed=room_2ds[i].is_top_exposed)
+            rebuilt_room._skylight_parameters = room_2ds[i].skylight_parameters
             rebuilt_room._display_name = room_2ds[i].display_name
             rebuilt_room._user_data = None if room_2ds[i].user_data is None else \
                 room_2ds[i].user_data.copy()
@@ -1771,7 +1855,8 @@ class Room2D(_BaseGeometry):
         All properties of segments along the boundary polygon will be preserved.
         The largest Room2D that is identified within the boundary polygon will
         determine the extension properties of the resulting Room unless the supplied
-        identifier matches an existing Room2D inside the polygon.
+        identifier matches an existing Room2D inside the polygon. All skylights
+        will be lost.
 
         It is recommended that the Room2Ds be aligned to the boundaries
         of the polygon and duplicate vertices be removed before passing them
@@ -1831,7 +1916,7 @@ class Room2D(_BaseGeometry):
                 rel_fh.append(room.floor_height)
                 rel_ch.append(room.floor_to_ceiling_height)
 
-        # if no rooms were found inside the polygon, just return a dummy room
+        # if no rooms are inside the polygon, just return a dummy room from the polygon
         if len(rel_rooms) == 0:
             fh = sum([r.floor_height for r in room_2ds]) / len(room_2ds)
             ftc = sum([r.floor_to_ceiling_height for r in room_2ds]) / len(room_2ds) \
@@ -1913,6 +1998,7 @@ class Room2D(_BaseGeometry):
         new_room.display_name = display_name
         new_room.air_boundaries = new_abs
         new_room._properties._duplicate_extension_attr(primary_room._properties)
+        # TODO: Consider merging skylights and adding them to the new room
 
         # if the floor-to-ceiling height is lower than the max, re-trim windows
         if new_ftc < max_ftc:
@@ -2562,6 +2648,7 @@ class Room2D(_BaseGeometry):
             if self._air_boundaries is not None else None
         new_r._is_ground_contact = self._is_ground_contact
         new_r._is_top_exposed = self._is_top_exposed
+        new_r._skylight_parameters = self._skylight_parameters
         new_r._properties._duplicate_extension_attr(self._properties)
         return new_r
 
