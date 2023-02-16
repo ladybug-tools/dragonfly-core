@@ -28,7 +28,7 @@ def meters_to_long_lat_factors(origin_lon_lat=(0, 0)):
     pole_rad = 6356752.314  # radius of the earth at the poles (meters)
 
     # convert everything to radians
-    lon, lat = math.radians(origin_lon_lat[0]), math.radians(origin_lon_lat[1])
+    lat = math.radians(origin_lon_lat[1])
 
     # compute the conversion values
     d = math.sqrt(
