@@ -4,6 +4,7 @@ from __future__ import division
 import math
 
 from honeybee.typing import float_in_range, float_positive
+from honeybee.altnumber import autocalculate
 from honeybee.aperture import Aperture
 from honeybee.door import Door
 
@@ -87,9 +88,9 @@ class GriddedSkylightRatio(_SkylightParameterBase):
             area and the total Roof face area.
         spacing: A number for the spacing between the centers of each grid cell.
             This should be less than half of the dimension of the Roof geometry
-            if multiple, evenly-spaced skylights are desired. If None, a spacing
-            of one half the smaller dimension of the parent Roof will be automatically
-            assumed. (Default: None).
+            if multiple, evenly-spaced skylights are desired. If None or Autocalculate,
+            a spacing of one half the smaller dimension of the parent Roof will
+            be automatically assumed. (Default: Autocalculate).
 
     Properties:
         * skylight_ratio
@@ -97,10 +98,12 @@ class GriddedSkylightRatio(_SkylightParameterBase):
     """
     __slots__ = ('_skylight_ratio', '_spacing')
 
-    def __init__(self, skylight_ratio, spacing=None):
+    def __init__(self, skylight_ratio, spacing=autocalculate):
         """Initialize GriddedSkylightRatio."""
         self._skylight_ratio = float_in_range(skylight_ratio, 0, 0.75, 'skylight ratio')
-        if spacing is not None:
+        if spacing == autocalculate:
+            spacing = None
+        elif spacing is not None:
             spacing = float_positive(spacing, 'skylight spacing')
             assert spacing > 0, 'GriddedSkylightRatio spacing must be greater than zero.'
         self._spacing = spacing
@@ -170,7 +173,8 @@ class GriddedSkylightRatio(_SkylightParameterBase):
         """
         assert data['type'] == 'GriddedSkylightRatio', \
             'Expected GriddedSkylightRatio dictionary. Got {}.'.format(data['type'])
-        spc = data['spacing'] if 'spacing' in data else None
+        spc = data['spacing'] if 'spacing' in data and \
+            data['spacing'] != autocalculate.to_dict() else None
         return cls(data['skylight_ratio'], spc)
 
     def to_dict(self):
