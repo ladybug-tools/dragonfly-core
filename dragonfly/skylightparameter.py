@@ -87,9 +87,9 @@ class GriddedSkylightRatio(_SkylightParameterBase):
         skylight_ratio: A number between 0 and 0.75 for the ratio between the skylight
             area and the total Roof face area.
         spacing: A number for the spacing between the centers of each grid cell.
-            This should be less than half of the dimension of the Roof geometry
+            This should be less than a third of the dimension of the Roof geometry
             if multiple, evenly-spaced skylights are desired. If None or Autocalculate,
-            a spacing of one half the smaller dimension of the parent Roof will
+            a spacing of one third the smaller dimension of the parent Roof will
             be automatically assumed. (Default: Autocalculate).
 
     Properties:
@@ -117,7 +117,7 @@ class GriddedSkylightRatio(_SkylightParameterBase):
     def spacing(self):
         """Get a number or the spacing between the skylights.
 
-        None indicates that the spacing will always be one half of the smaller
+        None indicates that the spacing will always be one third of the smaller
         dimension of the parent Roof.
         """
         return self._spacing
@@ -144,7 +144,7 @@ class GriddedSkylightRatio(_SkylightParameterBase):
         if self.spacing is None:
             min_pt, max_pt = face.min, face.max
             min_dim = min(max_pt.x - min_pt.x, max_pt.y - min_pt.y)
-            spacing = (min_dim / 2) - tolerance
+            spacing = (min_dim / 3) - tolerance
         face.apertures_by_ratio_gridded(
             self.skylight_ratio, spacing, tolerance=tolerance)
 
