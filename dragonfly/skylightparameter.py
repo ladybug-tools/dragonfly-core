@@ -84,7 +84,7 @@ class GriddedSkylightRatio(_SkylightParameterBase):
     """Instructions for gridded skylights derived from an area ratio with the roof.
 
     Args:
-        skylight_ratio: A number between 0 and 0.75 for the ratio between the skylight
+        skylight_ratio: A number between 0 and 1 for the ratio between the skylight
             area and the total Roof face area.
         spacing: A number for the spacing between the centers of each grid cell.
             This should be less than a third of the dimension of the Roof geometry
@@ -100,7 +100,7 @@ class GriddedSkylightRatio(_SkylightParameterBase):
 
     def __init__(self, skylight_ratio, spacing=autocalculate):
         """Initialize GriddedSkylightRatio."""
-        self._skylight_ratio = float_in_range(skylight_ratio, 0, 0.75, 'skylight ratio')
+        self._skylight_ratio = float_in_range(skylight_ratio, 0, 1.0, 'skylight ratio')
         if spacing == autocalculate:
             spacing = None
         elif spacing is not None:
@@ -110,7 +110,7 @@ class GriddedSkylightRatio(_SkylightParameterBase):
 
     @property
     def skylight_ratio(self):
-        """Get a number between 0 and 0.75 for the skylight ratio."""
+        """Get a number between 0 and 1 for the skylight ratio."""
         return self._skylight_ratio
 
     @property
