@@ -97,6 +97,8 @@ class Room2D(_BaseGeometry):
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * is_core
+        * is_perimeter
         * min
         * max
         * center
@@ -681,6 +683,22 @@ class Room2D(_BaseGeometry):
                 area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
                 glz_areas.append(area)
         return sum(glz_areas)
+
+    @property
+    def is_core(self):
+        """Get a boolean for whether the Room2D is in the core of a story.
+
+        Core Room2Ds have no walls exposed to the outdoors.
+        """
+        return self.exterior_wall_area == 0
+
+    @property
+    def is_perimeter(self):
+        """Get a boolean for whether the Room2D is on the perimeter of a story.
+
+        Perimeter Room2Ds have walls exposed to the outdoors.
+        """
+        return self.exterior_wall_area != 0
 
     @property
     def min(self):
