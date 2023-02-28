@@ -568,8 +568,10 @@ class Building(_BaseGeometry):
         or bottom floors with the ground or outdoors.
 
         Args:
-            tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered adjacent. Default: 0.01,
+            tolerance: The tolerance that will be used to compute the point within
+                the floor boundary that is used to check whether there is geometry
+                above each Room2D. It is recommended that this number not be less
+                than 1 centimeter to avoid long computation times. Default: 0.01,
                 suitable for objects in meters.
         """
         # ensure that the bottom floor is unique
