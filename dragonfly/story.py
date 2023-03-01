@@ -71,18 +71,8 @@ class Story(_BaseGeometry):
         """A Story of a building defined by an extruded Floor2Ds."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
 
-        # process the story geometry
-        if not isinstance(room_2ds, tuple):
-            room_2ds = tuple(room_2ds)
-        assert len(room_2ds) > 0, 'Story must have at least one Room2D.'
-        for room in room_2ds:
-            assert isinstance(room, Room2D), \
-                'Expected dragonfly Room2D. Got {}'.format(type(room))
-            room._parent = self
-        self._room_2ds = room_2ds
-        assert self.room_2d_story_geometry_valid(room_2ds), 'Room2D geometries ' \
-            'for Story "{}" have floor elevations that are too different from one ' \
-            'another to be a part of the same Story.'.format(identifier)
+        # process the Room2Ds and story geometry
+        self.room_2ds = room_2ds
 
         # process the input properties
         self.floor_height = floor_height
@@ -213,8 +203,22 @@ class Story(_BaseGeometry):
 
     @property
     def room_2ds(self):
-        """A tuple of Room2D objects that form an entire story of a building."""
+        """Get or set a tuple of Room2D objects that form the Story."""
         return self._room_2ds
+
+    @room_2ds.setter
+    def room_2ds(self, value):
+        if not isinstance(value, tuple):
+            value = tuple(value)
+        assert len(value) > 0, 'Story must have at least one Room2D.'
+        for room in value:
+            assert isinstance(room, Room2D), \
+                'Expected dragonfly Room2D. Got {}'.format(type(room))
+            room._parent = self
+        self._room_2ds = value
+        assert self.room_2d_story_geometry_valid(value), 'Room2D geometries ' \
+            'for Story "{}" have floor elevations that are too different from one ' \
+            'another to be a part of the same Story.'.format(self.identifier)
 
     @property
     def floor_to_floor_height(self):
