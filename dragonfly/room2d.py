@@ -1449,10 +1449,26 @@ class Room2D(_BaseGeometry):
                 tuple of Surface.boundary_condition_objects as the second item.
         """
         # create the honeybee Room
-        room_polyface = Polyface3D.from_offset_face(
-            self._floor_geometry, self.floor_to_ceiling_height)
+        has_roof = False
+        if self._parent is not None and self._parent._roof is not None:
+            # generate the room volume from the slanted roof
+            if self.is_top_exposed and multiplier == 1:
+                room_polyface, roof_face_i = \
+                    self._room_volume_with_roof(self._parent._roof, tolerance)
+                has_roof = True if room_polyface is not None else False
+        if not has_roof:  # generate the Room volume normally
+            room_polyface = Polyface3D.from_offset_face(
+                self._floor_geometry, self.floor_to_ceiling_height)
+            roof_face_i = [-1]
+
+        # create the honeybee Room and set the RoofCeiling faces
         hb_room = Room.from_polyface3d(
             self.identifier, room_polyface, ground_depth=self.floor_height - 1)
+        roof_faces = []
+        for i in roof_face_i:
+            rfc = hb_room[i]
+            rfc.type = ftyp.roof_ceiling
+            roof_faces.append(rfc)
 
         # assign BCs and record any Surface conditions to be set on the story level
         adjacencies = []
@@ -1481,8 +1497,8 @@ class Room2D(_BaseGeometry):
                 if a_bnd:
                     hb_room[i + 1].type = ftyp.air_boundary
 
-        # ensure matching adjacent Faces across the Story if tolerance is input
-        if self._parent is not None:
+        # ensure matching adjacent Faces across the Story
+        if self._parent is not None and not has_roof:
             new_faces = self._split_walls_along_height(hb_room, tolerance, add_plenum)
             if len(new_faces) != len(hb_room):
                 # rebuild the room with split surfaces
@@ -1505,21 +1521,23 @@ class Room2D(_BaseGeometry):
         # assign boundary conditions for the roof and floor
         try:
             hb_room[0].boundary_condition = bcs.adiabatic
-            hb_room[-1].boundary_condition = bcs.adiabatic
+            for rf in roof_faces:
+                rf.boundary_condition = bcs.adiabatic
         except AttributeError:
             pass  # honeybee_energy is not loaded and Adiabatic type doesn't exist
         if self._is_ground_contact:
             hb_room[0].boundary_condition = bcs.ground
         if self._is_top_exposed:
-            hb_room[-1].boundary_condition = bcs.outdoors
+            for rf in roof_faces:
+                rf.boundary_condition = bcs.outdoors
 
         # transfer any extension properties assigned to the Room2D and return result
         hb_room._properties = self.properties.to_honeybee(hb_room)
-        if not add_plenum:
+        if not add_plenum or has_roof:
             if self._skylight_parameters is not None:
                 if self._is_top_exposed:
-                    self._skylight_parameters.add_skylight_to_face(
-                        hb_room[-1], tolerance)
+                    for rf in roof_faces:
+                        self._skylight_parameters.add_skylight_to_face(rf, tolerance)
             return hb_room, adjacencies
 
         # add plenums if requested and return results
@@ -2100,6 +2118,59 @@ class Room2D(_BaseGeometry):
                     all_face3ds.append(remain_faces[0])
                     del remain_faces[0]
             return all_face3ds
+
+    def _room_volume_with_roof(self, roof_spec, tolerance):
+        """Get a Polyface3D for the Room volume given a roof_spec above the room.
+
+        Args:
+            roof_spec: A Dragonfly RoofSpecification that describes the Roof
+                above the room geometry.
+            tolerance: The minimum distance from roof polygon edges at which a
+                point is considered to lie on the edge.
+
+        Returns:
+            A tuple with the two items below.
+
+            * room_polyface -- A Polyface3D object for the Room volume. This will
+                be None whenever the Room has no Roof geometries above it or there
+                are gaps or overlaps in the Roof geometries above the room.
+
+            * roof_face_i -- A list of integers for the indices of the faces in
+                the Polyface3D that correspond to the roof. Will be None whenever
+                the roof is not successfully applied to the Room.
+        """
+        # TODO: Enable Room2D geometries with holes to be projected
+        if self.floor_geometry.has_holes:
+            return None, None
+        # get the roof polygons and the roof polygons
+        roof_polys = roof_spec.boundary_geometry_2d
+        roof_planes = roof_spec.planes
+        room_poly = Polygon2D(
+            [Point2D(pt.x, pt.y) for pt in self.floor_geometry.boundary])
+        # check if the Room geometry lies completely under a single polygon
+        rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
+        for rf_py, rf_pl in zip(roof_polys, roof_planes):
+            poly_rel = rf_py.polygon_relationship(room_poly, tolerance)
+            if poly_rel >= 0:
+                rel_rf_polys.append(rf_py)
+                rel_rf_planes.append(rf_pl)
+            if poly_rel == 1 and len(rel_rf_polys) == 1:  # simple solution of one roof
+                is_full_bound = True
+                break
+        # make the room volume by projecting segments if a single Roof Polygon was found
+        if is_full_bound:
+            roof_plane, proj_dir = rel_rf_planes[0], Vector3D(0, 0, 1)
+            p_faces, roof_verts = [self.floor_geometry], []
+            for seg in self.floor_segments:
+                p1, p2 = seg.p1, seg.p2
+                p3 = roof_plane.project_point(p2, proj_dir)
+                p4 = roof_plane.project_point(p1, proj_dir)
+                p_faces.append(Face3D((p1, p2, p3, p4)))
+                roof_verts.append(p4)
+            p_faces.append(Face3D(roof_verts))
+            return Polyface3D.from_faces(p_faces, tolerance), [-1]
+        # TODO: support the case of multiple Roofs above a Room
+        return None, None
 
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
         """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.

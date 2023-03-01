@@ -117,11 +117,14 @@ class _BaseGeometry(object):
             'code': code,
             'error_type': error_type,
             'extension_type': extension,
-            'element_type': child_obj.__class__.__name__,
-            'element_id': child_obj.identifier,
-            'element_name': child_obj.display_name,
-            'message': message
+            'element_type': child_obj.__class__.__name__
         }
+        try:
+            error_dict['element_id'] = child_obj.identifier
+            error_dict['element_name'] = child_obj.display_name
+        except AttributeError:  # it's a RoofSpecification or something with no id
+            pass
+        error_dict['message'] = message
         # add parents to the error dictionary
         parents = []
         rel_obj = child_obj
@@ -177,6 +180,7 @@ class _BaseGeometry(object):
         return new_obj
 
     def ToString(self):
+        """Overwrite .NET ToString."""
         return self.__repr__()
 
     def __repr__(self):

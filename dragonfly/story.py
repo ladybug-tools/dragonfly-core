@@ -19,6 +19,7 @@ from honeybee.room import Room
 
 from ._base import _BaseGeometry
 from .room2d import Room2D
+from .roof import RoofSpecification
 from .windowparameter import DetailedWindows
 from .properties import StoryProperties
 import dragonfly.writer.story as writer
@@ -43,7 +44,12 @@ class Story(_BaseGeometry):
             room_2ds, which is suitable for cases where there are no floor
             plenums. (Default: None).
         multiplier: An integer that denotes the number of times that this
-            Story is repeated over the height of the building. Default: 1.
+            Story is repeated over the height of the building. (Default: 1).
+        roof: An optional RoofSpecification object containing geometry and instructions
+            for generating sloped roofs over a Story. The RoofSpecification will only
+            affect the child Room2Ds that have a True is_top_exposed property
+            and it will only be utilized in translation to Honeybee when the Story
+            multiplier is 1. If None, all Room2D ceilings will be flat. (Default: None).
 
     Properties:
         * identifier
@@ -51,6 +57,7 @@ class Story(_BaseGeometry):
         * room_2ds
         * floor_to_floor_height
         * multiplier
+        * roof
         * parent
         * has_parent
         * floor_height
@@ -64,10 +71,10 @@ class Story(_BaseGeometry):
         * user_data
     """
     __slots__ = ('_room_2ds', '_floor_to_floor_height', '_floor_height',
-                 '_multiplier', '_parent')
+                 '_multiplier', '_roof', '_parent')
 
     def __init__(self, identifier, room_2ds, floor_to_floor_height=None,
-                 floor_height=None, multiplier=1):
+                 floor_height=None, multiplier=1, roof=None):
         """A Story of a building defined by an extruded Floor2Ds."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
 
@@ -78,6 +85,7 @@ class Story(_BaseGeometry):
         self.floor_height = floor_height
         self.floor_to_floor_height = floor_to_floor_height
         self.multiplier = multiplier
+        self.roof = roof
 
         self._parent = None  # _parent will be set when Story is added to a Building
         self._properties = StoryProperties(self)  # properties for extensions
@@ -137,12 +145,18 @@ class Story(_BaseGeometry):
             and data['floor_height'] != autocalculate.to_dict() else None
         mult = data['multiplier'] if 'multiplier' in data else 1
 
-        story = Story(data['identifier'], rooms, f2fh, fh, mult)
+        # process the roof specification if it exists
+        roof = RoofSpecification.from_dict(data['roof']) if 'roof' in data \
+            and data['roof'] is not None else None
+
+        # create the story object
+        story = Story(data['identifier'], rooms, f2fh, fh, mult, roof)
         if 'display_name' in data and data['display_name'] is not None:
             story._display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
             story.user_data = data['user_data']
 
+        # load any extension attributes assigned to the story
         if data['properties']['type'] == 'StoryProperties':
             story.properties._load_extension_attr_from_dict(data['properties'])
         return story
@@ -269,6 +283,24 @@ using-multipliers-zone-and-or-window.html
         self._multiplier = int_in_range(value, 1, input_name='room multiplier')
 
     @property
+    def roof(self):
+        """Get or set a RoofSpecification with instructions for generating sloped roofs.
+
+        The RoofSpecification will only affect the child Room2Ds that have a True
+        is_top_exposed property and it will only be utilized in translation to
+        Honeybee when the Story multiplier is 1.
+        """
+        return self._roof
+
+    @roof.setter
+    def roof(self, value):
+        if value is not None:
+            assert isinstance(value, RoofSpecification), \
+                'Expected dragonfly RoofSpecification. Got {}'.format(type(value))
+            value._parent = self
+        self._roof = value
+
+    @property
     def parent(self):
         """Parent Building if assigned. None if not assigned."""
         return self._parent
@@ -315,7 +347,7 @@ using-multipliers-zone-and-or-window.html
         """Get a boolean to note if this Story is above the ground.
 
         The story is considered above the ground if at least one of its Room2Ds
-        has an outdoor boundary condition.
+        has an outdoor boundary condition for its walls.
         """
         for room in self._room_2ds:
             for bc in room._boundary_conditions:
@@ -1026,6 +1058,8 @@ using-multipliers-zone-and-or-window.html
         for room in self._room_2ds:
             room.move(moving_vec)
         self._floor_height = self._floor_height + moving_vec.z
+        if self._roof is not None:
+            self._roof.move(moving_vec)
         self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
@@ -1038,6 +1072,8 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.rotate_xy(angle, origin)
+        if self._roof is not None:
+            self._roof.rotate_xy(angle, origin)
         self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
@@ -1048,6 +1084,8 @@ using-multipliers-zone-and-or-window.html
         """
         for room in self._room_2ds:
             room.reflect(plane)
+        if self._roof is not None:
+            self._roof.reflect(plane)
         self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
@@ -1062,6 +1100,8 @@ using-multipliers-zone-and-or-window.html
             room.scale(factor, origin)
         self._floor_to_floor_height = self._floor_to_floor_height * factor
         self._floor_height = self._floor_height * factor
+        if self._roof is not None:
+            self._roof.scale(factor, origin)
         self.properties.scale(factor, origin)
 
     def check_missing_adjacencies(self, raise_exception=True, detailed=False):
@@ -1114,6 +1154,42 @@ using-multipliers-zone-and-or-window.html
                     val[0], rm_id)
                 msg = self._validation_message_child(
                     msg, val[3], detailed, '100203', error_type='Missing Adjacency')
+                msgs.append(msg)
+        # report any errors
+        if detailed:
+            return msgs
+        full_msg = '\n '.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
+    def check_no_roof_overlaps(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check that geometries of RoofSpecifications do not overlap with one another.
+
+        Overlaps make the Roof geometry unusable for translation to Honeybee.
+
+        Args:
+            tolerance: The minimum distance that two Roof geometries can overlap
+                with one another and still be considered valid. Default: 0.01,
+                suitable for objects in meters.
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if overlapping geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        # find the number of overlaps in the Roof specification
+        msgs = []
+        if self.roof is not None:
+            over_count = self.roof.overlap_count(tolerance)
+            if over_count > 0:
+                msg = 'Story "{}" has RoofSpecification geometry with {} overlaps ' \
+                    'in it.'.format(self.display_name, over_count)
+                msg = self._validation_message_child(
+                    msg, self.roof, detailed, '100102', error_type='Invalid Roof')
                 msgs.append(msg)
         # report any errors
         if detailed:
@@ -1207,9 +1283,11 @@ using-multipliers-zone-and-or-window.html
         base['floor_to_floor_height'] = self.floor_to_floor_height
         base['floor_height'] = self.floor_height
         base['multiplier'] = self.multiplier
-        base['properties'] = self.properties.to_dict(abridged, included_prop)
+        if self.roof is not None:
+            base['roof'] = self.roof.to_dict()
         if self.user_data is not None:
             base['user_data'] = self.user_data
+        base['properties'] = self.properties.to_dict(abridged, included_prop)
         return base
 
     @property
@@ -1254,6 +1332,7 @@ using-multipliers-zone-and-or-window.html
         new_s = Story(
             self.identifier, tuple(room.duplicate() for room in self._room_2ds),
             self._floor_to_floor_height, self._floor_height, self._multiplier)
+        self._roof = None if self._roof is None else self._roof.duplicate()
         new_s._display_name = self.display_name
         new_s._user_data = None if self.user_data is None else self.user_data.copy()
         new_s._parent = self._parent
