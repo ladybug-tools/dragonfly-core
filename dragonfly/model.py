@@ -668,6 +668,9 @@ class Model(_BaseGeometry):
         # set up defaults to ensure the method runs correctly
         detailed = False if raise_exception else detailed
         msgs = []
+        assert self.tolerance != 0, \
+            'Model must have a non-zero tolerance in order to perform geometry checks.'
+        tol = self.tolerance
         # perform checks for key dragonfly model schema rules
         msgs.append(self.check_duplicate_context_shade_identifiers(False, detailed))
         msgs.append(self.check_duplicate_room_2d_identifiers(False, detailed))
@@ -675,6 +678,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_duplicate_building_identifiers(False, detailed))
         msgs.append(self.check_window_parameters_valid(False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
+        msgs.append(self.check_no_roof_overlaps(tol, False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
         if detailed:
@@ -810,6 +814,43 @@ class Model(_BaseGeometry):
         if bldg_ids != []:
             msg = 'The following Stories have missing adjacencies in ' \
                 'the Model:\n{}'.format('\n'.join(bldg_ids))
+            if raise_exception:
+                raise ValueError(msg)
+            return msg
+        return ''
+
+    def check_no_roof_overlaps(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check that geometries of RoofSpecifications do not overlap with one another.
+
+        Overlaps make the Roof geometry unusable for translation to Honeybee.
+
+        Args:
+            tolerance: The minimum distance that two Roof geometries can overlap
+                with one another and still be considered valid. Default: 0.01,
+                suitable for objects in meters.
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if overlapping geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        bldg_ids = []
+        for bldg in self._buildings:
+            for story in bldg._unique_stories:
+                ov_msg = story.check_no_roof_overlaps(tolerance, False, detailed)
+                if ov_msg:
+                    if detailed:
+                        bldg_ids.extend(ov_msg)
+                    else:
+                        bldg_ids.append('{}\n {}'.format(bldg.identifier, ov_msg))
+        if detailed:
+            return bldg_ids
+        if bldg_ids != []:
+            msg = 'The following Buildings have overlaps in their roof geometry' \
+                ':\n{}'.format('\n'.join(bldg_ids))
             if raise_exception:
                 raise ValueError(msg)
             return msg
