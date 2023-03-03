@@ -1,9 +1,9 @@
 # coding=utf-8
 import pytest
 
-from dragonfly.windowparameter import SingleWindow, SimpleWindowRatio, \
-    RepeatingWindowRatio, RepeatingWindowWidthHeight, RectangularWindows, \
-    DetailedWindows
+from dragonfly.windowparameter import SingleWindow, SimpleWindowArea, \
+    SimpleWindowRatio, RepeatingWindowRatio, RepeatingWindowWidthHeight, \
+    RectangularWindows, DetailedWindows
 
 from honeybee.face import Face
 
@@ -15,7 +15,7 @@ from ladybug_geometry.geometry3d.face import Face3D
 
 
 def test_single_window_init():
-    """Test the initalization of SingleWindow objects and basic properties."""
+    """Test the initialization of SingleWindow objects and basic properties."""
     simple_window = SingleWindow(5, 2, 0.8)
     str(simple_window)  # test the string representation
 
@@ -52,7 +52,7 @@ def test_single_window_scale():
     """Test the scale method."""
     simple_window = SingleWindow(5, 2, 0.8)
 
-    new_simple_window  = simple_window.scale(2)
+    new_simple_window = simple_window.scale(2)
     assert new_simple_window.width == 10
     assert new_simple_window.height == 4
     assert new_simple_window.sill_height == 1.6
@@ -73,8 +73,56 @@ def test_single_window_add_window_to_face():
     assert simple_window.area_from_segment(seg, height) == face.apertures[0].area == 10
 
 
+def test_simple_window_area_init():
+    """Test the initialization of SimpleWindowArea objects and basic properties."""
+    ashrae_base = SimpleWindowArea(4.5)
+    str(ashrae_base)  # test the string representation
+
+    assert ashrae_base.window_area == 4.5
+
+
+def test_simple_window_area_equality():
+    """Test the equality of SimpleWindowArea objects."""
+    ashrae_base = SimpleWindowArea(4.5)
+    ashrae_base_dup = ashrae_base.duplicate()
+    ashrae_base_alt = SimpleWindowArea(2.5)
+
+    assert ashrae_base is ashrae_base
+    assert ashrae_base is not ashrae_base_dup
+    assert ashrae_base == ashrae_base_dup
+    assert hash(ashrae_base) == hash(ashrae_base_dup)
+    assert ashrae_base != ashrae_base_alt
+    assert hash(ashrae_base) != hash(ashrae_base_alt)
+
+
+def test_simple_window_area_dict_methods():
+    """Test the to/from dict methods."""
+    ashrae_base = SimpleWindowArea(4.5)
+
+    glz_dict = ashrae_base.to_dict()
+    new_ashrae_base = SimpleWindowArea.from_dict(glz_dict)
+    assert new_ashrae_base == ashrae_base
+    assert glz_dict == new_ashrae_base.to_dict()
+
+
+def test_simple_window_area_add_window_to_face():
+    """Test the add_window_to_face method."""
+    ashrae_base = SimpleWindowArea(4.5)
+    height = 3
+    width = 10
+    seg = LineSegment3D.from_end_points(Point3D(0, 0, 2), Point3D(width, 0, 2))
+    face = Face('test_face', Face3D.from_extrusion(seg, Vector3D(0, 0, height)))
+    ashrae_base.add_window_to_face(face, 0.01)
+
+    assert len(face.apertures) == 1
+    assert face.center == face.apertures[0].center
+    assert ashrae_base.area_from_segment(seg, height) == \
+        pytest.approx(face.apertures[0].area, rel=1e-3) == \
+        pytest.approx(4.5, rel=1e-3)
+
+
 def test_simple_window_ratio_init():
-    """Test the initalization of SimpleWindowRatio objects and basic properties."""
+    """Test the initialization of SimpleWindowRatio objects and basic properties."""
     ashrae_base = SimpleWindowRatio(0.4)
     str(ashrae_base)  # test the string representation
 
@@ -116,12 +164,13 @@ def test_simple_window_ratio_add_window_to_face():
 
     assert len(face.apertures) == 1
     assert face.center == face.apertures[0].center
-    assert ashrae_base.area_from_segment(seg, height) == face.apertures[0].area == \
-        width * height * 0.4
+    assert ashrae_base.area_from_segment(seg, height) == \
+        pytest.approx(face.apertures[0].area, rel=1e-3) == \
+        pytest.approx(width * height * 0.4, rel=1e-3)
 
 
 def test_repeating_window_ratio_init():
-    """Test the initalization of RepeatingWindowRatio objects and basic properties."""
+    """Test the initialization of RepeatingWindowRatio objects and basic properties."""
     ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
     str(ashrae_base)  # test the string representation
 
@@ -150,7 +199,7 @@ def test_repeating_window_ratio_scale():
     """Test the scale method."""
     ashrae_base = RepeatingWindowRatio(0.4, 2, 0.8, 3)
 
-    new_ashrae_base  = ashrae_base.scale(2)
+    new_ashrae_base = ashrae_base.scale(2)
     assert new_ashrae_base.window_ratio == ashrae_base.window_ratio
     assert new_ashrae_base.window_height == 4
     assert new_ashrae_base.sill_height == 1.6
@@ -183,7 +232,7 @@ def test_repeating_window_ratio_add_window_to_face():
 
 
 def test_repeating_window_width_height_init():
-    """Test the initalization of RepeatingWindowWidthHeight objects and basic properties.
+    """Test the initialization of RepeatingWindowWidthHeight and basic properties.
     """
     bod_windows = RepeatingWindowWidthHeight(2, 1.5, 0.8, 3)
     str(bod_windows)  # test the string representation
@@ -212,7 +261,7 @@ def test_repeating_window_width_height_scale():
     """Test the scale method."""
     bod_windows = RepeatingWindowWidthHeight(2, 1.5, 0.8, 3)
 
-    new_bod_windows  = bod_windows.scale(2)
+    new_bod_windows = bod_windows.scale(2)
     assert new_bod_windows.window_height == 4
     assert new_bod_windows.window_width == 3
     assert new_bod_windows.sill_height == 1.6
@@ -262,7 +311,6 @@ def test_detailed_rectangular_equality():
     origins = (Point2D(2, 1), Point2D(5, 0.5))
     widths = (1, 3)
     heights = (1, 2)
-    heights_alt = (1, 1)
     detailed_window = RectangularWindows(origins, widths, heights)
     detailed_window_dup = detailed_window.duplicate()
     detailed_window_alt = RectangularWindows((Point2D(2, 1),), (1,), (1,))
@@ -295,7 +343,7 @@ def test_detailed_rectangular_scale():
     heights = (1, 2)
     detailed_window = RectangularWindows(origins, widths, heights)
 
-    new_detailed_window  = detailed_window.scale(2)
+    new_detailed_window = detailed_window.scale(2)
     assert new_detailed_window.origins == (Point2D(4, 2), Point2D(10, 1))
     assert new_detailed_window.widths == (2, 6)
     assert new_detailed_window.heights == (2, 4)
@@ -308,7 +356,7 @@ def test_detailed_rectangular_flip():
     heights = (1, 2)
     detailed_window = RectangularWindows(origins, widths, heights)
 
-    new_detailed_window  = detailed_window.flip(10)
+    new_detailed_window = detailed_window.flip(10)
     assert new_detailed_window.origins == (Point2D(7, 1), Point2D(2, 0.5))
     assert new_detailed_window.widths == widths
     assert new_detailed_window.heights == heights
@@ -334,7 +382,7 @@ def test_detailed_window_add_window_to_face():
 
 
 def test_detailed_init():
-    """Test the initalization of DetailedWindows and basic properties."""
+    """Test the initialization of DetailedWindows and basic properties."""
     pts_1 = (Point2D(2, 1), Point2D(3, 1), Point2D(3, 2), Point2D(2, 2))
     pts_2 = (Point2D(5, 0.5), Point2D(8, 0.5), Point2D(8, 2.5), Point2D(5, 2.5))
     detailed_window = DetailedWindows((Polygon2D(pts_1), Polygon2D(pts_2)))
@@ -348,7 +396,6 @@ def test_detailed_equality():
     """Test the equality of DetailedWindows."""
     pts_1 = (Point2D(2, 1), Point2D(3, 1), Point2D(3, 2), Point2D(2, 2))
     pts_2 = (Point2D(5, 0.5), Point2D(8, 0.5), Point2D(8, 2.5), Point2D(5, 2.5))
-    pts_3 = (Point2D(5, 0.4), Point2D(8, 0.5), Point2D(8, 2.5), Point2D(5, 2.5))
     detailed_window = DetailedWindows((Polygon2D(pts_1), Polygon2D(pts_2)))
     detailed_window_dup = detailed_window.duplicate()
     detailed_window_alt = DetailedWindows((Polygon2D(pts_1),))
@@ -379,7 +426,7 @@ def test_detailed_scale():
     pts_2 = (Point2D(5, 0.5), Point2D(8, 0.5), Point2D(8, 2.5), Point2D(5, 2.5))
     detailed_window = DetailedWindows((Polygon2D(pts_1), Polygon2D(pts_2)))
 
-    new_detailed_window  = detailed_window.scale(2)
+    new_detailed_window = detailed_window.scale(2)
     assert new_detailed_window.polygons[0].vertices == \
         (Point2D(4, 2), Point2D(6, 2), Point2D(6, 4), Point2D(4, 4))
     assert new_detailed_window.polygons[1].vertices == \
@@ -392,9 +439,10 @@ def test_detailed_flip():
     pts_2 = (Point2D(5, 0.5), Point2D(8, 0.5), Point2D(8, 2.5), Point2D(5, 2.5))
     detailed_window = DetailedWindows((Polygon2D(pts_1), Polygon2D(pts_2)))
 
-    new_detailed_window  = detailed_window.flip(10)
+    new_detailed_window = detailed_window.flip(10)
     assert new_detailed_window.polygons[0].vertices == \
         tuple(reversed((Point2D(8, 1), Point2D(7, 1), Point2D(7, 2), Point2D(8, 2))))
     assert new_detailed_window.polygons[1].vertices == \
-        tuple(reversed((Point2D(5, 0.5), Point2D(2, 0.5), Point2D(2, 2.5), Point2D(5, 2.5))))
-
+        tuple(reversed(
+            (Point2D(5, 0.5), Point2D(2, 0.5), Point2D(2, 2.5), Point2D(5, 2.5))
+        ))

@@ -1332,7 +1332,7 @@ using-multipliers-zone-and-or-window.html
         new_s = Story(
             self.identifier, tuple(room.duplicate() for room in self._room_2ds),
             self._floor_to_floor_height, self._floor_height, self._multiplier)
-        self._roof = None if self._roof is None else self._roof.duplicate()
+        new_s._roof = None if self._roof is None else self._roof.duplicate()
         new_s._display_name = self.display_name
         new_s._user_data = None if self.user_data is None else self.user_data.copy()
         new_s._parent = self._parent

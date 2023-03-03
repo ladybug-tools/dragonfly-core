@@ -13,7 +13,7 @@ import honeybee.model as hb_model
 from honeybee.room import Room
 from honeybee.shade import Shade
 from honeybee.facetype import RoofCeiling
-from honeybee.boundarycondition import Surface
+from honeybee.boundarycondition import Surface, Outdoors
 
 from ladybug.location import Location
 from ladybug_geometry.geometry2d.pointvector import Point2D
@@ -532,10 +532,12 @@ def test_to_honeybee_missing_adjacency():
     assert isinstance(hb_models[0], hb_model.Model)
 
 
-def test_to_honeybee_doors_skylights():
-    """Test the to_honeybee method with doors and skylights."""
+def test_to_honeybee_doors_skylights_roof():
+    """Test the to_honeybee method with doors, skylights, and a sloped roof."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
     model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
 
@@ -553,13 +555,23 @@ def test_to_honeybee_doors_skylights():
         if isinstance(f.boundary_condition, Surface) and len(f.doors) != 0]
     assert len(int_doors) != 0
 
+    roof_alts = [
+        f.altitude for f in hb_models[0].faces
+        if isinstance(f.type, RoofCeiling) and isinstance(f.boundary_condition, Outdoors)
+    ]
+    assert not all(89 < alt < 91 for alt in roof_alts)
+
 
 def test_to_dict():
     """Test the Model to_dict method."""
-    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
-    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
-    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
-    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    pts_1 = (
+        Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (
+        Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (
+        Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (
+        Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
     room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
     room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
     room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
