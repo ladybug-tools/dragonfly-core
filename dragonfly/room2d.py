@@ -4,17 +4,11 @@ from __future__ import division
 
 import math
 
-from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
-from ladybug_geometry.geometry2d.ray import Ray2D
-from ladybug_geometry.geometry2d.line import LineSegment2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.ray import Ray3D
-from ladybug_geometry.geometry3d.line import LineSegment3D
-from ladybug_geometry.geometry3d.polyline import Polyline3D
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.geometry2d import Point2D, Vector2D, Ray2D, LineSegment2D, \
+    Polygon2D
+from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D, \
+    Plane, Polyline3D, Face3D, Polyface3D
+from ladybug_geometry.intersection2d import closest_point2d_between_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite
 
@@ -2139,38 +2133,139 @@ class Room2D(_BaseGeometry):
                 the Polyface3D that correspond to the roof. Will be None whenever
                 the roof is not successfully applied to the Room.
         """
-        # TODO: Enable Room2D geometries with holes to be projected
-        if self.floor_geometry.has_holes:
-            return None, None
-        # get the roof polygons and the roof polygons
+        # get the roof polygons and the room polygons
         roof_polys = roof_spec.boundary_geometry_2d
         roof_planes = roof_spec.planes
         room_poly = Polygon2D(
             [Point2D(pt.x, pt.y) for pt in self.floor_geometry.boundary])
-        # check if the Room geometry lies completely under a single polygon
+        # gather all of the relevant roof polygons for the Room2D
         rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
         for rf_py, rf_pl in zip(roof_polys, roof_planes):
             poly_rel = rf_py.polygon_relationship(room_poly, tolerance)
             if poly_rel >= 0:
                 rel_rf_polys.append(rf_py)
                 rel_rf_planes.append(rf_pl)
-            if poly_rel == 1 and len(rel_rf_polys) == 1:  # simple solution of one roof
+            if poly_rel == 1:  # simple solution of one roof
                 is_full_bound = True
                 break
-        # make the room volume by projecting segments if a single Roof Polygon was found
+
+        # make the room volume
+        proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
+        p_faces = [self.floor_geometry.flip()]  # a list of Room volume faces
+
+        # when fully bounded, project the segments onto the single Roof face
         if is_full_bound:
-            roof_plane, proj_dir = rel_rf_planes[0], Vector3D(0, 0, 1)
-            p_faces, roof_verts = [self.floor_geometry], []
+            roof_plane = rel_rf_planes[0]
+            roof_verts = []
             for seg in self.floor_segments:
                 p1, p2 = seg.p1, seg.p2
                 p3 = roof_plane.project_point(p2, proj_dir)
                 p4 = roof_plane.project_point(p1, proj_dir)
                 p_faces.append(Face3D((p1, p2, p3, p4)))
                 roof_verts.append(p4)
-            p_faces.append(Face3D(roof_verts))
+            if not self.floor_geometry.has_holes:
+                p_faces.append(Face3D(roof_verts))
+            else:
+                v_count = len(self.floor_geometry.boundary)
+                part_roof_verts = [roof_verts[:v_count]]
+                for hole in self.floor_geometry.holes:
+                    part_roof_verts.append(roof_verts[v_count:v_count + len(hole)])
+                    v_count += len(hole)
+                p_faces.append(Face3D(part_roof_verts[0], holes=part_roof_verts[1:]))
             return Polyface3D.from_faces(p_faces, tolerance), [-1]
-        # TODO: support the case of multiple Roofs above a Room
-        return None, None
+
+        # when multiple roofs, each segment must be intersected with the roof polygons
+        # gather polygons for the holes
+        all_room_poly = [room_poly]
+        flr_segs = self.floor_segments
+        if self.floor_geometry.has_holes:
+            v_count = len(room_poly)
+            all_segments = [flr_segs[:v_count]]
+            for hole in self.floor_geometry.holes:
+                hole_poly = Polygon2D([Point2D(pt.x, pt.y) for pt in hole])
+                all_room_poly.append(hole_poly)
+                all_segments.append(flr_segs[v_count:v_count + len(hole)])
+                v_count += len(hole)
+        else:
+            all_segments = [flr_segs]
+        # loop through holes and boundary polygons to generate walls
+        for rm_poly, rm_segs in zip(all_room_poly, all_segments):
+            # find the polygon that the first room vertex is located in
+            current_poly, current_plane = None, None
+            other_poly, other_planes = list(roof_polys), list(roof_planes)
+            pt1 = rm_poly[0]
+            for i, (rf_py, rf_pl) in enumerate(zip(roof_polys, roof_planes)):
+                if rf_py.point_relationship(pt1, tolerance) >= 0:
+                    current_poly, current_plane = rf_py, rf_pl
+                    other_poly.pop(i)
+                    other_planes.pop(i)
+                    break
+            if current_poly is None:  # first point not inside a roof, invalid roof
+                return None, None
+            # loop through segments and add vertices if they cross outside the roof face
+            rot_poly = rm_poly.vertices[1:] + (pt1,)
+            for pt2, seg in zip(rot_poly, rm_segs):
+                face_pts = [seg.p1, seg.p2]
+                # see if the segment ends in the same face it starts in
+                if current_poly.point_relationship(pt2, tolerance) >= 0:  # project seg
+                    face_pts.append(current_plane.project_point(seg.p2, proj_dir))
+                    face_pts.append(current_plane.project_point(seg.p1, proj_dir))
+                else:
+                    int_pts, int_pls = [(seg.p1, 0)], [current_plane]
+                    # find where the segment leaves the polygon
+                    seg_2d = LineSegment2D.from_array(((pt1.x, pt1.y), (pt2.x, pt2.y)))
+                    for rf_seg in current_poly.segments:
+                        int_pt = seg_2d.intersect_line_ray(rf_seg)
+                        if int_pt is None:
+                            dist, cls_pts = closest_point2d_between_line2d(
+                                seg_2d, rf_seg)
+                            if dist <= tolerance:
+                                int_pt = cls_pts[0]
+                        if int_pt is not None:
+                            int_pts.append((int_pt, 0))
+                            int_pls.append(current_plane)
+                    # find where it intersects the other relevant polygons
+                    for o_poly, o_pl in zip(other_poly, other_planes):
+                        for o_seg in o_poly.segments:
+                            int_pt = seg_2d.intersect_line_ray(o_seg)
+                            if int_pt is None:
+                                d, cls_pts = closest_point2d_between_line2d(
+                                    seg_2d, o_seg)
+                                if d <= tolerance:
+                                    int_pt = cls_pts[0]
+                            if int_pt is not None:
+                                int_pts.append((int_pt, 1))
+                                int_pls.append(o_pl)
+                    # project the points and sort the intersections along the segment
+                    rf_pts = [ipl.project_point(Point3D.from_point2d(ipt[0]), proj_dir)
+                              for ipt, ipl in zip(int_pts, int_pls)]
+                    pt_dists = [(ipt[1], seg_2d.p1.distance_to_point(ipt[0]))
+                                for ipt in int_pts]
+                    sort_pts = [x for _, x in sorted(zip(pt_dists, rf_pts))]
+                    # add a vertex for where the segment ends in the polygon
+                    for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
+                        if rf_py.point_relationship(pt2, tolerance) >= 0:
+                            other_poly.pop(i)
+                            other_poly.append(current_poly)
+                            other_planes.pop(i)
+                            other_planes.append(current_plane)
+                            current_poly, current_plane = rf_py, rf_pl
+                            sort_pts.append(
+                                rf_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
+                            break
+                    if current_poly is None:  # point not inside a roof, invalid roof
+                        return None, None
+                    # remove duplicated vertices from the list and add to the Face3D
+                    sort_pts = [pt for i, pt in enumerate(sort_pts)
+                                if not pt.is_equivalent(sort_pts[i - 1], tolerance)]
+                    sort_pts.reverse()
+                    face_pts.extend(sort_pts)
+                # make the final Face3D
+                p_faces.append(Face3D(face_pts))
+                pt1 = pt2  # increment for next segment
+
+        # TODO: add the Roof faces after polygon boolean operations are supported
+        return Polyface3D.from_faces(p_faces, tolerance), []
 
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
         """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.

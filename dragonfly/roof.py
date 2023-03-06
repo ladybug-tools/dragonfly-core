@@ -12,8 +12,9 @@ class RoofSpecification(object):
 
     Args:
         geometry: An array of Face3D objects representing the geometry of the Roof.
-            Together, these Face3D should completely cover the Room2D floor_geometry
-            of the Story to which the RoomSpecification is assigned.
+            None of these geometries should overlap in plan and, together, these
+            Face3D should either completely cover or skip each Room2D of the Story
+            to which the RoofSpecification is assigned.
 
     Properties:
         * geometry
