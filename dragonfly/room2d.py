@@ -11,6 +11,7 @@ from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D,
 from ladybug_geometry.intersection2d import closest_point2d_between_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite
+import ladybug_geometry.boolean as pb
 
 from honeybee.typing import float_positive, clean_string, clean_and_id_string
 import honeybee.boundarycondition as hbc
@@ -2133,27 +2134,29 @@ class Room2D(_BaseGeometry):
                 the Polyface3D that correspond to the roof. Will be None whenever
                 the roof is not successfully applied to the Room.
         """
-        # get the roof polygons and the room polygons
+        # get the roof polygons and the bounding Room2D polygon
         roof_polys = roof_spec.boundary_geometry_2d
         roof_planes = roof_spec.planes
         room_poly = Polygon2D(
             [Point2D(pt.x, pt.y) for pt in self.floor_geometry.boundary])
+
         # gather all of the relevant roof polygons for the Room2D
         rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
         for rf_py, rf_pl in zip(roof_polys, roof_planes):
-            poly_rel = rf_py.polygon_relationship(room_poly, tolerance)
-            if poly_rel >= 0:
-                rel_rf_polys.append(rf_py)
-                rel_rf_planes.append(rf_pl)
-            if poly_rel == 1:  # simple solution of one roof
-                is_full_bound = True
-                break
+            if Polygon2D.overlapping_bounding_rect(rf_py, room_poly, tolerance):
+                poly_rel = rf_py.polygon_relationship(room_poly, tolerance)
+                if poly_rel >= 0:
+                    rel_rf_polys.append(rf_py)
+                    rel_rf_planes.append(rf_pl)
+                if poly_rel == 1:  # simple solution of one roof
+                    is_full_bound = True
+                    break
 
         # make the room volume
         proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
         p_faces = [self.floor_geometry.flip()]  # a list of Room volume faces
 
-        # when fully bounded, project the segments onto the single Roof face
+        # when fully bounded, simply project the segments onto the single Roof face
         if is_full_bound:
             roof_plane = rel_rf_planes[0]
             roof_verts = []
@@ -2175,7 +2178,7 @@ class Room2D(_BaseGeometry):
             return Polyface3D.from_faces(p_faces, tolerance), [-1]
 
         # when multiple roofs, each segment must be intersected with the roof polygons
-        # gather polygons for the holes
+        # gather polygons that account for all of the Room2D holes
         all_room_poly = [room_poly]
         flr_segs = self.floor_segments
         if self.floor_geometry.has_holes:
@@ -2188,7 +2191,7 @@ class Room2D(_BaseGeometry):
                 v_count += len(hole)
         else:
             all_segments = [flr_segs]
-        # loop through holes and boundary polygons to generate walls
+        # loop through holes and boundary polygons and generate walls from them
         for rm_poly, rm_segs in zip(all_room_poly, all_segments):
             # find the polygon that the first room vertex is located in
             current_poly, current_plane = None, None
@@ -2264,8 +2267,52 @@ class Room2D(_BaseGeometry):
                 p_faces.append(Face3D(face_pts))
                 pt1 = pt2  # increment for next segment
 
-        # TODO: add the Roof faces after polygon boolean operations are supported
-        return Polyface3D.from_faces(p_faces, tolerance), []
+        # add the roof faces using polygon boolean operations
+        # create the BooleanPolygons for the Room2D and each relevant Roof polygon
+        room_polys = []
+        for rom_poly in all_room_poly:
+            room_polys.append((pb.BooleanPoint(pt.x, pt.y) for pt in rom_poly.vertices))
+        b_room_poly = pb.BooleanPolygon(room_polys)
+        b_roof_polys = []
+        for rf_poly in rel_rf_polys:
+            rf_pts = (pb.BooleanPoint(pt.x, pt.y) for pt in rf_poly.vertices)
+            b_roof_polys.append(pb.BooleanPolygon([rf_pts]))
+        # find the boolean intersection with each roof polygon and project the result
+        roof_faces = []
+        for b_rf_poly, rf_plane in zip(b_roof_polys, rel_rf_planes):
+            int_result = pb.intersect(b_room_poly, b_rf_poly, tolerance)
+            polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in new_poly))
+                     for new_poly in int_result.regions]
+            if self.floor_geometry.has_holes and len(polys) > 1:
+                # sort the polygons by area and check if any are inside the others
+                polys.sort(key=lambda x: x.area, reverse=True)
+                poly_groups = [[polys[0]]]
+                for sub_poly in polys[1:]:
+                    for i, pg in enumerate(poly_groups):
+                        if pg[0].is_polygon_inside(sub_poly):  # it's a hole
+                            poly_groups[i].append(sub_poly)
+                            break
+                    else:  # it's a separate Face3D
+                        poly_groups.append([sub_poly])
+                # convert all vertices to 3D and append the roof Face3D
+                for pg in poly_groups:
+                    pg_3d = []
+                    for shp in pg:
+                        pt3s = tuple(
+                            rf_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
+                            for pt2 in shp.vertices)
+                        pg_3d.append(pt3s)
+                    roof_faces.append(Face3D(pg_3d[0], rf_plane, holes=pg_3d[1:]))
+            else:  # no holes are possible in the result; project all polygons directly
+                for sub_poly in polys:
+                    pt3s = tuple(
+                        rf_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
+                        for pt2 in sub_poly.vertices)
+                    roof_faces.append(Face3D(pt3s, rf_plane))
+        roof_face_i = list(range(-1, -len(roof_faces) - 1, -1))
+        p_faces.extend(roof_faces)
+
+        return Polyface3D.from_faces(p_faces, tolerance), roof_face_i
 
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
         """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.
