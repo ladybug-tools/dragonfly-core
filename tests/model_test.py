@@ -547,13 +547,32 @@ def test_to_honeybee_doors_skylights_roof():
     skylights = [
         f.apertures for f in hb_models[0].faces
         if isinstance(f.type, RoofCeiling) and len(f.apertures) != 0]
-    #assert len(skylights) == 2
+    assert len(skylights) == 2
     assert len(skylights[0]) == 1
 
     int_doors = [
         f.doors for f in hb_models[0].faces
         if isinstance(f.boundary_condition, Surface) and len(f.doors) != 0]
     assert len(int_doors) != 0
+
+    roof_alts = [
+        f.altitude for f in hb_models[0].faces
+        if isinstance(f.type, RoofCeiling) and isinstance(f.boundary_condition, Outdoors)
+    ]
+    assert not all(89 < alt < 91 for alt in roof_alts)
+
+
+def test_to_honeybee_holes_and_roof():
+    """Test the to_honeybee method with doors, skylights, and a sloped roof."""
+    model_file = './tests/json/model_with_roof_and_holes.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+
+    assert len(hb_models) == 1
+    assert isinstance(hb_models[0], hb_model.Model)
 
     roof_alts = [
         f.altitude for f in hb_models[0].faces
