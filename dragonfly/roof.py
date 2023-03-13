@@ -163,8 +163,9 @@ class RoofSpecification(object):
         for i, poly_1 in enumerate(geo_2d):
             try:
                 for poly_2 in geo_2d[i + 1:]:
-                    if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
-                        overlap_count += 1
+                    if Polygon2D.overlapping_bounding_rect(poly_1, poly_2, tolerance):
+                        if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
+                            overlap_count += 1
             except IndexError:
                 pass  # we have reached the end of the list
         return overlap_count
