@@ -1,6 +1,7 @@
 # coding: utf-8
 """Dragonfly Story."""
 from __future__ import division
+import math
 
 from ladybug_geometry.geometry2d.polygon import Polygon2D
 from ladybug_geometry.geometry3d.pointvector import Vector3D
@@ -13,6 +14,8 @@ from honeybee.typing import float_positive, int_in_range, clean_string, \
     invalid_dict_error
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.facetype import AirBoundary
+from honeybee.facetype import face_types as ftyp
 from honeybee.altnumber import autocalculate
 from honeybee.shade import Shade
 from honeybee.room import Room
@@ -1252,13 +1255,20 @@ using-multipliers-zone-and-or-window.html
                                 adj_face = adj[1][-2]
                                 if face.identifier == adj_face:
                                     self._match_apertures(adj[0], face)
-                                    try:
-                                        adj[0].set_adjacency(face, tolerance)
-                                    except (AssertionError, ValueError) as e:
-                                        if enforce_adj:
-                                            raise e
-                                        face.boundary_condition = bcs.outdoors
-                                        adj[0].boundary_condition = bcs.outdoors
+                                    other_resolve = False
+                                    if self.roof is not None:  # two roofs may meet
+                                        tol_area = math.sqrt(face.area) * tolerance
+                                        if abs(face.area - adj[0].area) > tol_area:
+                                            self._resolve_roof_adj(face, adj[0])
+                                            other_resolve = True
+                                    if not other_resolve:
+                                        try:
+                                            adj[0].set_adjacency(face, tolerance)
+                                        except (AssertionError, ValueError) as e:
+                                            if enforce_adj:
+                                                raise e
+                                            face.boundary_condition = bcs.outdoors
+                                            adj[0].boundary_condition = bcs.outdoors
                                     adj_set.add(face.identifier)
                                     break
                             break
@@ -1327,6 +1337,26 @@ using-multipliers-zone-and-or-window.html
                 ap2.properties.energy.vent_opening = None
             except AttributeError:
                 pass  # honeybee-energy extension is not loaded
+
+    @staticmethod
+    def _resolve_roof_adj(face_1, face_2):
+        """Resolve incorrect adjacency where walls of two roofs meet."""
+        # TODO: Improve this once honeybee supports intersection for adjacencies
+        # remove sub-faces and air boundary conditions so the two can be properly matched
+        face_1.remove_sub_faces()
+        face_2.remove_sub_faces()
+        if isinstance(face_1.type, AirBoundary):
+            face_1.type = ftyp.wall
+        if isinstance(face_2.type, AirBoundary):
+            face_2.type = ftyp.wall
+
+        try:  # determine the default condition to be used for indoor adjacencies
+            in_bc = bcs.adiabatic
+        except AttributeError:  # honeybee-energy is not installed
+            in_bc = bcs.outdoors
+
+        face_1.boundary_condition = in_bc
+        face_2.boundary_condition = in_bc
 
     def __copy__(self):
         new_s = Story(
