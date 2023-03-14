@@ -994,13 +994,71 @@ using-multipliers-zone-and-or-window.html
         for room in self._room_2ds:
             room.is_top_exposed = is_top_exposed
 
+    def split_with_story_above(self, story_above, tolerance=0.01):
+        """Split the child Room2Ds of this object with the footprint of the Story above.
+
+        This is useful as a pre-step before running set_top_exposed_by_story_above
+        as it ensures all top-exposed areas of this Story have a Room2D that can
+        be set to exposed.
+
+        Args:
+            story_above: A Story object that sits above this Story. Each Room2D
+                of this Story will be checked to see if it intersects the Story
+                above and it will be split based on this.
+            tolerance: The tolerance with which the splitting intersection will be
+                computed. Default: 0.01, suitable for objects in meters.
+        """
+        # get the footprint geometry of the story above
+        above_geos = story_above.footprint(tolerance)
+        # loop through the rooms and split them
+        split_rooms = []
+        for room in self._room_2ds:
+            # split the floor with all geometries above
+            room_height = room.floor_height
+            split_geo = [room.floor_geometry]
+            for i, a_geo in enumerate(above_geos):
+                # make sure all above geometries are at the room floor_height
+                if abs(a_geo[0].z - room_height) > tolerance:
+                    a_geo = a_geo.move(Vector3D(0, 0, room_height - a_geo[0].z))
+                    above_geos[i] = a_geo  # set it so we hopefully don't move next time
+                # split the geometries with one another
+                new_geo = []
+                for r_geo in split_geo:
+                    floor_split, above_split = Face3D.coplanar_split(
+                        r_geo, a_geo, tolerance, 1)
+                    new_geo.extend(floor_split)
+                split_geo = new_geo
+            # create the new Room2D if necessary
+            if len(split_geo) == 1:  # no room splitting needed
+                split_rooms.append(room)
+            else:  # the Room2D has been split
+                for j, s_geo in enumerate(split_geo):
+                    # check to make sure the split geometry is not degenerate
+                    max_dim = max((s_geo.max.x - s_geo.min.x, s_geo.max.y - s_geo.min.y))
+                    if s_geo.area < max_dim * tolerance:  # degenerate geometry found
+                        continue
+                    new_id = '{}_{}'.format(room.identifier, j)
+                    new_room = Room2D(
+                        new_id, s_geo, room.floor_to_ceiling_height,
+                        is_ground_contact=room.is_ground_contact,
+                        is_top_exposed=room.is_top_exposed)
+                    room._match_and_transfer_wall_props(new_room, tolerance)
+                    new_room._display_name = room.display_name
+                    new_room._user_data = None if room.user_data is None \
+                        else room.user_data.copy()
+                    new_room._skylight_parameters = room._skylight_parameters
+                    new_room._properties._duplicate_extension_attr(room._properties)
+                    split_rooms.append(new_room)
+        # set the split rooms to this story
+        self.room_2ds = split_rooms
+
     def set_top_exposed_by_story_above(self, story_above, tolerance=0.01):
         """Set the child Room2Ds of this object to have ceilings exposed to the outdoors.
 
         Args:
             story_above: A Story object that sits above this Story. Each Room2D
-                of this Story will be checked to see if it intersects the Story
-                above and the top exposure will be set based on this.
+                of this Story will be checked to see if the story_above geometry
+                lies above the room and, if not, the top exposure will be set to True.
             tolerance: The tolerance that will be used to compute the point within
                 the floor boundary that is used to check whether there is geometry
                 above each Room2D. It is recommended that this number not be less
