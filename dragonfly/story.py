@@ -1317,7 +1317,8 @@ using-multipliers-zone-and-or-window.html
                                     if self.roof is not None:  # two roofs may meet
                                         tol_area = math.sqrt(face.area) * tolerance
                                         if abs(face.area - adj[0].area) > tol_area:
-                                            self._resolve_roof_adj(face, adj[0])
+                                            self._resolve_roof_adj(
+                                                face, adj[0], tolerance)
                                             other_resolve = True
                                     if not other_resolve:
                                         try:
@@ -1397,24 +1398,65 @@ using-multipliers-zone-and-or-window.html
                 pass  # honeybee-energy extension is not loaded
 
     @staticmethod
-    def _resolve_roof_adj(face_1, face_2):
+    def _resolve_roof_adj(face_1, face_2, tol):
         """Resolve incorrect adjacency where walls of two roofs meet."""
-        # TODO: Improve this once honeybee supports intersection for adjacencies
-        # remove sub-faces and air boundary conditions so the two can be properly matched
-        face_1.remove_sub_faces()
-        face_2.remove_sub_faces()
-        if isinstance(face_1.type, AirBoundary):
+        # remove air boundary conditions so the split result is valid
+        use_ab = False
+        if isinstance(face_1.type, AirBoundary) or isinstance(face_2.type, AirBoundary):
             face_1.type = ftyp.wall
-        if isinstance(face_2.type, AirBoundary):
             face_2.type = ftyp.wall
+            use_ab = True
 
-        try:  # determine the default condition to be used for indoor adjacencies
-            in_bc = bcs.adiabatic
-        except AttributeError:  # honeybee-energy is not installed
-            in_bc = bcs.outdoors
+        # split the adjacent walls with one another to get a match
+        room_1, room_2 = face_1.parent, face_2.parent
+        new_faces1 = room_1.coplanar_split([face_2.geometry], tol)
+        new_faces2 = room_2.coplanar_split([face_1.geometry], tol)
+        new_faces1 = [face_1] if len(new_faces1) == 0 else new_faces1
+        new_faces2 = [face_2] if len(new_faces2) == 0 else new_faces2
+        
+        # find the adjacency and set it
+        adj_geo = None
+        for j, f_1 in enumerate(new_faces1):
+            for k, f_2 in enumerate(new_faces2):
+                if f_1.geometry.is_centered_adjacent(f_2.geometry, tol):
+                    f_1.set_adjacency(f_2)
+                    adj_geo = f_1.geometry
+                    if use_ab:
+                        f_1.type = ftyp.air_boundary
+                        f_2.type = ftyp.air_boundary
+                    new_faces1.pop(j)
+                    new_faces2.pop(k)
+                    break
 
-        face_1.boundary_condition = in_bc
-        face_2.boundary_condition = in_bc
+        # set the boundary conditions of the other newly-created Faces
+        for nf in new_faces1:
+            for of in room_2.faces:
+                if nf.geometry.is_centered_adjacent(of.geometry, tol):
+                    nf.set_adjacency(of)
+                    if use_ab:
+                        nf.type = ftyp.air_boundary
+                        of.type = ftyp.air_boundary
+                    break
+            else:
+                if adj_geo is not None:
+                    if nf.center.z < adj_geo.center.z:
+                        nf.boundary_condition = room_2[0].boundary_condition
+                    elif nf.center.z > adj_geo.center.z:
+                        nf.boundary_condition = room_2[-1].boundary_condition
+        for nf in new_faces2:
+            for of in room_1.faces:
+                if nf.geometry.is_centered_adjacent(of.geometry, tol):
+                    nf.set_adjacency(of)
+                    if use_ab:
+                        nf.type = ftyp.air_boundary
+                        of.type = ftyp.air_boundary
+                    break
+            else:
+                if adj_geo is not None:
+                    if nf.center.z < adj_geo.center.z:
+                        nf.boundary_condition = room_1[0].boundary_condition
+                    elif nf.center.z > adj_geo.center.z:
+                        nf.boundary_condition = room_1[-1].boundary_condition
 
     def __copy__(self):
         new_s = Story(
