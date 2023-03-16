@@ -1715,11 +1715,6 @@ class Room2D(_BaseGeometry):
     def intersect_adjacency(room_2ds, tolerance=0.01, preserve_wall_props=True):
         """Intersect the line segments of an array of Room2Ds to ensure matching walls.
 
-        Note that this method effectively erases all assigned boundary conditions,
-        window parameters and shading parameters as the original segments are
-        subdivided. As such, it is recommended that this method be used before all
-        other steps when creating a Story.
-
         Also note that this method does not actually set the walls that are next to one
         another to be adjacent. The solve_adjacency method must be used for this after
         running this method.
@@ -1739,11 +1734,7 @@ class Room2D(_BaseGeometry):
                 Existing boundary conditions will also be kept. (Default: True).
 
         Returns:
-            An array of Room2Ds that have been intersected with one another. Note
-            that these Room2Ds lack all assigned boundary conditions, window parameters
-            and shading parameters of the original Room2Ds. Other properties like
-            extension attributes, floor_to_ceiling_height, and top_exposed/ground_contact
-            are preserved.
+            An array of Room2Ds that have been intersected with one another.
         """
         # keep track of all data needed to map between 2D and 3D space
         master_plane = room_2ds[0].floor_geometry.plane
@@ -2195,9 +2186,9 @@ class Room2D(_BaseGeometry):
         for rm_poly, rm_segs in zip(all_room_poly, all_segments):
             # find the polygon that the first room vertex is located in
             current_poly, current_plane = None, None
-            other_poly, other_planes = list(roof_polys), list(roof_planes)
+            other_poly, other_planes = rel_rf_polys[:], rel_rf_planes[:]  # copy lists
             pt1 = rm_poly[0]
-            for i, (rf_py, rf_pl) in enumerate(zip(roof_polys, roof_planes)):
+            for i, (rf_py, rf_pl) in enumerate(zip(rel_rf_polys, rel_rf_planes)):
                 if rf_py.point_relationship(pt1, tolerance) >= 0:
                     current_poly, current_plane = rf_py, rf_pl
                     other_poly.pop(i)
@@ -2312,7 +2303,60 @@ class Room2D(_BaseGeometry):
         roof_face_i = list(range(-1, -len(roof_faces) - 1, -1))
         p_faces.extend(roof_faces)
 
-        return Polyface3D.from_faces(p_faces, tolerance), roof_face_i
+        # create the Polyface3D and try to cap it with vertical faces if it is not solid
+        room_polyface = Polyface3D.from_faces(p_faces, tolerance)
+        if not room_polyface.is_solid:
+            ang_tol = math.radians(1)
+            room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
+        if not room_polyface.is_solid:
+            edges = [ed for ed in room_polyface.naked_edges
+                     if not ed.is_vertical(tolerance)]
+            vertical_faces = []
+            for i, edge_1 in enumerate(edges):
+                e1p1 = Point2D(edge_1.p1.x, edge_1.p1.y)
+                e1p2 = Point2D(edge_1.p2.x, edge_1.p2.y)
+                try:
+                    for edge_2 in edges[i + 1:]:
+                        e2p1 = Point2D(edge_2.p1.x, edge_2.p1.y)
+                        e2p2 = Point2D(edge_2.p2.x, edge_2.p2.y)
+                        if e1p1.is_equivalent(e2p1, tolerance) and \
+                                e1p2.is_equivalent(e2p2, tolerance):
+                            new_face3d = Face3D(
+                                (edge_1.p1, edge_1.p2, edge_2.p2, edge_2.p1))
+                            if not new_face3d.is_self_intersecting:
+                                vertical_faces.append(new_face3d)
+                            else:
+                                f_poly = new_face3d.polygon2d
+                                fs1, fs2 = f_poly.segments[0], f_poly.segments[2]
+                                int_pt = new_face3d.plane.xy_to_xyz(
+                                    fs1.intersect_line_ray(fs2))
+                                new_face3d1 = Face3D((edge_1.p1, int_pt, edge_2.p1))
+                                new_face3d2 = Face3D((edge_1.p2, int_pt, edge_2.p2))
+                                vertical_faces.append(new_face3d1)
+                                vertical_faces.append(new_face3d2)
+                        elif e1p1.is_equivalent(e2p2, tolerance) and \
+                                e1p2.is_equivalent(e2p1, tolerance):
+                            new_face3d = Face3D(
+                                (edge_1.p1, edge_1.p2, edge_2.p1, edge_2.p2))
+                            if not new_face3d.is_self_intersecting:
+                                vertical_faces.append(new_face3d)
+                            else:
+                                f_poly = new_face3d.polygon2d
+                                fs1, fs2 = f_poly.segments[0], f_poly.segments[2]
+                                int_pt = new_face3d.plane.xy_to_xyz(
+                                    fs1.intersect_line_ray(fs2))
+                                new_face3d1 = Face3D((edge_1.p1, int_pt, edge_2.p2))
+                                new_face3d2 = Face3D((edge_1.p2, int_pt, edge_2.p1))
+                                vertical_faces.append(new_face3d1)
+                                vertical_faces.append(new_face3d2)
+                except IndexError:
+                    pass  # we have reached the end of the list
+            st_v = -len(roof_face_i) - 1
+            roof_face_i = roof_face_i + list(range(st_v, st_v - len(vertical_faces), -1))
+            p_faces.extend(vertical_faces)
+            room_polyface = Polyface3D.from_faces(p_faces, tolerance)
+        
+        return room_polyface, roof_face_i
 
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
         """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.

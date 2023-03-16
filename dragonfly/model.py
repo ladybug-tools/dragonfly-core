@@ -22,6 +22,7 @@ from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
 from honeybee.facetype import Floor, RoofCeiling
+from honeybee.room import Room as HBRoom
 from honeybee.model import Model as HBModel
 
 from ._base import _BaseGeometry
@@ -898,8 +899,8 @@ class Model(_BaseGeometry):
                 blocked sun and is only needed when it's important to account for
                 reflected sun off of roofs. (Default: False).
             solve_ceiling_adjacencies: Boolean to note whether adjacencies should be
-                solved between interior stories when Room2Ds perfectly match one
-                another in their floor plate. This ensures that Surface boundary
+                solved between interior stories when Room2D floor and ceiling
+                geometries are coplanar. This ensures that Surface boundary
                 conditions are used instead of Adiabatic ones. Note that this input
                 has no effect when the object_per_model is Story. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
@@ -952,7 +953,7 @@ class Model(_BaseGeometry):
         if solve_ceiling_adjacencies and \
                 object_per_model.title() in ('Building', 'District'):
             for model in models:
-                self._solve_ceil_adj(model.rooms, tolerance)
+                self._solve_ceil_adj(model.rooms, tolerance, self.angle_tolerance)
 
         # change the tolerance and units systems to match the dragonfly model
         for model in models:
@@ -1198,10 +1199,12 @@ class Model(_BaseGeometry):
         return writer
 
     @staticmethod
-    def _solve_ceil_adj(rooms, tolerance=0.01):
+    def _solve_ceil_adj(rooms, tolerance=0.01, angle_tolerance=1):
         """Solve Floor/Ceiling adjacencies between a list of rooms."""
-        relevant_types = (Floor, RoofCeiling)
+        # intersect the Rooms with one another for matching adjacencies
+        HBRoom.intersect_adjacency(rooms, tolerance, angle_tolerance)
         # solve all adjacencies between rooms
+        relevant_types = (Floor, RoofCeiling)
         for i, room_1 in enumerate(rooms):
             try:
                 for room_2 in rooms[i + 1:]:

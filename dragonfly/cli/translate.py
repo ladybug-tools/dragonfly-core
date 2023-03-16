@@ -41,7 +41,7 @@ def translate():
               default=True, show_default=True)
 @click.option('--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
               'whether adjacencies should be solved between interior stories when '
-              'Room2Ds perfectly match one another in their floor plate. This ensures '
+              'Room2D floor and ceiling geometries are coplanar. This ensures '
               'that Surface boundary conditions are used instead of Adiabatic ones. '
               'Note that this input has no effect when the object-per-model is Story.',
               default=True, show_default=True)
@@ -135,7 +135,7 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
 @click.option(
     '--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
     'whether adjacencies should be solved between interior stories when '
-    'Room2Ds perfectly match one another in their floor plate. This ensures '
+    'Room2D floor and ceiling geometries are coplanar. This ensures '
     'that Surface boundary conditions are used instead of Adiabatic ones. '
     'Note that this input has no effect when the object-per-model is Story.',
     default=True, show_default=True)
@@ -200,7 +200,7 @@ def model_to_honeybee_file(
 @click.option(
     '--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
     'whether adjacencies should be solved between interior stories when '
-    'Room2Ds perfectly match one another in their floor plate. This ensures '
+    'Room2D floor and ceiling geometries are coplanar. This ensures '
     'that Surface boundary conditions are used instead of Adiabatic ones. '
     'Note that this input has no effect when the object-per-model is Story.',
     default=True, show_default=True)
