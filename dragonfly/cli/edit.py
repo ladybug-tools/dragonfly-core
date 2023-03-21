@@ -235,7 +235,7 @@ def reset_room_boundaries(
                 for p_gon in p_gons:
                     line_rays.extend(p_gon.segments)
                 for line in line_rays:
-                    d_story.align_room_2ds(line, distance)
+                    d_story.align(line, distance, tol)
             # perform some extra cleanup operations
             d_story.remove_room_2d_duplicate_vertices(tol, delete_degenerate=True)
             d_story.delete_degenerate_room_2ds()
@@ -366,7 +366,7 @@ def align_room_2ds(model_file, line_ray_file, distance, remove_distance,
         # loop through the stories and align them
         for d_story, line_rays in zip(rel_stories, story_lines):
             for line in line_rays:
-                d_story.align_room_2ds(line, distance)
+                d_story.align(line, distance, model.tolerance)
             # perform some extra cleanup operations
             d_rooms = d_story.remove_room_2d_duplicate_vertices(
                 model.tolerance, delete_degenerate=True)

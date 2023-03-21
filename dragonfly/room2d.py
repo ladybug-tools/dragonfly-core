@@ -838,7 +838,7 @@ class Room2D(_BaseGeometry):
         wp1 = self._window_parameters[self_seg_index]
         wp2 = other_room_2d._window_parameters[other_seg_index]
         if wp1 is not None or wp2 is not None:
-            if wp1 != wp2:
+            if wp1 != wp2 or isinstance(wp1, DetailedWindows):
                 if resolve_window_conflicts:
                     ftc1 = self.floor_to_ceiling_height
                     ftc2 = other_room_2d.floor_to_ceiling_height
@@ -855,9 +855,11 @@ class Room2D(_BaseGeometry):
                         self._window_parameters[self_seg_index] = wp2.flip(seg1.length) \
                             if isinstance(wp2, _AsymmetricBase) else wp2
                 else:
-                    msg = 'Window parameters do not match between adjacent Rooms "{}"' \
-                        ' and "{}".'.format(self.identifier, other_room_2d.identifier)
-                    raise AssertionError(msg)
+                    if wp1 != wp2:
+                        msg = 'Window parameters do not match between adjacent ' \
+                            'Rooms "{}" and "{}".'.format(
+                                self.identifier, other_room_2d.identifier)
+                        raise AssertionError(msg)
 
     def set_boundary_condition(self, seg_index, boundary_condition):
         """Set a single segment of this Room2D to have a certain boundary condition.
@@ -994,7 +996,7 @@ class Room2D(_BaseGeometry):
                 the vertex will be moved to lie on the line_ray. Vertices beyond
                 this distance will be left as they are.
         """
-        # create a 3D version of the line_ray for the closes point calculation
+        # create a 3D version of the line_ray for the closest point calculation
         if isinstance(line_ray, Ray2D):
             line_ray_3d = Ray3D(
                 Point3D(line_ray.p.x, line_ray.p.y, self.floor_height),
@@ -2255,6 +2257,8 @@ class Room2D(_BaseGeometry):
                     sort_pts.reverse()
                     face_pts.extend(sort_pts)
                 # make the final Face3D
+                if len(face_pts) == 2:  # second point not inside a roof, invalid roof
+                    return None, None
                 p_faces.append(Face3D(face_pts))
                 pt1 = pt2  # increment for next segment
 

@@ -700,6 +700,29 @@ using-multipliers-zone-and-or-window.html
         for room in self.room_2ds:
             room.align(line_ray, distance)
 
+    def align(self, line_ray, distance, tolerance=0.01):
+        """Move Room2D and Roof vertices within a distance of a line to be on that line.
+
+        This method differs from the align_room_2ds method in that it will also
+        align any Roof geometry (if it is present).
+
+        Args:
+            line_ray: A ladybug_geometry Ray2D or LineSegment2D to which the Room2D
+                and Roof vertices will be aligned. Ray2Ds will be interpreted as being
+                infinite in both directions while LineSegment2Ds will be interpreted
+                as only existing between two points.
+            distance: The maximum distance between a vertex and the line_ray where
+                the vertex will be moved to lie on the line_ray. Vertices beyond
+                this distance will be left as they are.
+            tolerance: The minimum distance between vertices below which they are
+                considered co-located. This is used to ensure that the alignment process
+                does not create new overlaps in the roof geometry. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        self.align_room_2ds(line_ray, distance)
+        if self.roof is not None:
+            self.roof.align(line_ray, distance, tolerance)
+
     def remove_room_2d_duplicate_vertices(self, tolerance=0.01, delete_degenerate=False):
         """Remove duplicate vertices from all Room2Ds in this Story.
 
