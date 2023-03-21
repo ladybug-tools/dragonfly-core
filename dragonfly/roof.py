@@ -3,8 +3,11 @@
 from __future__ import division
 import math
 
-from ladybug_geometry.geometry2d import Point2D, Polygon2D
-from ladybug_geometry.geometry3d import Face3D
+from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
+    Polygon2D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D, Polyface3D
+from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
+    closest_point2d_on_line2d_infinite
 
 
 class RoofSpecification(object):
@@ -25,7 +28,7 @@ class RoofSpecification(object):
         * min
         * max
     """
-    __slots__ = ('_geometry', '_parent')
+    __slots__ = ('_geometry', '_parent', '_ridge_line_info', '_ridge_line_tolerance')
 
     def __init__(self, geometry):
         """Initialize RoofSpecification."""
@@ -60,6 +63,8 @@ class RoofSpecification(object):
             assert isinstance(geo, Face3D), \
                 'Expected Face3D for RoofSpecification. Got {}'.format(type(geo))
         self._geometry = value
+        self._ridge_line_info = None
+        self._ridge_line_tolerance = None
 
     @property
     def boundary_geometry_2d(self):
@@ -106,6 +111,32 @@ class RoofSpecification(object):
         """
         return self._calculate_max(self._geometry)
 
+    def overlap_count(self, tolerance=0.01):
+        """Get the number of times that the Roof geometries overlap with one another.
+
+        This should be zero for the RoofSpecification to be valid.
+
+        Args:
+            tolerance: The minimum distance that two Roof geometries can overlap
+                with one another and still be considered valid. Default: 0.01,
+                suitable for objects in meters.
+
+        Returns:
+            An integer for the number of times that the roof geometries overlap
+            with one another beyond the tolerance.
+        """
+        geo_2d = self.boundary_geometry_2d
+        overlap_count = 0
+        for i, poly_1 in enumerate(geo_2d):
+            try:
+                for poly_2 in geo_2d[i + 1:]:
+                    if Polygon2D.overlapping_bounding_rect(poly_1, poly_2, tolerance):
+                        if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
+                            overlap_count += 1
+            except IndexError:
+                pass  # we have reached the end of the list
+        return overlap_count
+
     def move(self, moving_vec):
         """Move this RoofSpecification along a vector.
 
@@ -144,31 +175,127 @@ class RoofSpecification(object):
         """
         self._geometry = tuple(geo.scale(factor, origin) for geo in self._geometry)
 
-    def overlap_count(self, tolerance=0.01):
-        """Get the number of times that the Roof geometries overlap with one another.
+    def align(self, line_ray, distance, tolerance=0.01):
+        """Move naked roof vertices within a given distance of a line to be on that line.
 
-        This should be zero for the RoofSpecification to be valid.
+        This is useful for coordinating the Roof specification with the alignment
+        of Room2Ds that belong to the same Story as this Roof.
+
+        Note that the planes of the input roof Face3Ds will be preserved. This way,
+        the internal structure of the roof geometry will be conserved but the roof will
+        be extended to cover Room2Ds that might have otherwise been aligned to
+        the point that they have no Roof geometry above them.
 
         Args:
-            tolerance: The minimum distance that two Roof geometries can overlap
-                with one another and still be considered valid. Default: 0.01,
-                suitable for objects in meters.
-
-        Returns:
-            An integer for the number of times that the roof geometries overlap
-            with one another beyond the tolerance.
+            line_ray: A ladybug_geometry Ray2D or LineSegment2D to which the roof
+                vertices will be aligned. Ray2Ds will be interpreted as being infinite
+                in both directions while LineSegment2Ds will be interpreted as only
+                existing between two points.
+            distance: The maximum distance between a vertex and the line_ray where
+                the vertex will be moved to lie on the line_ray. Vertices beyond
+                this distance will be left as they are.
+            tolerance: The minimum distance between vertices below which they are
+                considered co-located. This is used to ensure that the alignment process
+                does not create new overlaps in the roof geometry. (Default: 0.01,
+                suitable for objects in meters).
         """
-        geo_2d = self.boundary_geometry_2d
-        overlap_count = 0
-        for i, poly_1 in enumerate(geo_2d):
-            try:
-                for poly_2 in geo_2d[i + 1:]:
-                    if Polygon2D.overlapping_bounding_rect(poly_1, poly_2, tolerance):
-                        if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
-                            overlap_count += 1
-            except IndexError:
-                pass  # we have reached the end of the list
-        return overlap_count
+        # check the input line_ray
+        if isinstance(line_ray, Ray2D):
+            closest_func = closest_point2d_on_line2d_infinite
+        elif isinstance(line_ray, LineSegment2D):
+            closest_func = closest_point2d_on_line2d
+        else:
+            msg = 'Expected Ray2D or LineSegment2D. Got {}.'.format(type(line_ray))
+            raise TypeError(msg)
+        
+        # get the polygons and intersect them for matching segments
+        polygons, planes = self.boundary_geometry_2d, self.planes
+        poly_ridge_info = self._compute_ridge_line_info(tolerance)
+
+        # loop through the polygons and align the vertices
+        new_polygons = []
+        for poly, poly_info in zip(polygons, poly_ridge_info):
+            new_poly = []
+            for pt, pt_info in zip(poly, poly_info):
+                if len(pt_info) == 0:  # not on a ridge line; move it anywhere
+                    close_pt = closest_func(pt, line_ray)
+                    if pt.distance_to_point(close_pt) <= distance:
+                        new_poly.append(close_pt)
+                    else:
+                        new_poly.append(pt)
+                elif len(pt_info) == 1:  # only move it along a singe ridge line
+                    r_line = pt_info[0]
+                    vec_ang = math.degrees(r_line.v.angle(line_ray.v))
+                    if 1 <= vec_ang <= 179:  # not parallel; ridge will be intact
+                        close_pt = closest_func(pt, line_ray)
+                        if pt.distance_to_point(close_pt) <= distance:
+                            new_poly.append(close_pt)
+                        else:
+                            new_poly.append(pt)
+                    else:
+                        new_poly.append(pt)
+                else:  # multiple ridge lines; don't move that point!
+                    new_poly.append(pt)
+            new_polygons.append(new_poly)
+
+        # project the points back onto the roof
+        proj_dir = Vector3D(0, 0, 1)
+        new_geo = []
+        for poly, r_pl in zip(new_polygons, planes):
+            new_pts3d = []
+            for pt2 in poly:
+                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
+            new_geo.append(Face3D(new_pts3d, plane=r_pl))
+        self.geometry = new_geo
+
+    def _compute_ridge_line_info(self, tolerance):
+        """Get a matrix of values for the ridge lines associated with each vertex.
+
+        Ridge lines are defined as lines shared between two roof geometries.
+
+        The matrix will have one sub-list for each polygon in the boundary_geometry_2d
+        and each sub-list will contain a sub-sub-list for each vertex. This sub-sub-list
+        with contain LineSegment2Ds for each ridge line that the vertex is a part of.
+        Vertices that belong to only one roof geometry will get an empty list in
+        the matrix, indicating that the vertex can be moved in any direction without
+        changing the roof structure. Vertices belonging to two roof geometries will
+        get a single ridge line LineSegment2D in the list, indicating that the vertex can
+        be moved along this vector without changing the structure of the whole roof.
+        Vertices belonging to more than one roof geometry will get multiple
+        LineSegment2Ds in the list, which usually means that moving the vertex in
+        any direction will change the Roof structure.
+
+        This method is hidden because it caches the results, meaning that it does
+        not need to be recomputed for multiple alignment lines when the roof geometry
+        or the tolerance does not change.
+        """
+        if self._ridge_line_info is None or self._ridge_line_tolerance != tolerance:
+            # turn the polygons into Face3D in the XY plane
+            proj_faces = []
+            for poly in self.boundary_geometry_2d:
+                proj_face = Face3D(tuple(Point3D(pt.x, pt.y) for pt in poly))
+                proj_faces.append(proj_face)
+            # join the projected Face3D into a Polyface3D and get all naked edges
+            roof_p_face = Polyface3D.from_faces(proj_faces, tolerance)
+            roof_p_face = roof_p_face.merge_overlapping_edges(
+                tolerance, math.radians(1))
+            internal_ed = roof_p_face.internal_edges
+            # check whether each Face3D vertex lies on an internal edge
+            ridge_info = []
+            for proj_face in proj_faces:
+                face_info = []
+                for pt in proj_face.boundary:
+                    pt_rid = []
+                    for ed in internal_ed:
+                        if ed.distance_to_point(pt) <= tolerance:
+                            ln_2 = LineSegment2D(
+                                Point2D(ed.p.x, ed.p.y), Vector2D(ed.v.x, ed.v.y))
+                            pt_rid.append(ln_2)
+                    face_info.append(pt_rid)
+                ridge_info.append(face_info)
+            self._ridge_line_info = ridge_info
+            self._ridge_line_tolerance = tolerance
+        return self._ridge_line_info
 
     def to_dict(self):
         """Return RoofSpecification as a dictionary."""
