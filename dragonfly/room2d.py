@@ -890,6 +890,24 @@ class Room2D(_BaseGeometry):
             'Air boundaries must be assigned to walls with Surface boundary conditions.'
         self._air_boundaries[seg_index] = True
 
+    def set_window_parameter(self, seg_index, window_parameter=None):
+        """Set a single segment of this Room2D to have a certain window parameter.
+
+        Args:
+            seg_index: An integer for the wall segment of this Room2D for which
+                the window parameter will be set.
+            window_parameter: A window parameter object to be assigned to the segment.
+                If None, any existing WindowParameters assigned to the segment
+                will be removed. (Default: None).
+        """
+        if window_parameter is not None:
+            assert isinstance(window_parameter, _WindowParameterBase), \
+                'Expected Window Parameters. Got {}'.format(type(window_parameter))
+            assert isinstance(self._boundary_conditions[seg_index], (Outdoors, Surface)),
+                'Windows cannot be assigned to a wall with {} boundary ' \
+                'condition.'.format(boundary_condition)
+        self._window_parameters[seg_index] = window_parameter
+
     def reset_adjacency(self):
         """Set all Surface boundary conditions of this Room2D to be Outdoors."""
         for i, bc in enumerate(self._boundary_conditions):
