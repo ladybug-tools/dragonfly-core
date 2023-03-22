@@ -903,7 +903,8 @@ class Room2D(_BaseGeometry):
         if window_parameter is not None:
             assert isinstance(window_parameter, _WindowParameterBase), \
                 'Expected Window Parameters. Got {}'.format(type(window_parameter))
-            assert isinstance(self._boundary_conditions[seg_index], (Outdoors, Surface)),
+            accept_bc = (Outdoors, Surface)
+            assert isinstance(self._boundary_conditions[seg_index], accept_bc), \
                 'Windows cannot be assigned to a wall with {} boundary ' \
                 'condition.'.format(boundary_condition)
         self._window_parameters[seg_index] = window_parameter
