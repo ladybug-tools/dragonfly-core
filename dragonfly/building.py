@@ -7,15 +7,14 @@ try:
 except ImportError:
     xrange = range  # python 3
 
-from ladybug_geometry.geometry2d.pointvector import Point2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
-from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polygon2D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons, \
     perimeter_core_by_offset
 
 from honeybee.model import Model
 from honeybee.room import Room
+from honeybee.boundarycondition import Outdoors
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string, invalid_dict_error
 from honeybee.units import parse_distance_string
@@ -745,6 +744,80 @@ class Building(_BaseGeometry):
         Use this method to access Writer class to write the building in other formats.
         """
         return writer
+
+    @staticmethod
+    def process_alleys(buildings, distance=1.0, adiabatic=False, tolerance=0.01):
+        """Remove windows from any walls that within a distance of other buildings.
+
+        This method can also optionally set the boundary conditions of these walls to
+        adiabatic. This is helpful when attempting to account for alleys or parti walls
+        that may exist between buildings of a denser urban district.
+
+        Note that this staticmethod will edit the buildings in place.
+
+        Args:
+            buildings: Dragonfly Building objects which will have their windows removed
+                if their walls lie within the distance of another building.
+            distance: A number for the maximum distance of an alleyway in model
+                units. If a wall is closer to another Building than this distance,
+                the windows will be removed. (Default: 1.0; suitable for objects
+                in meters).
+            adiabatic: A boolean to note whether the walls that have their windows
+                removed should also receive an Adiabatic boundary condition.
+                This is useful when the alleyways are more like parti walls than
+                distinct pathways that someone could traverse.
+        """
+        # get the adiabatic boundary condition in case we need it
+        try:
+            ad_bc = bcs.adiabatic
+        except AttributeError:  # honeybee_energy is not loaded
+            ad_bc = bcs.outdoors
+
+        # get the footprints, heights and bounding points of all of the buildings
+        footprints = [b.footprint(tolerance) for b in buildings]
+        foot_poly = [[Polygon2D((Point2D(p.x, p.y) for p in f.vertices)) for f in face]
+                     for face in footprints]
+        heights = [b.height for b in buildings]
+        bldg_pts = []
+        for bldg in buildings:
+            b_min, b_max = bldg.min, bldg.max
+            center = Point2D((b_min.x + b_max.x) / 2, (b_min.y + b_max.y) / 2)
+            bldg_pts.append((b_min, center, b_max))
+
+        # loop through the buildings and set the properties of the relevant walls
+        for i, bldg in enumerate(buildings):
+            # first determine the relevant buildings and building heights
+            rel_polys, rel_heights = [], []
+            other_indices = range(i) + range(i + 1, len(buildings))
+            for j in other_indices:
+                if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[j], distance):
+                    rel_polys.append(foot_poly[j])
+                    rel_heights.append(heights[j])
+            # then, loop through the story Room2Ds and set properties of relevant walls
+            for story in bldg.unique_stories:
+                for rm in story.room_2ds:
+                    zip_obj = zip(rm.boundary_conditions, rm.window_parameters,
+                                rm.floor_segments_2d, rm.segment_normals)
+                    new_bcs = list(rm.boundary_conditions)
+                    new_win_pars = list(rm.window_parameters)
+                    for k, (bc, wp, seg, normal) in enumerate(zip_obj):
+                        if not isinstance(bc, Outdoors):  # nothing to change
+                            continue
+                        seg_mid = seg.midpoint.move(normal * -tolerance)
+                        seg_ray = LineSegment2D.from_sdl(seg_mid, normal, distance)
+                        for rel_poly, rel_hgt in zip(rel_polys, rel_heights):
+                            if story.floor_height > rel_hgt:  # story above other building
+                                continue  # we can ignore this one
+                            for o_poly in rel_poly:
+                                if len(o_poly.intersect_line_ray(seg_ray)) > 0:
+                                    # we have found an alleyway!
+                                    new_win_pars[k] = None
+                                    if adiabatic:
+                                        new_bcs[k] = ad_bc
+                                    break
+                    # assign the new window parameters and boundary conditions
+                    rm.window_parameters = new_win_pars
+                    rm.boundary_conditions = new_bcs
 
     @staticmethod
     def district_to_honeybee(
