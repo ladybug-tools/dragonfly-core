@@ -172,9 +172,10 @@ class Model(_BaseGeometry):
 
         # Get the list of building data
         if all_polygons_to_buildings:
+            p_types = ('Polygon', 'MultiPolygon')
             bldgs_data = \
-                [bldg_data for bldg_data in data['features'] if 'geometry' in bldg_data
-                 and bldg_data['geometry']['type'] in ('Polygon', 'MultiPolygon')]
+                [bldg_data for bldg_data in data['features']
+                 if 'geometry' in bldg_data and bldg_data['geometry']['type'] in p_types]
         else:
             bldgs_data = []
             for bldg_data in data['features']:
@@ -535,7 +536,7 @@ class Model(_BaseGeometry):
         return room_2ds
 
     def context_shade_by_identifier(self, identifiers):
-        """Get a list of ContextShade objects in the model given ContextShade identifiers.
+        """Get a list of ContextShade objects in the model given identifiers.
         """
         context_shades = []
         for identifier in identifiers:
@@ -1342,7 +1343,7 @@ class Model(_BaseGeometry):
 
     @staticmethod
     def _bottom_left_coordinate_from_geojson(bldgs_data):
-        """Calculate the bottom-left bounding box coordinate from geojson building coordinates.
+        """Calculate the bottom-left bounding box coordinate from geojson coordinates.
 
         Args:
             bldgs_data: a list of dictionaries containing geojson geometries that
@@ -1380,7 +1381,8 @@ class Model(_BaseGeometry):
         new_model = Model(
             self.identifier,
             [bldg.duplicate() for bldg in self._buildings],
-            [shade.duplicate() for shade in self._context_shades])
+            [shade.duplicate() for shade in self._context_shades],
+            self.units, self.tolerance, self.angle_tolerance)
         new_model._display_name = self.display_name
         new_model._user_data = None if self.user_data is None else self.user_data.copy()
         new_model._properties._duplicate_extension_attr(self._properties)

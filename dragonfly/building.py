@@ -797,7 +797,7 @@ class Building(_BaseGeometry):
             for story in bldg.unique_stories:
                 for rm in story.room_2ds:
                     zip_obj = zip(rm.boundary_conditions, rm.window_parameters,
-                                rm.floor_segments_2d, rm.segment_normals)
+                                  rm.floor_segments_2d, rm.segment_normals)
                     new_bcs = list(rm.boundary_conditions)
                     new_win_pars = list(rm.window_parameters)
                     for k, (bc, wp, seg, normal) in enumerate(zip_obj):
@@ -806,7 +806,7 @@ class Building(_BaseGeometry):
                         seg_mid = seg.midpoint.move(normal * -tolerance)
                         seg_ray = LineSegment2D.from_sdl(seg_mid, normal, distance)
                         for rel_poly, rel_hgt in zip(rel_polys, rel_heights):
-                            if story.floor_height > rel_hgt:  # story above other building
+                            if story.floor_height > rel_hgt:  # story above other bldg
                                 continue  # we can ignore this one
                             for o_poly in rel_poly:
                                 if len(o_poly.intersect_line_ray(seg_ray)) > 0:
@@ -1136,7 +1136,7 @@ class Building(_BaseGeometry):
 
     @staticmethod
     def _is_story_equivalent(face1, face2, tolerance):
-        """Check whether the area, XY centerpoint and XY first point match between Face3D.
+        """Check whether area, XY centerpoint and XY first point match between Face3D.
 
         Args:
             face1: First Face3D to check.
