@@ -998,7 +998,7 @@ using-multipliers-zone-and-or-window.html
             room.to_rectangular_windows()
 
     def set_ground_contact(self, is_ground_contact=True):
-        """Set all child Room2Ds of this object to have floors in contact with the ground.
+        """Set all child Room2Ds of this object to have floors with ground contact.
 
         Args:
             is_ground_contact: A boolean noting whether all the Story's room_2ds
@@ -1436,7 +1436,7 @@ using-multipliers-zone-and-or-window.html
         new_faces2 = room_2.coplanar_split([face_1.geometry], tol)
         new_faces1 = [face_1] if len(new_faces1) == 0 else new_faces1
         new_faces2 = [face_2] if len(new_faces2) == 0 else new_faces2
-        
+
         # find the adjacency and set it
         adj_geo = None
         for j, f_1 in enumerate(new_faces1):
