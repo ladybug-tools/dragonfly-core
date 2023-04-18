@@ -906,7 +906,7 @@ class Room2D(_BaseGeometry):
             accept_bc = (Outdoors, Surface)
             assert isinstance(self._boundary_conditions[seg_index], accept_bc), \
                 'Windows cannot be assigned to a wall with {} boundary ' \
-                'condition.'.format(boundary_condition)
+                'condition.'.format(self._boundary_conditions[seg_index])
         self._window_parameters[seg_index] = window_parameter
 
     def reset_adjacency(self):
@@ -2378,7 +2378,7 @@ class Room2D(_BaseGeometry):
             roof_face_i = roof_face_i + list(range(st_v, st_v - len(vertical_faces), -1))
             p_faces.extend(vertical_faces)
             room_polyface = Polyface3D.from_faces(p_faces, tolerance)
-        
+
         return room_polyface, roof_face_i
 
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
