@@ -122,6 +122,12 @@ class _WindowParameterBase(object):
     def ToString(self):
         return self.__repr__()
 
+    def _add_user_data(self, new_win_par):
+        """Add copies of this object's user_data to new WindowParameters."""
+        if self.user_data is not None:
+            for w_par in new_win_par:
+                w_par.user_data = self.user_data.copy()
+
     def _apply_user_data_to_honeybee(self, sub_faces, clean_data=None):
         """Apply the WindowParameter user_data to generated honeybee objects.
 
@@ -291,6 +297,7 @@ class SingleWindow(_WindowParameterBase):
         for length in lengths:
             new_w = (length / total_len) * self.width
             new_w_par.append(SingleWindow(new_w, self.height, self.sill_height))
+        self._add_user_data(new_w_par)
         return new_w_par
 
     @staticmethod
@@ -320,7 +327,10 @@ class SingleWindow(_WindowParameterBase):
         weights = [w / tw for w in weights]
         height = sum([h * w for h, w in zip(heights, weights)])
         sill_height = sum([h * w for h, w in zip(sill_heights, weights)])
-        return SingleWindow(width, height, sill_height)
+        new_w = SingleWindow(width, height, sill_height)
+        new_w._user_data = None if window_parameters[0].user_data is None else \
+            window_parameters[0].user_data.copy()
+        return new_w
 
     @classmethod
     def from_dict(cls, data):
@@ -488,7 +498,9 @@ class SimpleWindowArea(_WindowParameterBase):
             return new_wps
         # otherwise, just distribute the windows evenly
         total_len = sum(lengths)
-        return [SimpleWindowArea(self.window_area * (sl / total_len)) for sl in lengths]
+        n_par = [SimpleWindowArea(self.window_area * (sl / total_len)) for sl in lengths]
+        self._add_user_data(n_par)
+        return n_par
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
@@ -509,7 +521,10 @@ class SimpleWindowArea(_WindowParameterBase):
                 else:  # not all windows are of the same type; convert all to rectangular
                     return _WindowParameterBase.merge_to_rectangular(
                         window_parameters, segments, floor_to_ceiling_height)
-        return SimpleWindowArea(win_area)
+        new_w = SimpleWindowArea(win_area)
+        new_w._user_data = None if window_parameters[0].user_data is None else \
+            window_parameters[0].user_data.copy()
+        return new_w
 
     @classmethod
     def from_dict(cls, data):
@@ -667,7 +682,9 @@ class SimpleWindowRatio(_WindowParameterBase):
         if new_ratios is not None:
             return new_ratios
         # otherwise, just distribute the windows evenly
-        return [self] * len(segments)
+        new_w_par = [self] * len(segments)
+        self._add_user_data(new_w_par)
+        return new_w_par
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
@@ -690,7 +707,10 @@ class SimpleWindowRatio(_WindowParameterBase):
                 else:  # not all windows are of the same type; convert all to rectangular
                     return _WindowParameterBase.merge_to_rectangular(
                         window_parameters, segments, floor_to_ceiling_height)
-        return SimpleWindowRatio(win_area / wall_area)
+        new_w = SimpleWindowRatio(win_area / wall_area)
+        new_w._user_data = None if window_parameters[0].user_data is None else \
+            window_parameters[0].user_data.copy()
+        return new_w
 
     @classmethod
     def from_dict(cls, data):
@@ -795,6 +815,7 @@ class RepeatingWindowRatio(SimpleWindowRatio):
     def __init__(self, window_ratio, window_height, sill_height,
                  horizontal_separation, vertical_separation=0):
         """Initialize RepeatingWindowRatio."""
+        _WindowParameterBase.__init__(self)  # add the user_data
         self._window_ratio = float_in_range(window_ratio, 0, 0.95, 'window ratio')
         self._window_height = float_positive(window_height, 'window height')
         self._sill_height = float_positive(sill_height, 'sill height')
@@ -904,7 +925,9 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         if new_ratios is not None:
             return new_ratios
         # otherwise, just distribute the windows evenly
-        return [self] * len(segments)
+        new_w_par = [self] * len(segments)
+        self._add_user_data(new_w_par)
+        return new_w_par
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
@@ -940,7 +963,10 @@ class RepeatingWindowRatio(SimpleWindowRatio):
         sill_height = sum([h * w for h, w in zip(sill_heights, weights)])
         h_sep = sum([s * w for s, w in zip(h_seps, weights)])
         v_sep = sum([s * w for s, w in zip(v_seps, weights)])
-        return RepeatingWindowRatio(window_ratio, height, sill_height, h_sep, v_sep)
+        new_w = RepeatingWindowRatio(window_ratio, height, sill_height, h_sep, v_sep)
+        new_w._user_data = None if window_parameters[0].user_data is None else \
+            window_parameters[0].user_data.copy()
+        return new_w
 
     @classmethod
     def from_dict(cls, data):
@@ -1166,7 +1192,9 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
                 for objects in meters).
         """
         # just distribute the windows evenly
-        return [self] * len(segments)
+        new_w_par = [self] * len(segments)
+        self._add_user_data(new_w_par)
+        return new_w_par
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
@@ -1197,7 +1225,10 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
         width = sum([x * w for x, w in zip(widths, weights)])
         sill_height = sum([h * w for h, w in zip(sill_heights, weights)])
         h_sep = sum([s * w for s, w in zip(h_seps, weights)])
-        return RepeatingWindowWidthHeight(height, width, sill_height, h_sep)
+        new_w = RepeatingWindowWidthHeight(height, width, sill_height, h_sep)
+        new_w._user_data = None if window_parameters[0].user_data is None else \
+            window_parameters[0].user_data.copy()
+        return new_w
 
     @classmethod
     def from_dict(cls, data):
@@ -1280,6 +1311,49 @@ class _AsymmetricBase(_WindowParameterBase):
                 being flipped.
         """
         return self
+
+    def _merge_user_data(self, original_w_par):
+        """Build this object's user_data from those of merged window parameters.
+
+        Args:
+            original_w_par: An array of the original window parameters used to
+                build this one.
+        """
+        if not all(ow_par.user_data is None for ow_par in original_w_par):
+            new_u = {}
+            for ow_par in original_w_par:
+                if ow_par.user_data is not None:
+                    for key, val in ow_par.user_data.items():
+                        if key not in new_u:
+                            new_u[key] = val
+                        elif isinstance(new_u[key], (list, tuple)) and \
+                                isinstance(val, (list, tuple)) and \
+                                len(val) >= len(ow_par):
+                            new_u[key] = new_u[key] + val
+            self.user_data = new_u
+
+    def _split_user_data(self, split_win_par, win_par_indices):
+        """Assign user_data to split WindowParameters with the help of split indices.
+
+        Args:
+            split_win_par: An array of WindowParameters that were derived by
+                splitting this one.
+            win_par_indices: A list of lists where each sub-list represents one of
+                the WindowParameters in the split_win_par ean each item of each
+                sub-list represents one of the rectangles or polygons in the
+                window parameters.
+        """
+        if self.user_data is not None:
+            for win_par, wp_i in zip(split_win_par, win_par_indices):
+                if win_par is None:
+                    continue
+                u_dict = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self):
+                        u_dict[key] = [self.user_data[key][j] for j in wp_i]
+                    else:
+                        u_dict[key] = val
+                win_par.user_data = u_dict
 
 
 class RectangularWindows(_AsymmetricBase):
@@ -1520,45 +1594,54 @@ class RectangularWindows(_AsymmetricBase):
                 wall segment that is considered not touching. (Default: 0.01, suitable
                 for objects in meters).
         """
-        new_win_pars = []
-        rel_pt, rel_w, rel_h, rel_d = \
-            self.origins, self.widths, self.heights, self.are_doors
+        new_win_pars, win_par_is = [], []
+        rel_pt, rel_w, rel_h = self.origins, self.widths, self.heights
+        rel_d, rel_i = self.are_doors, list(range(len(self.origins)))
         for segment in segments:
             # loop through the vertices and adjust them to the max width
+            win_par_i, out_i = [], []
             seg_len = segment.length
             max_width = seg_len - tolerance
             new_pts, new_w, new_h, new_d = [], [], [], []
             out_pts, out_w, out_h, out_d = [], [], [], []
-            for pt, w, h, d in zip(rel_pt, rel_w, rel_h, rel_d):
+            for pt, w, h, d, i in zip(rel_pt, rel_w, rel_h, rel_d, rel_i):
                 x_val = pt.x
                 if x_val >= max_width:  # completely outside of the segment
                     out_pts.append(Point2D(x_val - seg_len, pt.y))
                     out_w.append(w)
                     out_h.append(h)
                     out_d.append(d)
+                    out_i.append(i)
                 elif x_val + w >= max_width:  # split by segment
                     split_dist = max_width - x_val
                     new_pts.append(Point2D(x_val, pt.y))
                     new_w.append(split_dist - tolerance)
                     new_h.append(h)
                     new_d.append(d)
+                    win_par_i.append(i)
                     out_pts.append(Point2D(tolerance, pt.y))
                     out_w.append(w - split_dist - (2 * tolerance))
                     out_h.append(h)
                     out_d.append(d)
+                    out_i.append(i)
                 else:  # completely inside segment
                     new_pts.append(pt)
                     new_w.append(w)
                     new_h.append(h)
                     new_d.append(d)
+                    win_par_i.append(i)
 
             # build the final window parameters from the adjusted windows
             if len(new_pts) != 0:
                 new_win_pars.append(RectangularWindows(new_pts, new_w, new_h, new_d))
             else:
                 new_win_pars.append(None)
+            win_par_is.append(win_par_i)
             # shift all windows to be relevant for the next segment
-            rel_pt, rel_w, rel_h, rel_d = out_pts, out_w, out_h, out_d
+            rel_pt, rel_w, rel_h, rel_d, rel_i = out_pts, out_w, out_h, out_d, out_i
+
+        # apply the user_data to the split window parameters
+        self._split_user_data(new_win_pars, win_par_is)
         return new_win_pars
 
     @staticmethod
@@ -1572,8 +1655,10 @@ class RectangularWindows(_AsymmetricBase):
             floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
                 to which the segments belong.
         """
-        return _WindowParameterBase.merge_to_rectangular(
+        new_w_par = _WindowParameterBase.merge_to_rectangular(
             window_parameters, segments, floor_to_ceiling_height)
+        new_w_par._merge_user_data(window_parameters)
+        return new_w_par
 
     @classmethod
     def from_dict(cls, data):
@@ -1631,6 +1716,9 @@ class RectangularWindows(_AsymmetricBase):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __len__(self):
+        return len(self.origins)
 
     def __repr__(self):
         return 'RectangularWindows: [{} windows]'.format(len(self.origins))
@@ -2017,12 +2105,15 @@ class DetailedWindows(_AsymmetricBase):
                 wall segment that is considered not touching. (Default: 0.01, suitable
                 for objects in meters).
         """
-        new_win_pars, rel_polygons, rel_dr = [], self.polygons, self.are_doors
+        new_win_pars, win_par_is = [], []
+        rel_polygons, rel_dr = self.polygons, self.are_doors
+        rel_i = list(range(len(self.polygons)))
         for segment in segments:
             # loop through the vertices and adjust them to the max width
             max_width = segment.length - tolerance
+            win_par_i, out_i = [], []
             new_polygons, new_dr, out_polygons, out_dr = [], [], [], []
-            for p_gon, is_dr in zip(rel_polygons, rel_dr):
+            for p_gon, is_dr, i in zip(rel_polygons, rel_dr, rel_i):
                 new_verts, verts_moved = [], []
                 for vert in p_gon:
                     x_val, v_moved = vert.x, False
@@ -2034,18 +2125,22 @@ class DetailedWindows(_AsymmetricBase):
                     verts_moved.append(v_moved)
                 if not all(verts_moved):
                     new_polygons.append(Polygon2D(new_verts))
+                    win_par_i.append(i)
                     new_dr.append(is_dr)
                     if True in verts_moved:  # outside of the segment
                         out_polygons.append(p_gon)
                         out_dr.append(is_dr)
+                        out_i.append(i)
                 else:
                     out_polygons.append(p_gon)
                     out_dr.append(is_dr)
+                    out_i.append(i)
             # build the final window parameters from the adjusted polygons
             if len(new_polygons) != 0:
                 new_win_pars.append(DetailedWindows(new_polygons, new_dr))
             else:
                 new_win_pars.append(None)
+            win_par_is.append(win_par_i)
             # shift all polygons to be relevant for the next segment
             shift_dist = segment.length
             rel_polygons = []
@@ -2053,6 +2148,10 @@ class DetailedWindows(_AsymmetricBase):
                 new_v = [Point2D(p.x - shift_dist, p.y) for p in p_gon]
                 rel_polygons.append(Polygon2D(new_v))
             rel_dr = out_dr
+            rel_i = out_i
+
+        # apply the user_data to the split window parameters
+        self._split_user_data(new_win_pars, win_par_is)
         return new_win_pars
 
     @staticmethod
@@ -2079,7 +2178,9 @@ class DetailedWindows(_AsymmetricBase):
                     return _WindowParameterBase.merge_to_rectangular(
                         window_parameters, segments, floor_to_ceiling_height)
             base_x += s.length
-        return DetailedWindows(polygons, are_doors)
+        new_w_par = DetailedWindows(polygons, are_doors)
+        new_w_par._merge_user_data(window_parameters)
+        return new_w_par
 
     @classmethod
     def from_dict(cls, data, segment=None):
@@ -2184,6 +2285,9 @@ class DetailedWindows(_AsymmetricBase):
 
     def __ne__(self, other):
         return not self.__eq__(other)
+
+    def __len__(self):
+        return len(self.polygons)
 
     def __repr__(self):
         return 'DetailedWindows: [{} windows]'.format(len(self._polygons))
