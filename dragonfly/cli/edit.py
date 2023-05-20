@@ -147,8 +147,8 @@ def solve_adjacency(
     '--keep-colinear/--merge-colinear', ' /-c', help='Flag to note whether colinear '
     'wall segments of the resulting Room2Ds should be merged with one another after '
     'the room boundaries have been reset. This is particularly helpful when the '
-    'input polygon file represents an exterior envelope or when the solve adjacencies '
-    'command is to be run on the output model.', default=True, show_default=True)
+    'input polygon file represents an exterior envelope.',
+    default=True, show_default=True)
 @click.option(
     '--output-file', '-f', help='Optional file to output the Model JSON string'
     ' with aligned Room2Ds. By default it will be printed out to stdout',
@@ -300,6 +300,10 @@ def _serialize_polygons(polygon_dicts, tol):
     'or, if no units are provided, the value will be interpreted in the dragonfly '
     'model units.', type=str, default=None, show_default=True)
 @click.option(
+    '--keep-colinear/--merge-colinear', ' /-c', help='Flag to note whether colinear '
+    'wall segments of the resulting Room2Ds should be merged with one another after '
+    'the alignment has been performed.', default=True, show_default=True)
+@click.option(
     '--output-file', '-f', help='Optional file to output the Model JSON string'
     ' with aligned Room2Ds. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
@@ -307,7 +311,7 @@ def _serialize_polygons(polygon_dicts, tol):
     '--log-file', '-log', help='Optional file to output the list of any Room2Ds that '
     'became degenerate and were deleted after alignment. By default it will be '
     'printed out to stdout', type=click.File('w'), default='-')
-def align_room_2ds(model_file, line_ray_file, distance, remove_distance,
+def align_room_2ds(model_file, line_ray_file, distance, remove_distance, keep_colinear,
                    output_file, log_file):
     """Move Room2D vertices within a given distance of a line or ray to be on that line.
 
@@ -373,6 +377,8 @@ def align_room_2ds(model_file, line_ray_file, distance, remove_distance,
             d_rooms.extend(d_story.delete_degenerate_room_2ds())
             d_story.rebuild_detailed_windows(model.tolerance)
             del_rooms.extend(d_rooms)
+            if not keep_colinear:
+                d_story.remove_room_2d_colinear_vertices(tolerance=model.tolerance)
 
         # report any deleted rooms
         if len(del_rooms) != 0:

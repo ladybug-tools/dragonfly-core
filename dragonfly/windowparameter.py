@@ -1319,10 +1319,10 @@ class _AsymmetricBase(_WindowParameterBase):
             original_w_par: An array of the original window parameters used to
                 build this one.
         """
-        if not all(ow_par.user_data is None for ow_par in original_w_par):
+        if not all((owp is None or owp.user_data is None) for owp in original_w_par):
             new_u = {}
             for ow_par in original_w_par:
-                if ow_par.user_data is not None:
+                if ow_par is not None and ow_par.user_data is not None:
                     for key, val in ow_par.user_data.items():
                         if key not in new_u:
                             new_u[key] = val
