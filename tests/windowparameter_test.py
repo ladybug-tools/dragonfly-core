@@ -446,3 +446,25 @@ def test_detailed_flip():
         tuple(reversed(
             (Point2D(5, 0.5), Point2D(2, 0.5), Point2D(2, 2.5), Point2D(5, 2.5))
         ))
+
+
+def test_detailed_merge():
+    """Test the merge method."""
+    pts_1 = (Point2D(2, 1), Point2D(3, 1), Point2D(3, 2), Point2D(2, 2))
+    pts_2 = (Point2D(5, 0.5), Point2D(8, 0.5), Point2D(8, 2.5), Point2D(5, 2.5))
+    detailed_window1 = DetailedWindows((Polygon2D(pts_1),))
+    detailed_window2 = DetailedWindows((Polygon2D(pts_2),))
+    test_ud = {'test_value': 2.5}
+    detailed_window2.user_data = test_ud
+
+    all_par = (detailed_window1, None, detailed_window2)
+    all_segs = (
+        LineSegment3D(Point3D(0, 0, 0), Vector3D(4, 0, 0)),
+        LineSegment3D(Point3D(4, 0, 0), Vector3D(1, 0, 0)),
+        LineSegment3D(Point3D(5, 0, 0), Vector3D(10, 0, 0))
+    )
+
+    merged_par = DetailedWindows.merge(all_par, all_segs, 3)
+    assert isinstance(merged_par, DetailedWindows)
+    assert len(merged_par.polygons) == 2
+    assert merged_par.user_data == test_ud
