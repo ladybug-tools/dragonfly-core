@@ -302,8 +302,12 @@ class Model(_BaseGeometry):
     def from_file(cls, df_file):
         """Initialize a Model from a DFJSON or DFpkl file, auto-sensing the type.
 
+        This will also sense if the input is a Honeybee Model and, if so,
+        the loaded Dragonfly model will be derived from the Honeybee one.
+
         Args:
-            df_file: Path to either a DFJSON or DFpkl file.
+            df_file: Path to either a DFJSON or DFpkl file. This can also be a
+                HBJSON or a HBpkl from which a Dragonfly model should be derived.
         """
         # sense the file type from the first character to avoid maxing memory with JSON
         # this is needed since queenbee overwrites all file extensions
@@ -320,24 +324,34 @@ class Model(_BaseGeometry):
         """Initialize a Model from a DFJSON file.
 
         Args:
-            dfjson_file: Path to DFJSON file.
+            dfjson_file: Path to DFJSON file. This can also be a HBJSON from which
+                a Dragonfly model should be derived.
         """
         assert os.path.isfile(dfjson_file), 'Failed to find %s' % dfjson_file
         with open(dfjson_file) as inf:
             data = json.load(inf)
-        return cls.from_dict(data)
+        if 'buildings' in data or 'context_shades' in data:
+            return cls.from_dict(data)
+        else:  # assume that it's a Honeybee Model to translate
+            hb_model = HBModel.from_dict(data)
+            return cls.from_honeybee(hb_model)
 
     @classmethod
     def from_dfpkl(cls, dfpkl_file):
         """Initialize a Model from a DFpkl file.
 
         Args:
-            dfpkl_file: Path to DFpkl file.
+            dfpkl_file: Path to DFpkl file. This can also be a HBpkl from which
+                a Dragonfly model should be derived.
         """
         assert os.path.isfile(dfpkl_file), 'Failed to find %s' % dfpkl_file
         with open(dfpkl_file, 'rb') as inf:
             data = pickle.load(inf)
-        return cls.from_dict(data)
+        if 'buildings' in data or 'context_shades' in data:
+            return cls.from_dict(data)
+        else:  # assume that it's a Honeybee Model to translate
+            hb_model = HBModel.from_dict(data)
+            return cls.from_honeybee(hb_model)
 
     @property
     def units(self):
@@ -679,6 +693,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_duplicate_story_identifiers(False, detailed))
         msgs.append(self.check_duplicate_building_identifiers(False, detailed))
         msgs.append(self.check_window_parameters_valid(False, detailed))
+        msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_roof_overlaps(tol, False, detailed))
         # check the extension attributes
@@ -816,6 +831,44 @@ class Model(_BaseGeometry):
         if bldg_ids != []:
             msg = 'The following Stories have missing adjacencies in ' \
                 'the Model:\n{}'.format('\n'.join(bldg_ids))
+            if raise_exception:
+                raise ValueError(msg)
+            return msg
+        return ''
+
+    def check_no_room2d_overlaps(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check that geometries of Room2Ds do not overlap with one another.
+
+        Overlaps in Room2Ds mean that the Room volumes will collide with one
+        another during translation to Honeybee.
+
+        Args:
+            tolerance: The minimum distance that two Room2Ds geometries can overlap
+                with one another and still be considered valid. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if overlapping geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        bldg_ids = []
+        for bldg in self._buildings:
+            for story in bldg._unique_stories:
+                ov_msg = story.check_no_room2d_overlaps(tolerance, False, detailed)
+                if ov_msg:
+                    if detailed:
+                        bldg_ids.extend(ov_msg)
+                    else:
+                        bldg_ids.append('{}\n {}'.format(bldg.identifier, ov_msg))
+        if detailed:
+            return bldg_ids
+        if bldg_ids != []:
+            msg = 'The following Buildings have overlaps in their Room2D geometry' \
+                ':\n{}'.format('\n'.join(bldg_ids))
             if raise_exception:
                 raise ValueError(msg)
             return msg
