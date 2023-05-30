@@ -10,14 +10,19 @@ from dragonfly.config import folders
 _logger = logging.getLogger(__name__)
 
 
-@click.group(help='Commands for validating Dragonfly JSON files.')
+@click.group(help='Commands for validating Dragonfly files.')
 def validate():
     pass
 
 
 @validate.command('model')
-@click.argument('model-json', type=click.Path(
+@click.argument('model-file', type=click.Path(
     exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.option(
+    '--check-all/--room-overlaps', ' /-ro', help='Flag to note whether the output '
+    'validation report should validate all possible issues with the model or only '
+    'the Room2D overlaps of each Story should be checked.',
+    default=True, show_default=True)
 @click.option(
     '--plain-text/--json', ' /-j', help='Flag to note whether the output validation '
     'report should be formatted as a JSON object instead of plain text. If set to JSON, '
@@ -33,12 +38,13 @@ def validate():
     '--output-file', '-f', help='Optional file to output the full report '
     'of any errors detected. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
-def validate_model(model_json, plain_text, output_file):
-    """Validate a Model JSON file against the Dragonfly schema.
+def validate_model(model_file, check_all, plain_text, output_file):
+    """Validate a Model file against the Dragonfly schema.
 
     \b
     Args:
-        model_json: Full path to a Model JSON file.
+        model_file: Full path to either a DFJSON or DFpkl file. This can also be a
+            HBJSON or a HBpkl from which a Dragonfly model should be derived.
     """
     try:
         if plain_text:
@@ -50,10 +56,14 @@ def validate_model(model_json, plain_text, output_file):
                     folders.dragonfly_schema_version_str
                 )
             )
-            parsed_model = Model.from_dfjson(model_json)
+            parsed_model = Model.from_file(model_file)
             click.echo('Re-serialization passed.')
             # perform several other checks for key dragonfly model schema rules
-            report = parsed_model.check_all(raise_exception=False)
+            if check_all:
+                report = parsed_model.check_all(raise_exception=False)
+            else:
+                report = parsed_model.check_no_room2d_overlaps(
+                    parsed_model.tolerance, raise_exception=False)
             click.echo('Geometry and identifier checks completed.')
             # check the report and write the summary of errors
             if report == '':
@@ -68,10 +78,13 @@ def validate_model(model_json, plain_text, output_file):
                 'dragonfly_schema': folders.dragonfly_schema_version_str
             }
             try:
-                parsed_model = Model.from_dfjson(model_json)
+                parsed_model = Model.from_file(model_file)
                 out_dict['fatal_error'] = ''
                 out_dict['errors'] = \
-                    parsed_model.check_all(raise_exception=False, detailed=True)
+                    parsed_model.check_all(raise_exception=False, detailed=True) \
+                    if check_all else \
+                    parsed_model.check_no_room2d_overlaps(
+                        parsed_model.tolerance, raise_exception=False, detailed=True)
                 out_dict['valid'] = True if len(out_dict['errors']) == 0 else False
             except Exception as e:
                 out_dict['fatal_error'] = str(e)

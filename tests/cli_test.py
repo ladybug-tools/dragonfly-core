@@ -150,7 +150,9 @@ def test_validate_model_json():
         assert result.exit_code == 0
         outp = result.output
         valid_report = json.loads(outp)
-        assert valid_report['valid']
+        print(valid_report['errors'])
+        assert not valid_report['valid']
+        assert len(valid_report['errors']) == 2  # there are two Room2D overlaps
         runner = CliRunner()
         result = runner.invoke(validate_model, [incorrect_input_model, '--json'])
         outp = result.output

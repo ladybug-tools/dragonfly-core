@@ -1247,6 +1247,53 @@ using-multipliers-zone-and-or-window.html
             raise ValueError(full_msg)
         return full_msg
 
+    def check_no_room2d_overlaps(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check that geometries of Room2Ds do not overlap with one another.
+
+        Overlaps in Room2Ds mean that the Room volumes will collide with one
+        another during translation to Honeybee.
+
+        Args:
+            tolerance: The minimum distance that two Room2Ds geometries can overlap
+                with one another and still be considered valid. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if overlapping geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        # find the number of overlaps across the Room2Ds
+        msgs = []
+        rooms = self.room_2ds
+        for i, room_1 in enumerate(rooms):
+            poly_1 = room_1.floor_geometry.polygon2d
+            try:
+                for room_2 in rooms[i + 1:]:
+                    poly_2 = room_2.floor_geometry.polygon2d
+                    if Polygon2D.overlapping_bounding_rect(poly_1, poly_2, tolerance):
+                        if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
+                            msg = 'Room2D "{}" overlaps with Room2D "{}" more than the '\
+                                'tolerance ({}) on Story "{}".'.format(
+                                    room_1.display_name, room_2.display_name,
+                                    tolerance, self.display_name)
+                            msg = self._validation_message_child(
+                                msg, room_1, detailed, '100103',
+                                error_type='Overlapping Room2Ds')
+                            msgs.append(msg)
+            except IndexError:
+                pass  # we have reached the end of the list
+        # report any errors
+        if detailed:
+            return msgs
+        full_msg = '\n '.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
     def check_no_roof_overlaps(
             self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.
