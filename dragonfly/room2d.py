@@ -1314,17 +1314,23 @@ class Room2D(_BaseGeometry):
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
 
-    def remove_degenerate_holes(self):
+    def remove_degenerate_holes(self, tolerance=0.01):
         """Remove any holes in this Room2D with an area that evaluates to zero.
 
         All properties assigned to the Room2D will be preserved.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. Default: 0.01,
+                suitable for objects in meters.
         """
         if self.floor_geometry.has_holes:
             # first identify any zero-area holes
             holes_to_remove = []
             for i, hole in enumerate(self.floor_geometry.holes):
-                test_face = Face3D(hole, self.floor_geometry.plane)
-                if test_face.area == 0:
+                tf = Face3D(hole, self.floor_geometry.plane)
+                max_dim = max((tf.max.x - tf.min.x, tf.max.y - tf.min.y))
+                if tf.area < max_dim * tolerance:
                     holes_to_remove.append(i)
             # if zero-area holes were found, rebuild the Room2D
             if len(holes_to_remove) > 0:

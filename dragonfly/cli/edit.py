@@ -238,7 +238,7 @@ def reset_room_boundaries(
                     d_story.align(line, distance, tol)
             # perform some extra cleanup operations
             d_story.remove_room_2d_duplicate_vertices(tol, delete_degenerate=True)
-            d_story.delete_degenerate_room_2ds()
+            d_story.delete_degenerate_room_2ds(tol)
             d_story.rebuild_detailed_windows(tol)
             # reset the room boundaries
             d_story.reset_room_2d_boundaries(p_gons, p_id, p_n, ftc, tolerance=tol)
@@ -374,7 +374,7 @@ def align_room_2ds(model_file, line_ray_file, distance, remove_distance, keep_co
             # perform some extra cleanup operations
             d_rooms = d_story.remove_room_2d_duplicate_vertices(
                 model.tolerance, delete_degenerate=True)
-            d_rooms.extend(d_story.delete_degenerate_room_2ds())
+            d_rooms.extend(d_story.delete_degenerate_room_2ds(model.tolerance))
             d_story.rebuild_detailed_windows(model.tolerance)
             del_rooms.extend(d_rooms)
             if not keep_colinear:
