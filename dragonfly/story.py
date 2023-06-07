@@ -791,8 +791,8 @@ using-multipliers-zone-and-or-window.html
         """Automatically remove colinear or duplicate vertices for the Story's Room2Ds.
 
         Args:
-            tolerance: The minimum difference between the coordinate values of two
-                faces at which they can be considered adjacent. Default: 0.01,
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. Default: 0.01,
                 suitable for objects in meters.
             preserve_wall_props: Boolean to note whether existing window parameters
                 and Ground boundary conditions should be preserved as vertices are
@@ -865,21 +865,27 @@ using-multipliers-zone-and-or-window.html
         self._room_2ds = tuple(new_room_2ds)
         return removed_rooms
 
-    def delete_degenerate_room_2ds(self):
+    def delete_degenerate_room_2ds(self, tolerance=0.01):
         """Remove all Room2Ds with a floor_area of zero from this Story.
 
         This method will also automatically remove any degenerate holes in Room2D
         floor geometries, which have an area less than zero.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. Default: 0.01,
+                suitable for objects in meters.
 
         Returns:
             A list of all degenerate Room2Ds that were removed.
         """
         new_room_2ds, removed_rooms = [], []
         for room in self.room_2ds:
-            if room.floor_geometry.area == 0:
+            max_dim = max((room.max.x - room.min.x, room.max.y - room.min.y))
+            if room.floor_geometry.area < max_dim * tolerance:
                 removed_rooms.append(room)
             else:
-                room.remove_degenerate_holes()
+                room.remove_degenerate_holes(tolerance)
                 new_room_2ds.append(room)
         assert len(new_room_2ds) > 0, 'All Room2Ds of Story "{}" are '\
             'degenerate.'.format(self.display_name)
