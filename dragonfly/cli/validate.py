@@ -74,8 +74,9 @@ def validate_model(model_file, check_all, plain_text, output_file):
         else:
             out_dict = {
                 'type': 'ValidationReport',
-                'dragonfly_core': folders.dragonfly_core_version_str,
-                'dragonfly_schema': folders.dragonfly_schema_version_str
+                'app_name': 'Dragonfly',
+                'app_version': folders.dragonfly_core_version_str,
+                'schema_version': folders.dragonfly_schema_version_str
             }
             try:
                 parsed_model = Model.from_file(model_file)
