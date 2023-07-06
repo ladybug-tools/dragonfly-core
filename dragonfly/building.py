@@ -584,6 +584,7 @@ class Building(_BaseGeometry):
             if len(self._unique_stories) > 1:
                 new_ground_floor.set_top_exposed_by_story_above(
                     self._unique_stories[1], tolerance)
+            self._unique_stories = self._unique_stories[1:]
 
         # ensure that the top floor is unique
         new_top_floors = []
@@ -598,9 +599,7 @@ class Building(_BaseGeometry):
                     new_top_floor.set_top_exposed()
                 new_top_floors.extend((story, new_top_floor))
             else:
-                if i == 0:
-                    continue
-                elif i == len(self._unique_stories) - 1:
+                if i == len(self._unique_stories) - 1:
                     story.set_top_exposed()
                 else:
                     story.set_top_exposed_by_story_above(
