@@ -212,8 +212,8 @@ class SingleWindow(_WindowParameterBase):
             floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
                 to which the segment belongs.
         """
-        max_width = segment.length * 0.99
-        max_height = (floor_to_ceiling_height * 0.99) - self.sill_height
+        max_width = segment.length
+        max_height = floor_to_ceiling_height - self.sill_height
         final_width = max_width if self.width > max_width else self.width
         final_height = max_height if self.height > max_height else self.height
         if final_height < 0:
@@ -229,8 +229,8 @@ class SingleWindow(_WindowParameterBase):
             floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
                 to which the segments belong.
         """
-        max_width = segment.length * 0.99
-        max_height = (floor_to_ceiling_height * 0.99) - self.sill_height
+        max_width = segment.length
+        max_height = (floor_to_ceiling_height) - self.sill_height
         final_width = max_width if self.width > max_width else self.width
         final_height = max_height if self.height > max_height else self.height
         if final_height < 0:
@@ -253,8 +253,8 @@ class SingleWindow(_WindowParameterBase):
             return None
         width_seg = LineSegment3D.from_end_points(face.geometry[0], face.geometry[1])
         height_seg = LineSegment3D.from_end_points(face.geometry[1], face.geometry[2])
-        max_width = width_seg.length * 0.99
-        max_height = (height_seg.length * 0.99) - self.sill_height
+        max_width = width_seg.length - tolerance
+        max_height = (height_seg.length - tolerance) - self.sill_height
         final_width = max_width if self.width > max_width else self.width
         final_height = max_height if self.height > max_height else self.height
         if final_height > 0:
@@ -1452,8 +1452,8 @@ class RectangularWindows(_AsymmetricBase):
             floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
                 to which the segment belongs.
         """
-        max_width = segment.length * 0.999
-        max_height = floor_to_ceiling_height * 0.999
+        max_width = segment.length
+        max_height = floor_to_ceiling_height
 
         areas = []
         for o, width, height in zip(self.origins, self.widths, self.heights):
@@ -1506,8 +1506,8 @@ class RectangularWindows(_AsymmetricBase):
         width_seg = LineSegment3D.from_end_points(face.geometry[0], face.geometry[1])
         h_vec, b_pt = Vector3D(0, 0, face.max.z - face.min.z), face.geometry[1]
         height_seg = LineSegment3D.from_end_points(b_pt, b_pt.move(h_vec))
-        max_width = width_seg.length * 0.99
-        max_height = height_seg.length * 0.99
+        max_width = width_seg.length - tolerance
+        max_height = height_seg.length - tolerance
 
         # loop through each window and create its geometry
         sub_faces = []
@@ -2001,8 +2001,8 @@ class DetailedWindows(_AsymmetricBase):
         width_seg = LineSegment3D.from_end_points(face.geometry[0], face.geometry[1])
         h_vec, b_pt = Vector3D(0, 0, face.max.z - face.min.z), face.geometry[1]
         height_seg = LineSegment3D.from_end_points(b_pt, b_pt.move(h_vec))
-        max_width = width_seg.length * 0.99
-        max_height = height_seg.length * 0.99
+        max_width = width_seg.length - tolerance
+        max_height = height_seg.length - tolerance
 
         # automatically clip any geometries outside of the face so they are bounded by it
         clean_polygons, clean_are_doors, kept_i = [], [], []
