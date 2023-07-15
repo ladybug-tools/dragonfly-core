@@ -176,7 +176,8 @@ class Story(_BaseGeometry):
                 are considered to be the same.
         """
         # create the Room2Ds from the Honeybee Rooms
-        room_2ds = [Room2D.from_honeybee(hb_room, tolerance) for hb_room in rooms]
+        room_2ds = [Room2D.from_honeybee(hb_room, tolerance) for hb_room in rooms
+                    if not hb_room.exclude_floor_area]
         room_2ds = [room for room in room_2ds if room is not None]
         # re-set the adjacencies in relation to the Room2D segments
         all_adj_faces = [[x for x, bc in enumerate(room_1._boundary_conditions)
