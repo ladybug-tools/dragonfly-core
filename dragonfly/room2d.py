@@ -290,17 +290,8 @@ class Room2D(_BaseGeometry):
             tolerance: The maximum difference between values at which point vertices
                 are considered to be the same.
         """
-        # first extract the room polygon from the joined floor faces
-        flr_faces = [f.geometry for f in room.faces if isinstance(f.type, Floor)]
-        if len(flr_faces) == 0:
-            return None
-        elif len(flr_faces) == 1:
-            flr_geo = flr_faces[0]
-        else:
-            flr_geos = cls.join_floor_geometries(
-                flr_faces, room.geometry.min.z, tolerance)
-            # TODO: consider returning multiple Room2Ds if there's more than one floor
-            flr_geo = flr_geos[0]
+        # first get the floor_geometry for the Room2D using the horizontal boundary
+        flr_geo = room.horizontal_boundary(tolerance)
         flr_geo = flr_geo if flr_geo.normal.z >= 0 else flr_geo.flip()
 
         # match the segments of the floor geometry to walls of the Room
@@ -2082,56 +2073,6 @@ class Room2D(_BaseGeometry):
             tuple(seg for hole in geometry.hole_segments for seg in hole)
         return segs[segment_index]
 
-    @staticmethod
-    def join_floor_geometries(floor_faces, floor_height, tolerance):
-        """Join a list of Face3Ds together to get as few as possible at the floor_height.
-
-        Args:
-            floor_faces: A list of Face3D objects to be joined together.
-            floor_height: a number for the floor_height of the resulting horizontal
-                Face3Ds.
-            tolerance: The maximum difference between values at which point vertices
-                are considered to be the same.
-
-        Returns:
-            A list of horizontal Face3Ds for the minimum number joined together.
-        """
-        # join all of the floor geometries into a single Polyface3D
-        room_floors = []
-        for fg in floor_faces:
-            if fg.is_horizontal(tolerance) and abs(floor_height - fg.min.z) <= tolerance:
-                room_floors.append(fg)
-            else:  # project the face geometry into the XY plane
-                bound = [Point3D(p.x, p.y, floor_height) for p in fg.boundary]
-                holes = None
-                if fg.has_holes:
-                    holes = [[Point3D(p.x, p.y, floor_height) for p in hole]
-                             for hole in fg.holes]
-                room_floors.append(Face3D(bound, holes=holes))
-        flr_pf = Polyface3D.from_faces(room_floors, tolerance)
-
-        # convert the Polyface3D into as few Face3Ds as possible
-        flr_pl = Polyline3D.join_segments(flr_pf.naked_edges, tolerance)
-        if len(flr_pl) == 1:  # can be represented with a single Face3D
-            return [Face3D(flr_pl[0].vertices[:-1])]
-        else:  # need to separate holes from distinct Face3Ds
-            faces = [Face3D(pl.vertices[:-1]) for pl in flr_pl]
-            faces.sort(key=lambda x: x.area, reverse=True)
-            base_face = faces[0]
-            remain_faces = list(faces[1:])
-
-            all_face3ds = []
-            while len(remain_faces) > 0:
-                all_face3ds.append(Room2D._match_holes_to_face(
-                    base_face, remain_faces, tolerance))
-                if len(remain_faces) > 1:
-                    base_face = remain_faces[0]
-                    del remain_faces[0]
-                elif len(remain_faces) == 1:  # lone last Face3D
-                    all_face3ds.append(remain_faces[0])
-                    del remain_faces[0]
-            return all_face3ds
-
     def _room_volume_with_roof(self, roof_spec, tolerance):
         """Get a Polyface3D for the Room volume given a roof_spec above the room.
 
@@ -2689,37 +2630,6 @@ class Room2D(_BaseGeometry):
         if glz_par is not None:
             face.remove_sub_faces()
             glz_par.add_window_to_face(face, tolerance)
-
-    @staticmethod
-    def _match_holes_to_face(base_face, other_faces, tol):
-        """Attempt to merge other faces into a base face as holes.
-
-        Args:
-            base_face: A Face3D to serve as the base.
-            other_faces: A list of other Face3D objects to attempt to merge into
-                the base_face as a hole. This method will delete any faces
-                that are successfully merged into the output from this list.
-            tol: The tolerance to be used for evaluating sub-faces.
-
-        Returns:
-            A Face3D which has holes in it if any of the other_faces is a valid
-            sub face.
-        """
-        holes = []
-        more_to_check = True
-        while more_to_check:
-            for i, r_face in enumerate(other_faces):
-                if base_face.is_sub_face(r_face, tol, 1):
-                    holes.append(r_face)
-                    del other_faces[i]
-                    break
-            else:
-                more_to_check = False
-        if len(holes) == 0:
-            return base_face
-        else:
-            hole_verts = [hole.vertices for hole in holes]
-            return Face3D(base_face.vertices, Plane(n=Vector3D(0, 0, 1)), hole_verts)
 
     @staticmethod
     def _segment_wall_face(room, segment, tolerance):

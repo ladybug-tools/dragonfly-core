@@ -426,29 +426,15 @@ using-multipliers-zone-and-or-window.html
 
         Args:
             tolerance: The minimum distance between points at which they are
-                not considered touching. Default: 0.01, suitable for objects
-                in meters.
+                not considered touching. (Default: 0.01, suitable for objects
+                in meters).
         """
         plines = self.outline_polylines(tolerance)
         if len(plines) == 1:  # can be represented with a single Face3D
             return [Face3D(plines[0].vertices[:-1])]
         else:  # need to separate holes from distinct Face3Ds
             faces = [Face3D(pl.vertices[:-1]) for pl in plines]
-            faces.sort(key=lambda x: x.area, reverse=True)
-            base_face = faces[0]
-            remain_faces = list(faces[1:])
-
-            all_face3ds = []
-            while len(remain_faces) > 0:
-                all_face3ds.append(Room2D._match_holes_to_face(
-                    base_face, remain_faces, tolerance))
-                if len(remain_faces) > 1:
-                    base_face = remain_faces[0]
-                    del remain_faces[0]
-                elif len(remain_faces) == 1:  # lone last Face3D
-                    all_face3ds.append(remain_faces[0])
-                    del remain_faces[0]
-            return all_face3ds
+            return Face3D.merge_faces_to_holes(faces, tolerance)
 
     def shade_representation(self, cap=False, tolerance=0.01):
         """A list of honeybee Shade objects representing the story geometry.
