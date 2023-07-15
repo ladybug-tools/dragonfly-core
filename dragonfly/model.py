@@ -22,6 +22,7 @@ from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
 from honeybee.facetype import Floor, RoofCeiling
+from honeybee.boundarycondition import Outdoors, Surface, Ground, boundary_conditions
 from honeybee.room import Room as HBRoom
 from honeybee.model import Model as HBModel
 
@@ -1274,6 +1275,13 @@ class Model(_BaseGeometry):
                                     break
             except IndexError:
                 pass  # we have reached the end of the list of zones
+        # change any remaining Floor/Roof boundary conditions to be outdoors
+        relevant_bcs = (Outdoors, Surface, Ground)
+        for room in rooms:
+            for face in room._faces:
+                if isinstance(face.type, relevant_types):
+                    if not isinstance(face.boundary_condition, relevant_bcs):
+                        face.boundary_condition = boundary_conditions.outdoors
 
     @staticmethod
     def _objects_from_geojson(bldgs_data, existing_to_context, scale_to_meters,
