@@ -68,6 +68,7 @@ class Model(_BaseGeometry):
     Properties:
         * identifier
         * display_name
+        * full_id
         * units
         * tolerance
         * angle_tolerance
@@ -121,7 +122,7 @@ class Model(_BaseGeometry):
                 Model.
             location: An optional ladybug location object with longitude and
                 latitude data defining the origin of the geojson file. If nothing
-                is passed, the origin is autocalcualted as the bottom-left corner
+                is passed, the origin is autocalculated as the bottom-left corner
                 of the bounding box of all building footprints in the geojson file
                 (Default: None).
             point: A ladybug_geometry Point2D for where the location object exists

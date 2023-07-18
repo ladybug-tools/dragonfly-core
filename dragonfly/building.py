@@ -43,6 +43,7 @@ class Building(_BaseGeometry):
     Properties:
         * identifier
         * display_name
+        * full_id
         * unique_stories
         * unique_room_2ds
         * story_count

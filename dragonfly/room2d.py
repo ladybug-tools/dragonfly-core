@@ -71,6 +71,7 @@ class Room2D(_BaseGeometry):
     Properties:
         * identifier
         * display_name
+        * full_id
         * floor_geometry
         * floor_to_ceiling_height
         * boundary_conditions
