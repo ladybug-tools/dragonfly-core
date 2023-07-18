@@ -57,6 +57,7 @@ class Story(_BaseGeometry):
     Properties:
         * identifier
         * display_name
+        * full_id
         * room_2ds
         * floor_to_floor_height
         * multiplier
@@ -234,9 +235,33 @@ class Story(_BaseGeometry):
                 'Expected dragonfly Room2D. Got {}'.format(type(room))
             room._parent = self
         self._room_2ds = value
-        assert self.room_2d_story_geometry_valid(value), 'Room2D geometries ' \
-            'for Story "{}" have floor elevations that are too different from one ' \
-            'another to be a part of the same Story.'.format(self.identifier)
+        if not self.room_2d_story_geometry_valid(value):
+            # prepare to give an exception message
+            msg1 = 'Story "{}" has Room floor elevations that are too different from ' \
+                'one another to be a part of the same Story.'.format(self.display_name)
+            msg2t = 'The following Rooms have an elevation {} the others:\n{}'
+            # determine if are more offending rooms above or below average floor height
+            flr_hts = [rm.floor_height for rm in self.room_2ds]
+            rm_ids = [rm.display_name for rm in self.room_2ds]
+            flr_hts, rm_ids = zip(*sorted(zip(flr_hts, rm_ids)))
+            min_flr_to_ceil = min([rm.floor_to_ceiling_height for rm in self.room_2ds])
+            rms_below = []
+            for flr_ht, rid in zip(flr_hts, rm_ids):
+                if flr_hts[-1] - flr_ht > min_flr_to_ceil:
+                    rms_below.append(rid)
+                else:
+                    break
+            rms_above = []
+            for flr_ht, rid in zip(reversed(flr_hts), reversed(rm_ids)):
+                if flr_ht - flr_hts[0] > min_flr_to_ceil:
+                    rms_above.append(rid)
+                else:
+                    break
+            msg2 = msg2t.format('below', '\n'.join(rms_below)) \
+                if len(rms_below) < len(rms_above) else \
+                msg2t.format('above', '\n'.join(rms_above))
+            msg = '{}\n{}'.format(msg1, msg2)
+            raise ValueError(msg)
 
     @property
     def floor_to_floor_height(self):
