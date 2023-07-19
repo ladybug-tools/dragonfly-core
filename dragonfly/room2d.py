@@ -292,7 +292,7 @@ class Room2D(_BaseGeometry):
                 are considered to be the same.
         """
         # first get the floor_geometry for the Room2D using the horizontal boundary
-        flr_geo = room.horizontal_boundary(tolerance=tolerance)
+        flr_geo = room.horizontal_boundary(match_walls=True, tolerance=tolerance)
         flr_geo = flr_geo if flr_geo.normal.z >= 0 else flr_geo.flip()
 
         # match the segments of the floor geometry to walls of the Room
