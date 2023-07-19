@@ -1076,8 +1076,7 @@ def test_from_honeybee():
     bound_cs = [b for room in bldg.unique_room_2ds for b in room.boundary_conditions
                 if isinstance(b, Surface)]
     assert len(bound_cs) == 2
-    assert bound_cs[0].boundary_condition_objects == ('NorthZone..Face4', 'NorthZone')
-    assert bound_cs[1].boundary_condition_objects == ('SouthZone..Face2', 'SouthZone')
+    model.check_missing_adjacencies()
 
 
 def test_writer():

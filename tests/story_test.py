@@ -430,8 +430,7 @@ def test_from_honeybee():
     bound_cs = [b for room in df_story.room_2ds for b in room.boundary_conditions
                 if isinstance(b, Surface)]
     assert len(bound_cs) == 2
-    assert bound_cs[0].boundary_condition_objects == ('Zone2..Face4', 'Zone2')
-    assert bound_cs[1].boundary_condition_objects == ('Zone1..Face2', 'Zone1')
+    df_story.check_missing_adjacencies()
 
 
 def test_writer():

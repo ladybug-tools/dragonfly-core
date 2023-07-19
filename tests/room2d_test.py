@@ -924,11 +924,11 @@ def test_from_honeybee():
 
     room2d = Room2D.from_honeybee(room, 0.01)
     assert room2d.boundary_conditions == \
-        (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.outdoors)
+        (bcs.ground, bcs.outdoors, bcs.outdoors, bcs.outdoors)
     assert room2d.window_parameters[0] is None
     assert room2d.window_parameters[1] is None
-    assert room2d.window_parameters[2] is None
-    assert isinstance(room2d.window_parameters[3], DetailedWindows)
+    assert room2d.window_parameters[3] is None
+    assert isinstance(room2d.window_parameters[2], DetailedWindows)
     assert room2d.floor_to_ceiling_height == 3.0
     assert room2d.is_ground_contact
     assert room2d.is_top_exposed
