@@ -694,10 +694,12 @@ class Model(_BaseGeometry):
         msgs.append(self.check_duplicate_room_2d_identifiers(False, detailed))
         msgs.append(self.check_duplicate_story_identifiers(False, detailed))
         msgs.append(self.check_duplicate_building_identifiers(False, detailed))
+        msgs.append(self.check_degenerate_room_2ds(tol, False, detailed))
+        msgs.append(self.check_self_intersecting_room_2ds(tol, False, detailed))
         msgs.append(self.check_window_parameters_valid(False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
-        msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_roof_overlaps(tol, False, detailed))
+        msgs.append(self.check_missing_adjacencies(False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
         if detailed:
@@ -777,11 +779,78 @@ class Model(_BaseGeometry):
             self._context_shades, raise_exception, 'ContextShade', detailed,
             '100001', 'Core', 'Duplicate ContextShade Identifier')
 
+    def check_degenerate_room_2ds(self, tolerance=None, raise_exception=True,
+                                  detailed=False):
+        """Check that all Room2Ds are not degenerate with zero area.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. If None, the
+                Model tolerance will be used. (Default: None).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if the window parameters are not valid.
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        tolerance = self.tolerance if tolerance is None else tolerance
+        detailed = False if raise_exception else detailed
+        msgs = []
+        for room in self.room_2ds:
+            msg = room.check_degenerate(tolerance, False, detailed)
+            if detailed:
+                msgs.extend(msg)
+            elif msg != '':
+                msgs.append(msg)
+        if detailed:
+            return msgs
+        full_msg = '\n'.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
+    def check_self_intersecting_room_2ds(self, tolerance=None, raise_exception=True,
+                                         detailed=False):
+        """Check that all Room2Ds do not intersect with themselves (like a bowtie).
+
+        Note that objects that have duplicate vertices will not be considered
+        self-intersecting and are valid.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. If None, the
+                Model tolerance will be used. (Default: None).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if the window parameters are not valid.
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        tolerance = self.tolerance if tolerance is None else tolerance
+        detailed = False if raise_exception else detailed
+        msgs = []
+        for room in self.room_2ds:
+            msg = room.check_self_intersecting(tolerance, False, detailed)
+            if detailed:
+                msgs.extend(msg)
+            elif msg != '':
+                msgs.append(msg)
+        if detailed:
+            return msgs
+        full_msg = '\n'.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
     def check_window_parameters_valid(self, raise_exception=True, detailed=False):
         """Check that all Room2Ds have window parameters produce valid apertures.
 
         This means that the resulting Apertures are completely bounded by their
-        parent wall Face.
+        parent wall Face and attributes like window to wall ratio are accurate.
 
         Args:
             raise_exception: Boolean to note whether a ValueError should be raised
@@ -839,7 +908,7 @@ class Model(_BaseGeometry):
         return ''
 
     def check_no_room2d_overlaps(
-            self, tolerance=0.01, raise_exception=True, detailed=False):
+            self, tolerance=None, raise_exception=True, detailed=False):
         """Check that geometries of Room2Ds do not overlap with one another.
 
         Overlaps in Room2Ds mean that the Room volumes will collide with one
@@ -847,8 +916,8 @@ class Model(_BaseGeometry):
 
         Args:
             tolerance: The minimum distance that two Room2Ds geometries can overlap
-                with one another and still be considered valid. (Default: 0.01,
-                suitable for objects in meters).
+                with one another and still be considered valid. If None, the Model
+                tolerance will be used. (Default: None).
             raise_exception: Boolean to note whether a ValueError should be raised
                 if overlapping geometries are found. (Default: True).
             detailed: Boolean for whether the returned object is a detailed list of
@@ -857,6 +926,7 @@ class Model(_BaseGeometry):
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
+        tolerance = self.tolerance if tolerance is None else tolerance
         bldg_ids = []
         for bldg in self._buildings:
             for story in bldg._unique_stories:
@@ -877,15 +947,15 @@ class Model(_BaseGeometry):
         return ''
 
     def check_no_roof_overlaps(
-            self, tolerance=0.01, raise_exception=True, detailed=False):
+            self, tolerance=None, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.
 
         Overlaps make the Roof geometry unusable for translation to Honeybee.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
-                with one another and still be considered valid. Default: 0.01,
-                suitable for objects in meters.
+                with one another and still be considered valid. If None, the Model
+                tolerance will be used. (Default: None).
             raise_exception: Boolean to note whether a ValueError should be raised
                 if overlapping geometries are found. (Default: True).
             detailed: Boolean for whether the returned object is a detailed list of
@@ -894,6 +964,7 @@ class Model(_BaseGeometry):
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
+        tolerance = self.tolerance if tolerance is None else tolerance
         bldg_ids = []
         for bldg in self._buildings:
             for story in bldg._unique_stories:

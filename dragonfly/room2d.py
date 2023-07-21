@@ -1374,6 +1374,80 @@ class Room2D(_BaseGeometry):
             raise ValueError(msg)
         return msg
 
+    def check_degenerate(self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check whether the Room2D's floor geometry is degenerate with zero area.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: If True, a ValueError will be raised if the object
+                intersects with itself. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        degenerate = False
+        try:
+            self.floor_geometry.remove_colinear_vertices(tolerance)
+        except AssertionError:  # degenerate geometry found!
+            degenerate = True
+
+        if degenerate:
+            msg = 'Room2D "{}" has degenerate floor geometry with zero ' \
+                'area.'.format(self.display_name)
+            if raise_exception:
+                raise ValueError(msg)
+            full_msg = self._validation_message_child(
+                msg, self, detailed, '100101',
+                error_type='Degenerate Room Geometry')
+            if detailed:
+                return [full_msg]
+            if raise_exception:
+                raise ValueError(full_msg)
+            return full_msg
+        return [] if detailed else ''
+
+    def check_self_intersecting(self, tolerance=0.01, raise_exception=True,
+                                detailed=False):
+        """Check whether the Room2D's floor geometry intersects itself (like a bowtie).
+
+        Note that objects that have duplicate vertices will not be considered
+        self-intersecting and are valid.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: If True, a ValueError will be raised if the object
+                intersects with itself. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        if self.floor_geometry.is_self_intersecting:
+            msg = 'Room2D "{}" has floor geometry with self-intersecting ' \
+                'edges.'.format(self.display_name)
+            try:  # see if it is self-intersecting because of a duplicate vertex
+                new_geo = self.floor_geometry.remove_duplicate_vertices(tolerance)
+                if not new_geo.is_self_intersecting:
+                    return [] if detailed else ''  # valid with removed dup vertex
+            except AssertionError:
+                pass  # zero area face; treat it as self-intersecting
+            full_msg = self._validation_message_child(
+                msg, self, detailed, '100102',
+                error_type='Self-Intersecting Room Geometry')
+            if detailed:
+                return [full_msg]
+            if raise_exception:
+                raise ValueError(full_msg)
+            return full_msg
+        return [] if detailed else ''
+
     def check_window_parameters_valid(self, raise_exception=True, detailed=False):
         """Check whether the Room2D's window parameters produce valid apertures.
 
@@ -1406,7 +1480,7 @@ class Room2D(_BaseGeometry):
         full_msg = 'Room2D "{}" contains invalid window parameters.' \
             '\n  {}'.format(self.display_name, '\n  '.join(msgs))
         full_msg = self._validation_message_child(
-            full_msg, self, detailed, '100101', error_type='Invalid Window Parameters')
+            full_msg, self, detailed, '100103', error_type='Invalid Window Parameters')
         if detailed:
             return [full_msg]
         if raise_exception:
