@@ -1299,7 +1299,7 @@ using-multipliers-zone-and-or-window.html
                                     room_1.display_name, room_2.display_name,
                                     tolerance, self.display_name)
                             msg = self._validation_message_child(
-                                msg, room_1, detailed, '100103',
+                                msg, room_1, detailed, '100104',
                                 error_type='Overlapping Room2Ds')
                             msgs.append(msg)
             except IndexError:
@@ -1338,7 +1338,7 @@ using-multipliers-zone-and-or-window.html
                 msg = 'Story "{}" has RoofSpecification geometry with {} overlaps ' \
                     'in it.'.format(self.display_name, over_count)
                 msg = self._validation_message_child(
-                    msg, self.roof, detailed, '100102', error_type='Invalid Roof')
+                    msg, self.roof, detailed, '100105', error_type='Invalid Roof')
                 msgs.append(msg)
         # report any errors
         if detailed:

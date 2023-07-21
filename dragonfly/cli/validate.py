@@ -21,7 +21,8 @@ def validate():
 @click.option(
     '--check-all/--room-overlaps', ' /-ro', help='Flag to note whether the output '
     'validation report should validate all possible issues with the model or only '
-    'the Room2D overlaps of each Story should be checked.',
+    'the Room2D overlaps of each Story should be checked. Checking for room overlaps '
+    'will also check for degenerate and self-intersecting Rooms.',
     default=True, show_default=True)
 @click.option(
     '--plain-text/--json', ' /-j', help='Flag to note whether the output validation '
@@ -62,8 +63,10 @@ def validate_model(model_file, check_all, plain_text, output_file):
             if check_all:
                 report = parsed_model.check_all(raise_exception=False)
             else:
-                report = parsed_model.check_no_room2d_overlaps(
-                    parsed_model.tolerance, raise_exception=False)
+                r1 = parsed_model.check_degenerate_room_2ds(raise_exception=False)
+                r2 = parsed_model.check_self_intersecting_room_2ds(raise_exception=False)
+                r3 = parsed_model.check_no_room2d_overlaps(raise_exception=False)
+                report = r1 + r2 + r3
             click.echo('Geometry and identifier checks completed.')
             # check the report and write the summary of errors
             if report == '':
@@ -81,11 +84,17 @@ def validate_model(model_file, check_all, plain_text, output_file):
             try:
                 parsed_model = Model.from_file(model_file)
                 out_dict['fatal_error'] = ''
-                out_dict['errors'] = \
-                    parsed_model.check_all(raise_exception=False, detailed=True) \
-                    if check_all else \
-                    parsed_model.check_no_room2d_overlaps(
-                        parsed_model.tolerance, raise_exception=False, detailed=True)
+                if check_all:
+                    errors = parsed_model.check_all(raise_exception=False, detailed=True)
+                else:
+                    err1 = parsed_model.check_degenerate_room_2ds(
+                        raise_exception=False, detailed=True)
+                    err2 = parsed_model.check_self_intersecting_room_2ds(
+                            raise_exception=False, detailed=True)
+                    err3 = parsed_model.check_no_room2d_overlaps(
+                        raise_exception=False, detailed=True)
+                    errors = err1 + err2 + err3
+                out_dict['errors'] = errors
                 out_dict['valid'] = True if len(out_dict['errors']) == 0 else False
             except Exception as e:
                 out_dict['fatal_error'] = str(e)
