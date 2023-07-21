@@ -1234,8 +1234,16 @@ using-multipliers-zone-and-or-window.html
             rm_id = key[0]
             for room in self._room_2ds:
                 if room.identifier == rm_id:
-                    rm_bc = room._boundary_conditions[key[1]]
-                    rm_w_par = room._window_parameters[key[1]]
+                    try:
+                        rm_bc = room._boundary_conditions[key[1]]
+                        rm_w_par = room._window_parameters[key[1]]
+                    except IndexError:  # referenced wall segment does not exist
+                        msg = 'Room2D "{}" has an adjacency referencing a missing ' \
+                            'wall segment on Room2D "{}".'.format(val[0], rm_id)
+                        msg = self._validation_message_child(
+                            msg, val[3], detailed, '100203', error_type='Missing Adjacency')
+                        msgs.append(msg)
+                        break
                     if not isinstance(rm_bc, Surface):
                         msg = 'Room2D "{}" does not have a Surface boundary condition ' \
                             'at "{}" but its adjacent object does.'.format(rm_id, val[1])
@@ -1300,7 +1308,7 @@ using-multipliers-zone-and-or-window.html
                                     tolerance, self.display_name)
                             msg = self._validation_message_child(
                                 msg, room_1, detailed, '100104',
-                                error_type='Overlapping Room2Ds')
+                                error_type='Overlapping Room Geometries')
                             msgs.append(msg)
             except IndexError:
                 pass  # we have reached the end of the list
