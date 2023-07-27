@@ -122,7 +122,7 @@ class _BaseGeometry(object):
                 the error code. (Default: Unknown Error).
 
         Returns:
-            A string with the message or a list with a dictionary if detailed is True.
+            A string with the message or a dictionary if detailed is True.
         """
         # first check whether an exception should be raised or the message returned
         if not detailed:
@@ -136,8 +136,8 @@ class _BaseGeometry(object):
             'element_type': child_obj.__class__.__name__
         }
         try:
-            error_dict['element_id'] = child_obj.identifier
-            error_dict['element_name'] = child_obj.display_name
+            error_dict['element_id'] = [child_obj.identifier]
+            error_dict['element_name'] = [child_obj.display_name]
         except AttributeError:  # it's a RoofSpecification or something with no id
             pass
         error_dict['message'] = message
@@ -152,7 +152,7 @@ class _BaseGeometry(object):
                 'name': rel_obj.display_name
             }
             parents.append(par_dict)
-        error_dict['parents'] = parents
+        error_dict['parents'] = [parents]
         return error_dict
 
     @staticmethod
