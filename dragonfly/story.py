@@ -1242,6 +1242,10 @@ using-multipliers-zone-and-or-window.html
                             'wall segment on Room2D "{}".'.format(val[0], rm_id)
                         msg = self._validation_message_child(
                             msg, val[3], detailed, '100203', error_type='Missing Adjacency')
+                        if detailed:
+                            msg['element_id'].append(room.identifier)
+                            msg['element_name'].append(room.display_name)
+                            msg['parents'].append(msg['parents'][0])
                         msgs.append(msg)
                         break
                     if not isinstance(rm_bc, Surface):
@@ -1250,6 +1254,10 @@ using-multipliers-zone-and-or-window.html
                         msg = self._validation_message_child(
                             msg, room, detailed, '100201',
                             error_type='Mismatched Adjacency')
+                        if detailed:
+                            msg['element_id'].append(val[3].identifier)
+                            msg['element_name'].append(val[3].display_name)
+                            msg['parents'].append(msg['parents'][0])
                         msgs.append(msg)
                     if val[2] != rm_w_par:
                         msg = 'Window parameters do not match between ' \
@@ -1257,6 +1265,10 @@ using-multipliers-zone-and-or-window.html
                         msg = self._validation_message_child(
                             msg, room, detailed, '100202',
                             error_type='Mismatched WindowParameter Adjacency')
+                        if detailed:
+                            msg['element_id'].append(val[3].identifier)
+                            msg['element_name'].append(val[3].display_name)
+                            msg['parents'].append(msg['parents'][0])
                         msgs.append(msg)
                     break
             else:
@@ -1309,6 +1321,10 @@ using-multipliers-zone-and-or-window.html
                             msg = self._validation_message_child(
                                 msg, room_1, detailed, '100104',
                                 error_type='Overlapping Room Geometries')
+                            if detailed:
+                                msg['element_id'].append(room_2.identifier)
+                                msg['element_name'].append(room_2.display_name)
+                                msg['parents'].append(msg['parents'][0])
                             msgs.append(msg)
             except IndexError:
                 pass  # we have reached the end of the list
