@@ -24,7 +24,7 @@ def translate():
 
 
 @translate.command('model-to-honeybee')
-@click.argument('model-json', type=click.Path(
+@click.argument('model-file', type=click.Path(
     exists=True, file_okay=True, dir_okay=False, resolve_path=True))
 @click.option('--obj-per-model', '-o', help='Text to describe how the input Model '
               'should be divided across the output Models. Choose from: District, '
@@ -69,26 +69,26 @@ def translate():
               'dictionaries with information about each of the generated HBJSONs, '
               'including their file paths. By default the list will be printed out to '
               'stdout', type=click.File('w'), default='-', show_default=True)
-def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
+def model_to_honeybee(model_file, obj_per_model, multiplier, no_plenum, no_cap,
                       no_ceil_adjacency, shade_dist, enforce_adj_check,
                       folder, log_file):
-    """Translate a Dragonfly Model JSON file into several Honeybee Models.
+    """Translate a Dragonfly Model file into one or more Honeybee Models.
 
     \b
     Args:
-        model_json: Path to a Dragonfly Model JSON file.
+        model_file: Full path to a Dragonfly Model JSON or Pkl file.
     """
     try:
         # set the default folder to the default if it's not specified
         if folder is None:
             proj_name = \
-                os.path.basename(model_json).replace('.json', '').replace('.dfjson', '')
+                os.path.basename(model_file).replace('.json', '').replace('.dfjson', '')
             folder = os.path.join(
                 hb_folders.default_simulation_folder, proj_name, 'honeybee')
         preparedir(folder, remove_content=False)
 
         # re-serialize the Dragonfly Model and convert Dragonfly Model to Honeybee
-        model = Model.from_file(model_json)
+        model = Model.from_file(model_file)
         if shade_dist is not None:
             shade_dist = parse_distance_string(shade_dist, model.units)
         add_plenum = not no_plenum
@@ -136,8 +136,7 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
     '--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
     'whether adjacencies should be solved between interior stories when '
     'Room2D floor and ceiling geometries are coplanar. This ensures '
-    'that Surface boundary conditions are used instead of Adiabatic ones. '
-    'Note that this input has no effect when the object-per-model is Story.',
+    'that Surface boundary conditions are used instead of Adiabatic ones.',
     default=True, show_default=True)
 @click.option(
     '--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
@@ -151,9 +150,8 @@ def model_to_honeybee(model_json, obj_per_model, multiplier, no_plenum, no_cap,
     '--output-file', '-f', help='Optional file to output the Honeybee Model JSON string'
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
-def model_to_honeybee_file(
-        model_file, multiplier, no_plenum, no_ceil_adjacency, enforce_adj_check,
-        output_file):
+def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
+                           enforce_adj_check, output_file):
     """Translate a Dragonfly Model into a single Honeybee Model.
 
     \b
@@ -199,11 +197,19 @@ def model_to_honeybee_file(
     default=True, show_default=True)
 @click.option(
     '--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
-    'whether adjacencies should be solved between interior stories when '
+    'whether adjacencies should be solved between interior Dragonfly Stories when '
     'Room2D floor and ceiling geometries are coplanar. This ensures '
     'that Surface boundary conditions are used instead of Adiabatic ones. '
-    'Note that this input has no effect when the object-per-model is Story.',
-    default=True, show_default=True)
+    'Note that this input has no effect on the Honeybee Models that are merged. '
+    'To solve adjacencies between the Honeybee parts, the --all-adjacency option '
+    'must be used', default=True, show_default=True)
+@click.option(
+    '--individual-adjacency/--all-adjacency', ' /-aa', help='Flag to indicate '
+    'whether adjacencies should be solved between all geometries after they have '
+    'been merged into a single model. This enables adjacencies between the Honeybee '
+    'and Dragonfly parts of the original model to be intersected and then solved and '
+    'will give a valid Surface boundary condition to any exiting coplanar Faces that '
+    'do not have one.', default=True, show_default=True)
 @click.option(
     '--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
     'whether an exception should be raised if an adjacency between two '
@@ -217,8 +223,8 @@ def model_to_honeybee_file(
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def merge_models_to_honeybee(
-        base_model, dragonfly_model, honeybee_model, multiplier,
-        no_plenum, no_ceil_adjacency, enforce_adj_check, output_file):
+        base_model, dragonfly_model, honeybee_model, multiplier, no_plenum,
+        no_ceil_adjacency, individual_adjacency, enforce_adj_check, output_file):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
     \b
@@ -234,7 +240,7 @@ def merge_models_to_honeybee(
             parsed_model.add_model(o_model)
 
         # convert the dragonfly Model to Honeybee
-        hb_model = add_plenum = not no_plenum
+        add_plenum = not no_plenum
         ceil_adjacency = not no_ceil_adjacency
         hb_model = parsed_model.to_honeybee(
             object_per_model='District', use_multiplier=multiplier,
@@ -245,6 +251,10 @@ def merge_models_to_honeybee(
         other_models = [HBModel.from_file(m) for m in honeybee_model]
         for o_model in other_models:
             hb_model.add_model(o_model)
+
+        # perform a final solve adjacency if requested
+        if not individual_adjacency:
+            hb_model.solve_adjacency(intersect=True)
 
         # write the new model out to the file or stdout
         output_file.write(json.dumps(hb_model.to_dict()))
