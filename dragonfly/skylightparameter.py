@@ -421,7 +421,7 @@ class DetailedSkylights(_SkylightParameterBase):
         parent_poly, parent_holes = Polygon2D(verts2d), None
         if face.has_holes:
             parent_holes = tuple(
-                tuple(Point2D(pt.x, pt.y) for pt in hole)
+                Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
                 for hole in face.holes
             )
         for i, p_gon in enumerate(self.polygons):
@@ -442,7 +442,7 @@ class DetailedSkylights(_SkylightParameterBase):
         parent_poly, parent_holes = Polygon2D(verts2d), None
         if face.geometry.has_holes:
             parent_holes = tuple(
-                tuple(Point2D(pt.x, pt.y) for pt in hole)
+                Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
                 for hole in face.geometry.holes
             )
         # loop through each polygon and create its geometry
