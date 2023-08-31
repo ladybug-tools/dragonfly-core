@@ -198,10 +198,13 @@ class Story(_BaseGeometry):
                                     if abs(seg_1.length - seg_2.length) <= tolerance:
                                         # set the boundary conditions of the segments
                                         room_1.set_adjacency(room_2, j, k)
-                                        adj_f_1 = all_adj_faces[i]
-                                        adj_f_2 = all_adj_faces[i + x + 1]
-                                        adj_f_1.pop(adj_f_1.index(j))
-                                        adj_f_2.pop(adj_f_2.index(k))
+                                        try:
+                                            adj_f_1 = all_adj_faces[i]
+                                            adj_f_2 = all_adj_faces[i + x + 1]
+                                            adj_f_1.pop(adj_f_1.index(j))
+                                            adj_f_2.pop(adj_f_2.index(k))
+                                        except ValueError:
+                                            pass  # from honeybee broke adjacency
                                         break
             except IndexError:
                 pass  # we have reached the end of the list of zones
