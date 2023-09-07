@@ -5,6 +5,7 @@ from __future__ import division
 import os
 import re
 import json
+import datetime
 try:  # check if we are in IronPython
     import cPickle as pickle
 except ImportError:  # wea re in cPython
@@ -1145,7 +1146,7 @@ class Model(_BaseGeometry):
         tolerance = self.tolerance if tolerance is None else tolerance
 
         # export each building as a feature in the file
-        for _, bldg in enumerate(model.buildings):
+        for bldg in model.buildings:
             # create the base dictionary
             feature_dict = {'geometry': {}, 'properties': {}, 'type': 'Feature'}
 
@@ -1176,7 +1177,16 @@ class Model(_BaseGeometry):
                 bldg.story_count_above_ground
             feature_dict['properties']['maximum_roof_height'] = \
                 bldg.height_above_ground
+            feature_dict['properties']['floor_height'] = bldg.height / bldg.story_count
             feature_dict['properties']['type'] = 'Building'
+
+            # attempt to determine the year built from the construction set
+            year_built = datetime.date.today().year
+            if hasattr(bldg.properties, 'energy'):
+                cs_name = bldg.properties.energy.construction_set.display_name
+                if len(cs_name) >= 4 and all(txt.isdigit() for txt in cs_name[:4]):
+                    year_built = int(cs_name[:4])
+            feature_dict['properties']['year_built'] = year_built
 
             # append the feature to the global dictionary
             geojson_dict['features'].append(feature_dict)
