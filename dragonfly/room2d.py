@@ -771,7 +771,8 @@ class Room2D(_BaseGeometry):
                 characters for dragonfly identifiers.
         """
         self._identifier = clean_string('{}_{}'.format(prefix, self.identifier))
-        self.display_name = '{}_{}'.format(prefix, self.display_name)
+        if self._display_name is not None:
+            self.display_name = '{}_{}'.format(prefix, self.display_name)
         self.properties.add_prefix(prefix)
         for i, bc in enumerate(self._boundary_conditions):
             if isinstance(bc, Surface):
@@ -1180,7 +1181,7 @@ class Room2D(_BaseGeometry):
 
         # assign overall properties to the rebuilt room
         rebuilt_room._skylight_parameters = self._skylight_parameters
-        rebuilt_room._display_name = self.display_name
+        rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
@@ -1300,7 +1301,7 @@ class Room2D(_BaseGeometry):
             new_shd, self.is_ground_contact, self.is_top_exposed)
         rebuilt_room._air_boundaries = new_abs
         rebuilt_room._skylight_parameters = self._skylight_parameters
-        rebuilt_room._display_name = self.display_name
+        rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
@@ -1877,7 +1878,7 @@ class Room2D(_BaseGeometry):
                 is_ground_contact=room_2ds[i].is_ground_contact,
                 is_top_exposed=room_2ds[i].is_top_exposed)
             rebuilt_room._skylight_parameters = room_2ds[i].skylight_parameters
-            rebuilt_room._display_name = room_2ds[i].display_name
+            rebuilt_room._display_name = room_2ds[i]._display_name
             rebuilt_room._user_data = None if room_2ds[i].user_data is None else \
                 room_2ds[i].user_data.copy()
             rebuilt_room._parent = room_2ds[i]._parent
@@ -2928,7 +2929,7 @@ class Room2D(_BaseGeometry):
         new_r = Room2D(self.identifier, self._floor_geometry,
                        self.floor_to_ceiling_height,
                        self._boundary_conditions[:])  # copy boundary condition list
-        new_r._display_name = self.display_name
+        new_r._display_name = self._display_name
         new_r._user_data = None if self.user_data is None else self.user_data.copy()
         new_r._parent = self._parent
         new_r._window_parameters = self._window_parameters[:]  # copy window list

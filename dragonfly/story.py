@@ -596,7 +596,8 @@ using-multipliers-zone-and-or-window.html
                 characters for dragonfly identifiers.
         """
         self._identifier = clean_string('{}_{}'.format(prefix, self.identifier))
-        self.display_name = '{}_{}'.format(prefix, self.display_name)
+        if self._display_name is not None:
+            self.display_name = '{}_{}'.format(prefix, self.display_name)
         self.properties.add_prefix(prefix)
         for room in self.room_2ds:
             room.add_prefix(prefix)
@@ -1087,7 +1088,7 @@ using-multipliers-zone-and-or-window.html
                         is_ground_contact=room.is_ground_contact,
                         is_top_exposed=room.is_top_exposed)
                     room._match_and_transfer_wall_props(new_room, tolerance)
-                    new_room._display_name = room.display_name
+                    new_room._display_name = room._display_name
                     new_room._user_data = None if room.user_data is None \
                         else room.user_data.copy()
                     new_room._skylight_parameters = room._skylight_parameters
@@ -1578,7 +1579,7 @@ using-multipliers-zone-and-or-window.html
             self.identifier, tuple(room.duplicate() for room in self._room_2ds),
             self._floor_to_floor_height, self._floor_height, self._multiplier)
         new_s._roof = None if self._roof is None else self._roof.duplicate()
-        new_s._display_name = self.display_name
+        new_s._display_name = self._display_name
         new_s._user_data = None if self.user_data is None else self.user_data.copy()
         new_s._parent = self._parent
         new_s._properties._duplicate_extension_attr(self._properties)
