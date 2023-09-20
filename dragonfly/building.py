@@ -124,7 +124,7 @@ class Building(_BaseGeometry):
                     for j, room in enumerate(rooms):
                         room.move(move_vec)
                         room.floor_to_ceiling_height = flr_hgt
-                        room._identifier = \
+                        room.identifier = \
                             '{}_Floor{}_Room{}'.format(identifier, i + 1, j + 1)
                     if perimeter_offset != 0:  # reset all boundary conditions
                         for room in rooms:
@@ -515,8 +515,9 @@ class Building(_BaseGeometry):
                 that this prefix be short to avoid maxing out the 100 allowable
                 characters for dragonfly identifiers.
         """
-        self._identifier = clean_string('{}_{}'.format(prefix, self.identifier))
-        self.display_name = '{}_{}'.format(prefix, self.display_name)
+        self.identifier = clean_string('{}_{}'.format(prefix, self.identifier))
+        if self._display_name is not None:
+            self.display_name = '{}_{}'.format(prefix, self.display_name)
         self.properties.add_prefix(prefix)
         for story in self.unique_stories:
             story.add_prefix(prefix)
@@ -1214,7 +1215,7 @@ class Building(_BaseGeometry):
     def __copy__(self):
         new_b = Building(self.identifier,
                          tuple(story.duplicate() for story in self._unique_stories))
-        new_b._display_name = self.display_name
+        new_b._display_name = self._display_name
         new_b._user_data = None if self.user_data is None else self.user_data.copy()
         new_b._properties._duplicate_extension_attr(self._properties)
         return new_b
