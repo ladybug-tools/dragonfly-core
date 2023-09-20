@@ -797,18 +797,18 @@ class Building(_BaseGeometry):
             # then, loop through the story Room2Ds and set properties of relevant walls
             for story in bldg.unique_stories:
                 for rm in story.room_2ds:
-                    zip_obj = zip(rm.boundary_conditions, rm.window_parameters,
-                                  rm.floor_segments_2d, rm.segment_normals)
+                    zip_obj = zip(
+                        rm.boundary_conditions, rm.floor_segments_2d, rm.segment_normals)
                     new_bcs = list(rm.boundary_conditions)
                     new_win_pars = list(rm.window_parameters)
-                    for k, (bc, wp, seg, normal) in enumerate(zip_obj):
+                    for k, (bc, seg, normal) in enumerate(zip_obj):
                         if not isinstance(bc, Outdoors):  # nothing to change
                             continue
                         seg_mid = seg.midpoint.move(normal * -tolerance)
                         seg_ray = LineSegment2D.from_sdl(seg_mid, normal, distance)
                         for rel_poly, rel_hgt in zip(rel_polys, rel_heights):
-                            if story.floor_height > rel_hgt:  # story above other bldg
-                                continue  # we can ignore this one
+                            if story.floor_height >= rel_hgt - tolerance:
+                                continue  # story above other bldg; we can ignore it
                             for o_poly in rel_poly:
                                 if len(o_poly.intersect_line_ray(seg_ray)) > 0:
                                     # we have found an alleyway!
