@@ -499,7 +499,15 @@ class Model(_BaseGeometry):
             'Expected Dragonfly Model. Got {}.'.format(type(other_model))
         if self.units != other_model.units:
             other_model.convert_to_units(self.units)
-        self._buildings = self._buildings + other_model._buildings
+        bldg_to_add = []
+        for o_bldg in other_model._buildings:
+            for e_bldg in self._buildings:
+                if o_bldg.identifier == e_bldg.identifier:
+                    e_bldg.add_stories(o_bldg.unique_stories)
+                    break
+            else:
+                bldg_to_add.append(o_bldg)
+        self._buildings = self._buildings + bldg_to_add
         self._context_shades = self._context_shades + other_model._context_shades
 
     def add_building(self, obj):

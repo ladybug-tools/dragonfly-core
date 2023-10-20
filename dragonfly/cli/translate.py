@@ -196,20 +196,13 @@ def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
     'ceiling/floor plenums should be auto-generated for the Rooms.',
     default=True, show_default=True)
 @click.option(
-    '--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
-    'whether adjacencies should be solved between interior Dragonfly Stories when '
-    'Room2D floor and ceiling geometries are coplanar. This ensures '
-    'that Surface boundary conditions are used instead of Adiabatic ones. '
-    'Note that this input has no effect on the Honeybee Models that are merged. '
-    'To solve adjacencies between the Honeybee parts, the --all-adjacency option '
-    'must be used', default=True, show_default=True)
-@click.option(
-    '--individual-adjacency/--all-adjacency', ' /-aa', help='Flag to indicate '
-    'whether adjacencies should be solved between all geometries after they have '
-    'been merged into a single model. This enables adjacencies between the Honeybee '
-    'and Dragonfly parts of the original model to be intersected and then solved and '
-    'will give a valid Surface boundary condition to any exiting coplanar Faces that '
-    'do not have one.', default=True, show_default=True)
+    '--default-adjacency/--solve-adjacency', ' /-sa', help='Flag to indicate '
+    'whether all boundary conditions of the original models should be left as they '
+    'are or whether adjacencies should be solved across the final model when '
+    'everything is merged together. In this case, solving adjacencies will involve '
+    'merging all coplanar faces across the Dragonfly/Honeybee Models, intersecting '
+    'coplanar Faces to get matching areas, and setting Surface boundary conditions '
+    'for all matching coplanar faces.', default=True, show_default=True)
 @click.option(
     '--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
     'whether an exception should be raised if an adjacency between two '
@@ -224,7 +217,7 @@ def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
     type=click.File('w'), default='-')
 def merge_models_to_honeybee(
         base_model, dragonfly_model, honeybee_model, multiplier, no_plenum,
-        no_ceil_adjacency, individual_adjacency, enforce_adj_check, output_file):
+        default_adjacency, enforce_adj_check, output_file):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
     \b
@@ -235,25 +228,39 @@ def merge_models_to_honeybee(
     try:
         # serialize the Model and convert the units
         parsed_model = Model.from_file(base_model)
-        other_models = [Model.from_file(m) for m in dragonfly_model]
-        for o_model in other_models:
+        other_df_models = [Model.from_file(m) for m in dragonfly_model]
+        for o_model in other_df_models:
             parsed_model.add_model(o_model)
+        tol = parsed_model.tolerance
+        solve_adjacency = not default_adjacency
+
+        # if solve dragonfly wall adjacencies if requested
+        if solve_adjacency:
+            for bldg in parsed_model.buildings:
+                for story in bldg.unique_stories:
+                    story.remove_room_2d_colinear_vertices(tol)
+                    story.intersect_room_2d_adjacency(tol)
+            for bldg in parsed_model.buildings:
+                for story in bldg.unique_stories:
+                    story.solve_room_2d_adjacency(tol, resolve_window_conflicts=True)
 
         # convert the dragonfly Model to Honeybee
         add_plenum = not no_plenum
-        ceil_adjacency = not no_ceil_adjacency
         hb_model = parsed_model.to_honeybee(
             object_per_model='District', use_multiplier=multiplier,
-            add_plenum=add_plenum, solve_ceiling_adjacencies=ceil_adjacency,
+            add_plenum=add_plenum, solve_ceiling_adjacencies=solve_adjacency,
             enforce_adj=enforce_adj_check)
 
         # merge the honeybee models
-        other_models = [HBModel.from_file(m) for m in honeybee_model]
-        for o_model in other_models:
+        other_hb_models = [HBModel.from_file(m) for m in honeybee_model]
+        for o_model in other_hb_models:
+            if solve_adjacency:
+                for room in o_model.rooms:
+                    room.merge_coplanar_faces(o_model.tolerance, o_model.angle_tolerance)
             hb_model.add_model(o_model)
 
         # perform a final solve adjacency if requested
-        if not individual_adjacency:
+        if solve_adjacency and len(other_hb_models) != 0:
             hb_model.solve_adjacency(intersect=True)
 
         # write the new model out to the file or stdout

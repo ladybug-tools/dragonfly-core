@@ -501,6 +501,23 @@ class Building(_BaseGeometry):
                     context_shades.extend(mult_shd)
         return context_shades
 
+    def add_stories(self, stories):
+        """Add additional Story objects to this Building.
+        
+        Using this method will ensure that Stories are ordered according to their
+        floor height as they are added.
+        
+        Args:
+            stories: A list or tuple of Story objects to be added to this building.
+        """
+        for story in stories:
+            assert isinstance(story, Story), \
+                'Expected dragonfly Story. Got {}'.format(type(story))
+            story._parent = self
+        unique_stories = list(self._unique_stories) + list(stories)
+        unique_stories = tuple(sorted(unique_stories, key=lambda x: x.floor_height))
+        self._unique_stories = unique_stories
+
     def add_prefix(self, prefix):
         """Change the object identifier and all child objects by inserting a prefix.
 
