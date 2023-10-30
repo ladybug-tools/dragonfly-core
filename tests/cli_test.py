@@ -4,7 +4,8 @@ from click.testing import CliRunner
 from dragonfly.cli import viz
 from dragonfly.cli.edit import convert_units, solve_adjacency, reset_room_boundaries, \
     align_room_2ds, remove_short_segments, windows_by_ratio
-from dragonfly.cli.translate import model_to_honeybee, model_from_geojson
+from dragonfly.cli.translate import model_to_honeybee, model_from_geojson, \
+    merge_models_to_honeybee
 from dragonfly.cli.validate import validate_model
 
 from dragonfly.model import Model
@@ -159,3 +160,19 @@ def test_validate_model_json():
         valid_report = json.loads(outp)
         assert not valid_report['valid']
         assert len(valid_report['errors']) != 0
+
+
+def test_merge_models_to_honeybee():
+    input_df_model = './tests/json/sample_revit_model.dfjson'
+    extra_df_model = './tests/json/model_with_doors_skylights.dfjson'
+    input_hb_model = './tests/json/single_family_home.hbjson'
+    output_hb_model = './tests/json/merged_model.hbjson'
+    runner = CliRunner()
+    in_args = [input_df_model, '--dragonfly-model', extra_df_model,
+               '--honeybee-model', input_hb_model, '--output-file', output_hb_model]
+    result = runner.invoke(merge_models_to_honeybee, in_args)
+    print(result.output)
+    assert result.exit_code == 0
+
+    assert os.path.isfile(output_hb_model)
+    os.remove(output_hb_model)

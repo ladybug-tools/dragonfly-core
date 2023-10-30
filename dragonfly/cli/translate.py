@@ -182,10 +182,14 @@ def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
     exists=True, file_okay=True, dir_okay=False, resolve_path=True))
 @click.option(
     '--dragonfly-model', '-d', help='Other Dragonfly Model to be merged into '
-    'the base model.', type=click.File('w'), multiple=True)
+    'the base model.',
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+    multiple=True)
 @click.option(
     '--honeybee-model', '-h', help='Other Honeybee Model to be merged into '
-    'the base model.', type=click.File('w'), multiple=True)
+    'the base model.',
+    type=click.Path(exists=True, file_okay=True, dir_okay=False, resolve_path=True),
+    multiple=True)
 @click.option(
     '--multiplier/--full-geometry', ' /-fg', help='Flag to note if the '
     'multipliers on each Building story should be passed along to the '
@@ -249,7 +253,7 @@ def merge_models_to_honeybee(
         hb_model = parsed_model.to_honeybee(
             object_per_model='District', use_multiplier=multiplier,
             add_plenum=add_plenum, solve_ceiling_adjacencies=solve_adjacency,
-            enforce_adj=enforce_adj_check)
+            enforce_adj=enforce_adj_check)[0]
 
         # merge the honeybee models
         other_hb_models = [HBModel.from_file(m) for m in honeybee_model]
