@@ -2117,7 +2117,7 @@ class DetailedWindows(_AsymmetricBase):
                 new_verts, verts_moved = [], []
                 for vert in p_gon:
                     x_val, v_moved = vert.x, False
-                    if x_val <= tolerance:
+                    if x_val < tolerance:
                         x_val, v_moved = tolerance, True
                     if x_val >= max_width:
                         x_val, v_moved = max_width, True

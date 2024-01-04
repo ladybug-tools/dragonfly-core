@@ -343,6 +343,74 @@ def test_room2d_remove_duplicate_vertices():
     assert len(remove_i) == 1
 
 
+def test_room2d_update_floor_geometry_remove():
+    """Test the Room2D update_floor_geometry method while removing segments."""
+    pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(10, 0, 3),
+           Point3D(10, 10, 3), Point3D(0, 10, 3))
+    orig_geo = Face3D(pts)
+    win_pts = (Point2D(0.5, 0.5), Point2D(4, 0.5), Point2D(4, 2.5), Point2D(0.5, 2.5))
+    detailed_window = DetailedWindows((Polygon2D(win_pts),))
+    boundarycs = (bcs.outdoors, bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
+    window = (detailed_window, detailed_window, None, detailed_window, None)
+    room2d = Room2D('SquareShoebox', orig_geo, 3, boundarycs, window)
+
+    new_geo = Face3D(
+        (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3)),
+        plane=room2d.floor_geometry.plane
+    )
+    edit_code = 'KXKKK'
+
+    room2d.update_floor_geometry(new_geo, edit_code)
+    assert len(room2d.boundary_conditions) == 4
+    assert len(room2d.window_parameters) == 4
+    assert len(room2d.window_parameters[0]) == 2
+
+    window_alt = (None, detailed_window, None, detailed_window, None)
+    room2d = Room2D('SquareShoebox', orig_geo, 3, boundarycs, window_alt)
+    room2d.update_floor_geometry(new_geo, edit_code)
+    assert len(room2d.boundary_conditions) == 4
+    assert len(room2d.window_parameters) == 4
+    assert len(room2d.window_parameters[0]) == 1
+
+
+def test_room2d_update_floor_geometry_add():
+    """Test the Room2D update_floor_geometry method while adding segments."""
+    pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    
+    orig_geo = Face3D(pts)
+    win_pts = (Point2D(0.5, 0.5), Point2D(9.5, 0.5), Point2D(9.5, 2.5), Point2D(0.5, 2.5))
+    detailed_window = DetailedWindows((Polygon2D(win_pts),))
+    boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
+    window = (detailed_window, None, detailed_window, None)
+    room2d = Room2D('SquareShoebox', orig_geo, 3, boundarycs, window)
+
+    new_geo = Face3D(
+        (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3)),
+        plane=room2d.floor_geometry.plane
+    )
+    edit_code = 'KAKKK'
+
+    room2d.update_floor_geometry(new_geo, edit_code)
+    assert len(room2d.boundary_conditions) == 5
+    assert len(room2d.window_parameters) == 5
+    assert len(room2d.window_parameters[0]) == 1
+    assert len(room2d.window_parameters[1]) == 1
+
+    room2d = Room2D('SquareShoebox', orig_geo, 3, boundarycs, window)
+    new_geo = Face3D(
+        (Point3D(0, 0, 3), Point3D(3, 0, 3), Point3D(6, 0, 3), Point3D(10, 0, 3),
+         Point3D(10, 10, 3), Point3D(0, 10, 3)),
+        plane=room2d.floor_geometry.plane
+    )
+    edit_code = 'KAAKKK'
+    room2d.update_floor_geometry(new_geo, edit_code)
+    assert len(room2d.boundary_conditions) == 6
+    assert len(room2d.window_parameters) == 6
+    assert len(room2d.window_parameters[0]) == 1
+    assert len(room2d.window_parameters[1]) == 1
+    assert len(room2d.window_parameters[2]) == 1
+
+
 def test_generate_grid():
     """Test the generate_grid method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
