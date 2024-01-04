@@ -1356,6 +1356,109 @@ class Room2D(_BaseGeometry):
                 self._shading_parameters = new_shd
                 self._air_boundaries = new_abs
 
+    def update_floor_geometry(self, new_floor_geometry, edit_code, tolerance=0.01):
+        """Change the floor_geometry of the Room2D with segment-altering specifications.
+
+        This method is intended to be used when the floor geometry has been edited
+        by some external means and this Room2D should be updated for coordination.
+
+        The method tries to infer whether an removed floor segment means that an
+        original segment has been merged into another or removed completely using
+        the colinearity of the original segments. A removed segment that is colinear
+        with its neighbor will be merged into it while a removed segment that was
+        not colinear will simply be deleted. Similarly, the method will infer if
+        an added segment indicates a split in an original segment using colinearity.
+        When the result in the new_floor_geometry is two colinear segments,
+        properties of the original segment will be split across the new segments.
+        Otherwise the new segment will receive default properties.
+
+        Args:
+            new_floor_geometry: A Face3D for the new floor_geometry of this Room2D.
+                Note that this method expects the plane of this Face3D to match
+                the original floor_geometry Face3D and for the counter-clockwise
+                vertex ordering of the segments to be the same as the original
+                floor geometry (though segments can obviously be added or removed).
+            edit_code: A text string that indicates the operations that were
+                performed on the original floor_geometry segments to yield the
+                new_floor_geometry. The following letters are used in this code
+                to indicate the following:
+
+                * K = a segment that has been kept (possibly moved but not removed)
+                * X = a segment that has been removed
+                * A = a segment that has been added
+            
+                For example, KXKAKKA means that the first segment was kept, the
+                next removed, the next kept, the next added, followed by two kept
+                segments and ending in an added segment.
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located, used to determine
+                colinearity. Default: 0.01, suitable for objects in meters.
+        """
+        # get the original and the new floor segments
+        orig_segs = self.floor_segments
+        new_segs = new_floor_geometry.boundary_segments if new_floor_geometry.holes is \
+            None else new_floor_geometry.boundary_segments + \
+            tuple(seg for hole in new_floor_geometry.hole_segments for seg in hole)
+
+        # figure out the new properties based on the edit code
+        new_bcs, new_win, new_shd = [], [], []
+        last_o_seg = orig_segs[-1]
+        orig_i, new_i = 0, 0
+        for edit_val in edit_code:
+            if edit_val == 'K':
+                new_bcs.append(self._boundary_conditions[orig_i])
+                new_win.append(self._window_parameters[orig_i])
+                new_shd.append(self._shading_parameters[orig_i])
+                last_o_seg = orig_segs[orig_i]
+                orig_i += 1
+                new_i += 1
+            elif edit_val == 'X':
+                # determine if the removed segment is colinear
+                del_seg = orig_segs[orig_i]
+                full_line = LineSegment3D.from_end_points(last_o_seg.p1, del_seg.p2)
+                if full_line.distance_to_point(del_seg.p1) <= tolerance:  # colinear!
+                    if len(new_bcs) != 0:
+                        # TODO: figure out a strategy to merge first to end of the list
+                        new_bcs[-1] = bcs.outdoors
+                        new_win[-1] = DetailedWindows.merge(
+                            (new_win[-1], self._window_parameters[orig_i]),
+                            (last_o_seg, del_seg), self.floor_to_ceiling_height)
+                    last_o_seg = full_line
+                orig_i += 1
+            elif edit_val == 'A':
+                # determine if the added segment is colinear and within the original
+                add_seg = new_segs[new_i]
+                if last_o_seg.distance_to_point(add_seg.p1) <= tolerance and \
+                        last_o_seg.distance_to_point(add_seg.p2) <= tolerance:
+                    # colinear!
+                    new_bcs.append(self._boundary_conditions[orig_i])
+                    if len(new_win) != 0 and new_win[-1] is not None:
+                        # TODO: figure out a strategy to split the end of the list
+                        p_lin = LineSegment3D.from_end_points(last_o_seg.p1, add_seg.p1)
+                        a_lin = LineSegment3D.from_end_points(add_seg.p1, last_o_seg.p2)
+                        w_to_spl = new_win.pop(-1)
+                        new_win.extend(w_to_spl.split((p_lin, a_lin), tolerance))
+                        last_o_seg = a_lin
+                    else:
+                        new_win.append(None)
+                    new_shd.append(self._shading_parameters[orig_i])
+                else:  # not colinear; use default properties
+                    new_bcs.append(bcs.outdoors)
+                    new_win.append(None)
+                    new_shd.append(None)
+                new_i += 1
+        
+        # assign the updated properties to this Room2D
+        self._floor_geometry = new_floor_geometry
+        self._segment_count = len(new_segs)
+        assert self._segment_count == len(new_bcs), 'The operations in the edit_code ' \
+            'denote a geometry with {} segments but the new_floor_geometry has {} ' \
+            'segments.'.format(len(new_bcs), self._segment_count)
+        self._boundary_conditions = new_bcs
+        self._window_parameters = new_win
+        self._shading_parameters = new_shd
+        self._air_boundaries = None  # reset to avoid any conflicts
+
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horizontal within a tolerance.
 
