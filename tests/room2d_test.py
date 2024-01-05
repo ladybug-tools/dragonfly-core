@@ -411,6 +411,33 @@ def test_room2d_update_floor_geometry_add():
     assert len(room2d.window_parameters[2]) == 1
 
 
+def test_room2d_update_floor_geometry_holes():
+    """Test the Room2D update_floor_geometry method while adding segments."""
+    bpts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    hpts = (Point3D(4, 4, 3), Point3D(6, 4, 3), Point3D(6, 6, 3), Point3D(4, 6, 3))
+    orig_geo = Face3D(bpts, holes=[hpts])
+    win_pts = (Point2D(0.5, 0.5), Point2D(1.5, 0.5), Point2D(1.5, 2.5), Point2D(0.5, 2.5))
+    detailed_window = DetailedWindows((Polygon2D(win_pts),))
+    boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground,
+                  bcs.outdoors, bcs.outdoors, bcs.outdoors, bcs.outdoors)
+    window = (detailed_window, None, detailed_window, None,
+              detailed_window, detailed_window, detailed_window, detailed_window)
+    room2d = Room2D('DonutShoebox', orig_geo, 3, boundarycs, window)
+
+    new_geo = Face3D(
+        (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3)),
+        holes=((Point3D(4, 4, 3), Point3D(5, 4, 3), Point3D(6, 4, 3), Point3D(6, 6, 3), Point3D(4, 6, 3)),),
+        plane=room2d.floor_geometry.plane
+    )
+    edit_code = 'KAKKKKAKKK'
+
+    room2d.update_floor_geometry(new_geo, edit_code)
+    assert len(room2d.boundary_conditions) == 10
+    assert len(room2d.window_parameters) == 10
+    assert len(room2d.window_parameters[5]) == 1
+    assert len(room2d.window_parameters[6]) == 1
+
+
 def test_generate_grid():
     """Test the generate_grid method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
