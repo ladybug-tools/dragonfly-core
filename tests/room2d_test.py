@@ -1,9 +1,12 @@
 # coding=utf-8
 import pytest
 import json
+import os
 
 from dragonfly.room2d import Room2D
 from dragonfly.story import Story
+from dragonfly.building import Building
+from dragonfly.model import Model
 from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow, DetailedWindows
 from dragonfly.shadingparameter import Overhang
 
@@ -12,14 +15,9 @@ from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.facetype import AirBoundary
 from honeybee.room import Room
 
-from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
-from ladybug_geometry.geometry2d.line import LineSegment2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
-from ladybug_geometry.geometry3d.line import LineSegment3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.geometry2d import Point2D, Vector2D, LineSegment2D, Polygon2D
+from ladybug_geometry.geometry3d import Point3D, Vector3D, LineSegment3D, Plane, \
+    Face3D, Polyface3D
 
 
 def test_room2d_init():
@@ -612,6 +610,48 @@ def test_room2d_remove_short_segments():
     new_room6 = room6.remove_short_segments(0.2)
     assert len(room6) == 10
     assert len(new_room6) == 8
+
+
+def test_room2d_align():
+    """Test the Room2D align method."""
+    # set up the inputs
+    align_distance = 0.6  # distance in model units where vertices will be aligned
+    model_file = './tests/json/Level03.dfjson'
+    line_file = './tests/json/line_rays.json'
+
+    # load the line geometries, Dragonfly Room2Ds, and get the model tolerance
+    with open(line_file) as json_file:
+        line_data = json.load(json_file)
+    input_lines = [LineSegment2D.from_dict(ld) for ld in line_data]
+    model = Model.from_dfjson(model_file)
+    tolerance = model.tolerance
+    rooms = model.room_2ds
+
+    # loop through the rooms and align them to each line
+    updated_rooms, removed_rooms = [], []
+    for room in rooms:
+        # perform the alignment operation
+        for line in input_lines:
+            room.align(line, align_distance)
+        # remove duplicate vertices from the result
+        try:  # catch all degeneracy in the process
+            room.remove_duplicate_vertices(tolerance)
+            max_dim = max((room.max.x - room.min.x, room.max.y - room.min.y))
+            if room.floor_geometry.area < max_dim * tolerance:
+                removed_rooms.append(room)
+            else:
+                room.remove_degenerate_holes(tolerance)
+                updated_rooms.append(room)
+        except ValueError:  # degenerate room found!
+            removed_rooms.append(room)
+
+    # write out the updated rooms as a new Model
+    new_model_file = './tests/json/Level03_Updated.dfjson'
+    new_story = Story('New_Story', updated_rooms)
+    new_building = Building('New_Building', [new_story])
+    new_model = Model('New_Model', [new_building])
+    new_model.to_dfjson(os.path.split(new_model_file)[1], os.path.split(new_model_file)[0])
+    os.remove(new_model_file)
 
 
 def test_room2d_solve_adjacency():
