@@ -2420,7 +2420,10 @@ class Room2D(_BaseGeometry):
         # find the boolean intersection with each roof polygon and project the result
         roof_faces = []
         for b_rf_poly, rf_plane in zip(b_roof_polys, rel_rf_planes):
-            int_result = pb.intersect(b_room_poly, b_rf_poly, tolerance)
+            try:
+                int_result = pb.intersect(b_room_poly, b_rf_poly, tolerance)
+            except Exception:  # intersection failed for some reason
+                return None, None
             polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in new_poly))
                      for new_poly in int_result.regions]
             if self.floor_geometry.has_holes and len(polys) > 1:
