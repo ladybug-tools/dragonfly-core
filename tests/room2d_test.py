@@ -52,6 +52,7 @@ def test_room2d_init():
     assert room2d.exterior_wall_area == 12
     assert room2d.exterior_aperture_area == 0
     assert isinstance(room2d[0], LineSegment3D)
+    assert isinstance(room2d.label_point(0.01), Point3D)
 
 
 def test_room2d_init_with_windows():

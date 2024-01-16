@@ -714,6 +714,22 @@ class Room2D(_BaseGeometry):
         """
         return self._floor_geometry.boundary_polygon2d.center
 
+    def label_point(self, tolerance=0.01):
+        """Get a Point3D to label this Room2D in 3D space.
+
+        This point will always lie within the polygon formed by the floor_geometry
+        regardless of whether this geometry is concave or has holes.
+
+        Args:
+            tolerance: The tolerance to which the pole_of_inaccessibility will
+                be computed in the event that the floor_geometry is concave or
+                has holes. Note that this does not need to be equal to the Model
+                tolerance and should usually be larger than the Model tolerance
+                to avoid long calculation times. (Default: 0.01).
+        """
+        return self.floor_geometry.center if self.floor_geometry.is_convex else \
+            self.floor_geometry.pole_of_inaccessibility(tolerance)
+
     def segment_orientations(self, north_vector=Vector2D(0, 1)):
         """A list of numbers between 0 and 360 for the orientation of the segments.
 
