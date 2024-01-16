@@ -167,7 +167,7 @@ def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
         hb_model = parsed_model.to_honeybee(
             object_per_model='District', use_multiplier=multiplier,
             add_plenum=add_plenum, solve_ceiling_adjacencies=ceil_adjacency,
-            enforce_adj=enforce_adj_check)
+            enforce_adj=enforce_adj_check)[0]
         # write the new model out to the file or stdout
         output_file.write(json.dumps(hb_model.to_dict()))
     except Exception as e:
