@@ -2408,20 +2408,24 @@ class Room2D(_BaseGeometry):
                 pt1 = pt2  # increment for next segment
 
         # add the roof faces using polygon boolean operations
-        # create the BooleanPolygons for the Room2D and each relevant Roof polygon
+        # create the BooleanPolygons for the Room2D
         room_polys = []
         for rom_poly in all_room_poly:
+            rom_poly = rom_poly.remove_colinear_vertices(tolerance)
             room_polys.append((pb.BooleanPoint(pt.x, pt.y) for pt in rom_poly.vertices))
         b_room_poly = pb.BooleanPolygon(room_polys)
-        b_roof_polys = []
-        for rf_poly in rel_rf_polys:
-            rf_pts = (pb.BooleanPoint(pt.x, pt.y) for pt in rf_poly.vertices)
-            b_roof_polys.append(pb.BooleanPolygon([rf_pts]))
         # find the boolean intersection with each roof polygon and project the result
+        int_tol = tolerance / 100  # intersection tolerance must be finer
         roof_faces = []
-        for b_rf_poly, rf_plane in zip(b_roof_polys, rel_rf_planes):
+        for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
+            # snap the polygons to one another to avoid tolerance issues
+            rf_poly = rf_poly.remove_colinear_vertices(tolerance)
+            for rom_poly in all_room_poly:
+                rf_poly = rom_poly.snap_to_polygon(rf_poly, tolerance)
+            rf_pts = (pb.BooleanPoint(pt.x, pt.y) for pt in rf_poly.vertices)
+            b_rf_poly = pb.BooleanPolygon([rf_pts])
             try:
-                int_result = pb.intersect(b_room_poly, b_rf_poly, tolerance)
+                int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
             except Exception:  # intersection failed for some reason
                 return None, None
             polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in new_poly))
