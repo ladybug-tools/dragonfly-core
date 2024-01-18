@@ -581,6 +581,16 @@ def test_to_honeybee_holes_and_roof():
     assert not all(89 < alt < 91 for alt in roof_alts)
 
 
+def test_to_honeybee_hip_roof():
+    """Test the to_honeybee method with hip roof."""
+    model_file = './tests/json/test_hip_roof.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+
+
 def test_to_dict():
     """Test the Model to_dict method."""
     pts_1 = (

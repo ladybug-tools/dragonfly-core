@@ -2398,7 +2398,8 @@ class Room2D(_BaseGeometry):
                               for ipt, ipl in zip(int_pts, int_pls)]
                     pt_dists = [(ipt[1], seg_2d.p1.distance_to_point(ipt[0]))
                                 for ipt in int_pts]
-                    sort_pts = [x for _, x in sorted(zip(pt_dists, rf_pts))]
+                    sort_obj = sorted(zip(pt_dists, rf_pts), key=lambda pair: pair[0])
+                    sort_pts = [x for _, x in sort_obj]
                     # add a vertex for where the segment ends in the polygon
                     for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
                         if rf_py.point_relationship(pt2, tolerance) >= 0:

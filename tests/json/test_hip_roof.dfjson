@@ -1,0 +1,4912 @@
+{
+  "units": "Feet",
+  "type": "Model",
+  "properties": {
+    "type": "ModelProperties",
+    "energy": {
+      "type": "ModelEnergyProperties",
+      "construction_sets": [
+        {
+          "type": "ConstructionSetAbridged",
+          "wall_set": {
+            "type": "WallConstructionSetAbridged",
+            "interior_construction": "Generic Interior Wall",
+            "exterior_construction": "Generic Exterior Wall",
+            "ground_construction": "Generic Underground Wall"
+          },
+          "floor_set": {
+            "type": "FloorConstructionSetAbridged",
+            "interior_construction": "Generic Interior Floor",
+            "exterior_construction": "Generic Exposed Floor",
+            "ground_construction": "Generic Ground Slab"
+          },
+          "roof_ceiling_set": {
+            "type": "RoofCeilingConstructionSetAbridged",
+            "interior_construction": "Generic Interior Ceiling",
+            "exterior_construction": "Generic Roof",
+            "ground_construction": "Generic Underground Roof"
+          },
+          "aperture_set": {
+            "type": "ApertureConstructionSetAbridged",
+            "interior_construction": "Generic Single Pane",
+            "window_construction": "Generic Double Pane",
+            "skylight_construction": "Generic Double Pane",
+            "operable_construction": "Generic Double Pane"
+          },
+          "door_set": {
+            "type": "DoorConstructionSetAbridged",
+            "interior_construction": "Generic Interior Door",
+            "exterior_construction": "Generic Exterior Door",
+            "overhead_construction": "Generic Exterior Door",
+            "exterior_glass_construction": "Generic Double Pane",
+            "interior_glass_construction": "Generic Single Pane"
+          },
+          "shade_construction": "Generic Shade",
+          "air_boundary_construction": "Generic Air Boundary",
+          "identifier": "Default Generic Construction Set"
+        }
+      ],
+      "constructions": [
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 25mm Wood"
+          ],
+          "identifier": "Generic Interior Door"
+        },
+        {
+          "type": "WindowConstructionAbridged",
+          "materials": [
+            "Generic Clear Glass"
+          ],
+          "identifier": "Generic Single Pane"
+        },
+        {
+          "type": "ShadeConstruction",
+          "solar_reflectance": 0.35,
+          "visible_reflectance": 0.35,
+          "is_specular": false,
+          "identifier": "Generic Shade"
+        },
+        {
+          "type": "ShadeConstruction",
+          "solar_reflectance": 0.2,
+          "visible_reflectance": 0.2,
+          "is_specular": false,
+          "identifier": "Generic Context"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic LW Concrete",
+            "Generic Ceiling Air Gap",
+            "Generic Acoustic Tile"
+          ],
+          "identifier": "Generic Interior Ceiling"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Gypsum Board",
+            "Generic Wall Air Gap",
+            "Generic Gypsum Board"
+          ],
+          "identifier": "Generic Interior Wall"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Painted Metal",
+            "Generic Ceiling Air Gap",
+            "Generic 50mm Insulation",
+            "Generic LW Concrete"
+          ],
+          "identifier": "Generic Exposed Floor"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Acoustic Tile",
+            "Generic Ceiling Air Gap",
+            "Generic LW Concrete"
+          ],
+          "identifier": "Generic Interior Floor"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 50mm Insulation",
+            "Generic HW Concrete"
+          ],
+          "identifier": "Generic Ground Slab"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Roof Membrane",
+            "Generic 50mm Insulation",
+            "Generic LW Concrete",
+            "Generic Ceiling Air Gap",
+            "Generic Acoustic Tile"
+          ],
+          "identifier": "Generic Roof"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Brick",
+            "Generic LW Concrete",
+            "Generic 50mm Insulation",
+            "Generic Wall Air Gap",
+            "Generic Gypsum Board"
+          ],
+          "identifier": "Generic Exterior Wall"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 50mm Insulation",
+            "Generic HW Concrete",
+            "Generic Wall Air Gap",
+            "Generic Gypsum Board"
+          ],
+          "identifier": "Generic Underground Wall"
+        },
+        {
+          "type": "AirBoundaryConstructionAbridged",
+          "air_mixing_per_area": 0.1,
+          "air_mixing_schedule": "Always On",
+          "identifier": "Generic Air Boundary"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 50mm Insulation",
+            "Generic HW Concrete",
+            "Generic Ceiling Air Gap",
+            "Generic Acoustic Tile"
+          ],
+          "identifier": "Generic Underground Roof"
+        },
+        {
+          "type": "WindowConstructionAbridged",
+          "materials": [
+            "Generic Low-e Glass",
+            "Generic Window Air Gap",
+            "Generic Clear Glass"
+          ],
+          "identifier": "Generic Double Pane"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Painted Metal",
+            "Generic 25mm Insulation",
+            "Generic Painted Metal"
+          ],
+          "identifier": "Generic Exterior Door"
+        }
+      ],
+      "materials": [
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.01,
+          "conductivity": 0.16,
+          "density": 1120.0,
+          "specific_heat": 1460.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.65,
+          "visible_absorptance": 0.65,
+          "identifier": "Generic Roof Membrane"
+        },
+        {
+          "roughness": "MediumSmooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.02,
+          "conductivity": 0.06,
+          "density": 368.0,
+          "specific_heat": 590.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.2,
+          "visible_absorptance": 0.2,
+          "identifier": "Generic Acoustic Tile"
+        },
+        {
+          "roughness": "MediumSmooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.0254,
+          "conductivity": 0.15,
+          "density": 608.0,
+          "specific_heat": 1630.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5,
+          "identifier": "Generic 25mm Wood"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.2,
+          "conductivity": 1.95,
+          "density": 2240.0,
+          "specific_heat": 900.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.8,
+          "visible_absorptance": 0.8,
+          "identifier": "Generic HW Concrete"
+        },
+        {
+          "gas_type": "Air",
+          "type": "EnergyWindowMaterialGas",
+          "thickness": 0.0127,
+          "identifier": "Generic Window Air Gap"
+        },
+        {
+          "gas_type": "Argon",
+          "type": "EnergyWindowMaterialGas",
+          "thickness": 0.0127,
+          "identifier": "Generic Window Argon Gap"
+        },
+        {
+          "roughness": "MediumSmooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.0127,
+          "conductivity": 0.16,
+          "density": 800.0,
+          "specific_heat": 1090.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5,
+          "identifier": "Generic Gypsum Board"
+        },
+        {
+          "roughness": "Smooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.667,
+          "density": 1.28,
+          "specific_heat": 1000.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic Wall Air Gap"
+        },
+        {
+          "roughness": "Smooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.556,
+          "density": 1.28,
+          "specific_heat": 1000.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic Ceiling Air Gap"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.9,
+          "density": 1920.0,
+          "specific_heat": 790.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.65,
+          "visible_absorptance": 0.65,
+          "identifier": "Generic Brick"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.05,
+          "conductivity": 0.03,
+          "density": 43.0,
+          "specific_heat": 1210.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic 50mm Insulation"
+        },
+        {
+          "type": "EnergyWindowMaterialGlazing",
+          "thickness": 0.006,
+          "solar_transmittance": 0.45,
+          "solar_reflectance": 0.36,
+          "solar_reflectance_back": 0.36,
+          "visible_transmittance": 0.71,
+          "visible_reflectance": 0.21,
+          "visible_reflectance_back": 0.21,
+          "infrared_transmittance": 0.0,
+          "emissivity": 0.84,
+          "emissivity_back": 0.047,
+          "conductivity": 1.0,
+          "dirt_correction": 1.0,
+          "solar_diffusing": false,
+          "identifier": "Generic Low-e Glass"
+        },
+        {
+          "roughness": "Smooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.0015,
+          "conductivity": 45.0,
+          "density": 7690.0,
+          "specific_heat": 410.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5,
+          "identifier": "Generic Painted Metal"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.53,
+          "density": 1280.0,
+          "specific_heat": 840.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.8,
+          "visible_absorptance": 0.8,
+          "identifier": "Generic LW Concrete"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.025,
+          "conductivity": 0.03,
+          "density": 43.0,
+          "specific_heat": 1210.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic 25mm Insulation"
+        },
+        {
+          "type": "EnergyWindowMaterialGlazing",
+          "thickness": 0.006,
+          "solar_transmittance": 0.77,
+          "solar_reflectance": 0.07,
+          "solar_reflectance_back": 0.07,
+          "visible_transmittance": 0.88,
+          "visible_reflectance": 0.08,
+          "visible_reflectance_back": 0.08,
+          "infrared_transmittance": 0.0,
+          "emissivity": 0.84,
+          "emissivity_back": 0.84,
+          "conductivity": 1.0,
+          "dirt_correction": 1.0,
+          "solar_diffusing": false,
+          "identifier": "Generic Clear Glass"
+        }
+      ],
+      "hvacs": [
+        {
+          "economizer_type": "DifferentialDryBulb",
+          "type": "IdealAirSystemAbridged",
+          "demand_controlled_ventilation": false,
+          "sensible_heat_recovery": 0.0,
+          "latent_heat_recovery": 0.0,
+          "heating_air_temperature": 50.0,
+          "cooling_air_temperature": 13.0,
+          "identifier": "4ff6bf4e-8265-403d-9f92-ba45325861c7",
+          "display_name": "Ideal Air System"
+        }
+      ],
+      "program_types": [
+        {
+          "type": "ProgramTypeAbridged",
+          "identifier": "Plenum"
+        },
+        {
+          "type": "ProgramTypeAbridged",
+          "people": {
+            "type": "PeopleAbridged",
+            "people_per_area": 0.0565,
+            "occupancy_schedule": "Generic Office Occupancy",
+            "activity_schedule": "Seated Adult Activity",
+            "radiant_fraction": 0.3,
+            "latent_fraction": {
+              "type": "Autocalculate"
+            },
+            "identifier": "Generic Office People"
+          },
+          "lighting": {
+            "type": "LightingAbridged",
+            "watts_per_area": 10.55,
+            "schedule": "Generic Office Lighting",
+            "visible_fraction": 0.2,
+            "radiant_fraction": 0.7,
+            "return_air_fraction": 0.0,
+            "baseline_watts_per_area": 11.84029,
+            "identifier": "Generic Office Lighting"
+          },
+          "electric_equipment": {
+            "type": "ElectricEquipmentAbridged",
+            "watts_per_area": 10.33,
+            "schedule": "Generic Office Equipment",
+            "radiant_fraction": 0.5,
+            "latent_fraction": 0.0,
+            "lost_fraction": 0.0,
+            "identifier": "Generic Office Equipment"
+          },
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "flow_per_exterior_area": 0.0002266,
+            "schedule": "Generic Office Infiltration",
+            "constant_coefficient": 1.0,
+            "temperature_coefficient": 0.0,
+            "velocity_coefficient": 0.0,
+            "identifier": "Generic Office Infiltration"
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "flow_per_person": 0.00236,
+            "flow_per_area": 0.000305,
+            "air_changes_per_hour": 0.0,
+            "flow_per_zone": 0.0,
+            "identifier": "Generic Office Ventilation"
+          },
+          "setpoint": {
+            "type": "SetpointAbridged",
+            "cooling_schedule": "Generic Office Cooling",
+            "heating_schedule": "Generic Office Heating",
+            "identifier": "Generic Office Setpoints"
+          },
+          "identifier": "Generic Office Program"
+        }
+      ],
+      "schedules": [
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.05,
+                0.04311628,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_Sun"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.05,
+                0.08623256,
+                0.25869768,
+                0.12934884,
+                0.04311628,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  19,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_Sat"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.05,
+                0.1,
+                0.08623256,
+                0.25869768,
+                0.77609304,
+                0.4311628,
+                0.25869768,
+                0.17246512,
+                0.08623256,
+                0.04311628
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ],
+                [
+                  20,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ],
+                [
+                  23,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_Wkdy"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_Sun",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_LIGHT_SCH_2013_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_LIGHT_SCH_2013_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_Sat",
+          "summer_designday_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Lighting"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6,
+                17.6,
+                19.6,
+                21.0,
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6,
+                17.8,
+                20.0,
+                21.0,
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6,
+                17.8,
+                20.0,
+                21.0,
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default",
+          "summer_designday_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_WntrDsn",
+          "schedule_type_limit": "Temperature",
+          "identifier": "Generic Office Heating"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Wkdy_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Sat_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium INFIL_SCH_PNNL_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium INFIL_SCH_PNNL_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium INFIL_SCH_PNNL_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium INFIL_SCH_PNNL_Default",
+          "summer_designday_schedule": "OfficeMedium INFIL_SCH_PNNL_Wkdy_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium INFIL_SCH_PNNL_Sat_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Infiltration"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                0.05,
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                1.0,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                0.1,
+                0.2,
+                0.95,
+                0.5,
+                0.95,
+                0.3,
+                0.1,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                0.1,
+                0.3,
+                0.1,
+                0.05,
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  19,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium BLDG_OCC_SCH_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_OCC_SCH_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_OCC_SCH_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium BLDG_OCC_SCH_Default",
+          "summer_designday_schedule": "OfficeMedium BLDG_OCC_SCH_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium BLDG_OCC_SCH_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Occupancy"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                120.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "Seated Adult Activity_Day Schedule"
+            }
+          ],
+          "default_day_schedule": "Seated Adult Activity_Day Schedule",
+          "schedule_type_limit": "Activity Level",
+          "identifier": "Seated Adult Activity"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "Always On_Day Schedule"
+            }
+          ],
+          "default_day_schedule": "Always On_Day Schedule",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Always On"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.2307553806,
+                0.288107175,
+                0.2307553806
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_Sun"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.2307553806,
+                0.381234796,
+                0.476543495,
+                0.3335804465,
+                0.285926097,
+                0.2307553806
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  19,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_Sat"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.3076738408,
+                0.381234796,
+                0.857778291,
+                0.762469592,
+                0.857778291,
+                0.476543495,
+                0.381234796
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_Wkdy"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_Sun",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_EQUIP_SCH_2013_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_EQUIP_SCH_2013_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_Sat",
+          "summer_designday_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Equipment"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7,
+                25.7,
+                25.0,
+                24.0,
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7,
+                25.6,
+                25.0,
+                24.0,
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7,
+                25.7,
+                25.0,
+                24.0,
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default",
+          "summer_designday_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default_WntrDsn",
+          "schedule_type_limit": "Temperature",
+          "identifier": "Generic Office Cooling"
+        }
+      ],
+      "schedule_type_limits": [
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "ActivityLevel",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Activity Level"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Angle",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 180.0,
+          "identifier": "Angle"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "DeltaTemperature",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": {
+            "type": "NoLimit"
+          },
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Delta Temperature"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Dimensionless",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 1.0,
+          "identifier": "Fractional"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Percent",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 100.0,
+          "identifier": "Humidity"
+        },
+        {
+          "numeric_type": "Discrete",
+          "unit_type": "Dimensionless",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 1.0,
+          "identifier": "On-Off"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Power",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": {
+            "type": "NoLimit"
+          },
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Power"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Temperature",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": -273.15,
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Temperature"
+        },
+        {
+          "numeric_type": "Discrete",
+          "unit_type": "Control",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Control Level"
+        }
+      ]
+    }
+  },
+  "version": "0.0.0",
+  "buildings": [
+    {
+      "type": "Building",
+      "unique_stories": [
+        {
+          "type": "Story",
+          "room_2ds": [
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  22.837701828863615,
+                  -2.4414172525643991
+                ],
+                [
+                  22.837701828863626,
+                  4.0630118812932645
+                ],
+                [
+                  22.506336999467308,
+                  4.0630118812932654
+                ],
+                [
+                  22.506336999467308,
+                  4.5650118812932643
+                ],
+                [
+                  22.506336999467308,
+                  9.0104869469118061
+                ],
+                [
+                  22.506336999467308,
+                  9.5124869469118778
+                ],
+                [
+                  -16.201012081897545,
+                  9.5124869469179032
+                ],
+                [
+                  -16.201012081897584,
+                  -10.503917252564468
+                ],
+                [
+                  22.837701828863604,
+                  -10.503917252564593
+                ],
+                [
+                  22.837701828863604,
+                  -10.963234837866429
+                ],
+                [
+                  25.0737582593098,
+                  -10.963234837866436
+                ],
+                [
+                  25.073758259309813,
+                  -2.4414172525644058
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [
+                [
+                  [
+                    0.20318739316808276,
+                    -0.66139756752534173
+                  ],
+                  [
+                    0.18631122975783487,
+                    -0.89609564016261989
+                  ],
+                  [
+                    0.13602997365074621,
+                    -1.1259647017507244
+                  ],
+                  [
+                    0.053378182730394519,
+                    -1.3462751001634206
+                  ],
+                  [
+                    -0.0599435478210637,
+                    -1.5524938567689368
+                  ],
+                  [
+                    1.3687254970725498,
+                    -1.5524938567689368
+                  ],
+                  [
+                    1.3687254970725498,
+                    -2.996063410574711
+                  ],
+                  [
+                    0.056389539067300376,
+                    -2.996063410574711
+                  ],
+                  [
+                    0.056389539067300376,
+                    -1.3396826449578105
+                  ],
+                  [
+                    -0.70061718827320918,
+                    -2.127131310963748
+                  ],
+                  [
+                    -1.784226882907463,
+                    -2.2646980821258937
+                  ],
+                  [
+                    -2.7139850797782441,
+                    -1.6913881465893523
+                  ],
+                  [
+                    -3.0776525018450407,
+                    -0.66139756752534773
+                  ],
+                  [
+                    -2.5971846232140532,
+                    0.49855450135022328
+                  ],
+                  [
+                    -1.4372325543384852,
+                    0.97902237998121855
+                  ],
+                  [
+                    -0.27728048546291428,
+                    0.49855450135023238
+                  ]
+                ]
+              ],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        22.837701828863619,
+                        -2.291974995347156,
+                        0.003
+                      ],
+                      [
+                        22.837701828863619,
+                        -2.291974995347156,
+                        7.250656167979
+                      ],
+                      [
+                        22.837701828863626,
+                        3.88256568706754,
+                        7.250656167979
+                      ],
+                      [
+                        22.837701828863626,
+                        3.88256568706754,
+                        0.003
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    true
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        22.381665083456788,
+                        9.5124869469118973,
+                        0.13123359580052493
+                      ],
+                      [
+                        22.381665083456788,
+                        9.5124869469118973,
+                        8.7270341207347855
+                      ],
+                      [
+                        17.985339624139193,
+                        9.5124869469125812,
+                        8.7270341207347855
+                      ],
+                      [
+                        17.98533962413919,
+                        9.5124869469125812,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        17.854106028338666,
+                        9.5124869469126025,
+                        0.13123359580052493
+                      ],
+                      [
+                        17.854106028338663,
+                        9.5124869469126025,
+                        8.7270341207353965
+                      ],
+                      [
+                        13.064079781619506,
+                        9.5124869469133468,
+                        8.7270341207353965
+                      ],
+                      [
+                        13.064079781619503,
+                        9.5124869469133468,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        12.932846185818983,
+                        9.5124869469133682,
+                        0.13123359580052493
+                      ],
+                      [
+                        12.932846185818981,
+                        9.5124869469133682,
+                        8.7270341207353965
+                      ],
+                      [
+                        8.1428199390998248,
+                        9.5124869469141142,
+                        8.7270341207353965
+                      ],
+                      [
+                        8.1428199390998213,
+                        9.5124869469141142,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        8.0115863432992978,
+                        9.5124869469141338,
+                        0.13123359580052493
+                      ],
+                      [
+                        8.011586343299296,
+                        9.5124869469141338,
+                        8.7270341207353965
+                      ],
+                      [
+                        3.2215600965801392,
+                        9.51248694691488,
+                        8.7270341207353965
+                      ],
+                      [
+                        3.2215600965801374,
+                        9.51248694691488,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        3.0903265007796117,
+                        9.5124869469149,
+                        0.13123359580052493
+                      ],
+                      [
+                        3.0903265007796108,
+                        9.5124869469149,
+                        8.7270341207353965
+                      ],
+                      [
+                        -1.6996997459395464,
+                        9.5124869469156454,
+                        8.7270341207353965
+                      ],
+                      [
+                        -1.6996997459395482,
+                        9.5124869469156454,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -1.8309333417400753,
+                        9.5124869469156668,
+                        0.13123359580052493
+                      ],
+                      [
+                        -1.8309333417400762,
+                        9.5124869469156668,
+                        8.7270341207353965
+                      ],
+                      [
+                        -6.6209595884592343,
+                        9.5124869469164111,
+                        8.7270341207353965
+                      ],
+                      [
+                        -6.620959588459236,
+                        9.5124869469164111,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -6.7521931842597622,
+                        9.5124869469164324,
+                        0.13123359580052493
+                      ],
+                      [
+                        -6.7521931842597631,
+                        9.5124869469164324,
+                        8.7270341207353965
+                      ],
+                      [
+                        -11.542219430978919,
+                        9.5124869469171784,
+                        8.7270341207353965
+                      ],
+                      [
+                        -11.542219430978923,
+                        9.5124869469171784,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -11.673453026779439,
+                        9.512486946917198,
+                        0.13123359580052493
+                      ],
+                      [
+                        -11.673453026779439,
+                        9.512486946917198,
+                        8.7270341207347855
+                      ],
+                      [
+                        -16.069778486097032,
+                        9.5124869469178819,
+                        8.7270341207347855
+                      ],
+                      [
+                        -16.069778486097036,
+                        9.5124869469178819,
+                        0.13123359580052493
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        -16.20101208189757,
+                        -5.4825917932432313,
+                        0.13123359580052493
+                      ],
+                      [
+                        -16.20101208189757,
+                        -5.4825917932432313,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.201012081897581,
+                        -10.272618039962389,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.201012081897581,
+                        -10.272618039962392,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -16.201012081897563,
+                        -0.56133195072354447,
+                        0.13123359580052493
+                      ],
+                      [
+                        -16.201012081897563,
+                        -0.56133195072354447,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.20101208189757,
+                        -5.3513581974427025,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.20101208189757,
+                        -5.3513581974427042,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -16.201012081897556,
+                        4.359927891796139,
+                        0.13123359580052493
+                      ],
+                      [
+                        -16.201012081897556,
+                        4.359927891796139,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.201012081897563,
+                        -0.43009835492301907,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.201012081897563,
+                        -0.43009835492302084,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -16.201012081897545,
+                        9.2811877343158251,
+                        0.13123359580052493
+                      ],
+                      [
+                        -16.201012081897545,
+                        9.2811877343158251,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.201012081897556,
+                        4.4911614875966679,
+                        8.7270341207353965
+                      ],
+                      [
+                        -16.201012081897556,
+                        4.4911614875966661,
+                        0.13123359580052493
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        -16.069778486097061,
+                        -10.503917252564468,
+                        0.13123359580052493
+                      ],
+                      [
+                        -16.069778486097061,
+                        -10.503917252564468,
+                        8.72703412073518
+                      ],
+                      [
+                        -11.676733866674464,
+                        -10.503917252564483,
+                        8.72703412073518
+                      ],
+                      [
+                        -11.676733866674464,
+                        -10.503917252564483,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -11.545500270873944,
+                        -10.503917252564483,
+                        0.13123359580052493
+                      ],
+                      [
+                        -11.545500270873944,
+                        -10.503917252564483,
+                        8.7270341207353965
+                      ],
+                      [
+                        -6.7554740241547862,
+                        -10.503917252564499,
+                        8.7270341207353965
+                      ],
+                      [
+                        -6.7554740241547844,
+                        -10.503917252564499,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -6.6242404283542564,
+                        -10.503917252564499,
+                        0.13123359580052493
+                      ],
+                      [
+                        -6.6242404283542555,
+                        -10.503917252564499,
+                        8.7270341207353965
+                      ],
+                      [
+                        -1.8342141816350988,
+                        -10.503917252564515,
+                        8.7270341207353965
+                      ],
+                      [
+                        -1.834214181635097,
+                        -10.503917252564515,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        -1.7029805858345748,
+                        -10.503917252564515,
+                        0.13123359580052493
+                      ],
+                      [
+                        -1.7029805858345739,
+                        -10.503917252564515,
+                        8.7270341207353965
+                      ],
+                      [
+                        3.0870456608845833,
+                        -10.503917252564531,
+                        8.7270341207353965
+                      ],
+                      [
+                        3.0870456608845851,
+                        -10.503917252564531,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        3.2182792566851139,
+                        -10.503917252564531,
+                        0.13123359580052493
+                      ],
+                      [
+                        3.2182792566851148,
+                        -10.503917252564531,
+                        8.7270341207353965
+                      ],
+                      [
+                        8.0083055034042712,
+                        -10.503917252564545,
+                        8.7270341207353965
+                      ],
+                      [
+                        8.0083055034042729,
+                        -10.503917252564545,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        8.1395390992047965,
+                        -10.503917252564547,
+                        0.13123359580052493
+                      ],
+                      [
+                        8.1395390992047982,
+                        -10.503917252564547,
+                        8.7270341207353965
+                      ],
+                      [
+                        12.929565345923955,
+                        -10.503917252564561,
+                        8.7270341207353965
+                      ],
+                      [
+                        12.929565345923958,
+                        -10.503917252564561,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        13.060798941724482,
+                        -10.503917252564561,
+                        0.13123359580052493
+                      ],
+                      [
+                        13.060798941724482,
+                        -10.503917252564561,
+                        8.7270341207353965
+                      ],
+                      [
+                        17.85082518844364,
+                        -10.503917252564577,
+                        8.7270341207353965
+                      ],
+                      [
+                        17.85082518844364,
+                        -10.503917252564577,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        17.98205878424416,
+                        -10.503917252564577,
+                        0.13123359580052493
+                      ],
+                      [
+                        17.98205878424416,
+                        -10.503917252564577,
+                        8.72703412073518
+                      ],
+                      [
+                        22.375103403666756,
+                        -10.503917252564591,
+                        8.72703412073518
+                      ],
+                      [
+                        22.375103403666756,
+                        -10.503917252564591,
+                        0.13123359580052493
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "identifier": "Room_e6ac360b-aaed-4c3b-a130-36b4c2ac9d13-000d14bf",
+              "display_name": "Kitchen & Dining-101",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  32.814735949598528,
+                  -2.4414172525644307
+                ],
+                [
+                  26.65512308870613,
+                  -2.4414172525644107
+                ],
+                [
+                  25.073758259309813,
+                  -2.4414172525644062
+                ],
+                [
+                  25.0737582593098,
+                  -10.963234837866436
+                ],
+                [
+                  32.814735949598514,
+                  -10.963234837866461
+                ],
+                [
+                  32.814735949598514,
+                  -8.2138910058448928
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        29.2718021305255,
+                        -2.4414172525644191,
+                        4.4142135623731154
+                      ],
+                      [
+                        28.686015692898604,
+                        -2.4414172525644169,
+                        5.0000000000000142
+                      ],
+                      [
+                        27.857588568152412,
+                        -2.4414172525644142,
+                        5.0000000000000142
+                      ],
+                      [
+                        27.271802130525497,
+                        -2.4414172525644124,
+                        4.4142135623731154
+                      ],
+                      [
+                        27.271802130525497,
+                        -2.4414172525644124,
+                        3.5857864376269246
+                      ],
+                      [
+                        27.857588568152412,
+                        -2.4414172525644142,
+                        2.9999999999999987
+                      ],
+                      [
+                        28.686015692898607,
+                        -2.4414172525644169,
+                        2.9999999999999982
+                      ],
+                      [
+                        29.271802130525497,
+                        -2.4414172525644191,
+                        3.5857864376269237
+                      ]
+                    ],
+                    [
+                      [
+                        32.552268757997474,
+                        -2.4414172525644298,
+                        0.003
+                      ],
+                      [
+                        32.552268757997474,
+                        -2.4414172525644298,
+                        7.1522309711286072
+                      ],
+                      [
+                        29.402662458784874,
+                        -2.4414172525644195,
+                        7.1522309711286072
+                      ],
+                      [
+                        29.402662458784874,
+                        -2.4414172525644195,
+                        0.003
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    true
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "identifier": "Room_e6ac360b-aaed-4c3b-a130-36b4c2ac9d13-000d14cc",
+              "display_name": "Laundry-104",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  32.814735949598536,
+                  4.0630118812932317
+                ],
+                [
+                  26.655123088706141,
+                  4.0630118812932521
+                ],
+                [
+                  26.65512308870613,
+                  -2.4414172525644107
+                ],
+                [
+                  32.814735949598528,
+                  -2.4414172525644293
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        32.552268757997481,
+                        4.0630118812932334,
+                        0.003
+                      ],
+                      [
+                        32.552268757997481,
+                        4.0630118812932334,
+                        7.1522309711286072
+                      ],
+                      [
+                        29.402662458784881,
+                        4.0630118812932432,
+                        7.1522309711286072
+                      ],
+                      [
+                        29.402662458784881,
+                        4.0630118812932432,
+                        0.003
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    true
+                  ],
+                  "user_data": {}
+                },
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        27.271802130525497,
+                        -2.4414172525644124,
+                        3.5857864376269246
+                      ],
+                      [
+                        27.271802130525497,
+                        -2.4414172525644124,
+                        4.4142135623731154
+                      ],
+                      [
+                        27.857588568152412,
+                        -2.4414172525644142,
+                        5.0000000000000142
+                      ],
+                      [
+                        28.686015692898604,
+                        -2.4414172525644169,
+                        5.0000000000000142
+                      ],
+                      [
+                        29.2718021305255,
+                        -2.4414172525644191,
+                        4.4142135623731154
+                      ],
+                      [
+                        29.271802130525497,
+                        -2.4414172525644191,
+                        3.5857864376269237
+                      ],
+                      [
+                        28.686015692898607,
+                        -2.4414172525644169,
+                        2.9999999999999982
+                      ],
+                      [
+                        27.857588568152412,
+                        -2.4414172525644142,
+                        2.9999999999999987
+                      ]
+                    ],
+                    [
+                      [
+                        29.402662458784874,
+                        -2.4414172525644195,
+                        0.003
+                      ],
+                      [
+                        29.402662458784874,
+                        -2.4414172525644195,
+                        7.1522309711286072
+                      ],
+                      [
+                        32.552268757997474,
+                        -2.4414172525644298,
+                        7.1522309711286072
+                      ],
+                      [
+                        32.552268757997474,
+                        -2.4414172525644298,
+                        0.003
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    true
+                  ],
+                  "user_data": {}
+                },
+                null
+              ],
+              "identifier": "Room_e6ac360b-aaed-4c3b-a130-36b4c2ac9d13-000d1502",
+              "display_name": "Bath-103",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  33.011586343299328,
+                  9.5124869469102418
+                ],
+                [
+                  22.506336999467308,
+                  9.5124869469118778
+                ],
+                [
+                  22.506336999467308,
+                  4.0630118812932663
+                ],
+                [
+                  26.655123088706141,
+                  4.0630118812932521
+                ],
+                [
+                  32.814735949598536,
+                  4.0630118812932317
+                ],
+                [
+                  32.814735949598528,
+                  -2.4414172525644293
+                ],
+                [
+                  32.814735949598514,
+                  -8.2138910058448928
+                ],
+                [
+                  32.814735949598514,
+                  -10.963234837866459
+                ],
+                [
+                  43.185470857734991,
+                  -10.963234837866494
+                ],
+                [
+                  43.185470857735,
+                  -10.503917252566117
+                ],
+                [
+                  43.185470857735012,
+                  4.6535630623957713
+                ],
+                [
+                  43.185470857735019,
+                  9.512486946910208
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                null,
+                null,
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        29.402662458784881,
+                        4.0630118812932432,
+                        0.003
+                      ],
+                      [
+                        29.402662458784881,
+                        4.0630118812932432,
+                        7.1522309711286072
+                      ],
+                      [
+                        32.552268757997481,
+                        4.0630118812932334,
+                        7.1522309711286072
+                      ],
+                      [
+                        32.552268757997481,
+                        4.0630118812932334,
+                        0.003
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    true
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        43.185470857735012,
+                        4.7847966581962966,
+                        9.7769028871391086
+                      ],
+                      [
+                        43.185470857735012,
+                        9.049888521713358,
+                        9.77690288713911
+                      ],
+                      [
+                        43.185470857735012,
+                        9.049888521713358,
+                        0.13123359580052493
+                      ],
+                      [
+                        43.185470857735012,
+                        4.7847966581962966,
+                        0.13123359580052493
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        37.867229387918954,
+                        9.5124869469102258,
+                        0.13123359580052493
+                      ],
+                      [
+                        37.867229387918954,
+                        9.5124869469102258,
+                        9.83951968503937
+                      ],
+                      [
+                        33.142819939100058,
+                        9.5124869469102418,
+                        9.839519685039372
+                      ],
+                      [
+                        33.142819939100058,
+                        9.5124869469102418,
+                        0.13123359580052493
+                      ]
+                    ],
+                    [
+                      [
+                        42.722872432538196,
+                        9.51248694691021,
+                        0.13123359580052493
+                      ],
+                      [
+                        42.722872432538196,
+                        9.51248694691021,
+                        9.7769028871391086
+                      ],
+                      [
+                        37.99846298371947,
+                        9.5124869469102258,
+                        9.7769028871391086
+                      ],
+                      [
+                        37.99846298371947,
+                        9.5124869469102258,
+                        0.13123359580052493
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                }
+              ],
+              "identifier": "Room_e6ac360b-aaed-4c3b-a130-36b4c2ac9d13-000d15c9",
+              "display_name": "Hall-105",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  43.185470857734927,
+                  -49.873995992722584
+                ],
+                [
+                  43.185470857734991,
+                  -10.963234837866494
+                ],
+                [
+                  32.814735949598514,
+                  -10.963234837866461
+                ],
+                [
+                  25.0737582593098,
+                  -10.963234837866436
+                ],
+                [
+                  23.174300491054929,
+                  -10.96323483786643
+                ],
+                [
+                  22.8377018288636,
+                  -10.963234837866429
+                ],
+                [
+                  22.837701828863537,
+                  -49.873995992722506
+                ]
+              ],
+              "floor_height": -1.8044619422572179,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": true,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        43.185470857734963,
+                        -25.005229588523651,
+                        -1.4763779527556213
+                      ],
+                      [
+                        43.185470857734963,
+                        -25.005229588523651,
+                        6.7257217847779343
+                      ],
+                      [
+                        43.18547085773497,
+                        -20.608904129206092,
+                        6.7257217847779343
+                      ],
+                      [
+                        43.18547085773497,
+                        -20.608904129206092,
+                        -1.4763779527556213
+                      ]
+                    ],
+                    [
+                      [
+                        43.185470857734956,
+                        -29.893681032093212,
+                        -1.4435695538054985
+                      ],
+                      [
+                        43.185470857734956,
+                        -29.893681032093212,
+                        6.6929133858278105
+                      ],
+                      [
+                        43.185470857734963,
+                        -25.562972370675915,
+                        6.6929133858278105
+                      ],
+                      [
+                        43.185470857734963,
+                        -25.562972370675915,
+                        -1.4435695538054985
+                      ]
+                    ],
+                    [
+                      [
+                        43.185470857734948,
+                        -35.110216465163361,
+                        -1.8014619422572171
+                      ],
+                      [
+                        43.185470857734948,
+                        -35.110216465163361,
+                        7.053805774278195
+                      ],
+                      [
+                        43.185470857734956,
+                        -30.18895662264368,
+                        7.0538057742781932
+                      ],
+                      [
+                        43.185470857734956,
+                        -30.18895662264368,
+                        -1.8014619422572189
+                      ]
+                    ],
+                    [
+                      [
+                        43.185470857734941,
+                        -39.73620071713259,
+                        -1.4435695538054985
+                      ],
+                      [
+                        43.185470857734941,
+                        -39.73620071713259,
+                        6.6929133858278105
+                      ],
+                      [
+                        43.185470857734948,
+                        -35.405492055715293,
+                        6.6929133858278105
+                      ],
+                      [
+                        43.185470857734948,
+                        -35.405492055715293,
+                        -1.4435695538054985
+                      ]
+                    ],
+                    [
+                      [
+                        43.185470857734977,
+                        -18.015728276187119,
+                        1.8157173617186313
+                      ],
+                      [
+                        43.185470857734977,
+                        -17.429941838560222,
+                        2.4015037993455293
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.60151471381403,
+                        2.4015037993455284
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.015728276187115,
+                        1.8157173617186313
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.015728276187115,
+                        0.98729023697244045
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.60151471381403,
+                        0.40150379934551506
+                      ],
+                      [
+                        43.185470857734977,
+                        -17.429941838560225,
+                        0.40150379934551506
+                      ],
+                      [
+                        43.185470857734977,
+                        -18.015728276187115,
+                        0.98729023697244012
+                      ]
+                    ],
+                    [
+                      [
+                        43.185470857734977,
+                        -17.721765021593807,
+                        4.0908203065299134
+                      ],
+                      [
+                        43.185470857734977,
+                        -17.721765021593807,
+                        5.59082030652994
+                      ],
+                      [
+                        43.185470857734977,
+                        -17.57843318752224,
+                        6.0317585197641854
+                      ],
+                      [
+                        43.185470857734977,
+                        -17.203450345291468,
+                        6.3040948433129715
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.740079697896135,
+                        6.3040948433129707
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.365096855665364,
+                        6.0317585197641819
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.2217650215938,
+                        5.5908203065299356
+                      ],
+                      [
+                        43.185470857734977,
+                        -16.2217650215938,
+                        4.0908203065299134
+                      ]
+                    ],
+                    [
+                      [
+                        43.185470857734934,
+                        -45.343812265688257,
+                        2.7772240854650927
+                      ],
+                      [
+                        43.185470857734934,
+                        -44.961859184651878,
+                        3.9527462847385806
+                      ],
+                      [
+                        43.185470857734934,
+                        -43.961755088278117,
+                        4.6793583621656554
+                      ],
+                      [
+                        43.185470857734934,
+                        -42.72586944309846,
+                        4.6793583621656527
+                      ],
+                      [
+                        43.185470857734934,
+                        -41.725765346724707,
+                        3.9527462847385753
+                      ],
+                      [
+                        43.185470857734934,
+                        -41.343812265688335,
+                        2.777224085465086
+                      ],
+                      [
+                        43.185470857734934,
+                        -41.725765346724714,
+                        1.6017018861915866
+                      ],
+                      [
+                        43.185470857734934,
+                        -42.725869443098475,
+                        0.87508980876451559
+                      ],
+                      [
+                        43.185470857734934,
+                        -43.961755088278132,
+                        0.87508980876452158
+                      ],
+                      [
+                        43.185470857734934,
+                        -44.961859184651885,
+                        1.6017018861916019
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        22.837701828863587,
+                        -20.641712528156226,
+                        -1.4435695538054985
+                      ],
+                      [
+                        22.837701828863587,
+                        -20.641712528156226,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.83770182886358,
+                        -24.972421189573524,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.83770182886358,
+                        -24.972421189573524,
+                        -1.4435695538054985
+                      ]
+                    ],
+                    [
+                      [
+                        22.837701828863576,
+                        -25.562972370675915,
+                        -1.4435695538054985
+                      ],
+                      [
+                        22.837701828863576,
+                        -25.562972370675915,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.837701828863569,
+                        -29.893681032093212,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.837701828863569,
+                        -29.893681032093212,
+                        -1.4435695538054985
+                      ]
+                    ],
+                    [
+                      [
+                        22.837701828863569,
+                        -30.484232213195604,
+                        -1.4435695538054985
+                      ],
+                      [
+                        22.837701828863569,
+                        -30.484232213195604,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.837701828863562,
+                        -34.8149408746129,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.837701828863562,
+                        -34.8149408746129,
+                        -1.4435695538054985
+                      ]
+                    ],
+                    [
+                      [
+                        22.837701828863562,
+                        -35.405492055715293,
+                        -1.4435695538054985
+                      ],
+                      [
+                        22.837701828863562,
+                        -35.405492055715293,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.837701828863555,
+                        -39.73620071713259,
+                        6.6929133858278105
+                      ],
+                      [
+                        22.837701828863555,
+                        -39.73620071713259,
+                        -1.4435695538054985
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        28.155943298679798,
+                        -49.873995992722527,
+                        -1.673228346456693
+                      ],
+                      [
+                        28.155943298679798,
+                        -49.873995992722527,
+                        5.01968503937008
+                      ],
+                      [
+                        32.94596954539896,
+                        -49.873995992722541,
+                        5.01968503937008
+                      ],
+                      [
+                        32.94596954539896,
+                        -49.873995992722541,
+                        -1.673228346456693
+                      ]
+                    ],
+                    [
+                      [
+                        33.077203141199483,
+                        -49.873995992722541,
+                        -1.673228346456693
+                      ],
+                      [
+                        33.077203141199483,
+                        -49.873995992722541,
+                        5.01968503937008
+                      ],
+                      [
+                        37.867229387918641,
+                        -49.873995992722556,
+                        5.01968503937008
+                      ],
+                      [
+                        37.867229387918641,
+                        -49.873995992722556,
+                        -1.673228346456693
+                      ]
+                    ],
+                    [
+                      [
+                        23.300300254060385,
+                        -49.873995992722513,
+                        5.150918635170604
+                      ],
+                      [
+                        23.300300254060385,
+                        -49.873995992722513,
+                        6.92257217847769
+                      ],
+                      [
+                        28.024709702879274,
+                        -49.873995992722527,
+                        6.92257217847769
+                      ],
+                      [
+                        28.024709702879274,
+                        -49.873995992722527,
+                        5.150918635170604
+                      ]
+                    ],
+                    [
+                      [
+                        28.155943298679798,
+                        -49.873995992722527,
+                        5.150918635170604
+                      ],
+                      [
+                        28.155943298679798,
+                        -49.873995992722527,
+                        6.92257217847769
+                      ],
+                      [
+                        32.94596954539896,
+                        -49.873995992722541,
+                        6.92257217847769
+                      ],
+                      [
+                        32.94596954539896,
+                        -49.873995992722541,
+                        5.150918635170604
+                      ]
+                    ],
+                    [
+                      [
+                        33.077203141199483,
+                        -49.873995992722541,
+                        5.150918635170604
+                      ],
+                      [
+                        33.077203141199483,
+                        -49.873995992722541,
+                        6.92257217847769
+                      ],
+                      [
+                        37.867229387918641,
+                        -49.873995992722556,
+                        6.92257217847769
+                      ],
+                      [
+                        37.867229387918641,
+                        -49.873995992722556,
+                        5.150918635170604
+                      ]
+                    ],
+                    [
+                      [
+                        37.998462983719179,
+                        -49.873995992722556,
+                        5.150918635170604
+                      ],
+                      [
+                        37.998462983719179,
+                        -49.873995992722556,
+                        6.92257217847769
+                      ],
+                      [
+                        42.722872432538068,
+                        -49.87399599272257,
+                        6.92257217847769
+                      ],
+                      [
+                        42.722872432538068,
+                        -49.87399599272257,
+                        5.150918635170604
+                      ]
+                    ],
+                    [
+                      [
+                        23.300300254060385,
+                        -49.873995992722513,
+                        -1.801461942257218
+                      ],
+                      [
+                        23.300300254060385,
+                        -49.873995992722513,
+                        5.0196850393700787
+                      ],
+                      [
+                        28.024709702879274,
+                        -49.873995992722527,
+                        5.0196850393700787
+                      ],
+                      [
+                        28.024709702879274,
+                        -49.873995992722527,
+                        -1.801461942257218
+                      ]
+                    ],
+                    [
+                      [
+                        37.998462983719165,
+                        -49.873995992722556,
+                        -1.801461942257218
+                      ],
+                      [
+                        37.998462983719165,
+                        -49.873995992722556,
+                        5.0196850393700787
+                      ],
+                      [
+                        42.722872432538082,
+                        -49.87399599272257,
+                        5.0196850393700787
+                      ],
+                      [
+                        42.722872432538082,
+                        -49.87399599272257,
+                        -1.801461942257218
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                }
+              ],
+              "identifier": "Room_e6ac360b-aaed-4c3b-a130-36b4c2ac9d13-000d15d0",
+              "display_name": "Living-106",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  22.837701828863626,
+                  4.0630118812932645
+                ],
+                [
+                  22.837701828863615,
+                  -2.4414172525643987
+                ],
+                [
+                  25.073758259309813,
+                  -2.4414172525644058
+                ],
+                [
+                  26.65512308870613,
+                  -2.4414172525644107
+                ],
+                [
+                  26.655123088706141,
+                  4.0630118812932521
+                ],
+                [
+                  22.958336999467306,
+                  4.0630118812932645
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        22.837701828863626,
+                        3.88256568706754,
+                        0.003
+                      ],
+                      [
+                        22.837701828863626,
+                        3.88256568706754,
+                        7.250656167979
+                      ],
+                      [
+                        22.837701828863619,
+                        -2.291974995347156,
+                        7.250656167979
+                      ],
+                      [
+                        22.837701828863619,
+                        -2.291974995347156,
+                        0.003
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    true
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "identifier": "Room_b3a4a465-08e5-441a-bd3e-d967e546d52e-000dd6aa",
+              "display_name": "Mech.-102",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  13.668814766359125,
+                  -23.818937777331868
+                ],
+                [
+                  12.922074383760753,
+                  -21.930614384718446
+                ],
+                [
+                  11.806592453041446,
+                  -20.233827274815454
+                ],
+                [
+                  10.369076985513662,
+                  -18.799625157011743
+                ],
+                [
+                  8.6697203400763527,
+                  -17.688061651987269
+                ],
+                [
+                  6.779678818981604,
+                  -16.945680696795076
+                ],
+                [
+                  4.7780931759405965,
+                  -16.603567634100386
+                ],
+                [
+                  2.7487747953275772,
+                  -16.676047591332363
+                ],
+                [
+                  0.77669630042576543,
+                  -17.160085651860733
+                ],
+                [
+                  -1.0555664622967811,
+                  -18.035413934526506
+                ],
+                [
+                  -2.671292079886749,
+                  -19.265380260389822
+                ],
+                [
+                  -4.0028260898683907,
+                  -20.798482870901072
+                ],
+                [
+                  -4.9944138413698251,
+                  -22.570526935016463
+                ],
+                [
+                  -5.6045350814501642,
+                  -24.507312546925302
+                ],
+                [
+                  -5.8076425116737731,
+                  -26.527741661218144
+                ],
+                [
+                  -5.5952315172304035,
+                  -28.547213870369426
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "identifier": "Room_617d57de-be76-4691-b7eb-10ba358cce12-00118d35",
+              "display_name": "Room-223",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  10.920486337393355,
+                  -29.934025915982581
+                ],
+                [
+                  10.535151098731301,
+                  -29.003744356744377
+                ],
+                [
+                  9.6048695394930963,
+                  -28.618409118082319
+                ],
+                [
+                  8.6745879802548913,
+                  -29.003744356744374
+                ],
+                [
+                  8.289252741592831,
+                  -29.934025915982577
+                ],
+                [
+                  8.6745879802548842,
+                  -30.864307475220784
+                ],
+                [
+                  9.60486953949309,
+                  -31.249642713882842
+                ],
+                [
+                  10.535151098731298,
+                  -30.864307475220794
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 9.84251968503937,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": true,
+              "is_top_exposed": false,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "identifier": "Room_82db7c3c-46be-46af-9922-2356c8c81b94-00118d62",
+              "display_name": "Room-224",
+              "user_data": {}
+            },
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  -10.778299450045196,
+                  -20.810322817245332
+                ],
+                [
+                  -32.431842757131811,
+                  -20.810322817245332
+                ],
+                [
+                  -32.431842757131811,
+                  -39.183026229318827
+                ],
+                [
+                  -10.778299450045193,
+                  -39.183026229318827
+                ]
+              ],
+              "floor_height": 0.0,
+              "floor_to_ceiling_height": 21.325459317585302,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": true,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                null,
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        -29.355071103588504,
+                        -39.183026229318827,
+                        0.82283464566929254
+                      ],
+                      [
+                        -29.355071103588504,
+                        -39.183026229318827,
+                        9.83951968503937
+                      ],
+                      [
+                        -13.855071103588511,
+                        -39.183026229318827,
+                        9.83951968503937
+                      ],
+                      [
+                        -13.855071103588511,
+                        -39.183026229318827,
+                        0.82283464566929254
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false
+                  ],
+                  "user_data": {}
+                },
+                null
+              ],
+              "identifier": "Room_30fb5193-b847-44e4-982d-f94311e3770a-001199d2",
+              "display_name": "konrad-225",
+              "user_data": {}
+            }
+          ],
+          "properties": {
+            "type": "StoryPropertiesAbridged",
+            "energy": {
+              "type": "StoryEnergyPropertiesAbridged",
+              "construction_set": "Default Generic Construction Set"
+            }
+          },
+          "floor_to_floor_height": 0.0,
+          "floor_height": 0.0,
+          "multiplier": 1,
+          "roof": {
+            "type": "RoofSpecification",
+            "geometry": [
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    43.18875169763,
+                    -10.96323483786643,
+                    8.326771653543581
+                  ],
+                  [
+                    22.8377018288636,
+                    -10.96323483786643,
+                    8.326771653543581
+                  ],
+                  [
+                    22.8377018288636,
+                    -49.873995992722463,
+                    8.326771653543581
+                  ],
+                  [
+                    43.18875169763,
+                    -49.873995992722463,
+                    8.326771653543581
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    0.0,
+                    1.0
+                  ],
+                  "o": [
+                    22.837701797485352,
+                    -10.963234901428223,
+                    8.32677173614502
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    -10.446934620648868,
+                    -20.478957987849007,
+                    16.044254534029484
+                  ],
+                  [
+                    -32.763207586528139,
+                    -20.478957987849007,
+                    16.044254534029484
+                  ],
+                  [
+                    -23.24549105109509,
+                    -29.996674523282056,
+                    21.539310737832317
+                  ],
+                  [
+                    -19.964651156081956,
+                    -29.996674523282067,
+                    21.53931073783232
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    0.50000003909295743,
+                    0.8660253812141081
+                  ],
+                  "o": [
+                    -32.763206481933594,
+                    -20.478958129882813,
+                    16.044254302978516
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    -32.763207586528139,
+                    -20.478957987849007,
+                    16.044254534029484
+                  ],
+                  [
+                    -32.763207586528139,
+                    -39.514391058715155,
+                    16.044254534029484
+                  ],
+                  [
+                    -23.24549105109509,
+                    -29.996674523282056,
+                    21.539310737832317
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -0.50000003909295754,
+                    0.0,
+                    0.86602538121410833
+                  ],
+                  "o": [
+                    -32.763206481933594,
+                    -39.5143928527832,
+                    16.044254302978516
+                  ],
+                  "x": [
+                    0.8660253812141081,
+                    0.0,
+                    0.50000003909295743
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    -32.763207586528139,
+                    -39.514391058715155,
+                    16.044254534029484
+                  ],
+                  [
+                    -10.446934620648868,
+                    -39.514391058715155,
+                    16.044254534029484
+                  ],
+                  [
+                    -19.964651156081956,
+                    -29.996674523282067,
+                    21.53931073783232
+                  ],
+                  [
+                    -23.24549105109509,
+                    -29.996674523282056,
+                    21.539310737832317
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -0.4999998887931128,
+                    0.86602546798975544
+                  ],
+                  "o": [
+                    -10.446934700012207,
+                    -39.5143928527832,
+                    16.044254302978516
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    -10.446934620648868,
+                    -20.478957987849007,
+                    16.044254534029484
+                  ],
+                  [
+                    -19.964651156081956,
+                    -29.996674523282064,
+                    21.539310737832317
+                  ],
+                  [
+                    -10.446934620648868,
+                    -39.514391058715155,
+                    16.044254534029484
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.50000000151798918,
+                    0.0,
+                    0.86602540290802721
+                  ],
+                  "o": [
+                    -19.964651107788086,
+                    -29.996673583984375,
+                    21.539310455322266
+                  ],
+                  "x": [
+                    0.86602540290802721,
+                    0.0,
+                    -0.50000000151798918
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    43.516835687131312,
+                    -11.094468433666503,
+                    19.763780030147441
+                  ],
+                  [
+                    43.516835687131334,
+                    -0.26769678012370335,
+                    30.179387462143346
+                  ],
+                  [
+                    -16.201012081897549,
+                    -0.26769678012360743,
+                    30.179387462143346
+                  ],
+                  [
+                    -16.201012081897566,
+                    -11.094468433666403,
+                    19.763780030147441
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -2.4231818954403694E-08,
+                    -0.69329028394129977,
+                    0.72065843656519524
+                  ],
+                  "o": [
+                    43.5168342590332,
+                    -0.26769676804542542,
+                    30.179388046264648
+                  ],
+                  "x": [
+                    0.99999999999999967,
+                    -1.6799684643312709E-08,
+                    1.7462864762811434E-08
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    43.516835687131334,
+                    -0.26769678012370157,
+                    30.179387462143339
+                  ],
+                  [
+                    43.516835687131348,
+                    9.7716732986162853,
+                    19.743705424624462
+                  ],
+                  [
+                    -16.201012081897531,
+                    9.7716732986163848,
+                    19.743705424624462
+                  ],
+                  [
+                    -16.201012081897545,
+                    -0.26769678012360743,
+                    30.179387462143346
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -3.28212488287196E-08,
+                    0.72065845933310968,
+                    0.69329026027460361
+                  ],
+                  "o": [
+                    43.5168342590332,
+                    9.7716732025146484,
+                    19.743705749511719
+                  ],
+                  "x": [
+                    0.99999999999999944,
+                    2.3652910614293712E-08,
+                    2.2754652143000548E-08
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    -16.20101208189757,
+                    -11.094468433666403,
+                    19.763780030147441
+                  ],
+                  [
+                    -16.201012081897552,
+                    -0.26769678012360743,
+                    30.179387462143346
+                  ],
+                  [
+                    -21.122271924417227,
+                    -0.26769678012359854,
+                    30.179387462143346
+                  ],
+                  [
+                    -21.122271924417245,
+                    -11.094468433666394,
+                    19.763780030147441
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -0.69329028394129988,
+                    0.72065843656519546
+                  ],
+                  "o": [
+                    -16.201011657714844,
+                    -11.094468116760254,
+                    19.76378059387207
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    -16.201012081897552,
+                    -0.2676967801236021,
+                    30.179387462143339
+                  ],
+                  [
+                    -16.201012081897535,
+                    9.7716732986163848,
+                    19.743705424624462
+                  ],
+                  [
+                    -21.122271924417209,
+                    9.7716732986163937,
+                    19.743705424624462
+                  ],
+                  [
+                    -21.122271924417227,
+                    -0.26769678012359854,
+                    30.179387462143346
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    0.72065845933311024,
+                    0.69329026027460394
+                  ],
+                  "o": [
+                    -16.201011657714844,
+                    9.7716732025146484,
+                    19.743705749511719
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              }
+            ]
+          },
+          "identifier": "Story_e3e052f9-0156-11d5-9301-0000863f27ad-00000137",
+          "display_name": "Level 1"
+        }
+      ],
+      "properties": {
+        "type": "BuildingPropertiesAbridged",
+        "energy": {
+          "type": "BuildingEnergyPropertiesAbridged",
+          "construction_set": "Default Generic Construction Set"
+        }
+      },
+      "identifier": "Building_aa965ce0-dac3-4396-962b-b317957fddbb",
+      "display_name": "Building 1"
+    }
+  ],
+  "context_shades": [],
+  "tolerance": 0.001,
+  "angle_tolerance": 1.0,
+  "identifier": "Model_e340d1fc-19c1-4200-9ff0-415bc126641d",
+  "display_name": "Model 1"
+}
