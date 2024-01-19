@@ -3,12 +3,8 @@
 from __future__ import division
 import math
 
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Vector3D
-from ladybug_geometry.geometry3d.ray import Ray3D
-from ladybug_geometry.geometry3d.polyline import Polyline3D
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.geometry2d import Vector2D, Polygon2D
+from ladybug_geometry.geometry3d import Vector3D, Ray3D, Polyline3D, Face3D, Polyface3D
 
 from honeybee.typing import float_positive, int_in_range, clean_string, \
     invalid_dict_error
@@ -696,6 +692,45 @@ using-multipliers-zone-and-or-window.html
                 self._room_2ds, poly, holes, ftc, r_id, r_nm, tolerance=tolerance)
             new_room_2ds.append(new_room)
         self._room_2ds = tuple(new_room_2ds)
+
+    def suggested_alignment_axes(
+            self, distance, direction=Vector2D(0, 1), angle_tolerance=1.0):
+        """Get suggested LineSegment2Ds to be used for this Story in the align methods.
+
+        This method will return the most common axes across the Story geometry
+        along with the number of Room2D segments that correspond to 
+        each axis. The latter can be used to filter the suggested alignment axes
+        to get only the most common ones across the input Room2Ds.
+
+        Args:
+            distance: A number for the distance that will be used in the alignment
+                operation. This will be used to determine the resolution at which
+                alignment axes are generated and evaluated. Smaller alignment
+                distances will result in the generation of more common_axes since
+                a finer resolution can differentiate common that would typically be
+                grouped together. For typical building geometry, an alignment distance
+                of 0.3 meters or 1 foot is typically suitable for eliminating
+                unwanted details while not changing the geometry too much from
+                its original location.
+            direction: A Vector2D object to represent the direction in which the
+                common axes will be evaluated and generated.
+            angle_tolerance: The max angle difference in radians that the Room2D
+                segment direction can differ from the input direction before the
+                segments are not factored into this calculation of common axes.
+
+            Returns:
+                A tuple with two elements.
+
+            -   common_axes: A list of LineSegment2D objects for the common
+                axes across the input Room2Ds.
+
+            -   axis_values: A list of integers that aligns with the common_axes
+                and denotes how many segments of the input Room2D each axis
+                relates to. Higher numbers indicate that that the axis is more
+                commonly aligned across the Room2Ds.
+        """
+        return Room2D.generate_alignment_axes(
+            self._room_2ds, distance, direction, angle_tolerance)
 
     def align_room_2ds(self, line_ray, distance):
         """Move Room2D vertices within a given distance of a line to be on that line.
