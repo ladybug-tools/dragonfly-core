@@ -7,7 +7,7 @@ import math
 from ladybug_geometry.geometry2d import Point2D, Vector2D, Ray2D, LineSegment2D, \
     Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D, \
-    Plane, Polyline3D, Face3D, Polyface3D
+    Plane, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_between_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite
@@ -19,6 +19,7 @@ from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Ground
 from honeybee.facetype import Floor, Wall, AirBoundary, RoofCeiling
 from honeybee.facetype import face_types as ftyp
+from honeybee.shade import Shade
 from honeybee.door import Door
 from honeybee.face import Face
 from honeybee.room import Room
@@ -1657,11 +1658,11 @@ class Room2D(_BaseGeometry):
                 tuple of Surface.boundary_condition_objects as the second item.
         """
         # create the honeybee Room
-        has_roof = False
+        has_roof, shade_geo = False, None
         if self._parent is not None and self._parent._roof is not None:
             # generate the room volume from the slanted roof
             if self.is_top_exposed and multiplier == 1:
-                room_polyface, roof_face_i = \
+                room_polyface, roof_face_i, shade_geo = \
                     self._room_volume_with_roof(self._parent._roof, tolerance)
                 has_roof = True if room_polyface is not None else False
         if not has_roof:  # generate the Room volume normally
@@ -1747,6 +1748,12 @@ class Room2D(_BaseGeometry):
         if self._is_top_exposed:
             for rf in roof_faces:
                 rf.boundary_condition = bcs.outdoors
+
+        # assign any Shade geometries like dormers that might result from the roof
+        if shade_geo:
+            for i, s_geo in enumerate(shade_geo):
+                shd_id = '{}_RoofShade{}'.format(self.identifier, i)
+                hb_room.add_outdoor_shade(Shade(shd_id, s_geo))
 
         # transfer any extension properties assigned to the Room2D and return result
         hb_room._properties = self.properties.to_honeybee(hb_room)
@@ -2347,6 +2354,13 @@ class Room2D(_BaseGeometry):
             * roof_face_i -- A list of integers for the indices of the faces in
                 the Polyface3D that correspond to the roof. Will be None whenever
                 the roof is not successfully applied to the Room.
+            
+            * shade_geometry -- An list of Face3D for roof geometries that overlapped
+                with the Room2D but could not be easily incorporated into the Room
+                volume. Typical examples include roof geometries representing dormers
+                or roof elements that projected out and overhung into the Room2D
+                geometry. These should be translated to Room-assigned shades. Will
+                be None whenever the roof is not successfully applied to the Room.
         """
         # get the roof polygons and the bounding Room2D polygon
         roof_polys = roof_spec.boundary_geometry_2d
@@ -2389,7 +2403,7 @@ class Room2D(_BaseGeometry):
                     part_roof_verts.append(roof_verts[v_count:v_count + len(hole)])
                     v_count += len(hole)
                 p_faces.append(Face3D(part_roof_verts[0], holes=part_roof_verts[1:]))
-            return Polyface3D.from_faces(p_faces, tolerance), [-1]
+            return Polyface3D.from_faces(p_faces, tolerance), [-1], []
 
         # when multiple roofs, each segment must be intersected with the roof polygons
         # gather polygons that account for all of the Room2D holes
@@ -2418,7 +2432,7 @@ class Room2D(_BaseGeometry):
                     other_planes.pop(i)
                     break
             if current_poly is None:  # first point not inside a roof, invalid roof
-                return None, None
+                return None, None, None
             # loop through segments and add vertices if they cross outside the roof face
             rot_poly = rm_poly.vertices[1:] + (pt1,)
             for pt2, seg in zip(rot_poly, rm_segs):
@@ -2472,7 +2486,7 @@ class Room2D(_BaseGeometry):
                                 rf_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
                             break
                     if current_poly is None:  # point not inside a roof, invalid roof
-                        return None, None
+                        return None, None, None
                     # remove duplicated vertices from the list and add to the Face3D
                     sort_pts = [pt for i, pt in enumerate(sort_pts)
                                 if not pt.is_equivalent(sort_pts[i - 1], tolerance)]
@@ -2480,7 +2494,7 @@ class Room2D(_BaseGeometry):
                     face_pts.extend(sort_pts)
                 # make the final Face3D
                 if len(face_pts) == 2:  # second point not inside a roof, invalid roof
-                    return None, None
+                    return None, None, None
                 p_faces.append(Face3D(face_pts))
                 pt1 = pt2  # increment for next segment
 
@@ -2504,7 +2518,7 @@ class Room2D(_BaseGeometry):
             try:
                 int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
             except Exception:  # intersection failed for some reason
-                return None, None
+                return None, None, None
             polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in new_poly))
                      for new_poly in int_result.regions]
             if self.floor_geometry.has_holes and len(polys) > 1:
@@ -2536,12 +2550,44 @@ class Room2D(_BaseGeometry):
         roof_face_i = list(range(-1, -len(roof_faces) - 1, -1))
         p_faces.extend(roof_faces)
 
-        # create the Polyface3D and try to cap it with vertical faces if it is not solid
+        # create the Polyface3D and try to repair it if it is not solid
         room_polyface = Polyface3D.from_faces(p_faces, tolerance)
+        shade_geometry = []
+        ang_tol = math.radians(1)
+
         if not room_polyface.is_solid:
-            ang_tol = math.radians(1)
+            # make sure that overlapping edges are merged so we don't get false readings
             room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
+
         if not room_polyface.is_solid:
+            # remove disconnected roof geometries from the Polyface (eg. dormers)
+            room_ind, shade_ind = [], []
+            edge_i, edge_t = room_polyface.edge_indices, room_polyface.edge_types
+            for f_ind, face in enumerate(room_polyface.face_indices):
+                fe_types = []
+                for fi in face:
+                    for i, vi in enumerate(fi):
+                        try:
+                            ind = edge_i.index((vi, fi[i - 1]))
+                        except ValueError:  # make sure reversed edge isn't there
+                            ind = edge_i.index((fi[i - 1], vi))
+                        fe_types.append(edge_t[ind])
+                if sum(fe_types) <= 1:  # disconnected face found!
+                    shade_ind.append(f_ind)
+                else:
+                    room_ind.append(f_ind)
+            if len(shade_ind) != 0:  # rebuild the Polyface3D
+                p_faces = [room_polyface.faces[f_ind] for f_ind in room_ind]
+                shade_geometry = [room_polyface.faces[f_ind] for f_ind in shade_ind]
+                room_polyface = Polyface3D.from_faces(p_faces, tolerance)
+                if not room_polyface.is_solid:
+                    room_polyface = room_polyface.merge_overlapping_edges(
+                        tolerance, ang_tol)
+                new_roof_len = len(roof_faces) - len(shade_ind)
+                roof_face_i = list(range(-1, -new_roof_len - 1, -1))
+
+        if not room_polyface.is_solid:
+            # try to patch any vertical gaps between roofs with new walls
             edges = [ed for ed in room_polyface.naked_edges
                      if not ed.is_vertical(tolerance)]
             vertical_faces = []
@@ -2589,7 +2635,7 @@ class Room2D(_BaseGeometry):
             p_faces.extend(vertical_faces)
             room_polyface = Polyface3D.from_faces(p_faces, tolerance)
 
-        return room_polyface, roof_face_i
+        return room_polyface, roof_face_i, shade_geometry
 
     def _honeybee_plenums(self, hb_room, tolerance=0.01):
         """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.
