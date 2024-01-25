@@ -1689,14 +1689,23 @@ class Room2D(_BaseGeometry):
         # assign windows, shading, and air boundary properties to walls
         for i, glz_par in enumerate(self._window_parameters):
             if glz_par is not None:
+                hb_face = hb_room[i + 1]
                 try:
-                    glz_par.add_window_to_face(hb_room[i + 1], tolerance)
+                    glz_par.add_window_to_face(hb_face, tolerance)
                 except AssertionError as e:
                     if enforce_bc:
                         raise e
                     hb_room[i + 1]._boundary_condition = bcs.outdoors
                     hb_room[i + 1].remove_sub_faces()
-                    glz_par.add_window_to_face(hb_room[i + 1], tolerance)
+                    glz_par.add_window_to_face(hb_face, tolerance)
+                if has_roof and isinstance(glz_par, _AsymmetricBase):
+                    valid_ap = []
+                    for ap in hb_face._apertures:
+                        if hb_face.geometry._is_sub_face(ap.geometry):
+                            valid_ap.append(ap)
+                    if len(hb_face._apertures) != len(valid_ap):
+                        hb_face.remove_apertures()
+                        hb_face.add_apertures(valid_ap)
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
                 shd_par.add_shading_to_face(hb_room[i + 1], tolerance)
