@@ -2574,9 +2574,14 @@ class Room2D(_BaseGeometry):
                     for i, vi in enumerate(fi):
                         try:
                             ind = edge_i.index((vi, fi[i - 1]))
+                            et = edge_t[ind]
                         except ValueError:  # make sure reversed edge isn't there
-                            ind = edge_i.index((fi[i - 1], vi))
-                        fe_types.append(edge_t[ind])
+                            try:
+                                ind = edge_i.index((fi[i - 1], vi))
+                                et = edge_t[ind]
+                            except ValueError:  # an edge that was merged in overlapping
+                                et = 1
+                        fe_types.append(et)
                 if sum(fe_types) <= 1:  # disconnected face found!
                     shade_ind.append(f_ind)
                 else:
