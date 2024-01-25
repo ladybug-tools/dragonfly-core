@@ -2367,6 +2367,11 @@ class Room2D(_BaseGeometry):
         roof_planes = roof_spec.planes
         room_poly = Polygon2D(
             [Point2D(pt.x, pt.y) for pt in self.floor_geometry.boundary])
+        
+        # sort the roofs by their Z so that lower roofs are checked first
+        rz = [rf_geo.center.z for rf_geo in roof_spec.geometry]
+        roof_polys = [p for _, p in sorted(zip(rz, roof_polys), key=lambda pr: pr[0])]
+        roof_planes = [p for _, p in sorted(zip(rz, roof_planes), key=lambda pr: pr[0])]
 
         # gather all of the relevant roof polygons for the Room2D
         rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
