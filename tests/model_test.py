@@ -532,6 +532,21 @@ def test_to_honeybee_missing_adjacency():
     assert isinstance(hb_models[0], hb_model.Model)
 
 
+def test_remove_colinear_vertices_edge_case():
+    """Test the remove_colinear_vertices method with an edge case."""
+    model_file = './tests/json/room_for_remove_colinear.dfjson'
+    model = Model.from_file(model_file)
+    test_room = model.buildings[0][0][0]
+    assert len(test_room) == 6
+    assert len(test_room.window_parameters[0]) == 50
+    assert test_room.window_parameters[1] is None
+
+    cleaned_room = test_room.remove_colinear_vertices(0.01)
+    assert len(cleaned_room) == 4
+    assert len(cleaned_room.window_parameters[0]) == 48
+    assert len(cleaned_room.window_parameters[1]) == 50
+
+
 def test_to_honeybee_doors_skylights_roof():
     """Test the to_honeybee method with doors, skylights, and a sloped roof."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
