@@ -2367,11 +2367,6 @@ class Room2D(_BaseGeometry):
         roof_planes = roof_spec.planes
         room_poly = Polygon2D(
             [Point2D(pt.x, pt.y) for pt in self.floor_geometry.boundary])
-        
-        # sort the roofs by their Z so that lower roofs are checked first
-        rz = [rf_geo.center.z for rf_geo in roof_spec.geometry]
-        roof_polys = [p for _, p in sorted(zip(rz, roof_polys), key=lambda pr: pr[0])]
-        roof_planes = [p for _, p in sorted(zip(rz, roof_planes), key=lambda pr: pr[0])]
 
         # gather all of the relevant roof polygons for the Room2D
         rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
@@ -2383,6 +2378,8 @@ class Room2D(_BaseGeometry):
                     rel_rf_planes.append(rf_pl)
                 if poly_rel == 1:  # simple solution of one roof
                     is_full_bound = True
+                    rel_rf_polys = [rel_rf_polys[-1]]
+                    rel_rf_planes = [rel_rf_planes[-1]]
                     break
 
         # make the room volume
@@ -3019,6 +3016,12 @@ class Room2D(_BaseGeometry):
                 else:
                     new_bcs.append(bcs.ground)
                     new_w_par.append(None)
+        elif skip != 0:
+            w_par_for_merge = m_w_par + [new_w_par[0]]
+            if not all(wp is None for wp in w_par_for_merge):
+                segs_for_merge = m_segs + [segs_2d[-1]]
+                new_w_par[0] = DetailedWindows.merge(
+                    w_par_for_merge, segs_for_merge, ftc_height)
         # move the first properties to the end to match with the vertices
         new_bcs.append(new_bcs.pop(0))
         new_w_par.append(new_w_par.pop(0))

@@ -25,7 +25,7 @@ def dict_to_object(dragonfly_dict, raise_exception=True):
     Args:
         dragonfly_dict: A dictionary of any Dragonfly object. Note
             that this should be a non-abridged dictionary to be valid.
-        raise_exception: Boolean to note whether an excpetion should be raised
+        raise_exception: Boolean to note whether an exception should be raised
             if the object is not identified as a part of dragonfly.
             Default: True.
 
