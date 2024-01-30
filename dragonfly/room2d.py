@@ -2469,13 +2469,24 @@ class Room2D(_BaseGeometry):
                             if int_pt is not None:
                                 int_pts.append((int_pt, 1))
                                 int_pls.append(o_pl)
-                    # project the points and sort the intersections along the segment
-                    rf_pts = [ipl.project_point(Point3D.from_point2d(ipt[0]), proj_dir)
-                              for ipt, ipl in zip(int_pts, int_pls)]
+                    # sort the intersections points along the segment
                     pt_dists = [(ipt[1], seg_2d.p1.distance_to_point(ipt[0]))
                                 for ipt in int_pts]
-                    sort_obj = sorted(zip(pt_dists, rf_pts), key=lambda pair: pair[0])
-                    sort_pts = [x for _, x in sort_obj]
+                    pts_pls = [(i_pt[0], i_pl) for i_pt, i_pl in zip(int_pts, int_pls)]
+                    sort_obj = sorted(zip(pt_dists, pts_pls), key=lambda pair: pair[0])
+                    sort_pts_pls = [x for _, x in sort_obj]
+                    # if two points are equivalent, reorder with the previous point plane
+                    ord_pts = [x[0] for x in sort_pts_pls]
+                    ord_pls = [x[1] for x in sort_pts_pls]
+                    for i, (pt, pln) in enumerate(sort_pts_pls[1:]):
+                        if pt.distance_to_point(ord_pts[i]) < tolerance:
+                            prev_pl = ord_pls[i - 1]
+                            if pln == prev_pl and ord_pls[i] != prev_pl:  # reorder
+                                ord_pts[i], ord_pts[i + 1] = ord_pts[i + 1], ord_pts[i]
+                                ord_pls[i], ord_pls[i + 1] = ord_pls[i + 1], ord_pls[i]
+                    # project the points onto the planes
+                    rf_pts = [ipl.project_point(Point3D.from_point2d(ipt), proj_dir)
+                              for ipt, ipl in zip(ord_pts, ord_pls)]
                     # add a vertex for where the segment ends in the polygon
                     for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
                         if rf_py.point_relationship(pt2, tolerance) >= 0:
@@ -2484,16 +2495,16 @@ class Room2D(_BaseGeometry):
                             other_planes.pop(i)
                             other_planes.append(current_plane)
                             current_poly, current_plane = rf_py, rf_pl
-                            sort_pts.append(
+                            rf_pts.append(
                                 rf_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
                             break
                     if current_poly is None:  # point not inside a roof, invalid roof
                         return None, None, None
                     # remove duplicated vertices from the list and add to the Face3D
-                    sort_pts = [pt for i, pt in enumerate(sort_pts)
-                                if not pt.is_equivalent(sort_pts[i - 1], tolerance)]
-                    sort_pts.reverse()
-                    face_pts.extend(sort_pts)
+                    rf_pts = [pt for i, pt in enumerate(rf_pts)
+                              if not pt.is_equivalent(rf_pts[i - 1], tolerance)]
+                    rf_pts.reverse()
+                    face_pts.extend(rf_pts)
                 # make the final Face3D
                 if len(face_pts) == 2:  # second point not inside a roof, invalid roof
                     return None, None, None
