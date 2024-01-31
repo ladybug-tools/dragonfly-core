@@ -10,7 +10,7 @@ from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D,
     Plane, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_between_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
-    closest_point3d_on_line3d_infinite
+    closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
 import ladybug_geometry.boolean as pb
 
 from honeybee.typing import float_positive, clean_string, clean_and_id_string
@@ -2564,9 +2564,14 @@ class Room2D(_BaseGeometry):
                             break
                     if current_poly is None:  # point not inside a roof, invalid roof
                         return None
-                    # remove duplicated vertices from the list and add to the Face3D
+                    # remove duplicated vertices from the list
                     rf_pts = [pt for i, pt in enumerate(rf_pts)
                               if not pt.is_equivalent(rf_pts[i - 1], tolerance)]
+                    # check that the first two vertices are not a sliver
+                    if abs(rf_pts[0].x - rf_pts[1].x) < tolerance and \
+                            abs(rf_pts[0].y - rf_pts[1].y) < tolerance:
+                        rf_pts.pop(0)
+                    # add the points to the Face3D vertices
                     rf_pts.reverse()
                     face_pts.extend(rf_pts)
                 # make the final Face3D
@@ -2579,7 +2584,7 @@ class Room2D(_BaseGeometry):
 
     def _roof_faces(self, all_room_poly, rel_rf_polys, rel_rf_planes, tolerance):
         """Generate Face3D for the Room Roofs when there are multiple Roof Polygons.
-        
+
         Args:
             all_room_poly: A list of Polygon2D where each polygon represents either
                 the boundary of the room or a hole.
@@ -2667,45 +2672,54 @@ class Room2D(_BaseGeometry):
         vertical_faces = []
 
         # loop through the naked edges and try to match them
+        matched_segs = set()
+        edge_indices = list(range(len(edges)))
         for i, edge_1 in enumerate(edges):
-            e1p1 = Point2D(edge_1.p1.x, edge_1.p1.y)
-            e1p2 = Point2D(edge_1.p2.x, edge_1.p2.y)
-            try:
-                for edge_2 in edges[i + 1:]:
-                    e2p1 = Point2D(edge_2.p1.x, edge_2.p1.y)
-                    e2p2 = Point2D(edge_2.p2.x, edge_2.p2.y)
-                    if e1p1.is_equivalent(e2p1, tolerance) and \
-                            e1p2.is_equivalent(e2p2, tolerance):
-                        new_face3d = Face3D(
-                            (edge_1.p1, edge_1.p2, edge_2.p2, edge_2.p1))
-                        if not new_face3d.is_self_intersecting:
+            edge_1_2d = LineSegment2D.from_end_points(
+                Point2D(edge_1.p1.x, edge_1.p1.y), Point2D(edge_1.p2.x, edge_1.p2.y))
+            other_edges = edges[:i] + edges[i + 1:]
+            other_is = edge_indices[:i] + edge_indices[i + 1:]
+            for oi, edge_2 in zip(other_is, other_edges):
+                e2p1 = Point2D(edge_2.p1.x, edge_2.p1.y)
+                e2p2 = Point2D(edge_2.p2.x, edge_2.p2.y)
+                if edge_1_2d.distance_to_point(e2p1) <= tolerance and \
+                        edge_1_2d.distance_to_point(e2p2) <= tolerance:
+                    # check to be sure that the segments have not been aired already
+                    edge_pair_1, edge_pair_2 = (i, oi), (oi, i)
+                    if edge_pair_1 in matched_segs:
+                        continue
+                    matched_segs.add(edge_pair_1)
+                    matched_segs.add(edge_pair_2)
+                    # build the points of the vertical face
+                    norm = Vector3D(edge_1.v.x, edge_1.v.y, 0)
+                    int_pl_1 = Plane(n=norm, o=edge_2.p1)
+                    int_pl_2 = Plane(n=norm, o=edge_2.p2)
+                    edge_1_1 = intersect_line3d_plane_infinite(edge_1, int_pl_1)
+                    edge_1_2 = intersect_line3d_plane_infinite(edge_1, int_pl_2)
+                    new_face3d = Face3D((edge_1_1, edge_1_2, edge_2.p1, edge_2.p2))
+                    # find the grouping of points that is not self intersecting
+                    if not new_face3d.is_self_intersecting and \
+                            new_face3d.area > tolerance:
+                        vertical_faces.append(new_face3d)
+                    else:
+                        new_face3d = Face3D((edge_1_1, edge_1_2, edge_2.p2, edge_2.p1))
+                        if not new_face3d.is_self_intersecting and \
+                                new_face3d.area > tolerance:
                             vertical_faces.append(new_face3d)
                         else:
                             f_poly = new_face3d.polygon2d
                             fs1, fs2 = f_poly.segments[0], f_poly.segments[2]
                             int_pt = new_face3d.plane.xy_to_xyz(
                                 fs1.intersect_line_ray(fs2))
-                            new_face3d1 = Face3D((edge_1.p1, int_pt, edge_2.p1))
-                            new_face3d2 = Face3D((edge_1.p2, int_pt, edge_2.p2))
-                            vertical_faces.append(new_face3d1)
-                            vertical_faces.append(new_face3d2)
-                    elif e1p1.is_equivalent(e2p2, tolerance) and \
-                            e1p2.is_equivalent(e2p1, tolerance):
-                        new_face3d = Face3D(
-                            (edge_1.p1, edge_1.p2, edge_2.p1, edge_2.p2))
-                        if not new_face3d.is_self_intersecting:
-                            vertical_faces.append(new_face3d)
-                        else:
-                            f_poly = new_face3d.polygon2d
-                            fs1, fs2 = f_poly.segments[0], f_poly.segments[2]
-                            int_pt = new_face3d.plane.xy_to_xyz(
-                                fs1.intersect_line_ray(fs2))
-                            new_face3d1 = Face3D((edge_1.p1, int_pt, edge_2.p2))
-                            new_face3d2 = Face3D((edge_1.p2, int_pt, edge_2.p1))
-                            vertical_faces.append(new_face3d1)
-                            vertical_faces.append(new_face3d2)
-            except IndexError:
-                pass  # we have reached the end of the list
+                            new_face3d1 = Face3D((edge_2.p1, int_pt, edge_1_1))
+                            new_face3d2 = Face3D((edge_2.p2, int_pt, edge_1_2))
+                            if new_face3d1.area > tolerance:
+                                vertical_faces.append(new_face3d1)
+                            if new_face3d2.area > tolerance:
+                                vertical_faces.append(new_face3d2)
+
+        # remove duplicated vertices in the resulting vertical faces
+        vertical_faces = [f.remove_duplicate_vertices(tolerance) for f in vertical_faces]
 
         # rebuild the room polyface
         st_v = -len(roof_face_i) - 1

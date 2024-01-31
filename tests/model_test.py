@@ -606,6 +606,19 @@ def test_to_honeybee_hip_roof():
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
 
 
+def test_to_honeybee_vertical_gap():
+    """Test the to_honeybee method with hip roof."""
+    model_file = './tests/json/roof_with_vertical_gap.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    hb_room = hb_models[0].rooms[-1]
+    assert hb_models[0].rooms[0].geometry.is_solid
+    assert hb_room.check_self_intersecting(0.01, False) == ''
+
+
 def test_to_honeybee_roof_with_dormer():
     """Test the to_honeybee method with a dormer roof."""
     model_file = './tests/json/roof_with_dormer.dfjson'
