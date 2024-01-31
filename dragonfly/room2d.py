@@ -1609,7 +1609,8 @@ class Room2D(_BaseGeometry):
         return full_msg
 
     def to_honeybee(
-            self, multiplier=1, add_plenum=False, tolerance=0.01, enforce_bc=True):
+            self, multiplier=1, add_plenum=False, tolerance=0.01,
+            enforce_bc=True, enforce_solid=True):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -1634,6 +1635,12 @@ class Room2D(_BaseGeometry):
                 apertures are assigned to Wall with an illegal boundary conditions
                 (True) or if the invalid boundary condition should be replaced
                 with an Outdoor boundary condition (False). (Default: True).
+            enforce_solid: Boolean to note whether the room should be translated
+                as a solid extrusion whenever translating the room with custom
+                roof geometry produces a non-solid result (True) or the non-solid
+                room geometry should be allowed to remain in the result (False).
+                The latter is useful for understanding why a particular roof
+                geometry has produced a non-solid result. (Default: True).
 
         Returns:
             A tuple with the two items below.
@@ -1664,8 +1671,13 @@ class Room2D(_BaseGeometry):
             if self.is_top_exposed and multiplier == 1:
                 room_polyface, roof_face_i, shade_geo = \
                     self._room_volume_with_roof(self._parent._roof, tolerance)
-                has_roof = True if room_polyface is not None else False
-        if not has_roof:  # generate the Room volume normally
+                if room_polyface is None:  # complete failure to interpret roof
+                    has_roof = False
+                elif enforce_solid and not room_polyface.is_solid:
+                    has_roof = False
+                else:
+                    has_roof = True
+        if not has_roof:  # generate the Room volume normally through extrusion
             room_polyface = Polyface3D.from_offset_face(
                 self._floor_geometry, self.floor_to_ceiling_height)
             roof_face_i = [-1]
