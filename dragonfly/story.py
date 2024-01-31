@@ -1412,7 +1412,7 @@ using-multipliers-zone-and-or-window.html
         return full_msg
 
     def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
-                    enforce_adj=True):
+                    enforce_adj=True, enforce_solid=True):
         """Convert Dragonfly Story to a list of Honeybee Rooms.
 
         Args:
@@ -1433,6 +1433,12 @@ using-multipliers-zone-and-or-window.html
                 boundary condition (False). If False, any Walls containing
                 WindowParameters and an illegal boundary condition will also
                 be replaced with an Outdoor boundary condition. (Default: True).
+            enforce_solid: Boolean to note whether rooms should be translated
+                as solid extrusions whenever translating them with custom
+                roof geometry produces a non-solid result (True) or the non-solid
+                room geometry should be allowed to remain in the result (False).
+                The latter is useful for understanding why a particular roof
+                geometry has produced a non-solid result. (Default: True).
 
         Returns:
             A list of honeybee Rooms that represent the Story.
@@ -1445,7 +1451,8 @@ using-multipliers-zone-and-or-window.html
         adjacencies = []
         for room in self._room_2ds:
             hb_room, adj = room.to_honeybee(
-                mult, add_plenum=add_plenum, tolerance=tolerance, enforce_bc=enforce_adj)
+                mult, add_plenum=add_plenum, tolerance=tolerance,
+                enforce_bc=enforce_adj, enforce_solid=enforce_solid)
             if isinstance(hb_room, Room):
                 hb_rooms.append(hb_room)
             else:  # list of rooms with plenums

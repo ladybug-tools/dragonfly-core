@@ -59,6 +59,13 @@ def translate():
               'condition. If bypass is selected, any Walls containing WindowParameters '
               'and an illegal boundary condition will also be replaced with an '
               'Outdoor boundary condition.', default=True, show_default=True)
+@click.option('--enforce-solid/--permit-non-solid', ' /-pns', help='Flag to note '
+              'whether rooms should be translated as solid extrusions whenever '
+              'translating them with custom roof geometry produces a non-solid '
+              'result or the non-solid room geometry should be allowed to remain '
+              'in the result. The latter is useful for understanding why a '
+              'particular roof geometry has produced a non-solid result.',
+              default=True, show_default=True)
 @click.option('--folder', '-f', help='Folder on this computer, into which the HBJSON '
               'files will be written. If None, the files will be output '
               'to the honeybee default simulation folder and placed in a project '
@@ -70,7 +77,7 @@ def translate():
               'including their file paths. By default the list will be printed out to '
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee(model_file, obj_per_model, multiplier, no_plenum, no_cap,
-                      no_ceil_adjacency, shade_dist, enforce_adj_check,
+                      no_ceil_adjacency, shade_dist, enforce_adj_check, enforce_solid,
                       folder, log_file):
     """Translate a Dragonfly Model file into one or more Honeybee Models.
 
@@ -96,7 +103,7 @@ def model_to_honeybee(model_file, obj_per_model, multiplier, no_plenum, no_cap,
         ceil_adjacency = not no_ceil_adjacency
         hb_models = model.to_honeybee(
             obj_per_model, shade_dist, multiplier, add_plenum, cap, ceil_adjacency,
-            enforce_adj=enforce_adj_check)
+            enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)
 
         # write out the honeybee JSONs and collect the info about them
         hb_jsons = []
@@ -147,11 +154,19 @@ def model_to_honeybee(model_file, obj_per_model, multiplier, no_plenum, no_cap,
     'and an illegal boundary condition will also be replaced with an '
     'Outdoor boundary condition.', default=True, show_default=True)
 @click.option(
+    '--enforce-solid/--permit-non-solid', ' /-pns', help='Flag to note '
+    'whether rooms should be translated as solid extrusions whenever '
+    'translating them with custom roof geometry produces a non-solid '
+    'result or the non-solid room geometry should be allowed to remain '
+    'in the result. The latter is useful for understanding why a '
+    'particular roof geometry has produced a non-solid result.',
+    default=True, show_default=True)
+@click.option(
     '--output-file', '-f', help='Optional file to output the Honeybee Model JSON string'
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
-                           enforce_adj_check, output_file):
+                           enforce_adj_check, enforce_solid, output_file):
     """Translate a Dragonfly Model into a single Honeybee Model.
 
     \b
@@ -167,7 +182,7 @@ def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
         hb_model = parsed_model.to_honeybee(
             object_per_model='District', use_multiplier=multiplier,
             add_plenum=add_plenum, solve_ceiling_adjacencies=ceil_adjacency,
-            enforce_adj=enforce_adj_check)[0]
+            enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
         # write the new model out to the file or stdout
         output_file.write(json.dumps(hb_model.to_dict()))
     except Exception as e:
@@ -216,12 +231,20 @@ def model_to_honeybee_file(model_file, multiplier, no_plenum, no_ceil_adjacency,
     'and an illegal boundary condition will also be replaced with an '
     'Outdoor boundary condition.', default=True, show_default=True)
 @click.option(
+    '--enforce-solid/--permit-non-solid', ' /-pns', help='Flag to note '
+    'whether rooms should be translated as solid extrusions whenever '
+    'translating them with custom roof geometry produces a non-solid '
+    'result or the non-solid room geometry should be allowed to remain '
+    'in the result. The latter is useful for understanding why a '
+    'particular roof geometry has produced a non-solid result.',
+    default=True, show_default=True)
+@click.option(
     '--output-file', '-f', help='Optional file to output the Honeybee Model JSON string'
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def merge_models_to_honeybee(
         base_model, dragonfly_model, honeybee_model, multiplier, no_plenum,
-        default_adjacency, enforce_adj_check, output_file):
+        default_adjacency, enforce_adj_check, enforce_solid, output_file):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
     \b
@@ -253,7 +276,7 @@ def merge_models_to_honeybee(
         hb_model = parsed_model.to_honeybee(
             object_per_model='District', use_multiplier=multiplier,
             add_plenum=add_plenum, solve_ceiling_adjacencies=solve_adjacency,
-            enforce_adj=enforce_adj_check)[0]
+            enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
 
         # merge the honeybee models
         other_hb_models = [HBModel.from_file(m) for m in honeybee_model]

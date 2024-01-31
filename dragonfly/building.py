@@ -692,7 +692,7 @@ class Building(_BaseGeometry):
         self.properties.scale(factor, origin)
 
     def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
-                    enforce_adj=True):
+                    enforce_adj=True, enforce_solid=True):
         """Convert Dragonfly Building to a Honeybee Model.
 
         Args:
@@ -713,6 +713,12 @@ class Building(_BaseGeometry):
                 boundary condition (False). If False, any Walls containing
                 WindowParameters and an illegal boundary condition will also
                 be replaced with an Outdoor boundary condition. (Default: True).
+            enforce_solid: Boolean to note whether rooms should be translated
+                as solid extrusions whenever translating them with custom
+                roof geometry produces a non-solid result (True) or the non-solid
+                room geometry should be allowed to remain in the result (False).
+                The latter is useful for understanding why a particular roof
+                geometry has produced a non-solid result. (Default: True).
 
         Returns:
             A honeybee Model that represent the Building.
@@ -722,12 +728,12 @@ class Building(_BaseGeometry):
             for story in self._unique_stories:
                 hb_rooms.extend(story.to_honeybee(
                     True, add_plenum=add_plenum, tolerance=tolerance,
-                    enforce_adj=enforce_adj))
+                    enforce_adj=enforce_adj, enforce_solid=enforce_solid))
         else:
             for story in self.all_stories():
                 hb_rooms.extend(story.to_honeybee(
                     False, add_plenum=add_plenum, tolerance=tolerance,
-                    enforce_adj=enforce_adj))
+                    enforce_adj=enforce_adj, enforce_solid=enforce_solid))
         hb_mod = Model(self.identifier, hb_rooms)
         hb_mod._display_name = self._display_name
         hb_mod._user_data = self._user_data
@@ -840,7 +846,7 @@ class Building(_BaseGeometry):
     @staticmethod
     def district_to_honeybee(
             buildings, use_multiplier=True, add_plenum=False, tolerance=0.01,
-            enforce_adj=True):
+            enforce_adj=True, enforce_solid=True):
         """Convert an array of Building objects into a single district honeybee Model.
 
         Args:
@@ -863,6 +869,12 @@ class Building(_BaseGeometry):
                 boundary condition (False). If False, any Walls containing
                 WindowParameters and an illegal boundary condition will also
                 be replaced with an Outdoor boundary condition. (Default: True).
+            enforce_solid: Boolean to note whether rooms should be translated
+                as solid extrusions whenever translating them with custom
+                roof geometry produces a non-solid result (True) or the non-solid
+                room geometry should be allowed to remain in the result (False).
+                The latter is useful for understanding why a particular roof
+                geometry has produced a non-solid result. (Default: True).
 
         Returns:
             A honeybee Model that represent the district.
@@ -870,19 +882,19 @@ class Building(_BaseGeometry):
         # create a base model to which everything will be added
         base_model = buildings[0].to_honeybee(
             use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
-            enforce_adj=enforce_adj)
+            enforce_adj=enforce_adj, enforce_solid=enforce_solid)
         # loop through each Building, create a model, and add it to the base one
         for bldg in buildings[1:]:
             base_model.add_model(bldg.to_honeybee(
                 use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
-                enforce_adj=enforce_adj))
+                enforce_adj=enforce_adj, enforce_solid=enforce_solid))
         return base_model
 
     @staticmethod
     def buildings_to_honeybee(
             buildings, context_shades=None, shade_distance=None,
             use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01,
-            enforce_adj=True):
+            enforce_adj=True, enforce_solid=True):
         """Convert an array of Buildings into several honeybee Models with self-shading.
 
         Each input Building will be exported into its own Model. For each Model,
@@ -924,6 +936,12 @@ class Building(_BaseGeometry):
                 boundary condition (False). If False, any Walls containing
                 WindowParameters and an illegal boundary condition will also
                 be replaced with an Outdoor boundary condition. (Default: True).
+            enforce_solid: Boolean to note whether rooms should be translated
+                as solid extrusions whenever translating them with custom
+                roof geometry produces a non-solid result (True) or the non-solid
+                room geometry should be allowed to remain in the result (False).
+                The latter is useful for understanding why a particular roof
+                geometry has produced a non-solid result. (Default: True).
 
         Returns:
             A list of honeybee Models that represent the Building.
@@ -937,7 +955,7 @@ class Building(_BaseGeometry):
         for i, bldg in enumerate(buildings):
             model = bldg.to_honeybee(
                 use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
-                enforce_adj=enforce_adj)
+                enforce_adj=enforce_adj, enforce_solid=enforce_solid)
             Building._add_context_to_honeybee(model, bldg_shades, bldg_pts, con_shades,
                                               con_pts, shade_distance, num_bldg, i)
             models.append(model)  # append to the final list of Models
@@ -947,7 +965,7 @@ class Building(_BaseGeometry):
     def stories_to_honeybee(
             buildings, context_shades=None, shade_distance=None,
             use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01,
-            enforce_adj=True):
+            enforce_adj=True, enforce_solid=True):
         """Convert an array of Buildings into one honeybee Model per story.
 
         Each Story of each input Building will be exported into its own Model. For each
@@ -990,6 +1008,12 @@ class Building(_BaseGeometry):
                 boundary condition (False). If False, any Walls containing
                 WindowParameters and an illegal boundary condition will also
                 be replaced with an Outdoor boundary condition. (Default: True).
+            enforce_solid: Boolean to note whether rooms should be translated
+                as solid extrusions whenever translating them with custom
+                roof geometry produces a non-solid result (True) or the non-solid
+                room geometry should be allowed to remain in the result (False).
+                The latter is useful for understanding why a particular roof
+                geometry has produced a non-solid result. (Default: True).
 
         Returns:
             A list of honeybee Models that represent the Stories.
@@ -1009,7 +1033,8 @@ class Building(_BaseGeometry):
             if use_multiplier:
                 for j, story in enumerate(bldg.unique_stories):
                     hb_rooms = story.to_honeybee(
-                        True, add_plenum, tolerance=tolerance, enforce_adj=enforce_adj)
+                        True, add_plenum, tolerance=tolerance,
+                        enforce_adj=enforce_adj, enforce_solid=enforce_solid)
                     shds = bldg_con + bldg.shade_representation(j, cap, tolerance)
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
                     models.append(model)  # append to the final list of Models
@@ -1026,7 +1051,8 @@ class Building(_BaseGeometry):
                         full_shades.append(mult_shd)
                 for story, shades in zip(bldg.all_stories(), full_shades):
                     hb_rooms = story.to_honeybee(
-                        True, add_plenum, tolerance=tolerance, enforce_adj=enforce_adj)
+                        True, add_plenum, tolerance=tolerance,
+                        enforce_adj=enforce_adj, enforce_solid=enforce_solid)
                     shds = bldg_con + shades
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
                     models.append(model)  # append to the final list of Models

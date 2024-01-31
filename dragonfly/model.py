@@ -995,7 +995,8 @@ class Model(_BaseGeometry):
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
                     use_multiplier=True, add_plenum=False, cap=False,
-                    solve_ceiling_adjacencies=False, tolerance=None, enforce_adj=True):
+                    solve_ceiling_adjacencies=False, tolerance=None,
+                    enforce_adj=True, enforce_solid=True):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
         Args:
@@ -1050,6 +1051,12 @@ class Model(_BaseGeometry):
                 boundary condition (False). If False, any Walls containing
                 WindowParameters and an illegal boundary condition will also
                 be replaced with an Outdoor boundary condition. (Default: True).
+            enforce_solid: Boolean to note whether rooms should be translated
+                as solid extrusions whenever translating them with custom
+                roof geometry produces a non-solid result (True) or the non-solid
+                room geometry should be allowed to remain in the result (False).
+                The latter is useful for understanding why a particular roof
+                geometry has produced a non-solid result. (Default: True).
 
         Returns:
             An array of Honeybee Models that together represent this Dragonfly Model.
@@ -1067,16 +1074,16 @@ class Model(_BaseGeometry):
             models = Building.buildings_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
                 use_multiplier, add_plenum, cap, tolerance=tolerance,
-                enforce_adj=enforce_adj)
+                enforce_adj=enforce_adj, enforce_solid=enforce_solid)
         elif object_per_model.title() == 'Story':
             models = Building.stories_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
                 use_multiplier, add_plenum, cap, tolerance=tolerance,
-                enforce_adj=enforce_adj)
+                enforce_adj=enforce_adj, enforce_solid=enforce_solid)
         elif object_per_model.title() == 'District':
             models = [Building.district_to_honeybee(
                 self._buildings, use_multiplier, add_plenum, tolerance=tolerance,
-                enforce_adj=enforce_adj)]
+                enforce_adj=enforce_adj, enforce_solid=enforce_solid)]
             for shd_group in self._context_shades:
                 for shd in shd_group.to_honeybee():
                     for model in models:
