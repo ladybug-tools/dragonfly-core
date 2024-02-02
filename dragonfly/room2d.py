@@ -2574,7 +2574,8 @@ class Room2D(_BaseGeometry):
                             rf_pts.append(
                                 rf_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
                             break
-                    if current_poly is None:  # point not inside a roof, invalid roof
+                    if current_poly is None or len(rf_pts) < 2:
+                        # point not inside a roof, invalid roof
                         return None
                     # remove duplicated vertices from the list
                     rf_pts = [pt for i, pt in enumerate(rf_pts)
@@ -2721,22 +2722,28 @@ class Room2D(_BaseGeometry):
                         else:
                             f_poly = new_face3d.polygon2d
                             fs1, fs2 = f_poly.segments[0], f_poly.segments[2]
-                            int_pt = new_face3d.plane.xy_to_xyz(
-                                fs1.intersect_line_ray(fs2))
-                            new_face3d1 = Face3D((edge_2.p1, int_pt, edge_1_1))
-                            new_face3d2 = Face3D((edge_2.p2, int_pt, edge_1_2))
-                            if new_face3d1.area > tolerance:
-                                vertical_faces.append(new_face3d1)
-                            if new_face3d2.area > tolerance:
-                                vertical_faces.append(new_face3d2)
+                            int_pt2d = fs1.intersect_line_ray(fs2)
+                            if int_pt2d is not None:
+                                int_pt = new_face3d.plane.xy_to_xyz(int_pt2d)
+                                new_face3d1 = Face3D((edge_2.p1, int_pt, edge_1_1))
+                                new_face3d2 = Face3D((edge_2.p2, int_pt, edge_1_2))
+                                if new_face3d1.area > tolerance:
+                                    vertical_faces.append(new_face3d1)
+                                if new_face3d2.area > tolerance:
+                                    vertical_faces.append(new_face3d2)
 
         # remove duplicated vertices in the resulting vertical faces
-        vertical_faces = [f.remove_duplicate_vertices(tolerance) for f in vertical_faces]
+        clean_vert_faces = []
+        for f in vertical_faces:
+            try:
+                clean_vert_faces.append(f.remove_duplicate_vertices(tolerance))
+            except AssertionError:
+                pass  # invalid sliver face
 
         # rebuild the room polyface
         st_v = -len(roof_face_i) - 1
-        roof_face_i = roof_face_i + list(range(st_v, st_v - len(vertical_faces), -1))
-        p_faces.extend(vertical_faces)
+        roof_face_i = roof_face_i + list(range(st_v, st_v - len(clean_vert_faces), -1))
+        p_faces.extend(clean_vert_faces)
         room_polyface = Polyface3D.from_faces(p_faces, tolerance)
         return room_polyface, roof_face_i
 
