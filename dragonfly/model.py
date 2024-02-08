@@ -257,7 +257,7 @@ class Model(_BaseGeometry):
             buildings = []
             for bldg in data['buildings']:
                 try:
-                    buildings.append(Building.from_dict(bldg, tol))
+                    buildings.append(Building.from_dict(bldg, tol, angle_tol))
                 except Exception as e:
                     invalid_dict_error(bldg, e)
         context_shades = None  # import context shades
@@ -282,16 +282,20 @@ class Model(_BaseGeometry):
         return model
 
     @classmethod
-    def from_honeybee(cls, model):
+    def from_honeybee(cls, model, as_room_3ds=False):
         """Initialize a Dragonfly Model from a Honeybee Model.
 
         Args:
             model: A Honeybee Model to be converted to a Dragonfly Model.
+            as_room_3ds: Boolean to note whether the Honeybee Rooms should be
+                converted to Dragonfly Room2Ds and Stories (False) or whether
+                they should keep all of their 3D detail (True) and be assigned
+                to Building.room_3ds. (Default: False).
         """
         # translate the rooms to a dragonfly building
         bldgs = None
         if len(model.rooms) != 0:
-            bldgs = [Building.from_honeybee(model)]
+            bldgs = [Building.from_honeybee(model, as_room_3ds)]
         # translate the orphaned shades to context shades
         shades = None
         if len(model.orphaned_shades) != 0:

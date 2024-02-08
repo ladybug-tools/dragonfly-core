@@ -14,6 +14,7 @@ from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons, \
 
 from honeybee.model import Model
 from honeybee.room import Room
+from honeybee.shade import Shade
 from honeybee.boundarycondition import Outdoors
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string, invalid_dict_error
@@ -27,18 +28,35 @@ import dragonfly.writer.building as writer
 
 
 class Building(_BaseGeometry):
-    """A complete Building defined by Stories.
+    """A complete Building defined by Stories (and optional extra 3D rooms).
+
+    Buildings must have at least one dragonfly Story or one Honeybee Room under
+    the room_3ds property.
 
     Args:
         identifier: Text string for a unique Building ID. Must be < 100 characters
             and not contain any spaces or special characters.
         unique_stories: An array of unique Dragonfly Story objects that
-            together form the entire building. Stories should be ordered
-            from lowest floor to highest floor and they will be automatically
-            sorted based on floor height when they are added to a Building.
-            Note that, if a given Story is repeated several times over the
-            height of the Building, the unique Story included in this list
-            should be the first (lowest) Story of the repeated floors.
+            together form the entire building. Stories input here can be in any
+            order but they will be automatically sorted from lowest floor to
+            highest floor when they are assigned to the Building. Note that,
+            if a given Story is repeated several times over the height of the
+            Building, the unique Story included in this list should be the
+            first (lowest) Story of the repeated floors. (Default: None).
+        room_3ds: An optional array of 3D Honeybee Room objects for additional
+            Rooms that are a part of the Building but are not represented within
+            the unique_stories. This is useful when there are parts of the Building
+            geometry that cannot easily be represented with the extruded floor
+            plate and sloped roof assumptions that underlie Dragonfly Room2Ds
+            and RoofSpecification. Cases where this input is most useful include
+            sloped walls and certain types of domed roofs that become tedious to
+            implement with RoofSpecification. Matching the Honeybee Room.story
+            property to the Dragonfly Story.identifier of an object within the
+            unique_stories will effectively place the Honeybee Room on that Story
+            for the purposes of floor_area, exterior_wall_area, etc. However, note
+            that the Honeybee Room.multiplier property takes precedence over
+            whatever multiplier is assigned to the Dragonfly Story that the
+            Room.story may reference. (Default: None).
 
     Properties:
         * identifier
@@ -46,11 +64,16 @@ class Building(_BaseGeometry):
         * full_id
         * unique_stories
         * unique_room_2ds
+        * room_3ds
+        * has_room_2ds
+        * has_room_3ds
+        * room_2d_story_identifiers
+        * room_3d_story_identifiers
         * story_count
         * story_count_above_ground
+        * unique_stories_above_ground
         * height
         * height_above_ground
-        * height_from_first_floor
         * footprint_area
         * floor_area
         * exterior_wall_area
@@ -60,20 +83,40 @@ class Building(_BaseGeometry):
         * max
         * user_data
     """
-    __slots__ = ('_unique_stories',)
+    __slots__ = ('_unique_stories', '_room_3ds')
 
-    def __init__(self, identifier, unique_stories):
+    def __init__(self, identifier, unique_stories=None, room_3ds=None):
         """A complete Building defined by Stories."""
+        # initialize and perform a basic check that there's some geometry
         _BaseGeometry.__init__(self, identifier)  # process the identifier
+        if (unique_stories is None or len(unique_stories) == 0) and \
+                (room_3ds is None or len(room_3ds) == 0):
+            raise ValueError(
+                'Building must have at least one Story or one Room under room_3ds.')
 
         # process the story geometry
-        assert len(unique_stories) > 0, 'Building must have at least one Story.'
-        for story in unique_stories:
-            assert isinstance(story, Story), \
-                'Expected dragonfly Story. Got {}'.format(type(story))
-            story._parent = self
-        unique_stories = tuple(sorted(unique_stories, key=lambda x: x.floor_height))
-        self._unique_stories = unique_stories
+        if unique_stories is not None:
+            for story in unique_stories:
+                assert isinstance(story, Story), \
+                    'Expected dragonfly Story. Got {}'.format(type(story))
+                story._parent = self
+            unique_stories = tuple(sorted(unique_stories, key=lambda x: x.floor_height))
+            self._unique_stories = unique_stories
+        else:
+            self._unique_stories = ()
+
+        # process the room_3d geometry
+        if room_3ds is not None:
+            for room in room_3ds:
+                assert isinstance(room, Room), \
+                    'Expected honeybee Room. Got {}'.format(type(room))
+                room._parent = self
+            # assign stories to any Rooms that lack them
+            if not all([r.story is not None for r in room_3ds]):
+                room_3ds = Room.stories_by_floor_height(room_3ds)
+            self._room_3ds = tuple(room_3ds)
+        else:
+            self._room_3ds = ()
 
         self._properties = BuildingProperties(self)  # properties for extensions
 
@@ -207,7 +250,7 @@ class Building(_BaseGeometry):
         return cls(identifier, stories)
 
     @classmethod
-    def from_dict(cls, data, tolerance=0):
+    def from_dict(cls, data, tolerance=0, angle_tolerance=0):
         """Initialize an Building from a dictionary.
 
         Args:
@@ -216,19 +259,32 @@ class Building(_BaseGeometry):
                 are considered to be in the same horizontal plane. This is used to check
                 that all vertices of the input floor_geometry lie in the same horizontal
                 floor plane. Default is 0, which will not perform any check.
+            angle_tolerance: The max angle difference in degrees that vertices are
+                allowed to differ from one another in order to consider them colinear.
+                Default is 0, which makes no attempt to evaluate whether the Room
+                volume is closed.
         """
         # check the type of dictionary
         assert data['type'] == 'Building', 'Expected Building dictionary. ' \
             'Got {}.'.format(data['type'])
-
+        # extract the 2D Stories
         stories = []
-        for s_dict in data['unique_stories']:
-            try:
-                stories.append(Story.from_dict(s_dict, tolerance))
-            except Exception as e:
-                invalid_dict_error(s_dict, e)
-
-        building = Building(data['identifier'], stories)
+        if 'unique_stories' in data and data['unique_stories'] is not None:
+            for s_dict in data['unique_stories']:
+                try:
+                    stories.append(Story.from_dict(s_dict, tolerance))
+                except Exception as e:
+                    invalid_dict_error(s_dict, e)
+        # extract any additional 3D Rooms
+        room_3ds = []
+        if 'room_3ds' in data and data['room_3ds'] is not None:
+            for r_dict in data['room_3ds']:
+                try:
+                    room_3ds.append(Room.from_dict(r_dict, tolerance, angle_tolerance))
+                except Exception as e:
+                    invalid_dict_error(r_dict, e)
+        # create the Building object
+        building = Building(data['identifier'], stories, room_3ds)
         if 'display_name' in data and data['display_name'] is not None:
             building.display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -239,7 +295,7 @@ class Building(_BaseGeometry):
         return building
 
     @classmethod
-    def from_honeybee(cls, model):
+    def from_honeybee(cls, model, as_room_3ds=False):
         """Initialize a Building from a Honeybee Model.
 
         If each Room has a story, these will be used to determine the separation
@@ -248,7 +304,17 @@ class Building(_BaseGeometry):
 
         Args:
             model: A Honeybee Model to be converted to a Dragonfly Building.
+            as_room_3ds: Boolean to note whether the Honeybee Rooms should be
+                converted to Dragonfly Room2Ds and Stories (False) or whether
+                they should keep all of their 3D detail (True) and be assigned
+                to Building.room_3ds. (Default: False).
         """
+        # if the rooms are being left as they are, just create the Building
+        if as_room_3ds:
+            dup_rooms = [r.duplicate() for r in model.rooms]
+            bldg = cls(model.identifier, room_3ds=dup_rooms)
+            bldg._display_name = model._display_name
+            return bldg
         # assign stories if they don't already exist
         min_diff = parse_distance_string('2m', model.units)
         remove_stories = False
@@ -318,6 +384,73 @@ class Building(_BaseGeometry):
         return rooms
 
     @property
+    def room_3ds(self):
+        """Get a tuple of additional 3D Honeybee Rooms assigned to the Building.
+
+        These rooms are a part of the Building but are not represented within
+        the unique_stories or unique_room_2ds. Matching the Honeybee Room.story
+        property to the Dragonfly Story.identifier of an object within the
+        unique_stories will effectively place the Honeybee Room on that Story
+        for the purposes of floor_area, exterior_wall_area, etc. However, note
+        that the Honeybee Room.multiplier property takes precedence over
+        whatever multiplier is assigned to the Dragonfly Story that the
+        Room.story may reference.
+        """
+        return self._room_3ds
+
+    @property
+    def has_room_2ds(self):
+        """Get a boolean noting whether this Building has Room2Ds assigned under stories.
+        """
+        return len(self._unique_stories) != 0
+
+    @property
+    def has_room_3ds(self):
+        """Get a boolean noting whether this Building has 3D Honeybee Rooms.
+        """
+        return len(self._room_3ds) != 0
+
+    @property
+    def room_2d_story_identifiers(self):
+        """Get a tuple of all story identifiers that have Room2Ds on them."""
+        return tuple(story.identifier for story in self._unique_stories)
+
+    @property
+    def room_3d_story_identifiers(self):
+        """Get a tuple of all story identifiers that have 3D Honeybee Rooms on them."""
+        return tuple(set(rm.story for rm in self._room_3ds))
+
+    @property
+    def story_count(self):
+        """Get an integer for the number of stories in the building.
+
+        This includes both the Room2Ds within unique_stories (including the
+        Story.multiplier) as well as all stories defined by the room_3ds.
+        """
+        r3d_stories = 0
+        if self.has_room_3ds:
+            story_2ds = self.room_2d_story_identifiers
+            for st in self.room_3d_story_identifiers:
+                if st not in story_2ds:
+                    r3d_stories += 1
+        return sum((story.multiplier for story in self._unique_stories)) + r3d_stories
+
+    @property
+    def story_count_above_ground(self):
+        """Get an integer for the number of stories above the ground.
+
+        All stories defined by 3D Rooms are assumed to be above ground.
+        """
+        r3d_stories = 0
+        if self.has_room_3ds:
+            story_2ds = self.room_2d_story_identifiers
+            for st in self.room_3d_story_identifiers:
+                if st not in story_2ds:
+                    r3d_stories += 1
+        return sum((story.multiplier for story in self.unique_stories_above_ground)) + \
+            r3d_stories
+
+    @property
     def unique_stories_above_ground(self):
         """Get a tuple of unique Story objects that are above the ground.
 
@@ -327,80 +460,126 @@ class Building(_BaseGeometry):
         return [story for story in self._unique_stories if story.is_above_ground]
 
     @property
-    def story_count(self):
-        """Get an integer for the number of stories in the building."""
-        return sum((story.multiplier for story in self._unique_stories))
-
-    @property
-    def story_count_above_ground(self):
-        """Get an integer for the number of stories above the ground."""
-        return sum((story.multiplier for story in self.unique_stories_above_ground))
-
-    @property
     def height(self):
         """Get a number for the roof height of the Building as an absolute Z-coordinate.
+        
+        This property will account for the fact that the tallest Room may be a 3D
+        Honeybee Room.
         """
-        last_flr = self._unique_stories[-1]
-        return last_flr.floor_height + \
-            (last_flr.floor_to_floor_height * last_flr.multiplier)
+        r2_h, r3_h = None, None
+        if self.has_room_3ds:
+            r3_h = max(r.max.z for r in self.room_3ds)
+        if self.has_room_2ds:
+            last_flr = self._unique_stories[-1]
+            r2_h = last_flr.floor_height + \
+                (last_flr.floor_to_floor_height * last_flr.multiplier)
+        if r2_h is not None and r3_h is not None:
+            return max(r2_h, r3_h)
+        elif r2_h is not None:
+            return r2_h
+        return r3_h
 
     @property
     def height_above_ground(self):
         """Get a the height difference between the roof and first floor above the ground.
+
+        This property will account for any 3D Room if they exist.
         """
+        r2_h, r3_h, bldg_h = None, None, self.height
         try:
-            return self.height - self.unique_stories_above_ground[0].floor_height
-        except IndexError:  # building completely below ground
-            return 0
+            r2_h = bldg_h - self.unique_stories_above_ground[0].floor_height
+        except IndexError:  # building completely below ground or no Room2Ds
+            r2_h = 0
+        if self.has_room_3ds:
+            r3_h = bldg_h - min(r.min.z for r in self.room_3ds)
+        if r2_h is not None and r3_h is not None:
+            return max(r2_h, r3_h)
+        elif r2_h is not None:
+            return r2_h
+        return r3_h
 
     @property
     def height_from_first_floor(self):
-        """Get a the height difference between the roof and bottom-most floor."""
-        return self.height - self._unique_stories[0].floor_height
+        """Get a the height difference between the roof and the bottom-most floor.
+
+        This property will account for any 3D Room if they exist.
+        """
+        r2_h, r3_h, bldg_h = None, None, self.height
+        try:
+            r2_h = bldg_h - self.unique_stories[0].floor_height
+        except IndexError:  # building completely below ground or no Room2Ds
+            r2_h = 0
+        if self.has_room_3ds:
+            r3_h = bldg_h - min(r.min.z for r in self.room_3ds)
+        if r2_h is not None and r3_h is not None:
+            return max(r2_h, r3_h)
+        elif r2_h is not None:
+            return r2_h
+        return r3_h
 
     @property
     def footprint_area(self):
         """Get a number for the total footprint area of the Building.
 
-        The footprint is derived from the lowest story of the building.
+        The footprint is derived from the lowest dragonfly Story of the building
+        unless the Building is composed entirely of 3D Rooms, in which case it
+        is the combined floor area of the Rooms belonging to the lowest story.
         """
-        return self._unique_stories[0].floor_area
+        try:
+            return self._unique_stories[0].floor_area
+        except IndexError:  # no Room2Ds
+            return sum(r.floor_area for r in self._lowest_story_room_3ds()
+                       if not r.exclude_floor_area)
 
     @property
     def floor_area(self):
         """Get a number for the total floor area in the Building.
 
-        Note that this property uses the story multipliers.
+        This property uses both the 2D Story multipliers and the 3D Room multipliers
+        to determine the total floor area.
         """
-        return sum([story.floor_area * story.multiplier
-                    for story in self._unique_stories])
+        fa_r2 = sum([story.floor_area * story.multiplier
+                     for story in self._unique_stories])
+        fa_r3 = sum([room.floor_area * room.multiplier for room in self._room_3ds
+                     if not room.exclude_floor_area])
+        return fa_r2 + fa_r3
 
     @property
     def exterior_wall_area(self):
         """Get a number for the total exterior wall area in the Building.
 
-        Note that this property uses the story multipliers.
+        This property uses both the 2D Story multipliers and the 3D Room multipliers
+        to determine the total exterior wall area.
         """
-        return sum([story.exterior_wall_area * story.multiplier
-                    for story in self._unique_stories])
+        ewa_r2 = sum([story.exterior_wall_area * story.multiplier
+                      for story in self._unique_stories])
+        ewa_r3 = sum([r.exterior_wall_area * r.multiplier for r in self._room_3ds])
+        return ewa_r2 + ewa_r3
 
     @property
     def exterior_aperture_area(self):
-        """Get a number for the total exterior aperture area in the Building.
+        """Get a number for the total exterior wall aperture area in the Building.
 
-        Note that this property uses the story multipliers.
+        This property uses both the 2D Story multipliers and the 3D Room multipliers
+        to determine the total exterior wall aperture area. All skylights apertures
+        are excluded.
         """
-        return sum([story.exterior_aperture_area * story.multiplier
-                    for story in self._unique_stories])
+        eaa_r2 = sum([story.exterior_aperture_area * story.multiplier
+                      for story in self._unique_stories])
+        eaa_r3 = sum([room.exterior_wall_aperture_area * room.multiplier
+                      for room in self._room_3ds])
+        return eaa_r2 + eaa_r3
 
     @property
     def volume(self):
         """Get a number for the volume of all the Rooms in the Building.
 
-        Note that this property uses the story multipliers.
+        This property uses both the 2D Story multipliers and the 3D Room multipliers
+        to determine the total Building volume.
         """
-        return sum([story.volume * story.multiplier
-                    for story in self._unique_stories])
+        v_2r = sum([story.volume * story.multiplier for story in self._unique_stories])
+        v_3r = sum([room.volume * room.multiplier for room in self._room_3ds])
+        return v_2r + v_3r
 
     @property
     def min(self):
@@ -409,7 +588,16 @@ class Building(_BaseGeometry):
         This is useful in calculations to determine if this Building is in proximity
         to other objects.
         """
-        return self._calculate_min(self._unique_stories)
+        r2_min_pt, r3_min_pt = None, None
+        if self.has_room_2ds:
+            r2_min_pt = self._calculate_min(self._unique_stories)
+        if self.has_room_3ds:
+            r3_min_pt = Model._calculate_min(self._room_3ds)
+        if r2_min_pt is not None and r3_min_pt is not None:
+            return Point2D(min(r2_min_pt.x, r3_min_pt.x), min(r2_min_pt.y, r3_min_pt.y))
+        elif r2_min_pt is not None:
+            return r2_min_pt
+        return Point2D(r3_min_pt.x, r3_min_pt.y)
 
     @property
     def max(self):
@@ -418,13 +606,23 @@ class Building(_BaseGeometry):
         This is useful in calculations to determine if this Building is in proximity
         to other objects.
         """
-        return self._calculate_max(self._unique_stories)
+        r2_max_pt, r3_max_pt = None, None
+        if self.has_room_2ds:
+            r2_max_pt = self._calculate_max(self._unique_stories)
+        if self.has_room_3ds:
+            r3_max_pt = Model._calculate_max(self._room_3ds)
+        if r2_max_pt is not None and r3_max_pt is not None:
+            return Point2D(max(r2_max_pt.x, r3_max_pt.x), max(r2_max_pt.y, r3_max_pt.y))
+        elif r2_max_pt is not None:
+            return r2_max_pt
+        return Point2D(r3_max_pt.x, r3_max_pt.y)
 
     def all_stories(self):
         """Get a list of all Story objects that form the Building.
 
         The Story objects returned here each have a multiplier of 1 and repeated
-        stories are represented will their own Story object.
+        stories are represented will their own Story object. 3D Rooms are not included
+        in this output.
         """
         all_stories = []
         for story in self._unique_stories:
@@ -450,6 +648,19 @@ class Building(_BaseGeometry):
             rooms.extend(story.room_2ds)
         return rooms
 
+    def room_3ds_by_story(self, story_identifier):
+        """Get all of the 3D Honeybee Room objects assigned to a particular story.
+
+        Args:
+            story_identifier: Text for the identifier of the Story for which
+                Honeybee Room objects will be returned.
+        """
+        rooms = []
+        for room in self.room_3ds():
+            if room.story == story_identifier:
+                rooms.append(room)
+        return rooms
+
     def footprint(self, tolerance=0.01):
         """A list of Face3D objects representing the footprint of the building.
 
@@ -463,13 +674,17 @@ class Building(_BaseGeometry):
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
         """
-        ground_story = self._unique_stories[0]
-        if len(ground_story.room_2ds) == 1:  # no need to create any new geometry
-            return [ground_story.room_2ds[0].floor_geometry]
-        else:  # need a single list of Face3Ds for the whole footprint
-            return ground_story.footprint(tolerance)
+        if self.has_room_2ds:
+            ground_story = self._unique_stories[0]
+            if len(ground_story.room_2ds) == 1:  # no need to create any new geometry
+                return [ground_story.room_2ds[0].floor_geometry]
+            else:  # need a single list of Face3Ds for the whole footprint
+                return ground_story.footprint(tolerance)
+        foot_rooms = self._lowest_story_room_3ds()
+        return Room.grouped_horizontal_boundary(foot_rooms, tolerance=tolerance)
 
-    def shade_representation(self, exclude_index=None, cap=False, tolerance=0.01):
+    def shade_representation(
+            self, exclude_index=None, cap=False, include_room3ds=False, tolerance=0.01):
         """A list of honeybee Shade objects representing the building geometry.
 
         These can be used to account for this Building's shade in the simulation of
@@ -483,6 +698,9 @@ class Building(_BaseGeometry):
                 with a top face. Usually, this is not necessary to account for
                 blocked sun and is only needed when it's important to account for
                 reflected sun off of roofs. (Default: False).
+            include_room3ds: Boolean to note whether the 3D Rooms assigned to
+                this Building should be included in the shade representation.
+                Only exterior geometries are included. (Default: False).
             tolerance: The minimum distance between points at which they are
                 not considered touching. Default: 0.01, suitable for objects
                 in meters.
@@ -499,14 +717,19 @@ class Building(_BaseGeometry):
                     mult_shd = story.shade_representation_multiplier(
                         cap=cap, tolerance=tolerance)
                     context_shades.extend(mult_shd)
+        if include_room3ds and self.has_room_3ds:
+            for room in self.room_3ds:
+                for face in room.faces:
+                    if isinstance(face.boundary_condition, Outdoors):
+                        context_shades.append(Shade(face.identifier, face.geometry))
         return context_shades
 
     def add_stories(self, stories):
         """Add additional Story objects to this Building.
-        
+
         Using this method will ensure that Stories are ordered according to their
         floor height as they are added.
-        
+
         Args:
             stories: A list or tuple of Story objects to be added to this building.
         """
@@ -517,6 +740,21 @@ class Building(_BaseGeometry):
         unique_stories = list(self._unique_stories) + list(stories)
         unique_stories = tuple(sorted(unique_stories, key=lambda x: x.floor_height))
         self._unique_stories = unique_stories
+
+    def add_room_3ds(self, rooms):
+        """Add additional 3D Honeybee Room objects to this Building.
+
+        Args:
+            stories: A list or tuple of Honeybee Room objects to be added to
+                this building.
+        """
+        for room in rooms:
+            assert isinstance(room, Room), \
+                'Expected honeybee Room. Got {}'.format(type(room))
+            room._parent = self
+            if room.story is None:
+                room.story = 'Unknown'
+        self._room_3ds = self._room_3ds + tuple(rooms)
 
     def add_prefix(self, prefix):
         """Change the object identifier and all child objects by inserting a prefix.
@@ -538,6 +776,8 @@ class Building(_BaseGeometry):
         self.properties.add_prefix(prefix)
         for story in self.unique_stories:
             story.add_prefix(prefix)
+        for room in self.room_3ds:
+            room.add_prefix(prefix)
 
     def separate_top_bottom_floors(self):
         """Separate top/bottom Stories with non-unity multipliers into their own Stories.
@@ -551,6 +791,10 @@ class Building(_BaseGeometry):
         multipliers but one wants to account for the heat exchange of the top
         or bottom floors with the ground or outdoors.
         """
+        # do not do anything if the Building has no 2D Stories
+        if not self.has_room_2ds:
+            return
+
         # empty tuples in case no floors are added
         new_ground_floor, new_top_floor = (), ()
 
@@ -592,6 +836,10 @@ class Building(_BaseGeometry):
                 than 1 centimeter to avoid long computation times. Default: 0.01,
                 suitable for objects in meters.
         """
+        # do not do anything if the Building has no 2D Stories
+        if not self.has_room_2ds:
+            return
+
         # ensure that the bottom floor is unique
         if self._unique_stories[0].multiplier != 1:
             story = self._unique_stories[0]
@@ -655,6 +903,8 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.move(moving_vec)
+        for room in self._room_3ds:
+            room.move(moving_vec)
         self.properties.move(moving_vec)
 
     def rotate_xy(self, angle, origin):
@@ -667,6 +917,8 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.rotate_xy(angle, origin)
+        for room in self._room_3ds:
+            room.rotate_xy(angle, origin)
         self.properties.rotate_xy(angle, origin)
 
     def reflect(self, plane):
@@ -677,6 +929,8 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.reflect(plane)
+        for room in self._room_3ds:
+            room.reflect(plane)
         self.properties.reflect(plane)
 
     def scale(self, factor, origin=None):
@@ -689,6 +943,8 @@ class Building(_BaseGeometry):
         """
         for story in self._unique_stories:
             story.scale(factor, origin)
+        for room in self._room_3ds:
+            room.scale(factor, origin)
         self.properties.scale(factor, origin)
 
     def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
@@ -734,6 +990,8 @@ class Building(_BaseGeometry):
                 hb_rooms.extend(story.to_honeybee(
                     False, add_plenum=add_plenum, tolerance=tolerance,
                     enforce_adj=enforce_adj, enforce_solid=enforce_solid))
+        for room in self.room_3ds:
+            hb_rooms.append(room)
         hb_mod = Model(self.identifier, hb_rooms)
         hb_mod._display_name = self._display_name
         hb_mod._user_data = self._user_data
@@ -754,8 +1012,12 @@ class Building(_BaseGeometry):
         base = {'type': 'Building'}
         base['identifier'] = self.identifier
         base['display_name'] = self.display_name
-        base['unique_stories'] = [s.to_dict(abridged, included_prop)
-                                  for s in self._unique_stories]
+        if len(self._unique_stories) != 0:
+            base['unique_stories'] = [s.to_dict(abridged, included_prop)
+                                    for s in self._unique_stories]
+        if len(self._room_3ds) != 0:
+            base['room_3ds'] = [r.to_dict(abridged, included_prop)
+                                for r in self._room_3ds]
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         if self.user_data is not None:
             base['user_data'] = self.user_data
@@ -777,7 +1039,8 @@ class Building(_BaseGeometry):
         adiabatic. This is helpful when attempting to account for alleys or parti walls
         that may exist between buildings of a denser urban district.
 
-        Note that this staticmethod will edit the buildings in place.
+        Note that this staticmethod will edit the buildings in place so it may
+        be appropriate to duplicate the Buildings before running this method.
 
         Args:
             buildings: Dragonfly Building objects which will have their windows removed
@@ -1035,7 +1298,9 @@ class Building(_BaseGeometry):
                     hb_rooms = story.to_honeybee(
                         True, add_plenum, tolerance=tolerance,
                         enforce_adj=enforce_adj, enforce_solid=enforce_solid)
-                    shds = bldg_con + bldg.shade_representation(j, cap, tolerance)
+                    if bldg.has_room_3ds:
+                        hb_rooms.extend(bldg.room_3ds_by_story(story.identifier))
+                    shds = bldg_con + bldg.shade_representation(j, cap, False, tolerance)
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
                     models.append(model)  # append to the final list of Models
             else:
@@ -1053,10 +1318,47 @@ class Building(_BaseGeometry):
                     hb_rooms = story.to_honeybee(
                         True, add_plenum, tolerance=tolerance,
                         enforce_adj=enforce_adj, enforce_solid=enforce_solid)
+                    if bldg.has_room_3ds:
+                        hb_rooms.extend(bldg.room_3ds_by_story(story.identifier))
                     shds = bldg_con + shades
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
                     models.append(model)  # append to the final list of Models
+            if bldg.has_room_3ds:  # organize them by story and add them
+                accounted_for = bldg.room_2d_story_identifiers
+                r3_story_dict = bldg._story_dict_room_3d()
+                shds = bldg_con + bldg.shade_representation(
+                    None, cap, False, tolerance)
+                for story_id, hb_rooms in r3_story_dict.items():
+                    if story_id not in accounted_for:
+                        model = Model(story_id, hb_rooms, orphaned_shades=shds)
+                        models.append(model)  # append to the final list of Models
         return models
+
+    def _story_dict_room_3d(self):
+        """Get a dictionary of 3D Honeybee Rooms organized by story."""
+        r3_story_dict = {}
+        for room in self._room_3ds:
+            try:
+                r3_story_dict[room.story].append(room)
+            except KeyError:
+                r3_story_dict[room.story] = [room]
+        return r3_story_dict
+
+    def _lowest_story_room_3ds(self):
+        """Get a list of Honeybee Rooms for the lowest story of the Building.
+
+        Note that this method should typically only be used when the Building is
+        composed entirely of 3D Honeybee Rooms.
+        """
+        r3_story_dict = self._story_dict_room_3d()
+        floor_hgts, floor_rooms = [], []
+        for rooms in r3_story_dict.values():
+            flr_hgt = sum(r.average_floor_height for r in rooms) / len(rooms)
+            floor_hgts.append(flr_hgt)
+            floor_rooms.append(rooms)
+        sort_rooms = [rs for _, rs in sorted(zip(floor_hgts, floor_rooms),
+                                             key=lambda pair: pair[0])]
+        return sort_rooms[0]
 
     @staticmethod
     def _honeybee_shades(buildings, context_shades, shade_distance, cap, tolerance):
@@ -1065,7 +1367,8 @@ class Building(_BaseGeometry):
         con_shades, con_pts = [], []
         if shade_distance is None or shade_distance > 0:
             for bldg in buildings:
-                b_shades = bldg.shade_representation(cap=cap, tolerance=tolerance)
+                b_shades = bldg.shade_representation(
+                    cap=cap, include_room3ds=True, tolerance=tolerance)
                 bldg_shades.append(b_shades)
                 b_min, b_max = bldg.min, bldg.max
                 center = Point2D((b_min.x + b_max.x) / 2, (b_min.y + b_max.y) / 2)
@@ -1256,8 +1559,9 @@ class Building(_BaseGeometry):
         return top
 
     def __copy__(self):
-        new_b = Building(self.identifier,
-                         tuple(story.duplicate() for story in self._unique_stories))
+        new_b = Building(
+            self.identifier, tuple(story.duplicate() for story in self._unique_stories),
+            tuple(room.duplicate() for room in self._room_3ds))
         new_b._display_name = self._display_name
         new_b._user_data = None if self.user_data is None else self.user_data.copy()
         new_b._properties._duplicate_extension_attr(self._properties)
