@@ -175,6 +175,58 @@ class RoofSpecification(object):
         """
         self._geometry = tuple(geo.scale(factor, origin) for geo in self._geometry)
 
+    def update_geometry_3d(self, new_face_3d, face_index):
+        """Change one of the Face3D in this RoofSpecification.geometry.
+
+        This method is intended to be used when the roof geometry has been edited
+        by some external means and this RoofSpecification should be updated
+        for coordination.
+
+        Args:
+            new_face_3d: A Face3D for a new roof geometry that is to replace one
+                of the existing Face3D in the roof.
+            face_index: An integer for the index of the Face3D in the roof to
+                be replaced.
+        """
+        assert isinstance(new_face_3d, Face3D), \
+            'Expected Face3D for RoofSpecification.update_geometry_3d. ' \
+            'Got {}'.format(type(new_face_3d))
+        geo_list = list(self._geometry)
+        geo_list[face_index] = new_face_3d
+        self._geometry = tuple(geo_list)
+        self._ridge_line_info = None
+        self._ridge_line_tolerance = None
+
+    def update_geometry_2d(self, new_polygon_2d, polygon_index):
+        """Change one of the Face3D in this roof by supplying a 2D Polygon.
+
+        This method is intended to be used when the roof geometry has been edited
+        by some external means and this RoofSpecification should be updated
+        for coordination. It it particularly helpful when the external means
+        of editing has happened in 2D plan view and only the boundary of the
+        roof should be updated while the plane of the roof geometry is held
+        constant.
+
+        Args:
+            new_polygon_2d: A Polygon2D for a new roof geometry that is to replace
+                one of the existing geometries in the roof. Ideally, this is
+                one of this RoofSpecification's boundary_geometry_2d polygons
+                that has been edited.
+            polygon_index: An integer for the index of the boundary polygon in
+                the roof to be replaced.
+        """
+        assert isinstance(new_polygon_2d, Polygon2D), \
+            'Expected Polygon2D for RoofSpecification.update_geometry_2d. ' \
+            'Got {}'.format(type(new_polygon_2d))
+        proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
+        roof_plane = self.geometry[polygon_index].plane
+        roof_verts = []
+        for pt2 in new_polygon_2d.vertices:
+            pt3 = roof_plane.project_point(Point3D(pt2.x, pt2.y), proj_dir)
+            roof_verts.append(pt3)
+        new_face_3d = Face3D(roof_verts, plane=roof_plane)
+        self.update_geometry_3d(new_face_3d, polygon_index)
+
     def align(self, line_ray, distance, tolerance=0.01):
         """Move naked roof vertices within a given distance of a line to be on that line.
 
