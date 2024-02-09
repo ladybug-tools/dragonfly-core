@@ -74,6 +74,7 @@ class Building(_BaseGeometry):
         * unique_stories_above_ground
         * height
         * height_above_ground
+        * height_from_first_floor
         * footprint_area
         * floor_area
         * exterior_wall_area
@@ -755,6 +756,94 @@ class Building(_BaseGeometry):
             if room.story is None:
                 room.story = 'Unknown'
         self._room_3ds = self._room_3ds + tuple(rooms)
+
+    def convert_room_3d_to_2d(self, room_3d_identifier, tolerance=0.01):
+        """Convert a single 3D Honeybee Room to a Dragonfly Room2D on this Building.
+
+        This process will add the Room2D to an existing Dragonfly Story on the
+        Building if the Honeybee Room.story matches a Story.identifier on this
+        object. If not, a new Story on this Building will be initialized.
+
+        Args:
+            room_3d_identifier: The identifier of the 3D honeybee Room on this
+                Building that will be converted to a dragonfly Room2D.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same. (Default: 0.01, suitable for
+                objects in Meters).
+
+        Returns:
+            The newly-created Room2D object from the converted Room.
+        """
+        # get the Honeybee Room object to be converted
+        hb_room = [r for r in self.room_3ds if r.identifier == room_3d_identifier]
+        if len(hb_room) == 0:
+            raise ValueError(
+                'No 3D Honeybee Room with an identifier of "{}" was found on '
+                'Building "{}"'.format(room_3d_identifier, self.display_name))
+        hb_room = hb_room[0]
+        # create a Dragonfly Room2D from the Honeybee Room
+        df_room = Room2D.from_honeybee(hb_room, tolerance)
+        # assign the Room2D to an existing Story or create a new one
+        for story in self._unique_stories:
+            if story.identifier == hb_room.story:
+                story.add_room_2d(df_room)
+                break
+        else:  # a new Story object has to be initialized
+            new_story = Story(hb_room.story, (df_room,))
+            self.add_stories([new_story])
+        return df_room
+
+    def convert_room_3ds_to_2d(self, room_3d_identifiers, tolerance=0.01):
+        """Convert a several 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
+
+        This process will add the Room2Ds to an existing Dragonfly Story on the
+        Building if the Honeybee Room.story matches a Story.identifier on this
+        object. If not, a new Story on this Building will be initialized.
+
+        Args:
+            room_3d_identifiers: A list of the identifiers for the 3D honeybee
+                Rooms on this Building that will be converted to dragonfly Room2Ds.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same. (Default: 0.01, suitable for
+                objects in Meters).
+
+        Returns:
+            A list of the newly-created Room2D objects from the converted Rooms.
+        """
+        df_rooms = []
+        for r3_id in room_3d_identifiers:
+            df_rooms.append(self.convert_room_3d_to_2d(r3_id, tolerance))
+        return df_rooms
+
+    def convert_all_room_3ds_to_2d(self, tolerance=0.01):
+        """Convert all 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
+
+        This process will add the Room2Ds to an existing Dragonfly Story on the
+        Building if the Honeybee Room.story matches a Story.identifier on this
+        object. If not, a new Story on this Building will be initialized.
+
+        Args:
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same. (Default: 0.01, suitable for
+                objects in Meters).
+
+        Returns:
+            A list of the newly-created Room2D objects from the converted Rooms.
+        """
+        df_rooms = []
+        for hb_room in self.room_3ds:
+            # create a Dragonfly Room2D from the Honeybee Room
+            df_room = Room2D.from_honeybee(hb_room, tolerance)
+            # assign the Room2D to an existing Story or create a new one
+            for story in self._unique_stories:
+                if story.identifier == hb_room.story:
+                    story.add_room_2d(df_room)
+                    break
+            else:  # a new Story object has to be initialized
+                new_story = Story(hb_room.story, (df_room,))
+                self.add_stories([new_story])
+            df_rooms.append(df_room)
+        return df_rooms
 
     def add_prefix(self, prefix):
         """Change the object identifier and all child objects by inserting a prefix.
