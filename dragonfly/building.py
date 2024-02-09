@@ -65,6 +65,10 @@ class Building(_BaseGeometry):
         * unique_stories
         * unique_room_2ds
         * room_3ds
+        * room_3d_faces
+        * room_3d_apertures
+        * room_3d_doors
+        * room_3d_shades
         * has_room_2ds
         * has_room_3ds
         * room_2d_story_names
@@ -398,6 +402,44 @@ class Building(_BaseGeometry):
         Room.story may reference.
         """
         return self._room_3ds
+
+    @property
+    def room_3d_faces(self):
+        """Get a list of all Face objects for the 3D Honeybee Rooms in the Building."""
+        return [face for room in self._room_3ds for face in room._faces]
+
+    @property
+    def room_3d_apertures(self):
+        """Get a list of all Aperture objects for the 3D Honeybee Rooms in the Building.
+        """
+        child_apertures = []
+        for room in self._room_3ds:
+            for face in room._faces:
+                child_apertures.extend(face._apertures)
+        return child_apertures
+
+    @property
+    def room_3d_doors(self):
+        """Get a list of all Door objects for the 3D Honeybee Rooms in the Building."""
+        child_doors = []
+        for room in self._room_3ds:
+            for face in room._faces:
+                child_doors.extend(face._doors)
+        return child_doors
+
+    @property
+    def room_3d_shades(self):
+        """Get a list of all Shade objects for the 3D Honeybee Rooms in the Building."""
+        child_shades = []
+        for room in self._room_3ds:
+            child_shades.extend(room.shades)
+            for face in room.faces:
+                child_shades.extend(face.shades)
+                for ap in face._apertures:
+                    child_shades.extend(ap.shades)
+                for dr in face._doors:
+                    child_shades.extend(dr.shades)
+        return child_shades
 
     @property
     def has_room_2ds(self):
