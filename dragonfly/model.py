@@ -77,6 +77,7 @@ class Model(_BaseGeometry):
         * context_shades
         * stories
         * room_2ds
+        * room_3ds
         * average_story_count
         * average_story_count_above_ground
         * average_height
@@ -424,6 +425,12 @@ class Model(_BaseGeometry):
                      for room2d in story._room_2ds)
 
     @property
+    def room_3ds(self):
+        """Get a tuple of all 3D Honeybee Room objects in the model."""
+        return tuple(room3d for building in self._buildings
+                     for room3d in building._room_3ds)
+
+    @property
     def average_story_count(self):
         """Get the average number of stories for the buildings in the model.
 
@@ -564,6 +571,19 @@ class Model(_BaseGeometry):
                     'Room2D "{}" was not found in the model.'.format(identifier))
         return room_2ds
 
+    def room_3ds_by_identifier(self, identifiers):
+        """Get a list of 3D Honeybee Room objects in the model given Room identifiers."""
+        room_3ds, model_room_3ds = [], self.room_3ds
+        for identifier in identifiers:
+            for room in model_room_3ds:
+                if room.identifier == identifier:
+                    room_3ds.append(room)
+                    break
+            else:
+                raise ValueError(
+                    'Room "{}" was not found in the model.'.format(identifier))
+        return room_3ds
+
     def context_shade_by_identifier(self, identifiers):
         """Get a list of ContextShade objects in the model given identifiers.
         """
@@ -701,7 +721,7 @@ class Model(_BaseGeometry):
         msgs = []
         assert self.tolerance != 0, \
             'Model must have a non-zero tolerance in order to perform geometry checks.'
-        tol = self.tolerance
+        tol, a_tol = self.tolerance, self.angle_tolerance
         # perform checks for key dragonfly model schema rules
         msgs.append(self.check_duplicate_context_shade_identifiers(False, detailed))
         msgs.append(self.check_duplicate_room_2d_identifiers(False, detailed))
@@ -710,9 +730,10 @@ class Model(_BaseGeometry):
         msgs.append(self.check_degenerate_room_2ds(tol, False, detailed))
         msgs.append(self.check_self_intersecting_room_2ds(tol, False, detailed))
         msgs.append(self.check_window_parameters_valid(False, detailed))
+        msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
         msgs.append(self.check_no_roof_overlaps(tol, False, detailed))
-        msgs.append(self.check_missing_adjacencies(False, detailed))
+        msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
         if detailed:
@@ -996,6 +1017,40 @@ class Model(_BaseGeometry):
                 raise ValueError(msg)
             return msg
         return ''
+
+    def check_all_room3d(
+            self, tolerance=None, angle_tolerance=None,
+            raise_exception=True, detailed=False):
+        """Check all attributes of 3D Honeybee Rooms assigned to the Model's Buildings.
+
+        This includes checking for duplicate Room/Face/Aperture/Door/Shade identifiers,
+        checking planarity/self-intersection/degeneracy, checking that all rooms are,
+        solid, and checking the adjacencies (among other attributes).
+
+        Args:
+            tolerance: tolerance: The maximum difference between x, y, and z values
+                at which face vertices are considered equivalent. If None, the Model
+                tolerance will be used. (Default: None).
+            angle_tolerance: The max angle difference in degrees that vertices are
+                allowed to differ from one another in order to consider them colinear.
+                If None, the Model angle_tolerance will be used. (Default: None).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if an error is found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        room_3ds = self.room_3ds
+        if len(room_3ds) != 0:
+            tol = self.tolerance if tolerance is None else tolerance
+            a_tol = self.angle_tolerance if angle_tolerance is None else angle_tolerance
+            dummy_model = HBModel(
+                'validation_model', room_3ds, units=self.units,
+                tolerance=tol, angle_tolerance=a_tol)
+            return dummy_model.check_all(raise_exception, detailed)
+        return [] if detailed else ''
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
                     use_multiplier=True, add_plenum=False, cap=False,
