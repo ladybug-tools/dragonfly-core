@@ -51,7 +51,7 @@ class Building(_BaseGeometry):
             and RoofSpecification. Cases where this input is most useful include
             sloped walls and certain types of domed roofs that become tedious to
             implement with RoofSpecification. Matching the Honeybee Room.story
-            property to the Dragonfly Story.identifier of an object within the
+            property to the Dragonfly Story.display_name of an object within the
             unique_stories will effectively place the Honeybee Room on that Story
             for the purposes of floor_area, exterior_wall_area, etc. However, note
             that the Honeybee Room.multiplier property takes precedence over
@@ -67,8 +67,8 @@ class Building(_BaseGeometry):
         * room_3ds
         * has_room_2ds
         * has_room_3ds
-        * room_2d_story_identifiers
-        * room_3d_story_identifiers
+        * room_2d_story_names
+        * room_3d_story_names
         * story_count
         * story_count_above_ground
         * unique_stories_above_ground
@@ -390,7 +390,7 @@ class Building(_BaseGeometry):
 
         These rooms are a part of the Building but are not represented within
         the unique_stories or unique_room_2ds. Matching the Honeybee Room.story
-        property to the Dragonfly Story.identifier of an object within the
+        property to the Dragonfly Story.display_name of an object within the
         unique_stories will effectively place the Honeybee Room on that Story
         for the purposes of floor_area, exterior_wall_area, etc. However, note
         that the Honeybee Room.multiplier property takes precedence over
@@ -412,13 +412,13 @@ class Building(_BaseGeometry):
         return len(self._room_3ds) != 0
 
     @property
-    def room_2d_story_identifiers(self):
-        """Get a tuple of all story identifiers that have Room2Ds on them."""
-        return tuple(story.identifier for story in self._unique_stories)
+    def room_2d_story_names(self):
+        """Get a tuple of all Story display_names that have Room2Ds on them."""
+        return tuple(story.display_name for story in self._unique_stories)
 
     @property
-    def room_3d_story_identifiers(self):
-        """Get a tuple of all story identifiers that have 3D Honeybee Rooms on them."""
+    def room_3d_story_names(self):
+        """Get a tuple of all story display_names that have 3D Honeybee Rooms on them."""
         return tuple(set(rm.story for rm in self._room_3ds))
 
     @property
@@ -430,8 +430,8 @@ class Building(_BaseGeometry):
         """
         r3d_stories = 0
         if self.has_room_3ds:
-            story_2ds = self.room_2d_story_identifiers
-            for st in self.room_3d_story_identifiers:
+            story_2ds = self.room_2d_story_names
+            for st in self.room_3d_story_names:
                 if st not in story_2ds:
                     r3d_stories += 1
         return sum((story.multiplier for story in self._unique_stories)) + r3d_stories
@@ -444,8 +444,8 @@ class Building(_BaseGeometry):
         """
         r3d_stories = 0
         if self.has_room_3ds:
-            story_2ds = self.room_2d_story_identifiers
-            for st in self.room_3d_story_identifiers:
+            story_2ds = self.room_2d_story_names
+            for st in self.room_3d_story_names:
                 if st not in story_2ds:
                     r3d_stories += 1
         return sum((story.multiplier for story in self.unique_stories_above_ground)) + \
@@ -463,7 +463,7 @@ class Building(_BaseGeometry):
     @property
     def height(self):
         """Get a number for the roof height of the Building as an absolute Z-coordinate.
-        
+
         This property will account for the fact that the tallest Room may be a 3D
         Honeybee Room.
         """
@@ -649,16 +649,16 @@ class Building(_BaseGeometry):
             rooms.extend(story.room_2ds)
         return rooms
 
-    def room_3ds_by_story(self, story_identifier):
+    def room_3ds_by_story(self, story_name):
         """Get all of the 3D Honeybee Room objects assigned to a particular story.
 
         Args:
-            story_identifier: Text for the identifier of the Story for which
+            story_name: Text for the display_name of the Story for which
                 Honeybee Room objects will be returned.
         """
         rooms = []
         for room in self.room_3ds():
-            if room.story == story_identifier:
+            if room.story == story_name:
                 rooms.append(room)
         return rooms
 
@@ -761,7 +761,7 @@ class Building(_BaseGeometry):
         """Convert a single 3D Honeybee Room to a Dragonfly Room2D on this Building.
 
         This process will add the Room2D to an existing Dragonfly Story on the
-        Building if the Honeybee Room.story matches a Story.identifier on this
+        Building if the Honeybee Room.story matches a Story.display_name on this
         object. If not, a new Story on this Building will be initialized.
 
         Args:
@@ -785,11 +785,12 @@ class Building(_BaseGeometry):
         df_room = Room2D.from_honeybee(hb_room, tolerance)
         # assign the Room2D to an existing Story or create a new one
         for story in self._unique_stories:
-            if story.identifier == hb_room.story:
+            if story.display_name == hb_room.story:
                 story.add_room_2d(df_room)
                 break
         else:  # a new Story object has to be initialized
-            new_story = Story(hb_room.story, (df_room,))
+            new_story = Story(clean_string(hb_room.story), (df_room,))
+            new_story.display_name = hb_room.story
             self.add_stories([new_story])
         return df_room
 
@@ -797,7 +798,7 @@ class Building(_BaseGeometry):
         """Convert a several 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
 
         This process will add the Room2Ds to an existing Dragonfly Story on the
-        Building if the Honeybee Room.story matches a Story.identifier on this
+        Building if the Honeybee Room.story matches a Story.display_name on this
         object. If not, a new Story on this Building will be initialized.
 
         Args:
@@ -819,7 +820,7 @@ class Building(_BaseGeometry):
         """Convert all 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
 
         This process will add the Room2Ds to an existing Dragonfly Story on the
-        Building if the Honeybee Room.story matches a Story.identifier on this
+        Building if the Honeybee Room.story matches a Story.display_name on this
         object. If not, a new Story on this Building will be initialized.
 
         Args:
@@ -836,11 +837,12 @@ class Building(_BaseGeometry):
             df_room = Room2D.from_honeybee(hb_room, tolerance)
             # assign the Room2D to an existing Story or create a new one
             for story in self._unique_stories:
-                if story.identifier == hb_room.story:
+                if story.display_name == hb_room.story:
                     story.add_room_2d(df_room)
                     break
             else:  # a new Story object has to be initialized
-                new_story = Story(hb_room.story, (df_room,))
+                new_story = Story(clean_string(hb_room.story), (df_room,))
+                new_story.display_name = hb_room.story
                 self.add_stories([new_story])
             df_rooms.append(df_room)
         return df_rooms
@@ -1103,7 +1105,7 @@ class Building(_BaseGeometry):
         base['display_name'] = self.display_name
         if len(self._unique_stories) != 0:
             base['unique_stories'] = [s.to_dict(abridged, included_prop)
-                                    for s in self._unique_stories]
+                                      for s in self._unique_stories]
         if len(self._room_3ds) != 0:
             base['room_3ds'] = [r.to_dict(abridged, included_prop)
                                 for r in self._room_3ds]
@@ -1388,9 +1390,10 @@ class Building(_BaseGeometry):
                         True, add_plenum, tolerance=tolerance,
                         enforce_adj=enforce_adj, enforce_solid=enforce_solid)
                     if bldg.has_room_3ds:
-                        hb_rooms.extend(bldg.room_3ds_by_story(story.identifier))
+                        hb_rooms.extend(bldg.room_3ds_by_story(story.display_name))
                     shds = bldg_con + bldg.shade_representation(j, cap, False, tolerance)
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
+                    model.display_name = story.display_name
                     models.append(model)  # append to the final list of Models
             else:
                 self_shds = [story.shade_representation(cap, tolerance)
@@ -1408,12 +1411,13 @@ class Building(_BaseGeometry):
                         True, add_plenum, tolerance=tolerance,
                         enforce_adj=enforce_adj, enforce_solid=enforce_solid)
                     if bldg.has_room_3ds:
-                        hb_rooms.extend(bldg.room_3ds_by_story(story.identifier))
+                        hb_rooms.extend(bldg.room_3ds_by_story(story.display_name))
                     shds = bldg_con + shades
                     model = Model(story.identifier, hb_rooms, orphaned_shades=shds)
+                    model.display_name = story.display_name
                     models.append(model)  # append to the final list of Models
             if bldg.has_room_3ds:  # organize them by story and add them
-                accounted_for = bldg.room_2d_story_identifiers
+                accounted_for = bldg.room_2d_story_names
                 r3_story_dict = bldg._story_dict_room_3d()
                 shds = bldg_con + bldg.shade_representation(
                     None, cap, False, tolerance)

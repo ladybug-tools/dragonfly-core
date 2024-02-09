@@ -348,7 +348,7 @@ using-multipliers-zone-and-or-window.html
         """
         flr_area = sum([room.floor_area for room in self._room_2ds])
         if self.has_parent and self.parent.has_room_3ds:
-            for r in self.parent.room_3ds_by_story(self.identifier):
+            for r in self.parent.room_3ds_by_story(self.display_name):
                 if not r.exclude_floor_area:
                     flr_area += r.floor_area
         return flr_area
@@ -363,7 +363,7 @@ using-multipliers-zone-and-or-window.html
         """
         ewa = sum([room.exterior_wall_area for room in self._room_2ds])
         if self.has_parent and self.parent.has_room_3ds:
-            for r in self.parent.room_3ds_by_story(self.identifier):
+            for r in self.parent.room_3ds_by_story(self.display_name):
                 ewa += r.exterior_wall_area
         return ewa
 
@@ -378,7 +378,7 @@ using-multipliers-zone-and-or-window.html
         """
         eaa = sum([room.exterior_aperture_area for room in self._room_2ds])
         if self.has_parent and self.parent.has_room_3ds:
-            for r in self.parent.room_3ds_by_story(self.identifier):
+            for r in self.parent.room_3ds_by_story(self.display_name):
                 eaa += r.exterior_wall_aperture_area
         return eaa
 
@@ -392,7 +392,7 @@ using-multipliers-zone-and-or-window.html
         """
         vol = sum([room.volume for room in self._room_2ds])
         if self.has_parent and self.parent.has_room_3ds:
-            for r in self.parent.room_3ds_by_story(self.identifier):
+            for r in self.parent.room_3ds_by_story(self.display_name):
                 vol += r.volume
         return vol
 
