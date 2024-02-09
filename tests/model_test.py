@@ -1,5 +1,18 @@
 # coding=utf-8
 import pytest
+import json
+import os
+
+from ladybug.location import Location
+from ladybug_geometry.geometry2d import Vector2D, Point2D, Polygon2D
+from ladybug_geometry.geometry3d import Point3D, Vector3D, Plane, Face3D
+from ladybug.futil import nukedir
+
+import honeybee.model as hb_model
+from honeybee.room import Room
+from honeybee.shade import Shade
+from honeybee.facetype import RoofCeiling
+from honeybee.boundarycondition import Surface, Outdoors
 
 from dragonfly.model import Model
 from dragonfly.building import Building
@@ -8,23 +21,6 @@ from dragonfly.room2d import Room2D
 from dragonfly.context import ContextShade
 from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.projection import meters_to_long_lat_factors
-
-import honeybee.model as hb_model
-from honeybee.room import Room
-from honeybee.shade import Shade
-from honeybee.facetype import RoofCeiling
-from honeybee.boundarycondition import Surface, Outdoors
-
-from ladybug.location import Location
-from ladybug_geometry.geometry2d.pointvector import Point2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug.futil import nukedir
-
-import json
-import os
 
 
 def test_model_init():
@@ -627,7 +623,22 @@ def test_to_honeybee_roof_with_dormer():
     assert upper_story.roof is not None
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models[0].rooms[0].shades) ==  2
 
+    # try moving the dormer to see if it still translates successfully
+    roof_polys = upper_story.roof.boundary_geometry_2d
+    for i, r_poly in enumerate(roof_polys):
+        if r_poly.area < 8:
+            move_pt = Point2D(-6.71, -31.26)
+            new_poly_pts = []
+            for pt in r_poly.vertices:
+                new_pt = pt if not pt.is_equivalent(move_pt, 0.01) \
+                    else pt.move(Vector2D(5, 0))
+                new_poly_pts.append(new_pt)
+            upper_story.roof.update_geometry_2d(Polygon2D(new_poly_pts), i)
+    
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models[0].rooms[0].shades) ==  2
 
 def test_to_honeybee_invalid_roof_1():
     """Test to_honeybee with an invalid roof to ensure all exceptions are caught."""
