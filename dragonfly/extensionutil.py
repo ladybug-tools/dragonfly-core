@@ -47,7 +47,7 @@ def model_extension_dicts(data, extension_key, building_ext_dicts, story_ext_dic
 
 def building_extension_dicts(building_list, extension_key, building_ext_dicts,
                              story_ext_dicts, room2d_ext_dicts):
-    """Get all Building property dictionaires of an extension organized by geometry type.
+    """Get all Building property dictionaries of an extension organized by geometry type.
 
     Args:
         building_list: A list of Building dictionaries.
@@ -74,7 +74,7 @@ def building_extension_dicts(building_list, extension_key, building_ext_dicts,
 
 def story_extension_dicts(story_list, extension_key, story_ext_dicts,
                           room2d_ext_dicts):
-    """Get all Building property dictionaires of an extension organized by geometry type.
+    """Get all Building property dictionaries of an extension organized by geometry type.
 
     Args:
         building_list: A list of Building dictionaries.
@@ -98,7 +98,7 @@ def story_extension_dicts(story_list, extension_key, story_ext_dicts,
 
 
 def room2d_extension_dicts(room2d_list, extension_key, room2d_ext_dicts):
-    """Get all Room2D property dictionaires of an extension.
+    """Get all Room2D property dictionaries of an extension.
 
     Args:
         room2d_list: A list of Room2D dictionaries.
@@ -117,7 +117,7 @@ def room2d_extension_dicts(room2d_list, extension_key, room2d_ext_dicts):
 
 def context_shade_extension_dicts(context_shade_list, extension_key,
                                   context_shade_ext_dicts):
-    """Get all ContextShade property dictionaires of an extension.
+    """Get all ContextShade property dictionaries of an extension.
 
     Args:
         context_shade_list: A list of ContextShade dictionaries.
