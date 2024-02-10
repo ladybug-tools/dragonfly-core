@@ -817,14 +817,17 @@ class Building(_BaseGeometry):
             The newly-created Room2D object from the converted Room.
         """
         # get the Honeybee Room object to be converted
-        hb_room = [r for r in self.room_3ds if r.identifier == room_3d_identifier]
-        if len(hb_room) == 0:
+        hb_room_i = [i for i, r in enumerate(self.room_3ds)
+                     if r.identifier == room_3d_identifier]
+        if len(hb_room_i) == 0:
             raise ValueError(
                 'No 3D Honeybee Room with an identifier of "{}" was found on '
                 'Building "{}"'.format(room_3d_identifier, self.display_name))
-        hb_room = hb_room[0]
+        new_room_3ds = list(self._room_3ds)
+        hb_room = new_room_3ds.pop(0)
         # create a Dragonfly Room2D from the Honeybee Room
         df_room = Room2D.from_honeybee(hb_room, tolerance)
+        self._room_3ds = tuple(new_room_3ds)
         # assign the Room2D to an existing Story or create a new one
         for story in self._unique_stories:
             if story.display_name == hb_room.story:
@@ -887,6 +890,7 @@ class Building(_BaseGeometry):
                 new_story.display_name = hb_room.story
                 self.add_stories([new_story])
             df_rooms.append(df_room)
+        self._room_3ds = ()
         return df_rooms
 
     def add_prefix(self, prefix):
