@@ -20,7 +20,8 @@ from ladybug.futil import preparedir
 from ladybug.location import Location
 from honeybee.typing import float_positive, invalid_dict_error
 from honeybee.checkdup import check_duplicate_identifiers
-from honeybee.units import conversion_factor_to_meters, UNITS, UNITS_TOLERANCES
+from honeybee.units import conversion_factor_to_meters, parse_distance_string, \
+    UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
 from honeybee.facetype import Floor, RoofCeiling
 from honeybee.boundarycondition import Outdoors, Surface, Ground, boundary_conditions
@@ -515,6 +516,7 @@ class Model(_BaseGeometry):
             for e_bldg in self._buildings:
                 if o_bldg.identifier == e_bldg.identifier:
                     e_bldg.add_stories(o_bldg.unique_stories)
+                    e_bldg.add_room_3ds(o_bldg.room_3ds)
                     break
             else:
                 bldg_to_add.append(o_bldg)
@@ -598,16 +600,26 @@ class Model(_BaseGeometry):
                     'ContextShade "{}" was not found in the model.'.format(identifier))
         return context_shades
 
-    def separate_top_bottom_floors(self):
+    def separate_top_bottom_floors(self, separate_mid=False):
         """Separate top/bottom Stories with non-unity multipliers into their own Stories.
 
         The resulting first and last Stories will each have a multiplier of 1 and
         duplicated middle Stories will be added as needed. This method also
         automatically assigns the first story Room2Ds to have a ground contact
         floor and the top story Room2Ds to have an outdoor-exposed roof.
+
+        separate_mid: Boolean to note whether all mid-level Stories with non-unity
+            multipliers should be separated into two or three Stories. This means
+            that the top of each unique story will have outdoor-exposed roofs when
+            no Room2Ds are sensed above a given room. (Default: False).
         """
-        for bldg in self._buildings:
-            bldg.separate_top_bottom_floors()
+        if not separate_mid:
+            for bldg in self._buildings:
+                bldg.separate_top_bottom_floors()
+        else:
+            p_tol = parse_distance_string('0.01m', self.units)
+            for bldg in self._buildings:
+                bldg.separate_mid_floors(p_tol)
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all outdoor walls of the Buildings to have the same window parameters."""
