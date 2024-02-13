@@ -118,7 +118,7 @@ class Building(_BaseGeometry):
                 room._parent = self
             # assign stories to any Rooms that lack them
             if not all([r.story is not None for r in room_3ds]):
-                room_3ds = Room.stories_by_floor_height(room_3ds)
+                Room.stories_by_floor_height(room_3ds)
             self._room_3ds = tuple(room_3ds)
         else:
             self._room_3ds = ()
@@ -699,7 +699,7 @@ class Building(_BaseGeometry):
                 Honeybee Room objects will be returned.
         """
         rooms = []
-        for room in self.room_3ds():
+        for room in self.room_3ds:
             if room.story == story_name:
                 rooms.append(room)
         return rooms
