@@ -660,6 +660,85 @@ def test_to_honeybee_invalid_roof_2():
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
 
 
+def test_model_with_room3ds():
+    """Test to_honeybee with an invalid roof to ensure all exceptions are caught."""
+    # load up the model
+    model_file = './tests/json/model_with_room3ds.dfjson'
+    model = Model.from_file(model_file)
+
+    # test the properties with only 3D rooms in the building
+    room3ds = model.buildings[0].room_3ds
+    assert len(room3ds) == 10
+    assert all(isinstance(r, Room) for r in room3ds)
+
+    assert len(model.buildings) == 1
+    assert isinstance(model.buildings[0], Building)
+
+    assert model.average_story_count == 2
+    assert model.average_story_count_above_ground == 2
+    assert model.average_height == pytest.approx(7.5, rel=1e-2)
+    assert model.average_height_above_ground == pytest.approx(7.5, rel=1e-2)
+    assert model.footprint_area == pytest.approx(35 * 25, rel=1e-3)
+    assert model.floor_area == pytest.approx(1334, rel=1e-3)
+
+    assert model.exterior_wall_area == pytest.approx(784.403, rel=1e-3)
+    assert model.exterior_aperture_area == pytest.approx(784.403 * 0.4, rel=1e-3)
+    assert model.volume == pytest.approx(4342, rel=1e-3)
+    assert isinstance(model.min, Point2D)
+    assert isinstance(model.max, Point2D)
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models[0].rooms) == 10
+
+    # test the properties of the model with a mix of Room2Ds and 3D Rooms
+    r_ids = [r.identifier for r in model.buildings[0].room_3ds if r.story == 'Floor1']
+    model.buildings[0].convert_room_3ds_to_2d(r_ids)
+
+    assert len(model.buildings[0].room_3ds) == 5
+    assert len(model.buildings[0].unique_room_2ds) == 5
+    assert all(isinstance(r, Room) for r in model.buildings[0].room_3ds)
+    assert all(isinstance(r, Room2D) for r in model.buildings[0].unique_room_2ds)
+
+    assert len(model.buildings) == 1
+    assert isinstance(model.buildings[0], Building)
+
+    assert model.average_story_count == 2
+    assert model.average_story_count_above_ground == 2
+    assert model.average_height == pytest.approx(7.5, rel=1e-2)
+    assert model.average_height_above_ground == pytest.approx(7.5, rel=1e-2)
+    assert model.footprint_area == pytest.approx(35 * 25, rel=1e-3)
+    assert model.floor_area == pytest.approx(1334, rel=1e-3)
+
+    assert model.exterior_wall_area == pytest.approx(770.304, rel=1e-3)
+    assert model.exterior_aperture_area == pytest.approx(299.72166, rel=1e-3)
+    assert model.volume == pytest.approx(4646.5, rel=1e-3)
+    assert isinstance(model.min, Point2D)
+    assert isinstance(model.max, Point2D)
+
+    # test the model converted entirely to Room2D
+    model.buildings[0].convert_all_room_3ds_to_2d()
+
+    assert len(model.buildings[0].room_3ds) == 0
+    assert len(model.buildings[0].unique_room_2ds) == 10
+    assert all(isinstance(r, Room2D) for r in model.buildings[0].unique_room_2ds)
+
+    assert len(model.buildings) == 1
+    assert isinstance(model.buildings[0], Building)
+
+    assert model.average_story_count == 2
+    assert model.average_story_count_above_ground == 2
+    assert model.average_height == pytest.approx(7.5, rel=1e-2)
+    assert model.average_height_above_ground == pytest.approx(7.5, rel=1e-2)
+    assert model.footprint_area == pytest.approx(35 * 25, rel=1e-3)
+    assert model.floor_area == pytest.approx(1334, rel=1e-3)
+
+    assert model.exterior_wall_area == pytest.approx(772, rel=1e-3)
+    assert model.exterior_aperture_area == pytest.approx(290.8, rel=1e-3)
+    assert model.volume == pytest.approx(4898.5, rel=1e-3)
+    assert isinstance(model.min, Point2D)
+    assert isinstance(model.max, Point2D)
+
+
 def test_to_dict():
     """Test the Model to_dict method."""
     pts_1 = (
