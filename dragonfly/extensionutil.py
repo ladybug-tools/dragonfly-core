@@ -67,8 +67,9 @@ def building_extension_dicts(building_list, extension_key, building_ext_dicts,
             building_ext_dicts.append(bldg_dict['properties'][extension_key])
         except KeyError:
             building_ext_dicts.append(None)
-        story_extension_dicts(bldg_dict['unique_stories'], extension_key,
-                              story_ext_dicts, room2d_ext_dicts)
+        if 'unique_stories' in bldg_dict and bldg_dict['unique_stories'] is not None:
+            story_extension_dicts(bldg_dict['unique_stories'], extension_key,
+                                story_ext_dicts, room2d_ext_dicts)
     return building_ext_dicts, story_ext_dicts, room2d_ext_dicts
 
 
