@@ -1004,6 +1004,8 @@ using-multipliers-zone-and-or-window.html
                         except KeyError:  # first of the two adjacencies
                             this_seg = '{}..Face{}'.format(room.identifier, i + 1)
                             adj_dict[this_seg] = new_w_par
+                        except AttributeError:  # all windows were removed from adjacency
+                            new_w_par = None
                 else:
                     new_w_par = w_par
                 new_w_pars.append(new_w_par)
@@ -1285,7 +1287,7 @@ using-multipliers-zone-and-or-window.html
         """
         detailed = False if raise_exception else detailed
         # gather all of the Surface boundary conditions
-        srf_bc_dict = {}
+        srf_bc_dict, rid_map = {}, {}
         for room in self._room_2ds:
             for bc, w_par in zip(room._boundary_conditions, room._window_parameters):
                 if isinstance(bc, Surface):
@@ -1293,6 +1295,7 @@ using-multipliers-zone-and-or-window.html
                     bc_ind = int(bc_objs[0].split('..Face')[-1]) - 1
                     srf_bc_dict[(bc_objs[-1], bc_ind)] = \
                         (room.identifier, bc_objs[0], w_par, room)
+            rid_map[room.identifier] = room.full_id
         # check the adjacencies for all Surface boundary conditions
         msgs = []
         for key, val in srf_bc_dict.items():
@@ -1303,10 +1306,15 @@ using-multipliers-zone-and-or-window.html
                         rm_bc = room._boundary_conditions[key[1]]
                         rm_w_par = room._window_parameters[key[1]]
                     except IndexError:  # referenced wall segment does not exist
+                        try:
+                            r1, r2 = rid_map[val[0]], rid_map[rm_id]
+                        except KeyError:  # completely missing from the model
+                            r1, r2 = val[0], rm_id
                         msg = 'Room2D "{}" has an adjacency referencing a missing ' \
-                            'wall segment on Room2D "{}".'.format(val[0], rm_id)
+                            'wall segment on Room2D "{}".'.format(r1, r2)
                         msg = self._validation_message_child(
-                            msg, val[3], detailed, '100203', error_type='Missing Adjacency')
+                            msg, val[3], detailed, '100203',
+                            error_type='Missing Adjacency')
                         if detailed:
                             msg['element_id'].append(room.identifier)
                             msg['element_name'].append(room.display_name)
@@ -1314,8 +1322,12 @@ using-multipliers-zone-and-or-window.html
                         msgs.append(msg)
                         break
                     if not isinstance(rm_bc, Surface):
+                        try:
+                            r1, r2 = rid_map[rm_id], rid_map[val[1]]
+                        except KeyError:  # completely missing from the model
+                            r1, r2 = rm_id, val[1]
                         msg = 'Room2D "{}" does not have a Surface boundary condition ' \
-                            'at "{}" but its adjacent object does.'.format(rm_id, val[1])
+                            'at "{}" but its adjacent object does.'.format(r1, r2)
                         msg = self._validation_message_child(
                             msg, room, detailed, '100201',
                             error_type='Mismatched Adjacency')
@@ -1325,8 +1337,12 @@ using-multipliers-zone-and-or-window.html
                             msg['parents'].append(msg['parents'][0])
                         msgs.append(msg)
                     if val[2] != rm_w_par:
+                        try:
+                            r1, r2 = rid_map[val[0]], rid_map[rm_id]
+                        except KeyError:  # completely missing from the model
+                            r1, r2 = val[0], rm_id
                         msg = 'Window parameters do not match between ' \
-                            'adjacent Room2Ds "{}" and "{}".'.format(val[0], rm_id)
+                            'adjacent Room2Ds "{}" and "{}".'.format(r1, r2)
                         msg = self._validation_message_child(
                             msg, room, detailed, '100202',
                             error_type='Mismatched WindowParameter Adjacency')
@@ -1337,8 +1353,12 @@ using-multipliers-zone-and-or-window.html
                         msgs.append(msg)
                     break
             else:
+                try:
+                    r1, r2 = rid_map[val[0]], rid_map[rm_id]
+                except KeyError:  # completely missing from the model
+                    r1, r2 = val[0], rm_id
                 msg = 'Room2D "{}" has a missing adjacency for Room2D "{}".'.format(
-                    val[0], rm_id)
+                    r1, r2)
                 msg = self._validation_message_child(
                     msg, val[3], detailed, '100203', error_type='Missing Adjacency')
                 msgs.append(msg)

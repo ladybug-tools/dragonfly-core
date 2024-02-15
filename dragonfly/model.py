@@ -942,7 +942,7 @@ class Model(_BaseGeometry):
                     if detailed:
                         bldg_ids.extend(adj_msg)
                     else:
-                        bldg_ids.append('{}\n {}'.format(story.identifier, adj_msg))
+                        bldg_ids.append('{}\n {}'.format(story.full_id, adj_msg))
         if detailed:
             return bldg_ids
         if bldg_ids != []:
@@ -981,7 +981,7 @@ class Model(_BaseGeometry):
                     if detailed:
                         bldg_ids.extend(ov_msg)
                     else:
-                        bldg_ids.append('{}\n {}'.format(bldg.identifier, ov_msg))
+                        bldg_ids.append('{}\n {}'.format(bldg.full_id, ov_msg))
         if detailed:
             return bldg_ids
         if bldg_ids != []:
@@ -1019,7 +1019,7 @@ class Model(_BaseGeometry):
                     if detailed:
                         bldg_ids.extend(ov_msg)
                     else:
-                        bldg_ids.append('{}\n {}'.format(bldg.identifier, ov_msg))
+                        bldg_ids.append('{}\n {}'.format(bldg.full_id, ov_msg))
         if detailed:
             return bldg_ids
         if bldg_ids != []:
