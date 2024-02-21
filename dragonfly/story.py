@@ -724,9 +724,9 @@ using-multipliers-zone-and-or-window.html
         """Get suggested LineSegment2Ds to be used for this Story in the align methods.
 
         This method will return the most common axes across the Story geometry
-        along with the number of Room2D segments that correspond to 
-        each axis. The latter can be used to filter the suggested alignment axes
-        to get only the most common ones across the input Room2Ds.
+        along with the number of Room2D segments that correspond to each axis.
+        The latter can be used to filter the suggested alignment axes to get
+        only the most common ones across the input Room2Ds.
 
         Args:
             distance: A number for the distance that will be used in the alignment
