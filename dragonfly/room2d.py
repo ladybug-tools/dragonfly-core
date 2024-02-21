@@ -1569,13 +1569,17 @@ class Room2D(_BaseGeometry):
             return full_msg
         return [] if detailed else ''
 
-    def check_window_parameters_valid(self, raise_exception=True, detailed=False):
+    def check_window_parameters_valid(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check whether the Room2D's window parameters produce valid apertures.
 
-        This means that the resulting Apertures are completely bounded by their
-        parent wall Face.
+        This means that this Room's windows do not overlap with one another and,
+        in the case of detailed windows, the polygons do not self-intersect.
 
         Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
             raise_exception: Boolean to note whether a ValueError should be raised
                 if the window parameters are not valid.
             detailed: Boolean for whether the returned object is a detailed list of

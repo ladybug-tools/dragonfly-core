@@ -741,7 +741,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_duplicate_building_identifiers(False, detailed))
         msgs.append(self.check_degenerate_room_2ds(tol, False, detailed))
         msgs.append(self.check_self_intersecting_room_2ds(tol, False, detailed))
-        msgs.append(self.check_window_parameters_valid(False, detailed))
+        msgs.append(self.check_window_parameters_valid(tol, False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
         msgs.append(self.check_no_roof_overlaps(tol, False, detailed))
@@ -892,13 +892,17 @@ class Model(_BaseGeometry):
             raise ValueError(full_msg)
         return full_msg
 
-    def check_window_parameters_valid(self, raise_exception=True, detailed=False):
+    def check_window_parameters_valid(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check that all Room2Ds have window parameters produce valid apertures.
 
         This means that the resulting Apertures are completely bounded by their
         parent wall Face and attributes like window to wall ratio are accurate.
 
         Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
             raise_exception: Boolean to note whether a ValueError should be raised
                 if the window parameters are not valid.
             detailed: Boolean for whether the returned object is a detailed list of
@@ -910,7 +914,7 @@ class Model(_BaseGeometry):
         detailed = False if raise_exception else detailed
         msgs = []
         for room in self.room_2ds:
-            msg = room.check_window_parameters_valid(False, detailed)
+            msg = room.check_window_parameters_valid(tolerance, False, detailed)
             if detailed:
                 msgs.extend(msg)
             elif msg != '':
