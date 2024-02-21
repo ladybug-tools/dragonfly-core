@@ -1583,10 +1583,11 @@ class Room2D(_BaseGeometry):
 
     def check_window_parameters_valid(
             self, tolerance=0.01, raise_exception=True, detailed=False):
-        """Check whether the Room2D's window parameters produce valid apertures.
+        """Check whether the window and skylight parameters produce valid apertures.
 
         This means that this Room's windows do not overlap with one another and,
-        in the case of detailed windows, the polygons do not self-intersect.
+        in the case of detailed windows, the polygons do not self-intersect. It
+        also means that skylights do not extend past the boundary of the room.
 
         Args:
             tolerance: The minimum difference between the coordinate values of two
@@ -1603,11 +1604,15 @@ class Room2D(_BaseGeometry):
         detailed = False if raise_exception else detailed
         msgs = []
         checkable_par = (RectangularWindows, DetailedWindows)
-        for i, (wp, seg) in enumerate(zip(self._window_parameters, self.floor_segments)):
+        for i, wp in enumerate(self._window_parameters):
             if wp is not None and isinstance(wp, checkable_par):
-                msg = wp.check_valid_for_segment(seg, self.floor_to_ceiling_height)
+                msg = wp.check_window_overlaps(tolerance)
                 if msg != '':
-                    msgs.append(' Segment [{}] - {}'.format(i, msg))
+                    msgs.append(' Segment ({}) - {}'.format(i, msg))
+                if isinstance(wp, DetailedWindows):
+                    msg = wp.check_self_intersecting(tolerance)
+                    if msg != '':
+                        msgs.append(' Segment ({}) - {}'.format(i, msg))
         if self._skylight_parameters is not None:
             msg = self._skylight_parameters.check_valid_for_face(self.floor_geometry)
             if msg != '':
