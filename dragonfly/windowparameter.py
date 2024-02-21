@@ -1464,6 +1464,44 @@ class RectangularWindows(_AsymmetricBase):
 
         return sum(areas)
 
+    def check_window_overlaps(self, tolerance=0.01):
+        """Check whether any windows overlap with one another.
+
+        Args:
+            tolerance: The minimum distance that two windows must overlap in order
+                for them to be considered overlapping and invalid. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A string with the message. Will be an empty string if valid.
+        """
+        # group the rectangular parameters to gether
+        zip_obj = zip(self.origins, self.widths, self.heights)
+        rect_par = [(o, w, h) for o, w, h in zip_obj]
+        # loop through the polygons and check to see if it overlaps with the others
+        grouped_rects = [[rect_par[0]]]
+        for rect in rect_par[1:]:
+            group_found = False
+            for rect_group in grouped_rects:
+                for oth_rect in rect_group:
+                    if self._rectangles_overlap(rect, oth_rect, tolerance):
+                        rect_group.append(rect)
+                        group_found = True
+                        break
+                if group_found:
+                    break
+            if not group_found:  # the polygon does not overlap with any of the others
+                grouped_rects.append([rect])  # make a new group for the polygon
+        # report any polygons that overlap
+        if not all(len(g) == 1 for g in grouped_rects):
+            base_msg = '({} windows overlap one another)'
+            all_msg = []
+            for r_group in grouped_rects:
+                if len(r_group) != 1:
+                    all_msg.append(base_msg.format(len(r_group)))
+            return ' '.join(all_msg)
+        return ''
+
     def check_valid_for_segment(self, segment, floor_to_ceiling_height):
         """Check that these window parameters are valid for a given LineSegment3D.
 
@@ -1696,6 +1734,19 @@ class RectangularWindows(_AsymmetricBase):
             base['user_data'] = self.user_data
         return base
 
+    @staticmethod
+    def _rectangles_overlap(rect_par_1, rect_par_2, tolerance):
+        """Test if two rectangles overlap within a tolerance."""
+        min_pt1, w1, h1 = rect_par_1
+        max_pt1 = Point2D(min_pt1.x + w1, min_pt1.y + h1)
+        min_pt2, w2, h2 = rect_par_2
+        max_pt2 = Point2D(min_pt2.x + w2, min_pt2.y + h2)
+        if min_pt2.x > max_pt1.x - tolerance or min_pt1.x > max_pt2.x - tolerance:
+            return False
+        if min_pt2.y > max_pt1.y - tolerance or min_pt1.y > max_pt2.y - tolerance:
+            return False
+        return True
+
     def __copy__(self):
         new_w = RectangularWindows(
             self.origins, self.widths, self.heights, self.are_doors)
@@ -1906,12 +1957,12 @@ class DetailedWindows(_AsymmetricBase):
                 grouped_polys.append([poly])  # make a new group for the polygon
         # report any polygons that overlap
         if not all(len(g) == 1 for g in grouped_polys):
-            base_msg = '{} windows overlap with one another'
+            base_msg = '({} windows overlap one another)'
             all_msg = []
             for p_group in grouped_polys:
                 if len(p_group) != 1:
                     all_msg.append(base_msg.format(len(p_group)))
-            return '\n'.join(all_msg)
+            return ' '.join(all_msg)
         return ''
 
     def check_self_intersecting(self, tolerance=0.01):
@@ -1933,7 +1984,7 @@ class DetailedWindows(_AsymmetricBase):
                     self_int_i.append(i)
         if len(self_int_i) != 0:
             return 'Window polygons with the following indices are ' \
-                'self-intersecting: {}'.format(' '.join(self_int_i))
+                'self-intersecting: ({})'.format(' '.join(self_int_i))
         return ''
 
     def check_valid_for_segment(self, segment, floor_to_ceiling_height):
