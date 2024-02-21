@@ -1246,3 +1246,18 @@ def test_writer():
     writers = [mod for mod in dir(model.to) if not mod.startswith('_')]
     for writer in writers:
         assert callable(getattr(model.to, writer))
+
+
+def test_model_dict_room_2d_subset():
+    """Test the model_dict_room_2d_subset and ensure it serializes correctly."""
+    model_file = './tests/json/sample_revit_model.dfjson'
+    with open(model_file, 'r') as mf:
+        model_dict = json.load(mf)
+    filtered_model = Model.model_dict_room_2d_subset(model_dict, ['KitchenDining'])
+    model = Model.from_dict(filtered_model)
+
+    assert len(model.buildings) == 1
+    assert len(model.stories) == 1
+    assert len(model.room_2ds) == 1
+    assert model.room_2ds[0].identifier == 'KitchenDining'
+    assert len(model.context_shades) == 0

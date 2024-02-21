@@ -1426,6 +1426,49 @@ class Model(_BaseGeometry):
         return writer
 
     @staticmethod
+    def model_dict_room_2d_subset(model_dict, room_2d_ids):
+        """Get a dragonfly Model dictionary that has been filtered for a Room2D subset.
+
+        This is useful when you are only interested in visualizing or exporting a
+        subset of Room2Ds to a file and so it is not desirable to serialize the
+        entire Dragonfly Model.
+
+        Args:
+            model_dict: A dictionary of a Dragonfly Model.
+            room_2d_ids: A list of the identifiers for the Room2Ds to be included
+                in the output dictionary.
+
+        Returns:
+            A copy of the input Dragonfly Model dictionary, which contains only
+            the Room2Ds listed in the room_2d_ids. All ContextShade and 3D Honeybee
+            Rooms are removed but slanted Roof geometries are included if they are
+            relevant to the Room2Ds.
+        """
+        # build a copy of the model_dict with geometry excluded
+        ex_keys = ('buildings', 'context_shades')
+        filtered_model = {key: v for key, v in model_dict.items() if key not in ex_keys}
+        # loop through the Buildings and grab the relevant Room2Ds
+        room_ids = set(room_2d_ids)
+        if 'buildings' in model_dict and model_dict['buildings'] is not None:
+            new_bldgs = []
+            for b_dict in model_dict['buildings']:
+                if 'unique_stories' in b_dict and b_dict['unique_stories'] is not None:
+                    new_stories = []
+                    for s_dict in b_dict['unique_stories']:
+                        r_dicts = [r for r in s_dict['room_2ds']
+                                   if r['identifier'] in room_ids]
+                        if len(r_dicts) != 0:
+                            new_story = s_dict.copy()
+                            new_story['room_2ds'] = r_dicts
+                            new_stories.append(new_story)
+                    if len(new_stories) != 0:
+                        new_bldg = b_dict.copy()
+                        new_bldg['unique_stories'] = new_stories
+                        new_bldgs.append(new_bldg)
+            filtered_model['buildings'] = new_bldgs
+        return filtered_model
+
+    @staticmethod
     def _solve_ceil_adj(rooms, tolerance=0.01, angle_tolerance=1):
         """Solve Floor/Ceiling adjacencies between a list of rooms."""
         # intersect the Rooms with one another for matching adjacencies
