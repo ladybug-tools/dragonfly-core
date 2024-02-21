@@ -104,7 +104,7 @@ class Room2D(_BaseGeometry):
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
                  '_boundary_conditions', '_window_parameters', '_shading_parameters',
                  '_air_boundaries', '_is_ground_contact', '_is_top_exposed',
-                 '_skylight_parameters', '_parent')
+                 '_skylight_parameters', '_parent', '_abridged_properties')
 
     def __init__(self, identifier, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
@@ -166,10 +166,11 @@ class Room2D(_BaseGeometry):
 
         self._air_boundaries = None  # will be set if it's ever used
         self._parent = None  # _parent will be set when Room2D is added to a Story
+        self._abridged_properties = None  # will be set when originating from abridged
         self._properties = Room2DProperties(self)  # properties for extensions
 
     @classmethod
-    def from_dict(cls, data, tolerance=0):
+    def from_dict(cls, data, tolerance=0, persist_abridged=False):
         """Initialize a Room2D from a dictionary.
 
         Args:
@@ -178,6 +179,12 @@ class Room2D(_BaseGeometry):
                 are considered to be in the same horizontal plane. This is used to check
                 that all vertices of the input floor_geometry lie in the same horizontal
                 floor plane. Default is 0, which will not perform any check.
+            persist_abridged: Set to True when the properties of the Room2D dictionary
+                are abridged and you want to ensure that these exact same abridged
+                properties persist into the output of Room2D.to_dict(abridged=True).
+                It is useful when trying to edit the Room2D independently of a
+                Model and there are no plans to edit any extension properties of
+                the Room2D. THIS IS AN ADVANCED OPTION. (Default: False).
         """
         # check the type of dictionary
         assert data['type'] == 'Room2D', 'Expected Room2D dictionary. ' \
@@ -274,6 +281,9 @@ class Room2D(_BaseGeometry):
 
         if data['properties']['type'] == 'Room2DProperties':
             room.properties._load_extension_attr_from_dict(data['properties'])
+        elif persist_abridged and \
+                data['properties']['type'] == 'Room2DPropertiesAbridged':
+            room._abridged_properties = data['properties']
         return room
 
     @classmethod
@@ -1201,6 +1211,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
+        rebuilt_room._abridged_properties = self._abridged_properties
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
 
@@ -1321,6 +1332,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
         rebuilt_room._parent = self._parent
+        rebuilt_room._abridged_properties = self._abridged_properties
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
 
@@ -1823,7 +1835,10 @@ class Room2D(_BaseGeometry):
         base = {'type': 'Room2D'}
         base['identifier'] = self.identifier
         base['display_name'] = self.display_name
-        base['properties'] = self.properties.to_dict(abridged, included_prop)
+        if abridged and self._abridged_properties is not None:
+            base['properties'] = self._abridged_properties
+        else:
+            base['properties'] = self.properties.to_dict(abridged, included_prop)
         base['floor_boundary'] = [(pt.x, pt.y) for pt in self._floor_geometry.boundary]
         if self._floor_geometry.has_holes:
             base['floor_holes'] = \
@@ -2033,6 +2048,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._user_data = None if room_2ds[i].user_data is None else \
                 room_2ds[i].user_data.copy()
             rebuilt_room._parent = room_2ds[i]._parent
+            rebuilt_room._abridged_properties = room_2ds[i]._abridged_properties
             rebuilt_room._properties._duplicate_extension_attr(room_2ds[i]._properties)
             intersected_rooms.append(rebuilt_room)
 
@@ -3334,6 +3350,7 @@ class Room2D(_BaseGeometry):
         new_r._is_ground_contact = self._is_ground_contact
         new_r._is_top_exposed = self._is_top_exposed
         new_r._skylight_parameters = self._skylight_parameters
+        new_r._abridged_properties = self._abridged_properties
         new_r._properties._duplicate_extension_attr(self._properties)
         return new_r
 
