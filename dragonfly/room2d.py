@@ -1403,7 +1403,7 @@ class Room2D(_BaseGeometry):
                 * K = a segment that has been kept (possibly moved but not removed)
                 * X = a segment that has been removed
                 * A = a segment that has been added
-            
+
                 For example, KXKAKKA means that the first segment was kept, the
                 next removed, the next kept, the next added, followed by two kept
                 segments and ending in an added segment.
@@ -1464,7 +1464,7 @@ class Room2D(_BaseGeometry):
                     new_win.append(None)
                     new_shd.append(None)
                 new_i += 1
-        
+
         # assign the updated properties to this Room2D
         self._floor_geometry = new_floor_geometry
         self._segment_count = len(new_segs)
@@ -2286,7 +2286,7 @@ class Room2D(_BaseGeometry):
         """Get suggested LineSegment2Ds for the Room2D.align method.
 
         This method will return the most common axes across the input Room2D
-        geometry along with the number of Room2D segments that correspond to 
+        geometry along with the number of Room2D segments that correspond to
         each axis. The latter can be used to filter the suggested alignment axes
         to get only the most common ones across the input Room2Ds.
 
@@ -2366,7 +2366,7 @@ class Room2D(_BaseGeometry):
             * roof_face_i -- A list of integers for the indices of the faces in
                 the Polyface3D that correspond to the roof. Will be None whenever
                 the roof is not successfully applied to the Room.
-            
+
             * shade_geometry -- An list of Face3D for roof geometries that overlapped
                 with the Room2D but could not be easily incorporated into the Room
                 volume. Typical examples include roof geometries representing dormers
@@ -2477,7 +2477,7 @@ class Room2D(_BaseGeometry):
     def _wall_faces_with_roof(self, all_room_poly, all_segments,
                               rel_rf_polys, rel_rf_planes, tolerance):
         """Generate Face3D for the Room Walls when there are multiple Roof Polygons.
-        
+
         Args:
             all_room_poly: A list of Polygon2D where each polygon represents either
                 the boundary of the room or a hole.
@@ -2622,7 +2622,7 @@ class Room2D(_BaseGeometry):
         b_room_poly = pb.BooleanPolygon(room_polys)
         # find the boolean intersection with each roof polygon and project the result
         int_tol = tolerance / 100  # intersection tolerance must be finer
-        
+
         for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
             # snap the polygons to one another to avoid tolerance issues
             rf_poly = rf_poly.remove_colinear_vertices(tolerance)
