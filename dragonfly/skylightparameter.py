@@ -429,6 +429,30 @@ class DetailedSkylights(_SkylightParameterBase):
                 return msg_template.format(i)
         return ''
 
+    def offset_polygons_for_face(self, face_3d, offset_distance=0.01):
+        """Offset the polygons until all vertices are inside the boundaries of a Face3D.
+
+        Args:
+            face_3d: A horizontal Face3D representing the floor geometry of a Room2D
+                to which these skylight parameters are assigned.
+            offset_distance: Distance from the edge of the face_3d that
+                the polygons will be offset to. (Default: 0.01, suitable for
+                objects in meters).
+        """
+        # get the polygons that represent the roof face
+        verts2d = tuple(Point2D(pt.x, pt.y) for pt in face_3d.boundary)
+        parent_poly, parent_holes = Polygon2D(verts2d), None
+        if face_3d.has_holes:
+            parent_holes = tuple(
+                Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
+                for hole in face_3d.holes
+            )
+        # loop through the 
+        for i, polygon in enumerate(self.polygons):
+            if not self._is_sub_polygon(polygon, parent_poly, parent_holes):
+                # TODO: Implement something here to offset the polygon until its correct
+                continue
+
     def add_skylight_to_face(self, face, tolerance=0.01):
         """Add Apertures to a Honeybee Roof Face using these Skylight Parameters.
 
@@ -437,19 +461,9 @@ class DetailedSkylights(_SkylightParameterBase):
             tolerance: The maximum difference between point values for them to be
                 considered distinct. (Default: 0.01, suitable for objects in meters).
         """
-        # get the polygons that represent the roof face
-        verts2d = tuple(Point2D(pt.x, pt.y) for pt in face.geometry.boundary)
-        parent_poly, parent_holes = Polygon2D(verts2d), None
-        if face.geometry.has_holes:
-            parent_holes = tuple(
-                Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
-                for hole in face.geometry.holes
-            )
         # loop through each polygon and create its geometry
         p_dir = Vector3D(0, 0, 1)
         for i, (polygon, isd) in enumerate(zip(self.polygons, self.are_doors)):
-            if not self._is_sub_polygon(polygon, parent_poly, parent_holes):
-                continue
             pt3d = tuple(
                 face.geometry.plane.project_point(Point3D(p.x, p.y, 0), p_dir)
                 for p in polygon)
