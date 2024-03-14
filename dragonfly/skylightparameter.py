@@ -447,8 +447,8 @@ class DetailedSkylights(_SkylightParameterBase):
                 Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
                 for hole in face_3d.holes
             )
-        # loop through the 
-        for i, polygon in enumerate(self.polygons):
+        # loop through the polygons and offset them
+        for polygon in self.polygons:
             if not self._is_sub_polygon(polygon, parent_poly, parent_holes):
                 # TODO: Implement something here to offset the polygon until its correct
                 continue
@@ -461,9 +461,21 @@ class DetailedSkylights(_SkylightParameterBase):
             tolerance: The maximum difference between point values for them to be
                 considered distinct. (Default: 0.01, suitable for objects in meters).
         """
+        # get the polygons that represent the roof face
+        verts2d = tuple(Point2D(pt.x, pt.y) for pt in face.geometry.boundary)
+        parent_poly, parent_holes = Polygon2D(verts2d), None
+        if face.geometry.has_holes:
+            parent_holes = tuple(
+                Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
+                for hole in face.geometry.holes
+            )
         # loop through each polygon and create its geometry
         p_dir = Vector3D(0, 0, 1)
         for i, (polygon, isd) in enumerate(zip(self.polygons, self.are_doors)):
+            pt_in_poly = polygon.center if polygon.is_convex else \
+                polygon.pole_of_inaccessibility(tolerance)
+            if not self._is_sub_point(pt_in_poly, parent_poly, parent_holes):
+                continue
             pt3d = tuple(
                 face.geometry.plane.project_point(Point3D(p.x, p.y, 0), p_dir)
                 for p in polygon)
@@ -580,6 +592,26 @@ class DetailedSkylights(_SkylightParameterBase):
                 return False
             for hole_poly in parent_holes:
                 if not hole_poly.is_polygon_outside(sub_poly):
+                    return False
+            return True
+
+    @staticmethod
+    def _is_sub_point(sub_point, parent_poly, parent_holes=None):
+        """Check if a point lies inside a parent polygon.
+
+        Args:
+            sub_point: A Point2D which will be checked if it lies inside the parent.
+            parent_poly: A parent Polygon2D.
+            parent_holes: An optional list of Polygon2D for any holes that may
+                exist in the parent polygon. (Default: None).
+        """
+        if parent_holes is None:
+            return parent_poly.is_point_inside(sub_point)
+        else:
+            if not parent_poly.is_point_inside(sub_point):
+                return False
+            for hole_poly in parent_holes:
+                if hole_poly.is_point_inside(sub_point):
                     return False
             return True
 
