@@ -2376,6 +2376,15 @@ class DetailedWindows(_AsymmetricBase):
         seg_face = Face3D.from_rectangle(segment.length, height, plane)
         return seg_face.is_sub_face(face3d, tolerance, angle_tolerance)
 
+    def __len__(self):
+        return len(self._polygons)
+
+    def __getitem__(self, key):
+        return self._polygons[key]
+
+    def __iter__(self):
+        return iter(self._polygons)
+
     def __copy__(self):
         new_w = DetailedWindows(self._polygons, self._are_doors)
         new_w._user_data = None if self.user_data is None else self.user_data.copy()
@@ -2394,9 +2403,6 @@ class DetailedWindows(_AsymmetricBase):
 
     def __ne__(self, other):
         return not self.__eq__(other)
-
-    def __len__(self):
-        return len(self.polygons)
 
     def __repr__(self):
         return 'DetailedWindows: [{} windows]'.format(len(self._polygons))
