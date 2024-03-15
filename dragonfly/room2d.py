@@ -929,6 +929,20 @@ class Room2D(_BaseGeometry):
                 'condition.'.format(self._boundary_conditions[seg_index])
         self._window_parameters[seg_index] = window_parameter
 
+    def offset_skylight_parameters(self, offset_distance=0.05, tolerance=0.01):
+        """Offset detailed skylights so all vertices are inside the Room2D.
+
+        Args:
+            offset_distance: Distance from the edge of the room that
+                the polygons will be offset to. (Default: 0.05, suitable for
+                objects in meters).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+        """
+        if isinstance(self._skylight_parameters, DetailedSkylights):
+            self._skylight_parameters.offset_polygons_for_face(
+                self.floor_geometry, offset_distance, tolerance)
+
     def reset_adjacency(self):
         """Set all Surface boundary conditions of this Room2D to be Outdoors."""
         for i, bc in enumerate(self._boundary_conditions):
@@ -1617,6 +1631,7 @@ class Room2D(_BaseGeometry):
             msg = self._skylight_parameters.check_valid_for_face(self.floor_geometry)
             if msg != '':
                 msgs.append(' Skylights - {}'.format(msg))
+            # TODO: Add check for overlapping and self-intersecting skylights
         if len(msgs) == 0:
             return [] if detailed else ''
         full_msg = 'Room2D "{}" contains invalid window parameters.' \

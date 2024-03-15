@@ -969,7 +969,8 @@ using-multipliers-zone-and-or-window.html
         self._room_2ds = tuple(new_room_2ds)
         return removed_rooms
 
-    def rebuild_detailed_windows(self, tolerance=0.01, match_adjacency=False):
+    def rebuild_detailed_windows(
+            self, tolerance=0.01, match_adjacency=False, rebuild_skylights=True):
         """Rebuild all detailed windows such that they are bounded by their parent walls.
 
         This method will also ensure that all interior windows on adjacent wall
@@ -987,6 +988,8 @@ using-multipliers-zone-and-or-window.html
                 correctly with one another. This is desirable when the existing
                 adjacencies across the model are correct but it can create several
                 unwanted cases when the adjacencies are not correct. (Default: False).
+            rebuild_skylights: A boolean to note whether skylights should be offset
+                and rebuilt if they lie outside their parent Room2D.
         """
         adj_dict = {}
         for room in self.room_2ds:
@@ -1010,6 +1013,8 @@ using-multipliers-zone-and-or-window.html
                     new_w_par = w_par
                 new_w_pars.append(new_w_par)
             room._window_parameters = new_w_pars
+            if rebuild_skylights:
+                room.offset_skylight_parameters(tolerance * 2, tolerance)
 
     def reset_adjacency(self):
         """Set all Surface boundary conditions on the Story to be Outdoors."""
