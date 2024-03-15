@@ -449,9 +449,9 @@ class DetailedSkylights(_SkylightParameterBase):
         self_int_i = []
         for i, polygon in enumerate(self.polygons):
             if polygon.is_self_intersecting:
-                new_geo = polygon.remove_duplicate_vertices(tolerance)
+                new_geo = polygon.remove_colinear_vertices(tolerance)
                 if new_geo.is_self_intersecting:
-                    self_int_i.append(i)
+                    self_int_i.append(str(i))
         if len(self_int_i) != 0:
             return 'Skylight polygons with the following indices are ' \
                 'self-intersecting: ({})'.format(' '.join(self_int_i))

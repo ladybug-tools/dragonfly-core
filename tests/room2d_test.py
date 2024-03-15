@@ -300,6 +300,27 @@ def test_room2d_set_outdoor_window_shading_parameters():
     assert room2d.exterior_aperture_area == 60 * 0.4
 
 
+def test_room2d_check_window_parameters_valid():
+    """Test the Room2D check_window_parameters_valid method."""
+    pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
+    room2d = Room2D('SquareShoebox', Face3D(pts), 3)
+
+    sky_pts = (Point2D(0.5, 5), Point2D(3, 5), Point2D(3, 8), Point2D(0.5, 8))
+    sky_par = DetailedSkylights([Polygon2D(sky_pts)])
+    room2d.skylight_parameters = sky_par
+    assert room2d.check_window_parameters_valid(raise_exception=False) == ''
+
+    sky_pts = (Point2D(0.5, 5), Point2D(3, 5), Point2D(0.5, 8), Point2D(3, 8))
+    sky_par = DetailedSkylights([Polygon2D(sky_pts)])
+    room2d.skylight_parameters = sky_par
+    assert room2d.check_window_parameters_valid(raise_exception=False) != ''
+
+    sky_pts = (Point2D(-2.5, 5), Point2D(2.5, 5), Point2D(2.5, 12), Point2D(-2.5, 12))
+    sky_par = DetailedSkylights([Polygon2D(sky_pts)])
+    room2d.skylight_parameters = sky_par
+    assert room2d.check_window_parameters_valid(raise_exception=False) != ''
+
+
 def test_room2d_offset_skylight_parameters():
     """Test the Room2D offset_skylight_parameters method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
