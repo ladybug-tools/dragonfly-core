@@ -399,6 +399,64 @@ class DetailedSkylights(_SkylightParameterBase):
         """
         return sum(polygon.area for polygon in self._polygons)
 
+    def check_overlaps(self, tolerance=0.01):
+        """Check whether any polygons overlap with one another.
+
+        Args:
+            tolerance: The minimum distance that two polygons must overlap in order
+                for them to be considered overlapping and invalid. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A string with the message. Will be an empty string if valid.
+        """
+        polygons = list(sorted(self.polygons, key=lambda x: x.area, reverse=True))
+        # loop through the polygons and check to see if it overlaps with the others
+        grouped_polys = [[polygons[0]]]
+        for poly in polygons[1:]:
+            group_found = False
+            for poly_group in grouped_polys:
+                for oth_poly in poly_group:
+                    if poly.polygon_relationship(oth_poly, tolerance) >= 0:
+                        poly_group.append(poly)
+                        group_found = True
+                        break
+                if group_found:
+                    break
+            if not group_found:  # the polygon does not overlap with any of the others
+                grouped_polys.append([poly])  # make a new group for the polygon
+        # report any polygons that overlap
+        if not all(len(g) == 1 for g in grouped_polys):
+            base_msg = '({} skylights overlap one another)'
+            all_msg = []
+            for p_group in grouped_polys:
+                if len(p_group) != 1:
+                    all_msg.append(base_msg.format(len(p_group)))
+            return ' '.join(all_msg)
+        return ''
+
+    def check_self_intersecting(self, tolerance=0.01):
+        """Check whether any polygons in these skylight parameters are self intersecting.
+
+        Args:
+            tolerance: The minimum distance between a vertex coordinates where
+                they are considered equivalent. (Default: 0.01, suitable
+                for objects in meters).
+
+        Returns:
+            A string with the message. Will be an empty string if valid.
+        """
+        self_int_i = []
+        for i, polygon in enumerate(self.polygons):
+            if polygon.is_self_intersecting:
+                new_geo = polygon.remove_duplicate_vertices(tolerance)
+                if new_geo.is_self_intersecting:
+                    self_int_i.append(i)
+        if len(self_int_i) != 0:
+            return 'Skylight polygons with the following indices are ' \
+                'self-intersecting: ({})'.format(' '.join(self_int_i))
+        return ''
+
     def check_valid_for_face(self, face):
         """Check that these skylight parameters are valid for a given Face3D.
 
