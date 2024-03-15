@@ -644,6 +644,15 @@ class DetailedSkylights(_SkylightParameterBase):
                     return False
             return True
 
+    def __len__(self):
+        return len(self._polygons)
+
+    def __getitem__(self, key):
+        return self._polygons[key]
+
+    def __iter__(self):
+        return iter(self._polygons)
+
     def __copy__(self):
         return DetailedSkylights(self._polygons, self._are_doors)
 

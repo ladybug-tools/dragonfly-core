@@ -8,6 +8,7 @@ from dragonfly.story import Story
 from dragonfly.building import Building
 from dragonfly.model import Model
 from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow, DetailedWindows
+from dragonfly.skylightparameter import DetailedSkylights
 from dragonfly.shadingparameter import Overhang
 
 from honeybee.boundarycondition import Outdoors, Ground, Surface
@@ -299,6 +300,24 @@ def test_room2d_set_outdoor_window_shading_parameters():
     assert room2d.exterior_aperture_area == 60 * 0.4
 
 
+def test_room2d_offset_skylight_parameters():
+    """Test the Room2D offset_skylight_parameters method."""
+    pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
+    room2d = Room2D('SquareShoebox', Face3D(pts), 3)
+    sky_pts = (Point2D(-2.5, 5), Point2D(2.5, 5), Point2D(2.5, 12), Point2D(-2.5, 12))
+    sky_par = DetailedSkylights([Polygon2D(sky_pts)])
+    room2d.skylight_parameters = sky_par
+    assert room2d.check_window_parameters_valid(raise_exception=False) != ''
+
+    room2d.offset_skylight_parameters(0.05, 0.01)
+    assert room2d.check_window_parameters_valid(raise_exception=False) == ''
+    for pt in room2d.skylight_parameters[0].vertices:
+        if pt.x == pytest.approx(0.05, rel=1e-2) and pt.y == pytest.approx(9.95, rel=1e-2):
+            break
+    else:
+        raise ValueError('offset_skylight_parameters failed.')
+
+
 def test_room2d_remove_duplicate_vertices():
     """Test the Room2D remove_duplicate_vertices method."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 0, 3.001),
@@ -375,7 +394,7 @@ def test_room2d_update_floor_geometry_remove():
 def test_room2d_update_floor_geometry_add():
     """Test the Room2D update_floor_geometry method while adding segments."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
-    
+
     orig_geo = Face3D(pts)
     win_pts = (Point2D(0.5, 0.5), Point2D(9.5, 0.5), Point2D(9.5, 2.5), Point2D(0.5, 2.5))
     detailed_window = DetailedWindows((Polygon2D(win_pts),))
