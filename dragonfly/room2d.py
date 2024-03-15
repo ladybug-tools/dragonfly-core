@@ -1627,11 +1627,16 @@ class Room2D(_BaseGeometry):
                     msg = wp.check_self_intersecting(tolerance)
                     if msg != '':
                         msgs.append(' Segment ({}) - {}'.format(i, msg))
-        if self._skylight_parameters is not None:
+        if isinstance(self._skylight_parameters, DetailedSkylights):
             msg = self._skylight_parameters.check_valid_for_face(self.floor_geometry)
             if msg != '':
                 msgs.append(' Skylights - {}'.format(msg))
-            # TODO: Add check for overlapping and self-intersecting skylights
+            msg = self._skylight_parameters.check_overlaps(tolerance)
+            if msg != '':
+                msgs.append(' Skylights - {}'.format(msg))
+            msg = self._skylight_parameters.check_self_intersecting(tolerance)
+            if msg != '':
+                msgs.append(' Skylights - {}'.format(msg))
         if len(msgs) == 0:
             return [] if detailed else ''
         full_msg = 'Room2D "{}" contains invalid window parameters.' \
