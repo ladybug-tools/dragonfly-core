@@ -284,20 +284,31 @@ class Model(_BaseGeometry):
         return model
 
     @classmethod
-    def from_honeybee(cls, model, as_room_3ds=False):
+    def from_honeybee(cls, model, conversion_method='AllRoom2D'):
         """Initialize a Dragonfly Model from a Honeybee Model.
 
         Args:
             model: A Honeybee Model to be converted to a Dragonfly Model.
-            as_room_3ds: Boolean to note whether the Honeybee Rooms should be
-                converted to Dragonfly Room2Ds and Stories (False) or whether
-                they should keep all of their 3D detail (True) and be assigned
-                to Building.room_3ds. (Default: False).
+            conversion_method: Text to indicate how the Honeybee Rooms should be
+                converted to Dragonfly. Note that the AllRoom2D option may result
+                in some loss or simplification of the 3D Honeybee geometry but
+                ensures that all of Dragonfly's features for editing the rooms can
+                be used. The ExtrudedOnly method will convert only the 3D Rooms
+                that would have no loss or simplification of geometry when converted
+                to Room2D. AllRoom3D keeps all detailed 3D geometry on the
+                Building.room_3ds property, enabling you to convert the 3D Rooms
+                to Room2D using the Building.convert_room_3ds_to_2d() method as you
+                see fit. (Default: AllRoom2D). Choose from the following options.
+
+                * AllRoom2D - All Honeybee Rooms converted to Dragonfly Room2D
+                * ExtrudedOnly - Only pure extrusions converted to Dragonfly Room2D
+                * AllRoom3D - All Honeybee Rooms left as-is on Building.room_3ds
+
         """
         # translate the rooms to a dragonfly building
         bldgs = None
         if len(model.rooms) != 0:
-            bldgs = [Building.from_honeybee(model, as_room_3ds)]
+            bldgs = [Building.from_honeybee(model, conversion_method)]
         # translate the orphaned shades to context shades
         shades = None
         if len(model.orphaned_shades) != 0:
