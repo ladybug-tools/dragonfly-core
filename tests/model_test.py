@@ -1237,6 +1237,24 @@ def test_from_honeybee():
     model.check_missing_adjacencies()
 
 
+def test_from_honeybee_methods():
+    """Test the different conversion methods on the from_honeybee method."""
+    hb_model_file = './tests/json/revit_sample_model.hbjson'
+    model = hb_model.Model.from_file(hb_model_file)
+
+    df_model = Model.from_honeybee(model, conversion_method='AllRoom2D')
+    assert len(df_model.room_2ds) == 15
+    assert len(df_model.room_3ds) == 0
+
+    df_model = Model.from_honeybee(model, conversion_method='AllRoom3D')
+    assert len(df_model.room_2ds) == 0
+    assert len(df_model.room_3ds) == 15
+
+    df_model = Model.from_honeybee(model, conversion_method='ExtrudedOnly')
+    assert len(df_model.room_2ds) == 6
+    assert len(df_model.room_3ds) == 9
+
+
 def test_writer():
     """Test the Model writer object."""
     pts = (Point3D(50, 50, 3), Point3D(60, 50, 3), Point3D(60, 60, 3), Point3D(50, 60, 3))
