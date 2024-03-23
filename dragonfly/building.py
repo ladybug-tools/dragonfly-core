@@ -1575,7 +1575,7 @@ class Building(_BaseGeometry):
         for face in hb_room._faces:
             try:  # first make sure that the geometry is not degenerate
                 clean_geo = face.geometry.remove_colinear_vertices(tolerance)
-                v_ang = clean_geo.angle(vert_vec)
+                v_ang = clean_geo.normal.angle(vert_vec)
                 if v_ang <= min_v_ang or v_ang >= max_v_ang:
                     continue
                 elif min_h_ang <= v_ang <= max_h_ang:
