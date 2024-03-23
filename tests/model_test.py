@@ -716,7 +716,7 @@ def test_model_with_room3ds():
     assert isinstance(model.max, Point2D)
 
     # test the model converted entirely to Room2D
-    model.buildings[0].convert_all_room_3ds_to_2d()
+    model.buildings[0].convert_all_room_3ds_to_2d(extrusion_rooms_only=False)
 
     assert len(model.buildings[0].room_3ds) == 0
     assert len(model.buildings[0].unique_room_2ds) == 10

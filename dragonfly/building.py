@@ -2,6 +2,7 @@
 """Dragonfly Building."""
 from __future__ import division
 
+import math
 try:
     from itertools import izip as zip  # python 2
 except ImportError:
@@ -300,7 +301,7 @@ class Building(_BaseGeometry):
         return building
 
     @classmethod
-    def from_honeybee(cls, model, as_room_3ds=False):
+    def from_honeybee(cls, model, conversion_method='AllRoom2D'):
         """Initialize a Building from a Honeybee Model.
 
         If each Room has a story, these will be used to determine the separation
@@ -309,18 +310,40 @@ class Building(_BaseGeometry):
 
         Args:
             model: A Honeybee Model to be converted to a Dragonfly Building.
-            as_room_3ds: Boolean to note whether the Honeybee Rooms should be
-                converted to Dragonfly Room2Ds and Stories (False) or whether
-                they should keep all of their 3D detail (True) and be assigned
-                to Building.room_3ds. (Default: False).
+            conversion_method: Text to indicate how the Honeybee Rooms should be
+                converted to Dragonfly. Note that the AllRoom2D option may result
+                in some loss or simplification of the 3D Honeybee geometry but
+                ensures that all of Dragonfly's features for editing the rooms can
+                be used. The ExtrudedOnly method will convert only the 3D Rooms
+                that would have no loss or simplification of geometry when converted
+                to Room2D. AllRoom3D keeps all detailed 3D geometry on the
+                Building.room_3ds property, enabling you to convert the 3D Rooms
+                to Room2D using the Building.convert_room_3ds_to_2d() method as you
+                see fit. (Default: AllRoom2D). Choose from the following options.
+
+                * AllRoom2D - All Honeybee Rooms converted to Dragonfly Room2D
+                * ExtrudedOnly - Only pure extrusions converted to Dragonfly Room2D
+                * AllRoom3D - All Honeybee Rooms left as-is on Building.room_3ds
+
         """
         # if the rooms are being left as they are, just create the Building
-        if as_room_3ds:
+        method = conversion_method.lower()
+        if method in ('allroom3d', 'extrudedonly'):
             dup_rooms = [r.duplicate() for r in model.rooms]
             bldg = cls(model.identifier, room_3ds=dup_rooms)
             bldg._display_name = model._display_name
+            if method == 'extrudedonly':
+                bldg.convert_all_room_3ds_to_2d(
+                    extrusion_rooms_only=True, tolerance=model.tolerance,
+                    angle_tolerance=model.angle_tolerance)
             return bldg
-        # assign stories if they don't already exist
+        elif method != 'allroom2d':
+            msg = 'Building.from_honeybee conversion_method "{}" is not recognized\n' \
+                'Choose from: AllRoom2D, ExtrudedOnly, AllRoom3D.'.format(
+                    conversion_method)
+            raise ValueError(msg)
+
+        # proceed to convert all to Room2D; assign stories if they don't already exist
         min_diff = parse_distance_string('2m', model.units)
         remove_stories = False
         if not all([room.story is not None for room in model.rooms]):
@@ -840,7 +863,7 @@ class Building(_BaseGeometry):
         return df_room
 
     def convert_room_3ds_to_2d(self, room_3d_identifiers, tolerance=0.01):
-        """Convert a several 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
+        """Convert several 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
 
         This process will add the Room2Ds to an existing Dragonfly Story on the
         Building if the Honeybee Room.story matches a Story.display_name on this
@@ -861,7 +884,8 @@ class Building(_BaseGeometry):
             df_rooms.append(self.convert_room_3d_to_2d(r3_id, tolerance))
         return df_rooms
 
-    def convert_all_room_3ds_to_2d(self, tolerance=0.01):
+    def convert_all_room_3ds_to_2d(
+            self, extrusion_rooms_only=True, tolerance=0.01, angle_tolerance=1):
         """Convert all 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
 
         This process will add the Room2Ds to an existing Dragonfly Story on the
@@ -869,15 +893,38 @@ class Building(_BaseGeometry):
         object. If not, a new Story on this Building will be initialized.
 
         Args:
+            extrusion_rooms_only: A boolean to note whether only the 3D Rooms that
+                can be represented as a Room2D without loss of geometry should be
+                converted to Room2Ds. When True, all 3D Rooms that are not pure
+                extrusions will be left as they are. If False, all 3D Rooms in
+                the model will be translated to Room2D regardless of whether they
+                are extrusions or not, meaning that there may be some loss of
+                geometry or simplification of it.
             tolerance: The maximum difference between values at which point vertices
                 are considered to be the same. (Default: 0.01, suitable for
                 objects in Meters).
+            angle_tolerance: The max angle difference in degrees that Face3D normals
+                are allowed to differ from the vertical or horizontal before they
+                are no longer considered as such. (Default: 1 degree).
 
         Returns:
             A list of the newly-created Room2D objects from the converted Rooms.
         """
+        # collect the relevant 3D Rooms if extrusion_rooms_only is selected
+        new_room_3ds = []
+        if extrusion_rooms_only:
+            hb_rooms = []
+            for hb_room in self.room_3ds:
+                if self._is_room_3d_extruded(hb_room, tolerance, angle_tolerance):
+                    hb_rooms.append(hb_room)
+                else:
+                    new_room_3ds.append(hb_room)
+        else:
+            hb_rooms = self.room_3ds
+
+        # convert the relevant 3D Rooms to Room2D
         df_rooms = []
-        for hb_room in self.room_3ds:
+        for hb_room in hb_rooms:
             # create a Dragonfly Room2D from the Honeybee Room
             df_room = Room2D.from_honeybee(hb_room, tolerance)
             # assign the Room2D to an existing Story or create a new one
@@ -890,7 +937,9 @@ class Building(_BaseGeometry):
                 new_story.display_name = hb_room.story
                 self.add_stories([new_story])
             df_rooms.append(df_room)
-        self._room_3ds = ()
+
+        # reset the 3D Rooms on this object
+        self._room_3ds = tuple(new_room_3ds)
         return df_rooms
 
     def add_prefix(self, prefix):
@@ -1498,6 +1547,43 @@ class Building(_BaseGeometry):
         sort_rooms = [rs for _, rs in sorted(zip(floor_hgts, floor_rooms),
                                              key=lambda pair: pair[0])]
         return sort_rooms[0]
+
+    @staticmethod
+    def _is_room_3d_extruded(hb_room, tolerance, angle_tolerance):
+        """Test if a 3D Room is a pure extrusion.
+
+        Pure extrusions can be converted into Room2Ds without any loss or
+        simplification of geometry.
+        
+        Args:
+            hb_room: The 3D Honeybee Room to be tested.
+            tolerance: The absolute tolerance with which the Room geometry will
+                be evaluated.
+            angle_tolerance:
+        
+        Returns:
+            True if the 3D Room is a pure extrusion. False if not.
+        """
+        # set up the parameters for evaluating vertical or horizontal
+        vert_vec = Vector3D(0, 0, 1)
+        min_v_ang = math.radians(angle_tolerance)
+        max_v_ang = math.pi - min_v_ang
+        min_h_ang = (math.pi / 2) - min_v_ang
+        max_h_ang = (math.pi / 2) + min_v_ang
+
+        # loop through the 3D Room faces and test them
+        for face in hb_room._faces:
+            try:  # first make sure that the geometry is not degenerate
+                clean_geo = face.geometry.remove_colinear_vertices(tolerance)
+                v_ang = clean_geo.angle(vert_vec)
+                if v_ang <= min_v_ang or v_ang >= max_v_ang:
+                    continue
+                elif min_h_ang <= v_ang <= max_h_ang:
+                    continue
+                return False
+            except AssertionError:  # degenerate face to ignore
+                pass
+        return True
 
     @staticmethod
     def _honeybee_shades(buildings, context_shades, shade_distance, cap, tolerance):
