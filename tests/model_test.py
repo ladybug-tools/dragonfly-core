@@ -377,6 +377,22 @@ def test_reflect():
     assert test_1.context_shades[0][0][1].z == pytest.approx(2, rel=1e-3)
 
 
+def test_suggested_alignment_axes():
+    """Test the suggested_alignment_axes method on Buildings and Stories."""
+    model_file = './tests/json/model_with_doors_skylights.dfjson'
+    model = Model.from_file(model_file)
+
+    bldg = model.buildings[0]
+    common_axes, axes_weights = bldg.suggested_alignment_axes(0.03)
+    assert len(common_axes) == len(axes_weights)
+    assert max(axes_weights) > 5
+
+    story = bldg.unique_stories[0]
+    common_axes, axes_weights = story.suggested_alignment_axes(0.03)
+    assert len(common_axes) == len(axes_weights)
+    assert max(axes_weights) < 5
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
