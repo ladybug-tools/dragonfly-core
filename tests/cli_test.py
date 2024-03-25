@@ -2,6 +2,7 @@
 from click.testing import CliRunner
 
 from dragonfly.cli import viz
+from dragonfly.cli.create import from_honeybee
 from dragonfly.cli.edit import convert_units, solve_adjacency, reset_room_boundaries, \
     align_room_2ds, remove_short_segments, windows_by_ratio
 from dragonfly.cli.translate import model_to_honeybee, model_from_geojson, \
@@ -22,6 +23,19 @@ def test_viz():
     assert result.exit_code == 0
     assert result.output.startswith('vi')
     assert result.output.endswith('z!\n')
+
+
+def test_from_honeybee():
+    input_model = './tests/json/revit_sample_model.hbjson'
+    runner = CliRunner()
+    result = runner.invoke(
+        from_honeybee, [input_model, '--conversion-method', 'ExtrudedOnly'])
+    assert result.exit_code == 0
+
+    model_dict = json.loads(result.output)
+    new_model = Model.from_dict(model_dict)
+    assert len(new_model.room_2ds) == 6
+    assert len(new_model.room_3ds) == 9
 
 
 def test_convert_units():
