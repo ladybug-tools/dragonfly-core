@@ -393,6 +393,22 @@ def test_suggested_alignment_axes():
     assert max(axes_weights) < 5
 
 
+def test_skylight_merge_and_simplify():
+    """Test the merge_and_simplify method."""
+    model_file = './tests/json/Room_with_complex_skylights.dfjson'
+    model = Model.from_file(model_file)
+    room = model.room_2ds[0]
+    assert len(room.skylight_parameters) == 5
+
+    new_room = room.duplicate()
+    new_room.skylight_parameters.merge_and_simplify(0.1)
+    assert len(new_room.skylight_parameters) == 3
+
+    new_room = room.duplicate()
+    new_room.skylight_parameters.merge_and_simplify(0.5)
+    assert len(new_room.skylight_parameters) == 2
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))

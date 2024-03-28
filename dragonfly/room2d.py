@@ -3368,13 +3368,18 @@ class Room2D(_BaseGeometry):
         new_r._display_name = self._display_name
         new_r._user_data = None if self.user_data is None else self.user_data.copy()
         new_r._parent = self._parent
-        new_r._window_parameters = self._window_parameters[:]  # copy window list
+        new_wp = []
+        for wp in self._window_parameters:
+            nwp = wp.duplicate() if wp is not None else None
+            new_wp.append(nwp)
+        new_r._window_parameters = new_wp
         new_r._shading_parameters = self._shading_parameters[:]  # copy shading list
         new_r._air_boundaries = self._air_boundaries[:] \
             if self._air_boundaries is not None else None
         new_r._is_ground_contact = self._is_ground_contact
         new_r._is_top_exposed = self._is_top_exposed
-        new_r._skylight_parameters = self._skylight_parameters
+        new_r._skylight_parameters = self._skylight_parameters.duplicate() \
+            if self._skylight_parameters is not None else None
         new_r._abridged_properties = self._abridged_properties
         new_r._properties._duplicate_extension_attr(self._properties)
         return new_r
