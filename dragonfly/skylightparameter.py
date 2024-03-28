@@ -629,6 +629,50 @@ class DetailedSkylights(_SkylightParameterBase):
             new_polygons.append(Polygon2D(tuple(reversed(new_verts))))
         return DetailedSkylights(new_polygons, self.are_doors)
 
+    def merge_and_simplify(self, max_separation, tolerance=0.01):
+        """Merge skylight polygons that are close to one another into a single polygon.
+
+        This can be used to create a simpler set of skylights that is easier to
+        edit and is in the same location as the original skylights.
+
+        Args:
+            max_separation: A number for the maximum distance between skylight polygons
+                at which point they will be merged into a single geometry. Typically,
+                this max_separation should be set to a value that is slightly larger
+                than the window frame.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+        """
+        # gather a clean version of the polygons with colinear vertices removed
+        clean_polys = []
+        for poly in self.polygons:
+            try:
+                clean_polys.append(poly.remove_colinear_vertices(tolerance))
+            except AssertionError:  # degenerate geometry to ignore
+                pass
+        # join the polygons together
+        if max_separation <= tolerance:
+            new_polys = Polygon2D.joined_intersected_boundary(
+                clean_polys, tolerance)
+        else:
+            new_polys = Polygon2D.gap_crossing_boundary(
+                clean_polys, max_separation, tolerance)
+        # assign the new polygons after determining whether any should be a door
+        if len(new_polys) != len(self._polygons):
+            if all(not dr for dr in self._are_doors):  # common case of no overhead doors
+                self._are_doors = (False,) * len(new_polys)
+            else:
+                new_are_doors = []
+                for n_poly in new_polys:
+                    for o_poly, is_door in zip(self.polygons, self.are_doors):
+                        if n_poly.is_point_inside_bound_rect(o_poly.center):
+                            new_are_doors.append(is_door)
+                            break
+                    else:
+                        new_are_doors.append(False)
+                self._are_doors = tuple(new_are_doors)
+        self._polygons = tuple(new_polys)
+
     @classmethod
     def from_dict(cls, data):
         """Create DetailedSkylights from a dictionary.
