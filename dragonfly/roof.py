@@ -299,6 +299,53 @@ class RoofSpecification(object):
             new_geo.append(Face3D(new_pts3d, plane=r_pl))
         self.geometry = new_geo
 
+    def snap_to_grid(self, grid_increment, tolerance=0.01):
+        """Snap naked roof vertices to the nearest grid node defined by an increment.
+
+        This is useful for coordinating the Roof specification with the grid snapping
+        of Room2Ds that belong to the same Story as this Roof.
+
+        Note that the planes of the input roof Face3Ds will be preserved. This way,
+        the internal structure of the roof geometry will be conserved but the roof
+        will be extended to cover Room2Ds that might have otherwise been snapped to
+        the a node where they have no Roof geometry above them.
+
+        Args:
+            grid_increment: A positive number for dimension of each grid cell. This
+                typically should be equal to the tolerance or larger but should
+                not be larger than the smallest detail of the Room2D that you
+                wish to resolve.
+            tolerance: The minimum distance between vertices below which they are
+                considered co-located. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # get the polygons and intersect them for matching segments
+        polygons, planes = self.boundary_geometry_2d, self.planes
+        poly_ridge_info = self._compute_ridge_line_info(tolerance)
+
+        # loop through the polygons and snap the vertices
+        new_polygons = []
+        for poly, poly_info in zip(polygons, poly_ridge_info):
+            new_poly = []
+            for pt, pt_info in zip(poly, poly_info):
+                if len(pt_info) == 0:  # not on a ridge line; move it anywhere
+                    new_x = grid_increment * round(pt.x / grid_increment)
+                    new_y = grid_increment * round(pt.y / grid_increment)
+                    new_poly.append(Point2D(new_x, new_y, pt.z))
+                else:  # on a ridge line; don't move that point!
+                    new_poly.append(pt)
+            new_polygons.append(new_poly)
+
+        # project the points back onto the roof
+        proj_dir = Vector3D(0, 0, 1)
+        new_geo = []
+        for poly, r_pl in zip(new_polygons, planes):
+            new_pts3d = []
+            for pt2 in poly:
+                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
+            new_geo.append(Face3D(new_pts3d, plane=r_pl))
+        self.geometry = new_geo
+
     def _compute_ridge_line_info(self, tolerance):
         """Get a matrix of values for the ridge lines associated with each vertex.
 
