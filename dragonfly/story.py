@@ -1402,20 +1402,19 @@ using-multipliers-zone-and-or-window.html
             try:
                 for room_2 in rooms[i + 1:]:
                     poly_2 = room_2.floor_geometry.polygon2d
-                    if Polygon2D.overlapping_bounding_rect(poly_1, poly_2, tolerance):
-                        if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
-                            msg = 'Room2D "{}" overlaps with Room2D "{}" more than the '\
-                                'tolerance ({}) on Story "{}".'.format(
-                                    room_1.display_name, room_2.display_name,
-                                    tolerance, self.display_name)
-                            msg = self._validation_message_child(
-                                msg, room_1, detailed, '100104',
-                                error_type='Overlapping Room Geometries')
-                            if detailed:
-                                msg['element_id'].append(room_2.identifier)
-                                msg['element_name'].append(room_2.display_name)
-                                msg['parents'].append(msg['parents'][0])
-                            msgs.append(msg)
+                    if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
+                        msg = 'Room2D "{}" overlaps with Room2D "{}" more than the '\
+                            'tolerance ({}) on Story "{}".'.format(
+                                room_1.display_name, room_2.display_name,
+                                tolerance, self.display_name)
+                        msg = self._validation_message_child(
+                            msg, room_1, detailed, '100104',
+                            error_type='Overlapping Room Geometries')
+                        if detailed:
+                            msg['element_id'].append(room_2.identifier)
+                            msg['element_name'].append(room_2.display_name)
+                            msg['parents'].append(msg['parents'][0])
+                        msgs.append(msg)
             except IndexError:
                 pass  # we have reached the end of the list
         # report any errors

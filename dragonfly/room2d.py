@@ -2428,16 +2428,15 @@ class Room2D(_BaseGeometry):
         # gather all of the relevant roof polygons for the Room2D
         rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
         for rf_py, rf_pl in zip(roof_polys, roof_planes):
-            if Polygon2D.overlapping_bounding_rect(rf_py, room_poly, tolerance):
-                poly_rel = rf_py.polygon_relationship(room_poly, tolerance)
-                if poly_rel >= 0:
-                    rel_rf_polys.append(rf_py)
-                    rel_rf_planes.append(rf_pl)
-                if poly_rel == 1:  # simple solution of one roof
-                    is_full_bound = True
-                    rel_rf_polys = [rel_rf_polys[-1]]
-                    rel_rf_planes = [rel_rf_planes[-1]]
-                    break
+            poly_rel = rf_py.polygon_relationship(room_poly, tolerance)
+            if poly_rel >= 0:
+                rel_rf_polys.append(rf_py)
+                rel_rf_planes.append(rf_pl)
+            if poly_rel == 1:  # simple solution of one roof
+                is_full_bound = True
+                rel_rf_polys = [rel_rf_polys[-1]]
+                rel_rf_planes = [rel_rf_planes[-1]]
+                break
 
         # make the room volume
         p_faces = [self.floor_geometry.flip()]  # a list of Room volume faces

@@ -2,22 +2,19 @@
 """Window Parameters with instructions for generating windows."""
 from __future__ import division
 import math
+import sys
+if (sys.version_info < (3, 0)):  # python 2
+    from itertools import izip as zip  # python 2
+
+from ladybug_geometry.geometry2d import Point2D, Vector2D, Polygon2D
+from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
+from ladybug_geometry.geometry3d import LineSegment3D, Plane, Face3D
+from ladybug_geometry.bounding import bounding_rectangle
 
 from honeybee.typing import float_in_range, float_positive
 from honeybee.boundarycondition import Surface
 from honeybee.aperture import Aperture
 from honeybee.door import Door
-
-from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
-from ladybug_geometry.geometry3d.line import LineSegment3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.face import Face3D
-
-import sys
-if (sys.version_info < (3, 0)):  # python 2
-    from itertools import izip as zip  # python 2
 
 
 class _WindowParameterBase(object):
@@ -1940,21 +1937,8 @@ class DetailedWindows(_AsymmetricBase):
         Returns:
             A string with the message. Will be an empty string if valid.
         """
-        polygons = list(sorted(self.polygons, key=lambda x: x.area, reverse=True))
-        # loop through the polygons and check to see if it overlaps with the others
-        grouped_polys = [[polygons[0]]]
-        for poly in polygons[1:]:
-            group_found = False
-            for poly_group in grouped_polys:
-                for oth_poly in poly_group:
-                    if poly.polygon_relationship(oth_poly, tolerance) >= 0:
-                        poly_group.append(poly)
-                        group_found = True
-                        break
-                if group_found:
-                    break
-            if not group_found:  # the polygon does not overlap with any of the others
-                grouped_polys.append([poly])  # make a new group for the polygon
+        # group the polygons according to their overlaps
+        grouped_polys = Polygon2D.group_by_overlap(self.polygons, tolerance)
         # report any polygons that overlap
         if not all(len(g) == 1 for g in grouped_polys):
             base_msg = '({} windows overlap one another)'
@@ -2081,6 +2065,11 @@ class DetailedWindows(_AsymmetricBase):
     def to_rectangular_windows(self, segment, floor_to_ceiling_height):
         """Get a version of these WindowParameters as RectangularWindows.
 
+        This will simply translate each window polygon to its own rectangular
+        window. For merging windows that touch or overlap one another into
+        rectangles, the merge_to_bounding_rectangle method should be used
+        before using this method.
+
         Args:
             segment: A LineSegment3D to which these parameters are applied.
             floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
@@ -2202,6 +2191,87 @@ class DetailedWindows(_AsymmetricBase):
         new_w = DetailedWindows(new_polygons, self.are_doors)
         new_w._user_data = None if self.user_data is None else self.user_data.copy()
         return new_w
+
+    def union_overlaps(self, tolerance=0.01):
+        """Union any window polygons that overlap with one another.
+
+        Args:
+            tolerance: The minimum distance that two polygons must overlap in order
+                for them to be considered overlapping. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # group the polygons by their overlap
+        grouped_polys = Polygon2D.group_by_overlap(self.polygons, tolerance)
+        # union any of the polygons that overlap
+        if not all(len(g) == 1 for g in grouped_polys):
+            new_polys = []
+            for p_group in grouped_polys:
+                if len(p_group) == 1:
+                    new_polys.append(p_group[0])
+                else:
+                    union_poly = Polygon2D.boolean_union_all(p_group, tolerance)
+                    for new_poly in union_poly:
+                        new_polys.append(new_poly.remove_colinear_vertices(tolerance))
+            self._reassign_are_doors(new_polys)
+            self._polygons = tuple(new_polys)
+
+    def merge_and_simplify(self, max_separation, tolerance=0.01):
+        """Merge window polygons that are close to one another into a single polygon.
+
+        This can be used to create a simpler set of windows that is easier to
+        edit and is in the same location as the original windows.
+
+        Args:
+            max_separation: A number for the maximum distance between window polygons
+                at which point they will be merged into a single geometry. Typically,
+                this max_separation should be set to a value that is slightly larger
+                than the window frame. Setting this equal to the tolerance will
+                simply join neighboring windows together.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+        """
+        # gather a clean version of the polygons with colinear vertices removed
+        clean_polys = []
+        for poly in self.polygons:
+            try:
+                clean_polys.append(poly.remove_colinear_vertices(tolerance))
+            except AssertionError:  # degenerate geometry to ignore
+                pass
+        # join the polygons together
+        if max_separation <= tolerance:
+            new_polys = Polygon2D.joined_intersected_boundary(
+                clean_polys, tolerance)
+        else:
+            new_polys = Polygon2D.gap_crossing_boundary(
+                clean_polys, max_separation, tolerance)
+        self._reassign_are_doors(new_polys)
+        self._polygons = tuple(new_polys)
+
+    def merge_to_bounding_rectangle(self, tolerance=0.01):
+        """Merge window polygons that touch or overlap with one another to a rectangle.
+
+        Args:
+            tolerance: The minimum distance from the edge of a neighboring polygon
+                at which a point is considered to touch that polygon. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # group the polygons by their overlap
+        grouped_polys = Polygon2D.group_by_touching(self.polygons, tolerance)
+        # union any of the polygons that overlap
+        if not all(len(g) == 1 for g in grouped_polys):
+            new_polys = []
+            for p_group in grouped_polys:
+                if len(p_group) == 1:
+                    new_polys.append(p_group[0])
+                else:
+                    min_pt, max_pt = bounding_rectangle(p_group)
+                    rect_verts = (
+                        min_pt, Point2D(max_pt.x, min_pt.y),
+                        max_pt, Point2D(min_pt.x, max_pt.y))
+                    rect_poly = Polygon2D(rect_verts)
+                    new_polys.append(rect_poly)
+            self._reassign_are_doors(new_polys)
+            self._polygons = tuple(new_polys)
 
     def split(self, segments, tolerance=0.01):
         """Split DetailedWindows parameters across a list of ordered segments.
@@ -2375,6 +2445,22 @@ class DetailedWindows(_AsymmetricBase):
             return False
         seg_face = Face3D.from_rectangle(segment.length, height, plane)
         return seg_face.is_sub_face(face3d, tolerance, angle_tolerance)
+
+    def _reassign_are_doors(self, new_polys):
+        """Reset the are_doors property using a set of new polygons."""
+        if len(new_polys) != len(self._polygons):
+            if all(not dr for dr in self._are_doors):  # case of no doors
+                self._are_doors = (False,) * len(new_polys)
+            else:
+                new_are_doors = []
+                for n_poly in new_polys:
+                    for o_poly, is_door in zip(self.polygons, self.are_doors):
+                        if n_poly.is_point_inside_bound_rect(o_poly.center):
+                            new_are_doors.append(is_door)
+                            break
+                    else:
+                        new_are_doors.append(False)
+                self._are_doors = tuple(new_are_doors)
 
     def __len__(self):
         return len(self._polygons)
