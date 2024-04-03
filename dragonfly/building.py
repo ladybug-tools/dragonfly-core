@@ -1598,7 +1598,8 @@ class Building(_BaseGeometry):
             hb_room: The 3D Honeybee Room to be tested.
             tolerance: The absolute tolerance with which the Room geometry will
                 be evaluated.
-            angle_tolerance:
+            angle_tolerance: The angle tolerance at which the geometry will
+                be evaluated in degrees.
         
         Returns:
             True if the 3D Room is a pure extrusion. False if not.

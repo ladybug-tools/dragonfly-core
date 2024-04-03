@@ -1,0 +1,5256 @@
+{
+  "units": "Feet",
+  "type": "Model",
+  "properties": {
+    "type": "ModelProperties",
+    "energy": {
+      "type": "ModelEnergyProperties",
+      "construction_sets": [
+        {
+          "type": "ConstructionSetAbridged",
+          "wall_set": {
+            "type": "WallConstructionSetAbridged",
+            "interior_construction": "Generic Interior Wall",
+            "exterior_construction": "Generic Exterior Wall",
+            "ground_construction": "Generic Underground Wall"
+          },
+          "floor_set": {
+            "type": "FloorConstructionSetAbridged",
+            "interior_construction": "Generic Interior Floor",
+            "exterior_construction": "Generic Exposed Floor",
+            "ground_construction": "Generic Ground Slab"
+          },
+          "roof_ceiling_set": {
+            "type": "RoofCeilingConstructionSetAbridged",
+            "interior_construction": "Generic Interior Ceiling",
+            "exterior_construction": "Generic Roof",
+            "ground_construction": "Generic Underground Roof"
+          },
+          "aperture_set": {
+            "type": "ApertureConstructionSetAbridged",
+            "interior_construction": "Generic Single Pane",
+            "window_construction": "Generic Double Pane",
+            "skylight_construction": "Generic Double Pane",
+            "operable_construction": "Generic Double Pane"
+          },
+          "door_set": {
+            "type": "DoorConstructionSetAbridged",
+            "interior_construction": "Generic Interior Door",
+            "exterior_construction": "Generic Exterior Door",
+            "overhead_construction": "Generic Exterior Door",
+            "exterior_glass_construction": "Generic Double Pane",
+            "interior_glass_construction": "Generic Single Pane"
+          },
+          "shade_construction": "Generic Shade",
+          "air_boundary_construction": "Generic Air Boundary",
+          "identifier": "Default Generic Construction Set"
+        }
+      ],
+      "constructions": [
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 25mm Wood"
+          ],
+          "identifier": "Generic Interior Door"
+        },
+        {
+          "type": "WindowConstructionAbridged",
+          "materials": [
+            "Generic Clear Glass"
+          ],
+          "identifier": "Generic Single Pane"
+        },
+        {
+          "type": "ShadeConstruction",
+          "solar_reflectance": 0.35,
+          "visible_reflectance": 0.35,
+          "is_specular": false,
+          "identifier": "Generic Shade"
+        },
+        {
+          "type": "ShadeConstruction",
+          "solar_reflectance": 0.2,
+          "visible_reflectance": 0.2,
+          "is_specular": false,
+          "identifier": "Generic Context"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic LW Concrete",
+            "Generic Ceiling Air Gap",
+            "Generic Acoustic Tile"
+          ],
+          "identifier": "Generic Interior Ceiling"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Gypsum Board",
+            "Generic Wall Air Gap",
+            "Generic Gypsum Board"
+          ],
+          "identifier": "Generic Interior Wall"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Painted Metal",
+            "Generic Ceiling Air Gap",
+            "Generic 50mm Insulation",
+            "Generic LW Concrete"
+          ],
+          "identifier": "Generic Exposed Floor"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Acoustic Tile",
+            "Generic Ceiling Air Gap",
+            "Generic LW Concrete"
+          ],
+          "identifier": "Generic Interior Floor"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 50mm Insulation",
+            "Generic HW Concrete"
+          ],
+          "identifier": "Generic Ground Slab"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Roof Membrane",
+            "Generic 50mm Insulation",
+            "Generic LW Concrete",
+            "Generic Ceiling Air Gap",
+            "Generic Acoustic Tile"
+          ],
+          "identifier": "Generic Roof"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Brick",
+            "Generic LW Concrete",
+            "Generic 50mm Insulation",
+            "Generic Wall Air Gap",
+            "Generic Gypsum Board"
+          ],
+          "identifier": "Generic Exterior Wall"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 50mm Insulation",
+            "Generic HW Concrete",
+            "Generic Wall Air Gap",
+            "Generic Gypsum Board"
+          ],
+          "identifier": "Generic Underground Wall"
+        },
+        {
+          "type": "AirBoundaryConstructionAbridged",
+          "air_mixing_per_area": 0.1,
+          "air_mixing_schedule": "Always On",
+          "identifier": "Generic Air Boundary"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic 50mm Insulation",
+            "Generic HW Concrete",
+            "Generic Ceiling Air Gap",
+            "Generic Acoustic Tile"
+          ],
+          "identifier": "Generic Underground Roof"
+        },
+        {
+          "type": "WindowConstructionAbridged",
+          "materials": [
+            "Generic Low-e Glass",
+            "Generic Window Air Gap",
+            "Generic Clear Glass"
+          ],
+          "identifier": "Generic Double Pane"
+        },
+        {
+          "type": "OpaqueConstructionAbridged",
+          "materials": [
+            "Generic Painted Metal",
+            "Generic 25mm Insulation",
+            "Generic Painted Metal"
+          ],
+          "identifier": "Generic Exterior Door"
+        }
+      ],
+      "materials": [
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.01,
+          "conductivity": 0.16,
+          "density": 1120.0,
+          "specific_heat": 1460.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.65,
+          "visible_absorptance": 0.65,
+          "identifier": "Generic Roof Membrane"
+        },
+        {
+          "roughness": "MediumSmooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.02,
+          "conductivity": 0.06,
+          "density": 368.0,
+          "specific_heat": 590.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.2,
+          "visible_absorptance": 0.2,
+          "identifier": "Generic Acoustic Tile"
+        },
+        {
+          "roughness": "MediumSmooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.0254,
+          "conductivity": 0.15,
+          "density": 608.0,
+          "specific_heat": 1630.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5,
+          "identifier": "Generic 25mm Wood"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.2,
+          "conductivity": 1.95,
+          "density": 2240.0,
+          "specific_heat": 900.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.8,
+          "visible_absorptance": 0.8,
+          "identifier": "Generic HW Concrete"
+        },
+        {
+          "gas_type": "Air",
+          "type": "EnergyWindowMaterialGas",
+          "thickness": 0.0127,
+          "identifier": "Generic Window Air Gap"
+        },
+        {
+          "gas_type": "Argon",
+          "type": "EnergyWindowMaterialGas",
+          "thickness": 0.0127,
+          "identifier": "Generic Window Argon Gap"
+        },
+        {
+          "roughness": "MediumSmooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.0127,
+          "conductivity": 0.16,
+          "density": 800.0,
+          "specific_heat": 1090.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5,
+          "identifier": "Generic Gypsum Board"
+        },
+        {
+          "roughness": "Smooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.667,
+          "density": 1.28,
+          "specific_heat": 1000.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic Wall Air Gap"
+        },
+        {
+          "roughness": "Smooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.556,
+          "density": 1.28,
+          "specific_heat": 1000.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic Ceiling Air Gap"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.9,
+          "density": 1920.0,
+          "specific_heat": 790.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.65,
+          "visible_absorptance": 0.65,
+          "identifier": "Generic Brick"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.05,
+          "conductivity": 0.03,
+          "density": 43.0,
+          "specific_heat": 1210.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic 50mm Insulation"
+        },
+        {
+          "type": "EnergyWindowMaterialGlazing",
+          "thickness": 0.006,
+          "solar_transmittance": 0.45,
+          "solar_reflectance": 0.36,
+          "solar_reflectance_back": 0.36,
+          "visible_transmittance": 0.71,
+          "visible_reflectance": 0.21,
+          "visible_reflectance_back": 0.21,
+          "infrared_transmittance": 0.0,
+          "emissivity": 0.84,
+          "emissivity_back": 0.047,
+          "conductivity": 1.0,
+          "dirt_correction": 1.0,
+          "solar_diffusing": false,
+          "identifier": "Generic Low-e Glass"
+        },
+        {
+          "roughness": "Smooth",
+          "type": "EnergyMaterial",
+          "thickness": 0.0015,
+          "conductivity": 45.0,
+          "density": 7690.0,
+          "specific_heat": 410.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.5,
+          "visible_absorptance": 0.5,
+          "identifier": "Generic Painted Metal"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.1,
+          "conductivity": 0.53,
+          "density": 1280.0,
+          "specific_heat": 840.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.8,
+          "visible_absorptance": 0.8,
+          "identifier": "Generic LW Concrete"
+        },
+        {
+          "roughness": "MediumRough",
+          "type": "EnergyMaterial",
+          "thickness": 0.025,
+          "conductivity": 0.03,
+          "density": 43.0,
+          "specific_heat": 1210.0,
+          "thermal_absorptance": 0.9,
+          "solar_absorptance": 0.7,
+          "visible_absorptance": 0.7,
+          "identifier": "Generic 25mm Insulation"
+        },
+        {
+          "type": "EnergyWindowMaterialGlazing",
+          "thickness": 0.006,
+          "solar_transmittance": 0.77,
+          "solar_reflectance": 0.07,
+          "solar_reflectance_back": 0.07,
+          "visible_transmittance": 0.88,
+          "visible_reflectance": 0.08,
+          "visible_reflectance_back": 0.08,
+          "infrared_transmittance": 0.0,
+          "emissivity": 0.84,
+          "emissivity_back": 0.84,
+          "conductivity": 1.0,
+          "dirt_correction": 1.0,
+          "solar_diffusing": false,
+          "identifier": "Generic Clear Glass"
+        }
+      ],
+      "hvacs": [
+        {
+          "economizer_type": "DifferentialDryBulb",
+          "type": "IdealAirSystemAbridged",
+          "demand_controlled_ventilation": false,
+          "sensible_heat_recovery": 0.0,
+          "latent_heat_recovery": 0.0,
+          "heating_air_temperature": 50.0,
+          "cooling_air_temperature": 13.0,
+          "identifier": "dba3f868-1e85-4481-adfc-6d684425c86e",
+          "display_name": "Ideal Air System"
+        }
+      ],
+      "program_types": [
+        {
+          "type": "ProgramTypeAbridged",
+          "identifier": "Plenum"
+        },
+        {
+          "type": "ProgramTypeAbridged",
+          "people": {
+            "type": "PeopleAbridged",
+            "people_per_area": 0.0565,
+            "occupancy_schedule": "Generic Office Occupancy",
+            "activity_schedule": "Seated Adult Activity",
+            "radiant_fraction": 0.3,
+            "latent_fraction": {
+              "type": "Autocalculate"
+            },
+            "identifier": "Generic Office People"
+          },
+          "lighting": {
+            "type": "LightingAbridged",
+            "watts_per_area": 10.55,
+            "schedule": "Generic Office Lighting",
+            "visible_fraction": 0.2,
+            "radiant_fraction": 0.7,
+            "return_air_fraction": 0.0,
+            "baseline_watts_per_area": 11.84029,
+            "identifier": "Generic Office Lighting"
+          },
+          "electric_equipment": {
+            "type": "ElectricEquipmentAbridged",
+            "watts_per_area": 10.33,
+            "schedule": "Generic Office Equipment",
+            "radiant_fraction": 0.5,
+            "latent_fraction": 0.0,
+            "lost_fraction": 0.0,
+            "identifier": "Generic Office Equipment"
+          },
+          "infiltration": {
+            "type": "InfiltrationAbridged",
+            "flow_per_exterior_area": 0.0002266,
+            "schedule": "Generic Office Infiltration",
+            "constant_coefficient": 1.0,
+            "temperature_coefficient": 0.0,
+            "velocity_coefficient": 0.0,
+            "identifier": "Generic Office Infiltration"
+          },
+          "ventilation": {
+            "type": "VentilationAbridged",
+            "flow_per_person": 0.00236,
+            "flow_per_area": 0.000305,
+            "air_changes_per_hour": 0.0,
+            "flow_per_zone": 0.0,
+            "identifier": "Generic Office Ventilation"
+          },
+          "setpoint": {
+            "type": "SetpointAbridged",
+            "cooling_schedule": "Generic Office Cooling",
+            "heating_schedule": "Generic Office Heating",
+            "identifier": "Generic Office Setpoints"
+          },
+          "identifier": "Generic Office Program"
+        }
+      ],
+      "schedules": [
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.05,
+                0.04311628,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_Sun"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.05,
+                0.08623256,
+                0.25869768,
+                0.12934884,
+                0.04311628,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  19,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_Sat"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.05,
+                0.1,
+                0.08623256,
+                0.25869768,
+                0.77609304,
+                0.4311628,
+                0.25869768,
+                0.17246512,
+                0.08623256,
+                0.04311628
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ],
+                [
+                  20,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ],
+                [
+                  23,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_LIGHT_SCH_2013_Wkdy"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_Sun",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_LIGHT_SCH_2013_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_LIGHT_SCH_2013_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_Sat",
+          "summer_designday_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium BLDG_LIGHT_SCH_2013_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Lighting"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6,
+                17.6,
+                19.6,
+                21.0,
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6,
+                17.8,
+                20.0,
+                21.0,
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                15.6,
+                17.8,
+                20.0,
+                21.0,
+                15.6
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default",
+          "summer_designday_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_Default_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium HTGSETP_SCH_YES_OPTIMUM_WntrDsn",
+          "schedule_type_limit": "Temperature",
+          "identifier": "Generic Office Heating"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Wkdy_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Sat_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0,
+                0.25,
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium INFIL_SCH_PNNL_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium INFIL_SCH_PNNL_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium INFIL_SCH_PNNL_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium INFIL_SCH_PNNL_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium INFIL_SCH_PNNL_Default",
+          "summer_designday_schedule": "OfficeMedium INFIL_SCH_PNNL_Wkdy_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium INFIL_SCH_PNNL_Sat_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Infiltration"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                0.05,
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                1.0,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                0.1,
+                0.2,
+                0.95,
+                0.5,
+                0.95,
+                0.3,
+                0.1,
+                0.05
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0,
+                0.1,
+                0.3,
+                0.1,
+                0.05,
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  19,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_OCC_SCH_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium BLDG_OCC_SCH_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_OCC_SCH_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_OCC_SCH_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium BLDG_OCC_SCH_Default",
+          "summer_designday_schedule": "OfficeMedium BLDG_OCC_SCH_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium BLDG_OCC_SCH_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Occupancy"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                120.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "Seated Adult Activity_Day Schedule"
+            }
+          ],
+          "default_day_schedule": "Seated Adult Activity_Day Schedule",
+          "schedule_type_limit": "Activity Level",
+          "identifier": "Seated Adult Activity"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "Always On_Day Schedule"
+            }
+          ],
+          "default_day_schedule": "Always On_Day Schedule",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Always On"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.2307553806,
+                0.288107175,
+                0.2307553806
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_Sun"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                1.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.0
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.2307553806,
+                0.381234796,
+                0.476543495,
+                0.3335804465,
+                0.285926097,
+                0.2307553806
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  19,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_Sat"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                0.3076738408,
+                0.381234796,
+                0.857778291,
+                0.762469592,
+                0.857778291,
+                0.476543495,
+                0.381234796
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  8,
+                  0
+                ],
+                [
+                  12,
+                  0
+                ],
+                [
+                  13,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ],
+                [
+                  18,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium BLDG_EQUIP_SCH_2013_Wkdy"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_Sun",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_EQUIP_SCH_2013_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium BLDG_EQUIP_SCH_2013_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_Sat",
+          "summer_designday_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium BLDG_EQUIP_SCH_2013_WntrDsn",
+          "schedule_type_limit": "Fractional",
+          "identifier": "Generic Office Equipment"
+        },
+        {
+          "type": "ScheduleRulesetAbridged",
+          "day_schedules": [
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7,
+                25.7,
+                25.0,
+                24.0,
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_SmrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default_WntrDsn"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7,
+                25.6,
+                25.0,
+                24.0,
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  22,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Wkdy"
+            },
+            {
+              "type": "ScheduleDay",
+              "values": [
+                26.7,
+                25.7,
+                25.0,
+                24.0,
+                26.7
+              ],
+              "times": [
+                [
+                  0,
+                  0
+                ],
+                [
+                  5,
+                  0
+                ],
+                [
+                  6,
+                  0
+                ],
+                [
+                  7,
+                  0
+                ],
+                [
+                  17,
+                  0
+                ]
+              ],
+              "interpolate": false,
+              "identifier": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Sat"
+            }
+          ],
+          "default_day_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default",
+          "schedule_rules": [
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Wkdy",
+              "apply_sunday": false,
+              "apply_monday": true,
+              "apply_tuesday": true,
+              "apply_wednesday": true,
+              "apply_thursday": true,
+              "apply_friday": true,
+              "apply_saturday": false,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            },
+            {
+              "type": "ScheduleRuleAbridged",
+              "schedule_day": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Sat",
+              "apply_sunday": false,
+              "apply_monday": false,
+              "apply_tuesday": false,
+              "apply_wednesday": false,
+              "apply_thursday": false,
+              "apply_friday": false,
+              "apply_saturday": true,
+              "start_date": [
+                1,
+                1
+              ],
+              "end_date": [
+                12,
+                31
+              ]
+            }
+          ],
+          "holiday_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default",
+          "summer_designday_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_SmrDsn",
+          "winter_designday_schedule": "OfficeMedium CLGSETP_SCH_YES_OPTIMUM_Default_WntrDsn",
+          "schedule_type_limit": "Temperature",
+          "identifier": "Generic Office Cooling"
+        }
+      ],
+      "schedule_type_limits": [
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "ActivityLevel",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Activity Level"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Angle",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 180.0,
+          "identifier": "Angle"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "DeltaTemperature",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": {
+            "type": "NoLimit"
+          },
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Delta Temperature"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Dimensionless",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 1.0,
+          "identifier": "Fractional"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Percent",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 100.0,
+          "identifier": "Humidity"
+        },
+        {
+          "numeric_type": "Discrete",
+          "unit_type": "Dimensionless",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": 1.0,
+          "identifier": "On-Off"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Power",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": {
+            "type": "NoLimit"
+          },
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Power"
+        },
+        {
+          "numeric_type": "Continuous",
+          "unit_type": "Temperature",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": -273.15,
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Temperature"
+        },
+        {
+          "numeric_type": "Discrete",
+          "unit_type": "Control",
+          "type": "ScheduleTypeLimit",
+          "lower_limit": 0.0,
+          "upper_limit": {
+            "type": "NoLimit"
+          },
+          "identifier": "Control Level"
+        }
+      ]
+    }
+  },
+  "version": "0.0.0",
+  "buildings": [
+    {
+      "type": "Building",
+      "properties": {
+        "type": "BuildingPropertiesAbridged",
+        "energy": {
+          "type": "BuildingEnergyPropertiesAbridged",
+          "construction_set": "Default Generic Construction Set"
+        }
+      },
+      "unique_stories": [
+        {
+          "type": "Story",
+          "room_2ds": [
+            {
+              "type": "Room2D",
+              "floor_boundary": [
+                [
+                  -4.9755559033562289,
+                  -48.98674993936028
+                ],
+                [
+                  -4.8746700765845743,
+                  -48.986749939360294
+                ],
+                [
+                  -4.8746700765845787,
+                  -51.887832616525642
+                ],
+                [
+                  4.4429152252526762,
+                  -51.887832616525671
+                ],
+                [
+                  4.4429152252526833,
+                  -49.213948102089979
+                ],
+                [
+                  12.645014962785496,
+                  -49.213948102090008
+                ],
+                [
+                  23.521985145586811,
+                  -49.213948102090043
+                ],
+                [
+                  23.521985145586825,
+                  -40.767582820893267
+                ],
+                [
+                  23.388779231151844,
+                  -40.767582820893267
+                ],
+                [
+                  23.388779231151876,
+                  -21.928678417567397
+                ],
+                [
+                  23.388779231151908,
+                  -2.2620104793349753
+                ],
+                [
+                  23.388779231151961,
+                  32.514892407804126
+                ],
+                [
+                  23.388779231152004,
+                  57.984052512791045
+                ],
+                [
+                  23.388779231152014,
+                  64.695015604303578
+                ],
+                [
+                  23.521985145586829,
+                  64.695015604303578
+                ],
+                [
+                  23.521985145586839,
+                  73.016045788030667
+                ],
+                [
+                  23.111880158710179,
+                  73.016045788030667
+                ],
+                [
+                  5.4055136430602175,
+                  73.016045788030723
+                ],
+                [
+                  -4.9755559033560335,
+                  73.016045788030766
+                ],
+                [
+                  -4.9755559033560584,
+                  57.61495802460216
+                ],
+                [
+                  -4.975555903356093,
+                  35.858722506357722
+                ],
+                [
+                  -4.9755559033561223,
+                  17.486019094284231
+                ],
+                [
+                  -4.9755559033561383,
+                  7.6434994092448676
+                ],
+                [
+                  -4.9755559033561694,
+                  -12.268738123563537
+                ],
+                [
+                  -4.9755559033562227,
+                  -45.077137073694772
+                ]
+              ],
+              "floor_height": 24.934383202099546,
+              "floor_to_ceiling_height": 12.467191601049869,
+              "properties": {
+                "type": "Room2DPropertiesAbridged",
+                "energy": {
+                  "type": "Room2DEnergyPropertiesAbridged"
+                }
+              },
+              "floor_holes": [],
+              "is_ground_contact": false,
+              "is_top_exposed": true,
+              "boundary_conditions": [
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                },
+                {
+                  "type": "Outdoors",
+                  "sun_exposure": true,
+                  "wind_exposure": true,
+                  "view_factor": {
+                    "type": "Autocalculate"
+                  }
+                }
+              ],
+              "window_parameters": [
+                null,
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        -0.13385642829062977,
+                        -51.887832616525657,
+                        25.0984251968502
+                      ],
+                      [
+                        -0.13385642829062977,
+                        -51.887832616525657,
+                        31.935695538057555
+                      ],
+                      [
+                        3.9507892410007179,
+                        -51.887832616525671,
+                        31.935695538057555
+                      ],
+                      [
+                        3.9507892410007179,
+                        -51.887832616525671,
+                        25.0984251968502
+                      ]
+                    ],
+                    [
+                      [
+                        -0.13385642829062977,
+                        -51.887832616525657,
+                        32.099737532808213
+                      ],
+                      [
+                        -0.13385642829062977,
+                        -51.887832616525657,
+                        32.726377952755712
+                      ],
+                      [
+                        3.9507892410007179,
+                        -51.887832616525671,
+                        32.726377952755712
+                      ],
+                      [
+                        3.9507892410007179,
+                        -51.887832616525671,
+                        32.099737532808213
+                      ]
+                    ],
+                    [
+                      [
+                        -4.3825440923326227,
+                        -51.887832616525642,
+                        32.099737532808213
+                      ],
+                      [
+                        -4.3825440923326227,
+                        -51.887832616525642,
+                        32.726377952755712
+                      ],
+                      [
+                        -1.3805755883956012,
+                        -51.887832616525657,
+                        32.726377952755712
+                      ],
+                      [
+                        -1.3805755883956012,
+                        -51.887832616525657,
+                        32.099737532808213
+                      ]
+                    ],
+                    [
+                      [
+                        -1.2165335936449573,
+                        -51.887832616525657,
+                        25.0984251968502
+                      ],
+                      [
+                        -1.2165335936449573,
+                        -51.887832616525657,
+                        31.935695538057555
+                      ],
+                      [
+                        -0.29789842304126418,
+                        -51.887832616525657,
+                        31.935695538057555
+                      ],
+                      [
+                        -0.29789842304126418,
+                        -51.887832616525657,
+                        25.0984251968502
+                      ]
+                    ],
+                    [
+                      [
+                        -1.2165335936449573,
+                        -51.887832616525657,
+                        32.099737532808213
+                      ],
+                      [
+                        -1.2165335936449573,
+                        -51.887832616525657,
+                        32.726377952755712
+                      ],
+                      [
+                        -0.29789842304126418,
+                        -51.887832616525657,
+                        32.726377952755712
+                      ],
+                      [
+                        -0.29789842304126418,
+                        -51.887832616525657,
+                        32.099737532808213
+                      ]
+                    ],
+                    [
+                      [
+                        -0.13385642829062977,
+                        -51.887832616525657,
+                        32.890419947506373
+                      ],
+                      [
+                        -0.13385642829062977,
+                        -51.887832616525657,
+                        37.237532808398761
+                      ],
+                      [
+                        3.9507892410007179,
+                        -51.887832616525671,
+                        37.237532808398761
+                      ],
+                      [
+                        3.9507892410007179,
+                        -51.887832616525671,
+                        32.890419947506373
+                      ]
+                    ],
+                    [
+                      [
+                        -1.2165335936449573,
+                        -51.887832616525657,
+                        32.890419947506373
+                      ],
+                      [
+                        -1.2165335936449573,
+                        -51.887832616525657,
+                        37.237532808398761
+                      ],
+                      [
+                        -0.29789842304126418,
+                        -51.887832616525657,
+                        37.237532808398761
+                      ],
+                      [
+                        -0.29789842304126418,
+                        -51.887832616525657,
+                        32.890419947506373
+                      ]
+                    ],
+                    [
+                      [
+                        -4.3825440923326227,
+                        -51.887832616525642,
+                        32.890419947506373
+                      ],
+                      [
+                        -4.3825440923326227,
+                        -51.887832616525642,
+                        37.237532808398761
+                      ],
+                      [
+                        -1.3805755883956012,
+                        -51.887832616525657,
+                        37.237532808398761
+                      ],
+                      [
+                        -1.3805755883956012,
+                        -51.887832616525657,
+                        32.890419947506373
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        23.388779231151844,
+                        -39.978220371547863,
+                        24.983595800524938
+                      ],
+                      [
+                        23.388779231151844,
+                        -39.978220371547863,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.99068756314891,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.99068756314891,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151855,
+                        -33.826645568398263,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.826645568398263,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.429007773122667,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.429007773122667,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151865,
+                        -27.264965778372012,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.264965778372012,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151872,
+                        -22.461814900507036,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151872,
+                        -22.461814900507036,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151844,
+                        -39.978220371547863,
+                        29.133858267716541
+                      ],
+                      [
+                        23.388779231151844,
+                        -39.978220371547863,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.99068756314891,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.99068756314891,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151855,
+                        -33.826645568398263,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.826645568398263,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.429007773122667,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.429007773122667,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151865,
+                        -27.264965778372012,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.264965778372012,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151872,
+                        -22.461814900507036,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151872,
+                        -22.461814900507036,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151844,
+                        -39.978220371547863,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151844,
+                        -39.978220371547863,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.99068756314891,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.99068756314891,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151855,
+                        -33.826645568398263,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151855,
+                        -33.826645568398263,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.429007773122667,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.429007773122667,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151865,
+                        -27.264965778372012,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151865,
+                        -27.264965778372012,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151872,
+                        -22.461814900507036,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151872,
+                        -22.461814900507036,
+                        33.284120734908143
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        23.388779231151879,
+                        -21.395541934627769,
+                        24.983595800524938
+                      ],
+                      [
+                        23.388779231151879,
+                        -21.395541934627769,
+                        28.969816272965879
+                      ],
+                      [
+                        23.38877923115189,
+                        -15.079925136727503,
+                        28.969816272965879
+                      ],
+                      [
+                        23.38877923115189,
+                        -15.079925136727503,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.38877923115189,
+                        -14.915883141976852,
+                        24.983595800524935
+                      ],
+                      [
+                        23.38877923115189,
+                        -14.915883141976852,
+                        28.969816272965879
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.51824534670126,
+                        28.969816272965879
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.51824534670126,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.3887792311519,
+                        -8.3542033519506056,
+                        24.983595800524935
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.3542033519506056,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151908,
+                        -2.7951469622746226,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151908,
+                        -2.7951469622746155,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151879,
+                        -21.395541934627769,
+                        29.133858267716541
+                      ],
+                      [
+                        23.388779231151879,
+                        -21.395541934627769,
+                        33.120078740157481
+                      ],
+                      [
+                        23.38877923115189,
+                        -15.079925136727503,
+                        33.120078740157481
+                      ],
+                      [
+                        23.38877923115189,
+                        -15.079925136727503,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.38877923115189,
+                        -14.915883141976852,
+                        29.133858267716537
+                      ],
+                      [
+                        23.38877923115189,
+                        -14.915883141976852,
+                        33.120078740157481
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.51824534670126,
+                        33.120078740157481
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.51824534670126,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.3887792311519,
+                        -8.3542033519506056,
+                        29.133858267716537
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.3542033519506056,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151908,
+                        -2.7951469622746226,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151908,
+                        -2.7951469622746155,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151879,
+                        -21.395541934627772,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151879,
+                        -21.395541934627772,
+                        37.270341207349084
+                      ],
+                      [
+                        23.38877923115189,
+                        -15.079925136727507,
+                        37.270341207349084
+                      ],
+                      [
+                        23.38877923115189,
+                        -15.079925136727507,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.38877923115189,
+                        -14.915883141976852,
+                        33.284120734908143
+                      ],
+                      [
+                        23.38877923115189,
+                        -14.915883141976852,
+                        37.270341207349091
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.51824534670126,
+                        37.270341207349091
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.51824534670126,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.3887792311519,
+                        -8.3542033519506056,
+                        33.284120734908143
+                      ],
+                      [
+                        23.3887792311519,
+                        -8.3542033519506056,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151908,
+                        -2.7951469622746226,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151908,
+                        -2.7951469622746155,
+                        33.284120734908143
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        23.388779231151911,
+                        -1.7288739963953565,
+                        24.983595800524938
+                      ],
+                      [
+                        23.388779231151911,
+                        -1.7288739963953565,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151915,
+                        1.3059029064917853,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151915,
+                        1.3059029064917853,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151915,
+                        1.4699449012424539,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151915,
+                        1.4699449012424539,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151926,
+                        7.8675826965180464,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151926,
+                        7.8675826965180464,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151926,
+                        8.0316246912686928,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151926,
+                        8.0316246912686928,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151936,
+                        14.429262486544285,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151936,
+                        14.429262486544285,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151936,
+                        14.59330448129494,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151936,
+                        14.59330448129494,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151947,
+                        20.990942276570532,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151947,
+                        20.990942276570532,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151947,
+                        21.154984271321194,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151947,
+                        21.154984271321194,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151954,
+                        27.552622066596786,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151954,
+                        27.552622066596786,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151954,
+                        27.716664061347434,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151954,
+                        27.716664061347434,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151961,
+                        31.981755924864494,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151961,
+                        31.981755924864494,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151911,
+                        -1.7288739963953565,
+                        29.133858267716541
+                      ],
+                      [
+                        23.388779231151911,
+                        -1.7288739963953565,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151915,
+                        1.3059029064917853,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151915,
+                        1.3059029064917853,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151915,
+                        1.4699449012424468,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151915,
+                        1.4699449012424468,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151926,
+                        7.8675826965180393,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151926,
+                        7.8675826965180393,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151926,
+                        8.0316246912686928,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151926,
+                        8.0316246912686928,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151936,
+                        14.429262486544285,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151936,
+                        14.429262486544285,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151936,
+                        14.59330448129494,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151936,
+                        14.59330448129494,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151947,
+                        20.990942276570532,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151947,
+                        20.990942276570532,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151947,
+                        21.154984271321194,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151947,
+                        21.154984271321194,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151954,
+                        27.552622066596786,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151954,
+                        27.552622066596786,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151954,
+                        27.716664061347434,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151954,
+                        27.716664061347434,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151961,
+                        31.981755924864494,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151961,
+                        31.981755924864494,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151911,
+                        -1.7288739963953565,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151911,
+                        -1.7288739963953565,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231151915,
+                        1.3059029064917853,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231151915,
+                        1.3059029064917853,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151915,
+                        1.4699449012424468,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151915,
+                        1.4699449012424468,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151926,
+                        7.8675826965180393,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151926,
+                        7.8675826965180393,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151926,
+                        8.0316246912686928,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151926,
+                        8.0316246912686928,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151936,
+                        14.429262486544285,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151936,
+                        14.429262486544285,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151936,
+                        14.59330448129494,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151936,
+                        14.59330448129494,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151947,
+                        20.990942276570532,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151947,
+                        20.990942276570532,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151947,
+                        21.154984271321194,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151947,
+                        21.154984271321194,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151954,
+                        27.552622066596786,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151954,
+                        27.552622066596786,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151954,
+                        27.716664061347434,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151954,
+                        27.716664061347434,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151961,
+                        31.981755924864494,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151961,
+                        31.981755924864494,
+                        33.284120734908143
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        23.388779231151961,
+                        33.048028890743744,
+                        24.983595800524938
+                      ],
+                      [
+                        23.388779231151961,
+                        33.048028890743744,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151972,
+                        39.363645688644013,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151972,
+                        39.363645688644013,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151972,
+                        39.527687683394674,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151972,
+                        39.527687683394674,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151982,
+                        45.92532547867026,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151982,
+                        45.92532547867026,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151982,
+                        46.089367473420921,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151982,
+                        46.089367473420921,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151993,
+                        52.487005268696507,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231151993,
+                        52.487005268696507,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151993,
+                        52.651047263447175,
+                        24.983595800524935
+                      ],
+                      [
+                        23.388779231151993,
+                        52.651047263447175,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231152004,
+                        57.450916029851435,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231152004,
+                        57.45091602985142,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151961,
+                        33.048028890743744,
+                        29.133858267716541
+                      ],
+                      [
+                        23.388779231151961,
+                        33.048028890743744,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151972,
+                        39.363645688644013,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151972,
+                        39.363645688644013,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151972,
+                        39.527687683394674,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151972,
+                        39.527687683394674,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151982,
+                        45.92532547867026,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151982,
+                        45.92532547867026,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151982,
+                        46.089367473420921,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151982,
+                        46.089367473420921,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151993,
+                        52.487005268696507,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231151993,
+                        52.487005268696507,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151993,
+                        52.651047263447175,
+                        29.133858267716537
+                      ],
+                      [
+                        23.388779231151993,
+                        52.651047263447175,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231152004,
+                        57.450916029851435,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231152004,
+                        57.45091602985142,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151961,
+                        33.048028890743744,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151961,
+                        33.048028890743744,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231151972,
+                        39.363645688644013,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231151972,
+                        39.363645688644013,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151972,
+                        39.527687683394689,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151972,
+                        39.527687683394689,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151982,
+                        45.925325478670274,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151982,
+                        45.925325478670274,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151982,
+                        46.089367473420921,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151982,
+                        46.089367473420921,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151993,
+                        52.487005268696507,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231151993,
+                        52.487005268696507,
+                        33.284120734908143
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231151993,
+                        52.651047263447175,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231151993,
+                        52.651047263447175,
+                        37.270341207349091
+                      ],
+                      [
+                        23.388779231152004,
+                        57.450916029851435,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231152004,
+                        57.45091602985142,
+                        33.284120734908143
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                {
+                  "type": "DetailedWindows",
+                  "polygons": [
+                    [
+                      [
+                        23.388779231152004,
+                        58.51718899573067,
+                        24.983595800524938
+                      ],
+                      [
+                        23.388779231152004,
+                        58.51718899573067,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231152011,
+                        63.870863536412983,
+                        28.969816272965879
+                      ],
+                      [
+                        23.388779231152011,
+                        63.870863536412983,
+                        24.983595800524935
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231152004,
+                        58.51718899573067,
+                        29.133858267716541
+                      ],
+                      [
+                        23.388779231152004,
+                        58.51718899573067,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231152011,
+                        63.870863536412983,
+                        33.120078740157481
+                      ],
+                      [
+                        23.388779231152011,
+                        63.870863536412983,
+                        29.133858267716537
+                      ]
+                    ],
+                    [
+                      [
+                        23.388779231152004,
+                        58.517188995730685,
+                        33.284120734908143
+                      ],
+                      [
+                        23.388779231152004,
+                        58.517188995730685,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231152011,
+                        63.870863536413,
+                        37.270341207349084
+                      ],
+                      [
+                        23.388779231152011,
+                        63.870863536413,
+                        33.284120734908143
+                      ]
+                    ]
+                  ],
+                  "are_doors": [
+                    false,
+                    false,
+                    false
+                  ],
+                  "user_data": {}
+                },
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null,
+                null
+              ],
+              "skylight_parameters": {
+                "type": "DetailedSkylights",
+                "polygons": [
+                  [
+                    [
+                      3.5376032167012221,
+                      36.383330728014215,
+                      0.0
+                    ],
+                    [
+                      3.5376032167012221,
+                      40.550735103046264,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710888,
+                      40.550735103046264,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710853,
+                      36.383330728014215,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5376032167012221,
+                      44.7181394780783,
+                      0.0
+                    ],
+                    [
+                      3.5376032167012221,
+                      48.885543853110349,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710888,
+                      48.885543853110349,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710853,
+                      44.7181394780783,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5376032167012221,
+                      40.55073510304625,
+                      0.0
+                    ],
+                    [
+                      3.5376032167012221,
+                      44.7181394780783,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710888,
+                      44.7181394780783,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710853,
+                      40.55073510304625,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5376032167012221,
+                      48.885543853110342,
+                      0.0
+                    ],
+                    [
+                      3.5376032167012221,
+                      53.052948228142391,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710888,
+                      53.052948228142391,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710853,
+                      48.885543853110342,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5376032167012221,
+                      31.265220491793741,
+                      0.0
+                    ],
+                    [
+                      3.5376032167012221,
+                      36.383330728014215,
+                      0.0
+                    ],
+                    [
+                      8.76085617637108,
+                      36.383330728014215,
+                      0.0
+                    ],
+                    [
+                      8.76085617637108,
+                      36.345929153215913,
+                      0.0
+                    ],
+                    [
+                      3.558831812920261,
+                      31.265220491793741,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312864079,
+                      48.88554385311032,
+                      0.0
+                    ],
+                    [
+                      8.4341595312864079,
+                      53.05294822814237,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      53.05294822814237,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      48.88554385311032,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312864079,
+                      40.55073510304625,
+                      0.0
+                    ],
+                    [
+                      8.4341595312864079,
+                      44.7181394780783,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      44.7181394780783,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      40.55073510304625,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312864079,
+                      44.7181394780783,
+                      0.0
+                    ],
+                    [
+                      8.4341595312864079,
+                      48.885543853110349,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      48.885543853110349,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      44.7181394780783,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312864079,
+                      36.383330728014215,
+                      0.0
+                    ],
+                    [
+                      8.4341595312864079,
+                      40.550735103046264,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      40.550735103046264,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      36.383330728014215,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312864,
+                      53.093304481290161,
+                      0.0
+                    ],
+                    [
+                      13.636183894737233,
+                      58.174013142712354,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      58.174013142712354,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      53.052948228142363,
+                      0.0
+                    ],
+                    [
+                      8.4341595312864,
+                      53.052948228142363,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5167991924065625,
+                      31.286024516088403,
+                      0.0
+                    ],
+                    [
+                      3.5167991924065625,
+                      31.307253112307439,
+                      0.0
+                    ],
+                    [
+                      8.5975078538287484,
+                      36.261014768339784,
+                      0.0
+                    ],
+                    [
+                      13.678216515250927,
+                      31.307253112307443,
+                      0.0
+                    ],
+                    [
+                      13.678216515250927,
+                      31.286024516088403,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.43415953128639,
+                      36.345929153215913,
+                      0.0
+                    ],
+                    [
+                      8.4341595312863866,
+                      36.383330728014215,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      36.383330728014215,
+                      0.0
+                    ],
+                    [
+                      13.65741249095627,
+                      31.265220491793741,
+                      0.0
+                    ],
+                    [
+                      13.636183894737233,
+                      31.265220491793741,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5167991924065651,
+                      58.131980522198646,
+                      0.0
+                    ],
+                    [
+                      3.5167991924065651,
+                      58.153209118417685,
+                      0.0
+                    ],
+                    [
+                      13.678216515250931,
+                      58.153209118417685,
+                      0.0
+                    ],
+                    [
+                      13.678216515250931,
+                      58.131980522198646,
+                      0.0
+                    ],
+                    [
+                      8.5975078538287448,
+                      53.1782188661663,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5376032167012221,
+                      53.0529482281424,
+                      0.0
+                    ],
+                    [
+                      3.5376032167012221,
+                      58.174013142712361,
+                      0.0
+                    ],
+                    [
+                      3.558831812920261,
+                      58.174013142712361,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710888,
+                      53.093304481290161,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710888,
+                      53.0529482281424,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5884562350739229,
+                      0.45255644979901533,
+                      0.0
+                    ],
+                    [
+                      3.5884562350739229,
+                      4.6199608248310575,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      4.6199608248310575,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      0.45255644979901533,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5884562350739229,
+                      8.7873651998631,
+                      0.0
+                    ],
+                    [
+                      3.5884562350739229,
+                      12.954769574895142,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      12.954769574895144,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      8.7873651998631,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5884562350739229,
+                      4.6199608248310593,
+                      0.0
+                    ],
+                    [
+                      3.5884562350739229,
+                      8.7873651998631015,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      8.7873651998631015,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      4.6199608248310593,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5884562350739229,
+                      12.954769574895145,
+                      0.0
+                    ],
+                    [
+                      3.5884562350739229,
+                      17.122173949927188,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      17.122173949927188,
+                      0.0
+                    ],
+                    [
+                      8.7608561763711013,
+                      12.954769574895144,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5884562350739229,
+                      -4.6655537864214551,
+                      0.0
+                    ],
+                    [
+                      3.5884562350739229,
+                      0.45255644979901533,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710675,
+                      0.45255644979901533,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710675,
+                      0.3643018566279963,
+                      0.0
+                    ],
+                    [
+                      3.6096848312929608,
+                      -4.6655537864214551,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312863351,
+                      12.954769574895124,
+                      0.0
+                    ],
+                    [
+                      8.4341595312863351,
+                      17.122173949927166,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      17.122173949927166,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      12.954769574895124,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312863351,
+                      4.619960824831054,
+                      0.0
+                    ],
+                    [
+                      8.4341595312863351,
+                      8.7873651998630979,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      8.7873651998630979,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      4.6199608248310557,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312863351,
+                      8.7873651998630962,
+                      0.0
+                    ],
+                    [
+                      8.4341595312863351,
+                      12.954769574895138,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      12.954769574895138,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      8.7873651998630962,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312863351,
+                      0.45255644979901177,
+                      0.0
+                    ],
+                    [
+                      8.4341595312863351,
+                      4.619960824831054,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      4.6199608248310557,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      0.45255644979901355,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.434159531286376,
+                      17.122173949927156,
+                      0.0
+                    ],
+                    [
+                      8.4341595312863724,
+                      17.213383221447675,
+                      0.0
+                    ],
+                    [
+                      13.585330876364472,
+                      22.243238864497147,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      22.243238864497147,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      17.122173949927156,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5676522107792348,
+                      -4.6447497621267955,
+                      0.0
+                    ],
+                    [
+                      3.5676522107792348,
+                      -4.6235211659077606,
+                      0.0
+                    ],
+                    [
+                      8.5975078538287164,
+                      0.27938747175186052,
+                      0.0
+                    ],
+                    [
+                      13.627363496878194,
+                      -4.6235211659077571,
+                      0.0
+                    ],
+                    [
+                      13.627363496878193,
+                      -4.6447497621267955,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312863316,
+                      0.45255644979901888,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      0.45255644979901932,
+                      0.0
+                    ],
+                    [
+                      13.606559472583511,
+                      -4.6655537864214551,
+                      0.0
+                    ],
+                    [
+                      13.585330876364473,
+                      -4.6655537864214551,
+                      0.0
+                    ],
+                    [
+                      8.4341595312863351,
+                      0.36430185662800341,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5676522107792374,
+                      22.201206243983449,
+                      0.0
+                    ],
+                    [
+                      3.5676522107792392,
+                      22.222434840202489,
+                      0.0
+                    ],
+                    [
+                      13.627363496878196,
+                      22.222434840202489,
+                      0.0
+                    ],
+                    [
+                      13.627363496878196,
+                      22.201206243983453,
+                      0.0
+                    ],
+                    [
+                      8.5975078538287146,
+                      17.298297606323832,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5884562350739229,
+                      17.122173949927191,
+                      0.0
+                    ],
+                    [
+                      3.5884562350739229,
+                      22.243238864497151,
+                      0.0
+                    ],
+                    [
+                      3.6096848312929617,
+                      22.243238864497151,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710817,
+                      17.213383221447685,
+                      0.0
+                    ],
+                    [
+                      8.7608561763710817,
+                      17.122173949927188,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.58845623507381,
+                      -35.649149586946422,
+                      0.0
+                    ],
+                    [
+                      3.58845623507381,
+                      -31.481745211914379,
+                      0.0
+                    ],
+                    [
+                      8.760856176370968,
+                      -31.481745211914379,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709645,
+                      -35.635698143372046,
+                      0.0
+                    ],
+                    [
+                      8.7492068845179816,
+                      -35.649149586946422,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.58845623507381,
+                      -27.31434083688233,
+                      0.0
+                    ],
+                    [
+                      3.58845623507381,
+                      -23.146936461850288,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709929,
+                      -23.146936461850288,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709911,
+                      -27.31434083688233,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.58845623507381,
+                      -31.481745211914372,
+                      0.0
+                    ],
+                    [
+                      3.58845623507381,
+                      -27.31434083688233,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709929,
+                      -27.31434083688233,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709911,
+                      -31.481745211914372,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.58845623507381,
+                      -23.146936461850284,
+                      0.0
+                    ],
+                    [
+                      3.58845623507381,
+                      -18.979532086818242,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709929,
+                      -18.979532086818242,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709911,
+                      -23.146936461850284,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.58845623507381,
+                      -40.665553786421484,
+                      0.0
+                    ],
+                    [
+                      3.58845623507381,
+                      -35.649149586946422,
+                      0.0
+                    ],
+                    [
+                      8.7492068845179833,
+                      -35.649149586946422,
+                      0.0
+                    ],
+                    [
+                      3.6096848312928489,
+                      -40.665553786421491,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312862836,
+                      -23.04523042510489,
+                      0.0
+                    ],
+                    [
+                      8.4341595312862836,
+                      -18.888322815297748,
+                      0.0
+                    ],
+                    [
+                      8.4432499966285874,
+                      -18.877826050072873,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -18.877826050072873,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -23.04523042510489,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312862712,
+                      -31.380039175168982,
+                      0.0
+                    ],
+                    [
+                      8.4341595312862729,
+                      -27.212634800136936,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -27.212634800136936,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -31.380039175168978,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312862712,
+                      -27.212634800136936,
+                      0.0
+                    ],
+                    [
+                      8.4341595312862729,
+                      -23.045230425104894,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -23.045230425104894,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -27.212634800136936,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4341595312862712,
+                      -35.547443550201024,
+                      0.0
+                    ],
+                    [
+                      8.4341595312862729,
+                      -31.380039175168982,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -31.380039175168982,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -35.547443550201024,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.4432499966285874,
+                      -18.877826050072873,
+                      0.0
+                    ],
+                    [
+                      13.585330876364415,
+                      -13.858467172248282,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -13.858467172248282,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -18.877826050072873,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5676522107791495,
+                      -40.644749762126835,
+                      0.0
+                    ],
+                    [
+                      3.5676522107791495,
+                      -40.623521165907796,
+                      0.0
+                    ],
+                    [
+                      8.5975078538286311,
+                      -35.720612528248182,
+                      0.0
+                    ],
+                    [
+                      13.627363496878109,
+                      -40.623521165907796,
+                      0.0
+                    ],
+                    [
+                      13.627363496878107,
+                      -40.644749762126835,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      8.43415953128627,
+                      -35.547443550201017,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -35.547443550201017,
+                      0.0
+                    ],
+                    [
+                      13.606559472583452,
+                      -40.665553786421491,
+                      0.0
+                    ],
+                    [
+                      13.585330876364415,
+                      -40.665553786421491,
+                      0.0
+                    ],
+                    [
+                      8.4341595312862712,
+                      -35.635698143372032,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.5676522107791522,
+                      -13.90049979276198,
+                      0.0
+                    ],
+                    [
+                      3.567652210779154,
+                      -13.879271196542943,
+                      0.0
+                    ],
+                    [
+                      13.627363496878111,
+                      -13.879271196542945,
+                      0.0
+                    ],
+                    [
+                      13.627363496878111,
+                      -13.900499792761979,
+                      0.0
+                    ],
+                    [
+                      8.5975078538286276,
+                      -18.803408430421598,
+                      0.0
+                    ]
+                  ],
+                  [
+                    [
+                      3.58845623507381,
+                      -18.979532086818239,
+                      0.0
+                    ],
+                    [
+                      3.58845623507381,
+                      -13.858467172248281,
+                      0.0
+                    ],
+                    [
+                      3.6096848312928489,
+                      -13.858467172248281,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709751,
+                      -18.888322815297748,
+                      0.0
+                    ],
+                    [
+                      8.7608561763709716,
+                      -18.979532086818242,
+                      0.0
+                    ]
+                  ]
+                ]
+              },
+              "identifier": "Room_7a4f2d19-b926-444c-8a52-5eac052b5192-00034d87",
+              "display_name": "Lobby-318",
+              "user_data": {}
+            }
+          ],
+          "properties": {
+            "type": "StoryPropertiesAbridged",
+            "energy": {
+              "type": "StoryEnergyPropertiesAbridged",
+              "construction_set": "Default Generic Construction Set"
+            }
+          },
+          "floor_to_floor_height": 0.0,
+          "floor_height": 0.0,
+          "multiplier": 1,
+          "roof": {
+            "type": "RoofSpecification",
+            "geometry": [
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    48.258169964124981,
+                    -0.29350654232711548,
+                    25.344094447580868
+                  ],
+                  [
+                    23.768048137712849,
+                    -0.29350654232711548,
+                    25.344094447580868
+                  ],
+                  [
+                    23.768048137712832,
+                    -12.0953444484512,
+                    22.181801511431921
+                  ],
+                  [
+                    48.258169964124981,
+                    -12.095344448451202,
+                    22.181801511431917
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -0.25881915381925541,
+                    0.96592579715850047
+                  ],
+                  "o": [
+                    23.768047332763672,
+                    -0.29350653290748596,
+                    25.344095230102539
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    48.258169964124981,
+                    -23.897182354575286,
+                    25.344094447580868
+                  ],
+                  [
+                    48.258169964124981,
+                    -12.0953444484512,
+                    22.181801511431921
+                  ],
+                  [
+                    23.768048137712832,
+                    -12.0953444484512,
+                    22.181801511431921
+                  ],
+                  [
+                    23.76804813771281,
+                    -23.897182354575286,
+                    25.344094447580868
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    0.25881915564864272,
+                    0.96592579666831746
+                  ],
+                  "o": [
+                    48.258171081542969,
+                    -12.095344543457031,
+                    22.181800842285156
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    -33.355641212583549,
+                    70.446320931554538,
+                    12.246176803162591
+                  ],
+                  [
+                    -53.355641212583549,
+                    70.446320931554538,
+                    12.246176803162593
+                  ],
+                  [
+                    -53.355641212583549,
+                    69.1129875982212,
+                    12.286734471096686
+                  ],
+                  [
+                    -52.032132368104129,
+                    67.574530267933,
+                    12.333531652246139
+                  ],
+                  [
+                    -50.815655030095826,
+                    65.950100825164142,
+                    12.382943954687777
+                  ],
+                  [
+                    -49.711793815445496,
+                    64.24714532409503,
+                    12.43474488247695
+                  ],
+                  [
+                    -48.72558237097045,
+                    62.473463747374531,
+                    12.488697173784038
+                  ],
+                  [
+                    -47.861592298850773,
+                    60.637142226699126,
+                    12.544554862625876
+                  ],
+                  [
+                    -47.123683483610172,
+                    58.746625356413041,
+                    12.602061079212525
+                  ],
+                  [
+                    -46.51526594810715,
+                    56.810557767721981,
+                    12.6609528689826
+                  ],
+                  [
+                    -46.039173568046053,
+                    54.837767410695442,
+                    12.720961701135497
+                  ],
+                  [
+                    -45.697504458037507,
+                    52.8373141532509,
+                    12.781811990335333
+                  ],
+                  [
+                    -45.491924270184875,
+                    50.818329610227565,
+                    12.843225968830339
+                  ],
+                  [
+                    -45.423243215513708,
+                    48.790070931554631,
+                    12.904922050310885
+                  ],
+                  [
+                    -45.491924270184875,
+                    46.761812252881704,
+                    12.966618131791432
+                  ],
+                  [
+                    -45.6975044580375,
+                    44.742827709858382,
+                    13.028032110286436
+                  ],
+                  [
+                    -46.039173568046039,
+                    42.742374452413834,
+                    13.088882399486272
+                  ],
+                  [
+                    -46.515265948107142,
+                    40.7695840953873,
+                    13.148891231639173
+                  ],
+                  [
+                    -47.123683483610165,
+                    38.833516506696242,
+                    13.207783021409243
+                  ],
+                  [
+                    -47.86159229885078,
+                    36.942999636410178,
+                    13.265289237995891
+                  ],
+                  [
+                    -48.725582370970436,
+                    35.106678115734759,
+                    13.321146926837731
+                  ],
+                  [
+                    -49.711793815445489,
+                    33.332996539014275,
+                    13.375099218144818
+                  ],
+                  [
+                    -50.815655030095812,
+                    31.630041037945151,
+                    13.426900145933994
+                  ],
+                  [
+                    -52.032132368104115,
+                    30.005611595176287,
+                    13.476312448375634
+                  ],
+                  [
+                    -53.355641212583549,
+                    28.467154264888094,
+                    13.523109629525084
+                  ],
+                  [
+                    -53.355641212583549,
+                    28.467154264888094,
+                    13.523109629525084
+                  ],
+                  [
+                    -53.355641212583549,
+                    21.133820931554602,
+                    13.746176803162607
+                  ],
+                  [
+                    -33.355641212583549,
+                    21.133820931554602,
+                    13.746176803162605
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    3.9218144811171752E-07,
+                    0.030403924996987675,
+                    0.99953769380880486
+                  ],
+                  "o": [
+                    -33.355640411376953,
+                    70.446319580078125,
+                    12.246176719665527
+                  ],
+                  "x": [
+                    0.99999999999992317,
+                    -1.1923855333599583E-08,
+                    -3.920001402002136E-07
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.5676522107791522,
+                    -40.665553786421491,
+                    39.893463313782838
+                  ],
+                  [
+                    8.5975078538286134,
+                    -35.635698143372018,
+                    41.241209071383075
+                  ],
+                  [
+                    8.5975078538286276,
+                    -18.888322815297748,
+                    41.241209071383068
+                  ],
+                  [
+                    3.5676522107791522,
+                    -13.858467172248281,
+                    39.893463313782838
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -0.25881943034520422,
+                    0.0,
+                    0.96592572306352031
+                  ],
+                  "o": [
+                    8.59750747680664,
+                    -18.888322830200195,
+                    41.2412109375
+                  ],
+                  "x": [
+                    0.96592572306352009,
+                    0.0,
+                    0.25881943034520416
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    13.627363496878111,
+                    -13.858467172248282,
+                    39.893463313782838
+                  ],
+                  [
+                    3.5676522107791513,
+                    -13.858467172248281,
+                    39.893463313782838
+                  ],
+                  [
+                    8.5975078538286276,
+                    -18.888322815297748,
+                    41.241209071383068
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    0.2588194074524045,
+                    0.96592572919763675
+                  ],
+                  "o": [
+                    13.627363204956055,
+                    -13.858467102050781,
+                    39.893463134765625
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    13.627363496878111,
+                    -40.665553786421491,
+                    39.893463313782838
+                  ],
+                  [
+                    13.627363496878111,
+                    -13.858467172248282,
+                    39.893463313782838
+                  ],
+                  [
+                    8.5975078538286276,
+                    -18.888322815297748,
+                    41.241209071383068
+                  ],
+                  [
+                    8.5975078538286152,
+                    -35.635698143372018,
+                    41.241209071383068
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.2588194074524045,
+                    0.0,
+                    0.96592572919763675
+                  ],
+                  "o": [
+                    8.59750747680664,
+                    -35.635696411132813,
+                    41.2412109375
+                  ],
+                  "x": [
+                    0.96592572919763675,
+                    0.0,
+                    -0.2588194074524045
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.5676522107791522,
+                    -40.665553786421491,
+                    39.893463313782838
+                  ],
+                  [
+                    13.627363496878111,
+                    -40.665553786421491,
+                    39.893463313782838
+                  ],
+                  [
+                    8.5975078538286152,
+                    -35.635698143372018,
+                    41.241209071383068
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -0.25881931588124496,
+                    0.96592575373408718
+                  ],
+                  "o": [
+                    3.5676522254943848,
+                    -40.665554046630859,
+                    39.893463134765625
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.567652210779265,
+                    -4.6655537864214551,
+                    39.893463313782838
+                  ],
+                  [
+                    8.59750785382872,
+                    0.36430185662800341,
+                    41.241209071383061
+                  ],
+                  [
+                    8.59750785382872,
+                    17.213383221447685,
+                    41.241209071383061
+                  ],
+                  [
+                    3.567652210779265,
+                    22.243238864497151,
+                    39.893463313782838
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -0.25881943034520427,
+                    0.0,
+                    0.96592572306352031
+                  ],
+                  "o": [
+                    8.59750747680664,
+                    17.213382720947266,
+                    41.2412109375
+                  ],
+                  "x": [
+                    0.96592572306352009,
+                    0.0,
+                    0.25881943034520422
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    13.62736349687817,
+                    22.243238864497151,
+                    39.893463313782838
+                  ],
+                  [
+                    3.567652210779265,
+                    22.243238864497151,
+                    39.893463313782838
+                  ],
+                  [
+                    8.59750785382872,
+                    17.213383221447685,
+                    41.241209071383061
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    0.2588194074524045,
+                    0.96592572919763675
+                  ],
+                  "o": [
+                    13.627363204956055,
+                    22.24323844909668,
+                    39.893463134765625
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    13.62736349687817,
+                    -4.6655537864214551,
+                    39.893463313782838
+                  ],
+                  [
+                    13.62736349687817,
+                    22.243238864497151,
+                    39.893463313782838
+                  ],
+                  [
+                    8.59750785382872,
+                    17.213383221447685,
+                    41.241209071383061
+                  ],
+                  [
+                    8.5975078538287217,
+                    0.36430185662800341,
+                    41.241209071383061
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.2588194074524045,
+                    0.0,
+                    0.96592572919763675
+                  ],
+                  "o": [
+                    8.59750747680664,
+                    0.364301860332489,
+                    41.2412109375
+                  ],
+                  "x": [
+                    0.96592572919763675,
+                    0.0,
+                    -0.2588194074524045
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.567652210779265,
+                    -4.6655537864214569,
+                    39.893463313782838
+                  ],
+                  [
+                    13.62736349687817,
+                    -4.6655537864214551,
+                    39.893463313782838
+                  ],
+                  [
+                    8.5975078538287217,
+                    0.36430185662800341,
+                    41.241209071383061
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -0.25881942176040379,
+                    0.965925725363814
+                  ],
+                  "o": [
+                    3.5676522254943848,
+                    -4.6655535697937012,
+                    39.893463134765625
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.5167991924065642,
+                    31.265220491793741,
+                    39.893463313782838
+                  ],
+                  [
+                    8.59750785382874,
+                    36.34592915321592,
+                    41.254835096588721
+                  ],
+                  [
+                    8.5975078538287484,
+                    53.09330448129019,
+                    41.254835096588714
+                  ],
+                  [
+                    3.5167991924065642,
+                    58.174013142712354,
+                    39.893463313782838
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    -0.25881876306732166,
+                    0.0,
+                    0.965925901860128
+                  ],
+                  "o": [
+                    8.59750747680664,
+                    53.093303680419922,
+                    41.254833221435547
+                  ],
+                  "x": [
+                    0.965925901860128,
+                    0.0,
+                    0.25881876306732166
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    13.678216515250929,
+                    58.174013142712354,
+                    39.893463313782838
+                  ],
+                  [
+                    3.5167991924065642,
+                    58.174013142712354,
+                    39.893463313782838
+                  ],
+                  [
+                    8.5975078538287466,
+                    53.09330448129019,
+                    41.254835096588721
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    0.2588186157538947,
+                    0.96592594133258358
+                  ],
+                  "o": [
+                    13.678216934204102,
+                    58.174015045166016,
+                    39.893463134765625
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    13.678216515250929,
+                    31.265220491793741,
+                    39.893463313782838
+                  ],
+                  [
+                    13.678216515250929,
+                    58.174013142712354,
+                    39.893463313782838
+                  ],
+                  [
+                    8.5975078538287466,
+                    53.09330448129019,
+                    41.254835096588721
+                  ],
+                  [
+                    8.59750785382874,
+                    36.34592915321592,
+                    41.254835096588721
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.25881870640829213,
+                    0.0,
+                    0.96592591704184971
+                  ],
+                  "o": [
+                    8.59750747680664,
+                    36.345928192138672,
+                    41.254833221435547
+                  ],
+                  "x": [
+                    0.96592591704184971,
+                    0.0,
+                    -0.25881870640829213
+                  ]
+                }
+              },
+              {
+                "type": "Face3D",
+                "boundary": [
+                  [
+                    3.5167991924065642,
+                    31.265220491793741,
+                    39.893463313782838
+                  ],
+                  [
+                    13.678216515250929,
+                    31.265220491793741,
+                    39.893463313782838
+                  ],
+                  [
+                    8.59750785382874,
+                    36.34592915321592,
+                    41.254835096588721
+                  ]
+                ],
+                "plane": {
+                  "type": "Plane",
+                  "n": [
+                    0.0,
+                    -0.25881879706275085,
+                    0.96592589275109031
+                  ],
+                  "o": [
+                    3.5167992115020752,
+                    31.265220642089844,
+                    39.893463134765625
+                  ],
+                  "x": [
+                    1.0,
+                    0.0,
+                    0.0
+                  ]
+                }
+              }
+            ]
+          },
+          "identifier": "Story_e755b16e-7be3-4a21-978e-6b4aa426b0a4-00021496",
+          "display_name": "03 - Floor"
+        }
+      ],
+      "room_3ds": [],
+      "identifier": "Building_6f725130-ec6d-4b58-8139-4449fe57d93f",
+      "display_name": "Building 1"
+    }
+  ],
+  "context_shades": [],
+  "tolerance": 0.003,
+  "angle_tolerance": 1.0,
+  "identifier": "Model_ae158e07-87d2-41d6-b691-dcc73c72c6cb",
+  "display_name": "Model 1"
+}

@@ -2,20 +2,18 @@
 """Skylight Parameters with instructions for generating skylights."""
 from __future__ import division
 import math
+import sys
+if (sys.version_info < (3, 0)):  # python 2
+    from itertools import izip as zip  # python 2
+
+from ladybug_geometry.geometry2d import Point2D, Vector2D, Polygon2D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D
+from ladybug_geometry.bounding import bounding_rectangle
 
 from honeybee.typing import float_in_range, float_positive
 from honeybee.altnumber import autocalculate
 from honeybee.aperture import Aperture
 from honeybee.door import Door
-
-from ladybug_geometry.geometry2d.pointvector import Point2D, Vector2D
-from ladybug_geometry.geometry2d.polygon import Polygon2D
-from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
-from ladybug_geometry.geometry3d.face import Face3D
-
-import sys
-if (sys.version_info < (3, 0)):  # python 2
-    from itertools import izip as zip  # python 2
 
 
 class _SkylightParameterBase(object):
@@ -410,21 +408,8 @@ class DetailedSkylights(_SkylightParameterBase):
         Returns:
             A string with the message. Will be an empty string if valid.
         """
-        polygons = list(sorted(self.polygons, key=lambda x: x.area, reverse=True))
-        # loop through the polygons and check to see if it overlaps with the others
-        grouped_polys = [[polygons[0]]]
-        for poly in polygons[1:]:
-            group_found = False
-            for poly_group in grouped_polys:
-                for oth_poly in poly_group:
-                    if poly.polygon_relationship(oth_poly, tolerance) >= 0:
-                        poly_group.append(poly)
-                        group_found = True
-                        break
-                if group_found:
-                    break
-            if not group_found:  # the polygon does not overlap with any of the others
-                grouped_polys.append([poly])  # make a new group for the polygon
+        # group the polygons according to their overlaps
+        grouped_polys = Polygon2D.group_by_overlap(self.polygons, tolerance)
         # report any polygons that overlap
         if not all(len(g) == 1 for g in grouped_polys):
             base_msg = '({} skylights overlap one another)'
@@ -629,6 +614,29 @@ class DetailedSkylights(_SkylightParameterBase):
             new_polygons.append(Polygon2D(tuple(reversed(new_verts))))
         return DetailedSkylights(new_polygons, self.are_doors)
 
+    def union_overlaps(self, tolerance=0.01):
+        """Union any skylight polygons that overlap with one another.
+
+        Args:
+            tolerance: The minimum distance that two polygons must overlap in order
+                for them to be considered overlapping. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # group the polygons by their overlap
+        grouped_polys = Polygon2D.group_by_overlap(self.polygons, tolerance)
+        # union any of the polygons that overlap
+        if not all(len(g) == 1 for g in grouped_polys):
+            new_polys = []
+            for p_group in grouped_polys:
+                if len(p_group) == 1:
+                    new_polys.append(p_group[0])
+                else:
+                    union_poly = Polygon2D.boolean_union_all(p_group, tolerance)
+                    for new_poly in union_poly:
+                        new_polys.append(new_poly.remove_colinear_vertices(tolerance))
+            self._reassign_are_doors(new_polys)
+            self._polygons = tuple(new_polys)
+
     def merge_and_simplify(self, max_separation, tolerance=0.01):
         """Merge skylight polygons that are close to one another into a single polygon.
 
@@ -639,7 +647,8 @@ class DetailedSkylights(_SkylightParameterBase):
             max_separation: A number for the maximum distance between skylight polygons
                 at which point they will be merged into a single geometry. Typically,
                 this max_separation should be set to a value that is slightly larger
-                than the window frame.
+                than the window frame. Setting this equal to the tolerance will
+                simply join neighboring skylights together.
             tolerance: The maximum difference between point values for them to be
                 considered distinct. (Default: 0.01, suitable for objects in meters).
         """
@@ -657,21 +666,34 @@ class DetailedSkylights(_SkylightParameterBase):
         else:
             new_polys = Polygon2D.gap_crossing_boundary(
                 clean_polys, max_separation, tolerance)
-        # assign the new polygons after determining whether any should be a door
-        if len(new_polys) != len(self._polygons):
-            if all(not dr for dr in self._are_doors):  # common case of no overhead doors
-                self._are_doors = (False,) * len(new_polys)
-            else:
-                new_are_doors = []
-                for n_poly in new_polys:
-                    for o_poly, is_door in zip(self.polygons, self.are_doors):
-                        if n_poly.is_point_inside_bound_rect(o_poly.center):
-                            new_are_doors.append(is_door)
-                            break
-                    else:
-                        new_are_doors.append(False)
-                self._are_doors = tuple(new_are_doors)
+        self._reassign_are_doors(new_polys)
         self._polygons = tuple(new_polys)
+
+    def merge_to_bounding_rectangle(self, tolerance=0.01):
+        """Merge skylight polygons that touch or overlap with one another to a rectangle.
+
+        Args:
+            tolerance: The minimum distance from the edge of a neighboring polygon
+                at which a point is considered to touch that polygon. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # group the polygons by their overlap
+        grouped_polys = Polygon2D.group_by_touching(self.polygons, tolerance)
+        # union any of the polygons that overlap
+        if not all(len(g) == 1 for g in grouped_polys):
+            new_polys = []
+            for p_group in grouped_polys:
+                if len(p_group) == 1:
+                    new_polys.append(p_group[0])
+                else:
+                    min_pt, max_pt = bounding_rectangle(p_group)
+                    rect_verts = (
+                        min_pt, Point2D(max_pt.x, min_pt.y),
+                        max_pt, Point2D(min_pt.x, max_pt.y))
+                    rect_poly = Polygon2D(rect_verts)
+                    new_polys.append(rect_poly)
+            self._reassign_are_doors(new_polys)
+            self._polygons = tuple(new_polys)
 
     @classmethod
     def from_dict(cls, data):
@@ -705,6 +727,22 @@ class DetailedSkylights(_SkylightParameterBase):
             'polygons': [[pt.to_array() for pt in poly] for poly in self.polygons],
             'are_doors': self.are_doors
         }
+
+    def _reassign_are_doors(self, new_polys):
+        """Reset the are_doors property using a set of new polygons."""
+        if len(new_polys) != len(self._polygons):
+            if all(not dr for dr in self._are_doors):  # common case of no overhead doors
+                self._are_doors = (False,) * len(new_polys)
+            else:
+                new_are_doors = []
+                for n_poly in new_polys:
+                    for o_poly, is_door in zip(self.polygons, self.are_doors):
+                        if n_poly.is_point_inside_bound_rect(o_poly.center):
+                            new_are_doors.append(is_door)
+                            break
+                    else:
+                        new_are_doors.append(False)
+                self._are_doors = tuple(new_are_doors)
 
     @staticmethod
     def _is_sub_polygon(sub_poly, parent_poly, parent_holes=None):

@@ -409,6 +409,26 @@ def test_skylight_merge_and_simplify():
     assert len(new_room.skylight_parameters) == 2
 
 
+def test_skylight_merge_to_bounding_rectangle():
+    """Test the merge_to_bounding_rectangle method."""
+    model_file = './tests/json/overlapping_skylights.dfjson'
+    model = Model.from_file(model_file)
+    room = model.room_2ds[0]
+    assert len(room.skylight_parameters) == 42
+
+    new_room = room.duplicate()
+    assert len(new_room.skylight_parameters) == 42
+    new_room.skylight_parameters.merge_and_simplify(0.01, 0.01)
+    assert len(new_room.skylight_parameters) == 12
+    new_room.skylight_parameters.union_overlaps(0.01)
+    assert len(new_room.skylight_parameters) == 3
+
+    new_room = room.duplicate()
+    assert len(new_room.skylight_parameters) == 42
+    new_room.skylight_parameters.merge_to_bounding_rectangle(0.01)
+    assert len(new_room.skylight_parameters) == 3
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
