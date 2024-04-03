@@ -429,6 +429,18 @@ def test_skylight_merge_to_bounding_rectangle():
     assert len(new_room.skylight_parameters) == 3
 
 
+def test_snap_to_grid():
+    """Test the snap_to_grid method on Room2Ds."""
+    model_file = './tests/json/Level03.dfjson'
+    model = Model.from_file(model_file)
+
+    assert len(model.room_2ds) == 180
+    for room in model.room_2ds:
+        room.snap_to_grid(0.1)
+        room .reset_adjacency()
+    assert len(model.room_2ds) == 180
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))

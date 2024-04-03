@@ -1090,6 +1090,40 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
+    def snap_to_grid(self, grid_increment):
+        """Snap this Room2D's vertices to the nearest grid node defined by an increment.
+
+        All properties assigned to the Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            grid_increment: A positive number for dimension of each grid cell. This
+                typically should be equal to the tolerance or larger but should
+                not be larger than the smallest detail of the Room2D that you
+                wish to resolve.
+        """
+        # loop through the vertices and snap them
+        new_boundary, new_holes = [], None
+        for pt in self._floor_geometry.boundary:
+            new_x = grid_increment * round(pt.x / grid_increment)
+            new_y = grid_increment * round(pt.y / grid_increment)
+            new_boundary.append(Point3D(new_x, new_y, pt.z))
+        if self._floor_geometry.holes is not None:
+            new_holes = []
+            for hole in self._floor_geometry.holes:
+                new_hole = []
+                for pt in hole:
+                    new_x = grid_increment * round(pt.x / grid_increment)
+                    new_y = grid_increment * round(pt.y / grid_increment)
+                    new_hole.append(Point3D(new_x, new_y, pt.z))
+                new_holes.append(new_hole)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            new_boundary, self._floor_geometry.plane, new_holes)
+
     def remove_duplicate_vertices(self, tolerance=0.01):
         """Remove duplicate vertices from this Room2D.
 
