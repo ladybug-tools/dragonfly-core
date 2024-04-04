@@ -95,7 +95,7 @@ def from_honeybee(base_model, conversion_method, other_model, output_file):
         # write the new model out to the file or stdout
         output_file.write(json.dumps(df_model.to_dict()))
     except Exception as e:
-        _logger.exception('Model merging failed.\n{}'.format(e))
+        _logger.exception('Model creation from honeybee failed.\n{}'.format(e))
         sys.exit(1)
     else:
         sys.exit(0)
