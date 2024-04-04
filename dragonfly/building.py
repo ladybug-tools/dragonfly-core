@@ -885,8 +885,12 @@ class Building(_BaseGeometry):
             raise ValueError(
                 'No 3D Honeybee Room with an identifier of "{}" was found on '
                 'Building "{}"'.format(room_3d_identifier, self.display_name))
+        elif len(hb_room_i) != 1:
+            raise ValueError(
+                'Multiple 3D Honeybee Rooms with an identifier of "{}" were found on '
+                'Building "{}"'.format(room_3d_identifier, self.display_name))
         new_room_3ds = list(self._room_3ds)
-        hb_room = new_room_3ds.pop(0)
+        hb_room = new_room_3ds.pop(hb_room_i[0])
         # create a Dragonfly Room2D from the Honeybee Room
         df_room = Room2D.from_honeybee(hb_room, tolerance)
         self._room_3ds = tuple(new_room_3ds)
