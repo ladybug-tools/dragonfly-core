@@ -755,8 +755,10 @@ def test_model_with_room3ds():
     assert len(hb_models[0].rooms) == 10
 
     # test the properties of the model with a mix of Room2Ds and 3D Rooms
-    r_ids = [r.identifier for r in model.buildings[0].room_3ds if r.story == 'Floor1']
+    r_ids = [r.identifier for r in model.buildings[0].room_3ds if r.story == 'Floor2']
     model.buildings[0].convert_room_3ds_to_2d(r_ids)
+    new_rids = [r.identifier for r in model.buildings[0].room_3ds]
+    assert r_ids != new_rids
 
     assert len(model.buildings[0].room_3ds) == 5
     assert len(model.buildings[0].unique_room_2ds) == 5
@@ -770,12 +772,12 @@ def test_model_with_room3ds():
     assert model.average_story_count_above_ground == 2
     assert model.average_height == pytest.approx(7.5, rel=1e-2)
     assert model.average_height_above_ground == pytest.approx(7.5, rel=1e-2)
-    assert model.footprint_area == pytest.approx(35 * 25, rel=1e-3)
+    assert model.footprint_area == pytest.approx(459.0, rel=1e-3)
     assert model.floor_area == pytest.approx(1334, rel=1e-3)
 
-    assert model.exterior_wall_area == pytest.approx(770.304, rel=1e-3)
-    assert model.exterior_aperture_area == pytest.approx(299.72166, rel=1e-3)
-    assert model.volume == pytest.approx(4646.5, rel=1e-3)
+    assert model.exterior_wall_area == pytest.approx(786.099, rel=1e-3)
+    assert model.exterior_aperture_area == pytest.approx(304.8396, rel=1e-3)
+    assert model.volume == pytest.approx(4594.0, rel=1e-3)
     assert isinstance(model.min, Point2D)
     assert isinstance(model.max, Point2D)
 
