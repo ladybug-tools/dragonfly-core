@@ -876,7 +876,9 @@ class Building(_BaseGeometry):
                 objects in Meters).
 
         Returns:
-            The newly-created Room2D object from the converted Room.
+            The newly-created Room2D object from the converted Room. Will be
+            None if the Honeybee Room is not a closed solid and cannot be
+            converted to a valid Room2D.
         """
         # get the Honeybee Room object to be converted
         hb_room_i = [i for i, r in enumerate(self.room_3ds)
@@ -892,7 +894,13 @@ class Building(_BaseGeometry):
         new_room_3ds = list(self._room_3ds)
         hb_room = new_room_3ds.pop(hb_room_i[0])
         # create a Dragonfly Room2D from the Honeybee Room
-        df_room = Room2D.from_honeybee(hb_room, tolerance)
+        try:
+            df_room = Room2D.from_honeybee(hb_room, tolerance)
+        except Exception:
+            msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
+                'a Room2D.'.format(hb_room.display_name)
+            print(msg)
+            return None
         self._room_3ds = tuple(new_room_3ds)
         # assign the Room2D to an existing Story or create a new one
         for story in self._unique_stories:
@@ -921,10 +929,14 @@ class Building(_BaseGeometry):
 
         Returns:
             A list of the newly-created Room2D objects from the converted Rooms.
+            If a given 3D Room is not valid and cannot be converted to a Room2D,
+            it will not be included in this output.
         """
         df_rooms = []
         for r3_id in room_3d_identifiers:
-            df_rooms.append(self.convert_room_3d_to_2d(r3_id, tolerance))
+            new_r2 = self.convert_room_3d_to_2d(r3_id, tolerance)
+            if new_r2 is not None:
+                df_rooms.append(new_r2)
         return df_rooms
 
     def convert_all_room_3ds_to_2d(
@@ -969,7 +981,14 @@ class Building(_BaseGeometry):
         df_rooms = []
         for hb_room in hb_rooms:
             # create a Dragonfly Room2D from the Honeybee Room
-            df_room = Room2D.from_honeybee(hb_room, tolerance)
+            try:
+                df_room = Room2D.from_honeybee(hb_room, tolerance)
+            except Exception:  # invalid Honeybee Room that is not a closed solid
+                msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
+                    'a Room2D.'.format(hb_room.display_name)
+                print(msg)
+                new_room_3ds.append(hb_room)
+                continue
             # assign the Room2D to an existing Story or create a new one
             for story in self._unique_stories:
                 if story.display_name == hb_room.story:
