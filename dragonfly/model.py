@@ -1445,8 +1445,8 @@ class Model(_BaseGeometry):
 
         Args:
             model_dict: A dictionary of a Dragonfly Model.
-            room_2d_ids: A list of the identifiers for the Room2Ds to be included
-                in the output dictionary.
+            room_2d_ids: An optional list of the identifiers for the Room2Ds
+                to be included in the output dictionary.
 
         Returns:
             A copy of the input Dragonfly Model dictionary, which contains only
@@ -1454,28 +1454,101 @@ class Model(_BaseGeometry):
             Rooms are removed but slanted Roof geometries are included if they are
             relevant to the Room2Ds.
         """
+        return Model.model_dict_subset(model_dict, room_2d_ids)
+
+    @staticmethod
+    def model_dict_subset(
+            model_dict, room_2d_ids=None, room_3d_ids=None, shade_ids=None):
+        """Get a dragonfly Model dictionary that has been filtered for certain objects.
+
+        This is useful when you are only interested in visualizing or exporting a
+        subset of objects to a file and so it is not desirable to serialize the
+        entire Dragonfly Model.
+
+        Args:
+            model_dict: A dictionary of a Dragonfly Model.
+            room_2d_ids: An optional list of the identifiers for the Room2Ds
+                to be included in the output dictionary. If None, no Room2D
+                dictionaries will be in the result. (Default: None).
+            room_3d_ids: An optional list of the identifiers for the 3D Rooms
+                to be included in the output dictionary. If None, no 3D Room
+                dictionaries will be in the result. (Default: None).
+            shade_ids: An optional list of the identifiers for the ContextShades
+                to be included in the output dictionary. If None, no ContextShade
+                dictionaries will be in the result. (Default: None).
+
+        Returns:
+            A copy of the input Dragonfly Model dictionary, which contains only
+            the Room2Ds listed in the room_2d_ids, the 3D Rooms listed in the
+            room_3d_ids, and ContextShades in the shade_ids. Slanted Roof geometries
+            are included if they are relevant to the Room2Ds.
+        """
         # build a copy of the model_dict with geometry excluded
         ex_keys = ('buildings', 'context_shades')
         filtered_model = {key: v for key, v in model_dict.items() if key not in ex_keys}
-        # loop through the Buildings and grab the relevant Room2Ds
-        room_ids = set(room_2d_ids)
-        if 'buildings' in model_dict and model_dict['buildings'] is not None:
-            new_bldgs = []
-            for b_dict in model_dict['buildings']:
-                if 'unique_stories' in b_dict and b_dict['unique_stories'] is not None:
-                    new_stories = []
-                    for s_dict in b_dict['unique_stories']:
-                        r_dicts = [r for r in s_dict['room_2ds']
-                                   if r['identifier'] in room_ids]
-                        if len(r_dicts) != 0:
-                            new_story = s_dict.copy()
-                            new_story['room_2ds'] = r_dicts
-                            new_stories.append(new_story)
-                    if len(new_stories) != 0:
-                        new_bldg = b_dict.copy()
-                        new_bldg['unique_stories'] = new_stories
-                        new_bldgs.append(new_bldg)
-            filtered_model['buildings'] = new_bldgs
+        r3_ids = None
+        if room_3d_ids is not None and len(room_3d_ids) != 0:
+            r3_ids = set(room_3d_ids)
+        # loop through the Buildings and grab the relevant Rooms
+        if room_2d_ids is not None and len(room_2d_ids) != 0:
+            room_ids = set(room_2d_ids)
+            if 'buildings' in model_dict and model_dict['buildings'] is not None:
+                new_bldgs = []
+                for b_dict in model_dict['buildings']:
+                    r_2ds_found = False
+                    if 'unique_stories' in b_dict and \
+                            b_dict['unique_stories'] is not None:
+                        new_stories = []
+                        for s_dict in b_dict['unique_stories']:
+                            r_dicts = [r for r in s_dict['room_2ds']
+                                    if r['identifier'] in room_ids]
+                            if len(r_dicts) != 0:
+                                new_story = s_dict.copy()
+                                new_story['room_2ds'] = r_dicts
+                                new_stories.append(new_story)
+                        if len(new_stories) != 0:
+                            new_bldg = b_dict.copy()
+                            new_bldg['unique_stories'] = new_stories
+                            new_bldgs.append(new_bldg)
+                            r_2ds_found = True
+                    if r3_ids is not None:
+                        if 'room_3ds' in b_dict and b_dict['room_3ds'] is not None:
+                            new_room_3ds = []
+                            for r3_dict in b_dict['room_3ds']:
+                                if r3_dict['identifier'] in r3_ids:
+                                    new_room_3ds.append(r3_dict)
+                            if len(new_room_3ds) != 0:
+                                if r_2ds_found:
+                                    new_bldg = new_bldgs[-1]
+                                    new_bldg['room_3ds'] = new_room_3ds
+                                else:
+                                    new_bldg = b_dict.copy()
+                                    new_bldg['room_3ds'] = new_room_3ds
+                                    new_bldgs.append(new_bldg)
+                filtered_model['buildings'] = new_bldgs
+        elif r3_ids is not None:  # only 3D Rooms to visualize
+            if 'buildings' in model_dict and model_dict['buildings'] is not None:
+                new_bldgs = []
+                for b_dict in model_dict['buildings']:
+                    if 'room_3ds' in b_dict and b_dict['room_3ds'] is not None:
+                        new_room_3ds = []
+                        for r3_dict in b_dict['room_3ds']:
+                            if r3_dict['identifier'] in r3_ids:
+                                new_room_3ds.append(r3_dict)
+                        if len(new_room_3ds) != 0:
+                            new_bldg = b_dict.copy()
+                            new_bldg['room_3ds'] = new_room_3ds
+                            new_bldgs.append(new_bldg)
+                filtered_model['buildings'] = new_bldgs
+        # loop through the ContextShades and grab the relevant objects
+        if shade_ids is not None and len(shade_ids) != 0:
+            cs_ids = set(shade_ids)
+            if 'context_shades' in model_dict and model_dict['context_shades'] is not None:
+                new_shades = []
+                for cs_dict in model_dict['context_shades']:
+                    if cs_dict['identifier'] in cs_ids:
+                        new_shades.append(cs_dict)
+                filtered_model['context_shades'] = new_shades
         return filtered_model
 
     @staticmethod
