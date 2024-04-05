@@ -18,6 +18,7 @@ from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.polyface import Polyface3D
 from ladybug.futil import preparedir
 from ladybug.location import Location
+
 from honeybee.typing import float_positive, invalid_dict_error
 from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, parse_distance_string, \
@@ -25,6 +26,7 @@ from honeybee.units import conversion_factor_to_meters, parse_distance_string, \
 from honeybee.config import folders
 from honeybee.facetype import Floor, RoofCeiling
 from honeybee.boundarycondition import Outdoors, Surface, Ground, boundary_conditions
+from honeybee.shade import Shade as HBShade
 from honeybee.room import Room as HBRoom
 from honeybee.model import Model as HBModel
 
@@ -310,9 +312,13 @@ class Model(_BaseGeometry):
         if len(model.rooms) != 0:
             bldgs = [Building.from_honeybee(model, conversion_method)]
         # translate the orphaned shades to context shades
-        shades = None
+        shades = []
         if len(model.orphaned_shades) != 0:
-            shades = [ContextShade.from_honeybee(shd) for shd in model.orphaned_shades]
+            for shd in model.orphaned_shades:
+                shades.append(ContextShade.from_honeybee(shd))
+        if len(model.shade_meshes) != 0:
+            for shd in model.shade_meshes:
+                shades.append(ContextShade.from_honeybee(shd))
         new_model = cls(model.identifier, bldgs, shades, model.units,
                         model.tolerance, model.angle_tolerance)
         new_model._display_name = model._display_name
@@ -1173,7 +1179,10 @@ class Model(_BaseGeometry):
             for shd_group in self._context_shades:
                 for shd in shd_group.to_honeybee():
                     for model in models:
-                        model.add_shade(shd)
+                        if isinstance(shd, HBShade):
+                            model.add_shade(shd)
+                        else:
+                            model.add_shade_mesh(shd)
         else:
             raise ValueError('Unrecognized object_per_model input: '
                              '{}'.format(object_per_model))
