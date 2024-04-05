@@ -1682,7 +1682,10 @@ class Building(_BaseGeometry):
                     model.add_shade(shd)
             for c_shade in con_shades:  # context shades
                 for shd in c_shade:
-                    model.add_shade(shd)
+                    if isinstance(shd, Shade):
+                        model.add_shade(shd)
+                    else:
+                        model.add_shade_mesh(shd)
         elif shade_distance > 0:  # add only shade within the distance
             for j in xrange(i + 1, num_bldg):  # buildings before this one
                 if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[j],
@@ -1698,7 +1701,10 @@ class Building(_BaseGeometry):
                 if Building._bound_rect_in_dist(bldg_pts[i], con_pts[s],
                                                 shade_distance):
                     for shd in con_shades[s]:
-                        model.add_shade(shd)
+                        if isinstance(shd, Shade):
+                            model.add_shade(shd)
+                        else:
+                            model.add_shade_mesh(shd)
 
     @staticmethod
     def _generate_room_2ds(face3d_array, flr_to_ceiling, perim_offset,

@@ -1,27 +1,27 @@
 # coding: utf-8
 """Dragonfly Context Shade."""
 from __future__ import division
+import math
+
+from ladybug_geometry.geometry3d import Face3D, Mesh3D
+
+from honeybee.shade import Shade
+from honeybee.shademesh import ShadeMesh
+from honeybee.typing import clean_string
 
 from ._base import _BaseGeometry
 from .properties import ContextShadeProperties
 import dragonfly.writer.context as writer
 
-from honeybee.shade import Shade
-from honeybee.typing import clean_string
-
-from ladybug_geometry.geometry3d.face import Face3D
-
-import math
-
 
 class ContextShade(_BaseGeometry):
-    """A Context Shade object defined by an array of Face3Ds (eg. canopy, trees, etc.).
+    """A Context Shade object defined by an array of Face3Ds and/or Mesh3Ds.
 
     Args:
         identifier: Text string for a unique ContextShade ID. Must be < 100 characters
             and not contain any spaces or special characters.
-        geometry: An array of ladybug_geometry Face3D objects that together
-            represent the context shade.
+        geometry: An array of ladybug_geometry Face3D and/or Mesh3D objects
+            that together represent the context shade.
         is_detached: Boolean to note whether this object is detached from other
             geometry. Cases where this should be True include shade representing
             surrounding buildings or context. (Default: True).
@@ -39,16 +39,16 @@ class ContextShade(_BaseGeometry):
     __slots__ = ('_geometry', '_is_detached')
 
     def __init__(self, identifier, geometry, is_detached=True):
-        """A Context Shade object defined by an array of Face3Ds."""
+        """Initialize ContextShade."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
 
         # process the geometry
         if not isinstance(geometry, tuple):
             geometry = tuple(geometry)
-        assert len(geometry) > 0, 'ContextShade must have at least one Face3D.'
+        assert len(geometry) > 0, 'ContextShade must have at least one geometry.'
         for shd_geo in geometry:
-            assert isinstance(shd_geo, Face3D), \
-                'Expected ladybug_geometry Face3D. Got {}'.format(type(shd_geo))
+            assert isinstance(shd_geo, (Face3D, Mesh3D)), 'Expected ladybug_geometry ' \
+                'Face3D or Mesh3D. Got {}'.format(type(shd_geo))
         self._geometry = geometry
         self.is_detached = is_detached
 
@@ -66,7 +66,12 @@ class ContextShade(_BaseGeometry):
             'Got {}.'.format(data['type'])
 
         is_detached = data['is_detached'] if 'is_detached' in data else True
-        geometry = tuple(Face3D.from_dict(shd_geo) for shd_geo in data['geometry'])
+        geometry = []
+        for shd_geo in data['geometry']:
+            if shd_geo['type'] == 'Face3D':
+                geometry.append(Face3D.from_dict(shd_geo))
+            else:
+                geometry.append(Mesh3D.from_dict(shd_geo))
         shade = cls(data['identifier'], geometry, is_detached)
         if 'display_name' in data and data['display_name'] is not None:
             shade.display_name = data['display_name']
@@ -79,10 +84,10 @@ class ContextShade(_BaseGeometry):
 
     @classmethod
     def from_honeybee(cls, shade):
-        """Initialize an ContextShade from a Honeybee Shade.
+        """Initialize an ContextShade from a Honeybee Shade or ShadeMesh.
 
         Args:
-            shade: A Honeybee Shade object.
+            shade: A Honeybee Shade or ShadeMesh object.
         """
         con_shade = cls(shade.identifier, [shade.geometry], shade.is_detached)
         con_shade._display_name = shade.display_name
@@ -93,7 +98,8 @@ class ContextShade(_BaseGeometry):
 
     @property
     def geometry(self):
-        """Get a tuple of Face3D objects that together represent the context shade."""
+        """Get a tuple of Face3D and/or Mesh3D objects that represent the context shade.
+        """
         return self._geometry
 
     @property
@@ -195,15 +201,19 @@ class ContextShade(_BaseGeometry):
         self.properties.scale(factor, origin)
 
     def to_honeybee(self):
-        """Convert Dragonfly ContextShade to an array of Honeybee Shades."""
+        """Convert Dragonfly ContextShade to a list of Honeybee Shades and ShadeMeshes.
+        """
         shades = []
         for i, shd_geo in enumerate(self._geometry):
-            # create the shade object
-            shade = Shade('{}_{}'.format(self.identifier, i), shd_geo,
-                          is_detached=self.is_detached)
+            if isinstance(shd_geo, Face3D):
+                shade = Shade('{}_{}'.format(self.identifier, i), shd_geo,
+                              is_detached=self.is_detached)
+                shade._properties = self.properties.to_honeybee(shade, False)
+            else:
+                shade = ShadeMesh('{}_{}'.format(self.identifier, i), shd_geo,
+                                  is_detached=self.is_detached)
+                shade._properties = self.properties.to_honeybee(shade, True)
             shade.display_name = '{}_{}'.format(self.display_name, i)
-            # transfer any extension properties assigned to the Shade
-            shade._properties = self.properties.to_honeybee(shade)
             shades.append(shade)
         return shades
 
@@ -223,9 +233,7 @@ class ContextShade(_BaseGeometry):
         base['identifier'] = self.identifier
         base['display_name'] = self.display_name
         base['properties'] = self.properties.to_dict(abridged, included_prop)
-        enforce_upper_left = True if 'energy' in base['properties'] else False
-        base['geometry'] = [shd_geo.to_dict(False, enforce_upper_left)
-                            for shd_geo in self._geometry]
+        base['geometry'] = [shd_geo.to_dict() for shd_geo in self._geometry]
         if not self.is_detached:
             base['is_detached'] = self.is_detached
         if self.user_data is not None:

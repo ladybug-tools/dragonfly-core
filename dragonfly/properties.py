@@ -385,13 +385,16 @@ class ContextShadeProperties(_Properties):
         base = self._add_extension_attr_to_dict(base, abridged, include)
         return base
 
-    def to_honeybee(self, host):
+    def to_honeybee(self, host, is_mesh=False):
         """Convert this ContextShade's extension properties to honeybee Shade properties.
 
         Args:
             host: A honeybee-core Shade object that hosts these properties.
+            is_mesh: Boolean to note whether the input host is a ShadeMesh as opposed
+                to a regular Shade. (Default: False).
         """
-        hb_prop = hb_properties.ShadeProperties(host)
+        hb_prop = hb_properties.ShadeMeshProperties(host) \
+            if is_mesh else hb_properties.ShadeProperties(host)
         return self._add_extension_attr_to_honeybee(host, hb_prop)
 
     def add_prefix(self, prefix):
