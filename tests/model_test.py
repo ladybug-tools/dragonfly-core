@@ -377,6 +377,31 @@ def test_reflect():
     assert test_1.context_shades[0][0][1].z == pytest.approx(2, rel=1e-3)
 
 
+def test_reset_room_2d_boundaries():
+    """Test the reset_room_2d_boundaries method on Stories."""
+    model_file = './tests/json/model_with_doors_skylights.dfjson'
+    model = Model.from_file(model_file)
+    bound_dict = {
+        "type": "Polygon2D",
+        "vertices": [
+            [-4.8880684825623826, -3.3025939785814966], 
+            [13.162931517437627, -3.3025939785814966], 
+            [13.162931517437627, 2.8994060214182316], 
+            [-4.8880684825623826, 2.8994060214182316]
+        ]
+    }
+    story_bnd = [Polygon2D.from_dict(bound_dict)]
+
+    second_story = model.stories[1]
+    new_story = second_story.duplicate()
+    new_story.reset_room_2d_boundaries(story_bnd)
+
+    assert len(new_story.room_2ds) == 1
+    assert len(new_story.room_2ds[0].skylight_parameters) == 2
+    assert second_story.exterior_aperture_area == \
+        pytest.approx(new_story.exterior_aperture_area, rel=1e-3)
+
+
 def test_suggested_alignment_axes():
     """Test the suggested_alignment_axes method on Buildings and Stories."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
