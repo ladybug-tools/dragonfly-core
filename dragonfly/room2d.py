@@ -30,7 +30,8 @@ import dragonfly.windowparameter as glzpar
 from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
     SimpleWindowRatio, RectangularWindows, DetailedWindows
 import dragonfly.skylightparameter as skypar
-from dragonfly.skylightparameter import _SkylightParameterBase, DetailedSkylights
+from dragonfly.skylightparameter import _SkylightParameterBase, DetailedSkylights, \
+    GriddedSkylightArea, GriddedSkylightRatio
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 import dragonfly.writer.room2d as writer
@@ -2197,12 +2198,13 @@ class Room2D(_BaseGeometry):
         All properties of segments along the boundary polygon will be preserved.
         The largest Room2D that is identified within the boundary polygon will
         determine the extension properties of the resulting Room unless the supplied
-        identifier matches an existing Room2D inside the polygon. All skylights
-        will be lost.
+        identifier matches an existing Room2D inside the polygon. Skylights
+        will be merged if they are of the same type or if they are None.
 
         It is recommended that the Room2Ds be aligned to the boundaries
         of the polygon and duplicate vertices be removed before passing them
-        through this method. This helps ensure that relevant Room2D segments
+        through this method. However, colinear vertices should not be removed
+        where possible. This helps ensure that relevant Room2D segments
         are colinear with the polygon and so they can influence the result.
 
         Args:
@@ -2333,14 +2335,37 @@ class Room2D(_BaseGeometry):
         else:
             new_geo = Face3D(bound_verts)
 
+        # merge skylights across the input rooms if they are of the same type
+        new_sky_lights, new_areas = [], []
+        for room in rel_rooms:
+            if room.skylight_parameters is not None:
+                new_sky_lights.append(room.skylight_parameters)
+                new_areas.append(room.floor_area)
+        new_sky_light = None
+        if all(isinstance(sl, DetailedSkylights) for sl in new_sky_lights):
+            new_polys = new_sky_lights[0].polygons
+            new_is_dr = new_sky_lights[0].are_doors
+            for sl in new_sky_lights[1:]:
+                new_polys += sl.polygons
+                new_is_dr += sl.are_doors
+            new_sky_light = DetailedSkylights(new_polys, new_is_dr)
+        elif all(isinstance(sl, GriddedSkylightArea) for sl in new_sky_lights):
+            new_area = sum(sl.skylight_area for sl in new_sky_lights)
+            new_sky_light = GriddedSkylightArea(new_area)
+        elif all(isinstance(sl, GriddedSkylightRatio) for sl in new_sky_lights):
+            zip_obj = zip(new_sky_lights, new_areas)
+            new_area = sum(sl.skylight_ratio * fa for sl, fa in zip_obj)
+            new_ratio = new_area / sum(room.floor_area for room in rel_rooms)
+            new_sky_light = GriddedSkylightRatio(new_ratio)
+
         # merge all segments and properties into a single Room2D
         new_room = Room2D(
             identifier, new_geo, new_ftc, new_bcs, new_win, new_shd,
             primary_room.is_ground_contact, primary_room.is_top_exposed, tol)
-        new_room.display_name = display_name
+        new_room.skylight_parameters = new_sky_light
         new_room.air_boundaries = new_abs
+        new_room.display_name = display_name
         new_room._properties._duplicate_extension_attr(primary_room._properties)
-        # TODO: Consider merging skylights and adding them to the new room
 
         # if the floor-to-ceiling height is lower than the max, re-trim windows
         if new_ftc < max_ftc:
