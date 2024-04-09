@@ -402,6 +402,20 @@ def test_reset_room_2d_boundaries():
         pytest.approx(new_story.exterior_aperture_area, rel=1e-3)
 
 
+def test_join_room_2ds():
+    """Test the Room2d.join_room_2ds method."""
+    model_file = './tests/json/model_with_doors_skylights.dfjson'
+    model = Model.from_file(model_file)
+
+    second_story = model.stories[1]
+    joined_rooms = Room2D.join_room_2ds(second_story.room_2ds)
+
+    assert len(joined_rooms) == 1
+    assert len(joined_rooms[0].skylight_parameters) == 2
+    assert second_story.exterior_aperture_area == \
+        pytest.approx(joined_rooms[0].exterior_aperture_area, rel=1e-3)
+
+
 def test_suggested_alignment_axes():
     """Test the suggested_alignment_axes method on Buildings and Stories."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
