@@ -896,10 +896,7 @@ class Building(_BaseGeometry):
         # create a Dragonfly Room2D from the Honeybee Room
         try:
             df_room = Room2D.from_honeybee(hb_room, tolerance)
-        except Exception:
-            msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
-                'a Room2D.'.format(hb_room.display_name)
-            print(msg)
+        except Exception:  # room is not a closed solid
             return None
         self._room_3ds = tuple(new_room_3ds)
         # assign the Room2D to an existing Story or create a new one
@@ -984,9 +981,6 @@ class Building(_BaseGeometry):
             try:
                 df_room = Room2D.from_honeybee(hb_room, tolerance)
             except Exception:  # invalid Honeybee Room that is not a closed solid
-                msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
-                    'a Room2D.'.format(hb_room.display_name)
-                print(msg)
                 new_room_3ds.append(hb_room)
                 continue
             # assign the Room2D to an existing Story or create a new one
