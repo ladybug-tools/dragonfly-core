@@ -173,8 +173,17 @@ class Story(_BaseGeometry):
                 are considered to be the same.
         """
         # create the Room2Ds from the Honeybee Rooms
-        room_2ds = [Room2D.from_honeybee(hb_room, tolerance) for hb_room in rooms
-                    if not hb_room.exclude_floor_area]
+        room_2ds = []
+        for hb_room in rooms:
+            if not hb_room.exclude_floor_area:
+                try:
+                    room_2ds.append(Room2D.from_honeybee(hb_room, tolerance))
+                except Exception:  # invalid Honeybee Room that is not a closed solid
+                    msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
+                        'a Room2D.\nTry using the "ExtrudedOnly" option to convert ' \
+                        'the Honeybee Model to Dragonfly'.format(hb_room.display_name)
+                    raise ValueError(msg)
+
         room_2ds = [room for room in room_2ds if room is not None]
         # re-set the adjacencies in relation to the Room2D segments
         all_adj_faces = [[x for x, bc in enumerate(room_1._boundary_conditions)
