@@ -2190,6 +2190,67 @@ class Room2D(_BaseGeometry):
             rooms, Room2D._find_adjacent_air_boundary_rooms)
 
     @staticmethod
+    def join_room_2ds(room_2ds, min_separation=0, tolerance=0.01):
+        """Join Room2Ds together that are touching one another within a min_separation.
+
+        When the min_separation is less than or equal to the tolerance, all
+        properties of segments for the input Room2Ds will be preserved. When
+        the min_separation is larger than the tolerance, an attempt is made to
+        preserve all wall properties but there is a risk of losing some windows
+        just in the region where two Room2Ds are joined together across a gap
+        between them. This risk can be overcome by inserting Room2D vertices
+        around where the gap will be crossed between that Room2D and the
+        other Room2D.
+
+        The largest Room2D that is identified within each connected group will
+        determine the extension properties of the resulting Room2D. Skylights
+        will be merged across rooms if they are of the same type or if they are None.
+
+        Args:
+            room_2ds: A list of Room2Ds which will be joined together where they
+                touch one another.
+            min_separation: A number for the minimum distance between Room2Ds that
+                is considered a meaningful separation. Gaps between Room2Ds that
+                are less than this distance will result in the Room2Ds being
+                joined across the gap. When the input Room2Ds have floor_geometry
+                representing the boundaries defined by the interior wall finishes,
+                this input can be thought of as the maximum interior wall thickness.
+                When Room2Ds are perfectly touching one another within the tolerance
+                (with Room2D floor_geometry drawn to the center lines of interior
+                walls), this value can be set to zero or anything less than or
+                equal to the tolerance. Doing so will yield a cleaner result for the
+                boundary, which will be faster and more reliable. Note that care
+                should be taken not to set this value higher than the length of any
+                meaningful exterior wall segments. Otherwise, the exterior segments
+                will be ignored in the result. This can be particularly dangerous
+                around curved exterior walls that have been planarized through
+                subdivision into small segments. (Default: 0).
+            tolerance: The minimum distance between a vertex and the polygon
+                boundary at which point the vertex is considered to lie on the
+                polygon. (Default: 0.01, suitable for objects in meters).
+        """
+        # get the horizontal boundaries around the input Room2Ds
+        h_bnds = Room2D.grouped_horizontal_boundary(room_2ds, min_separation, tolerance)
+        if len(h_bnds) == len(room_2ds):  # no Room2Ds to join; return them as they are
+            return room_2ds
+
+        # join the Room2Ds according to the horizontal boundaries that were found
+        if min_separation <= tolerance:
+            room_2ds = Room2D.intersect_adjacency(room_2ds, tolerance)
+        joined_rooms = []
+        for h_bnd in h_bnds:
+            bnd_p_gon = Polygon2D([Point2D(pt.x, pt.y) for pt in h_bnd.boundary])
+            h_p = None
+            if h_bnd.has_holes:
+                h_p = []
+                for hole in h_bnd.holes:
+                    h_p.append(Polygon2D([Point2D(pt.x, pt.y) for pt in h_bnd.boundary]))
+            new_room = Room2D.join_by_boundary(
+                room_2ds, bnd_p_gon, h_p, tolerance=tolerance)
+            joined_rooms.append(new_room)
+        return joined_rooms
+
+    @staticmethod
     def join_by_boundary(
             room_2ds, polygon, hole_polygons=None, floor_to_ceiling_height=None,
             identifier=None, display_name=None, tolerance=0.01):
@@ -2212,7 +2273,7 @@ class Room2D(_BaseGeometry):
             polygon: A ladybug_geometry Polygon2D which will become the boundary
                 of the output joined Room2D.
             hole_polygons: An optional list of hole polygons, which will add
-                holes into the output joined Room2D polygon.
+                holes into the output joined Room2D polygon. (Default: None).
             floor_to_ceiling_height: An optional number to set the floor-to-ceiling
                 height of the resulting Room2D. If None, it will be the maximum
                 of the Room2Ds that are found inside the polygon, which ensures
@@ -2343,12 +2404,15 @@ class Room2D(_BaseGeometry):
                 new_areas.append(room.floor_area)
         new_sky_light = None
         if all(isinstance(sl, DetailedSkylights) for sl in new_sky_lights):
-            new_polys = new_sky_lights[0].polygons
-            new_is_dr = new_sky_lights[0].are_doors
-            for sl in new_sky_lights[1:]:
-                new_polys += sl.polygons
-                new_is_dr += sl.are_doors
-            new_sky_light = DetailedSkylights(new_polys, new_is_dr)
+            try:
+                new_polys = new_sky_lights[0].polygons
+                new_is_dr = new_sky_lights[0].are_doors
+                for sl in new_sky_lights[1:]:
+                    new_polys += sl.polygons
+                    new_is_dr += sl.are_doors
+                new_sky_light = DetailedSkylights(new_polys, new_is_dr)
+            except IndexError:
+                pass  # skylight with no polygons
         elif all(isinstance(sl, GriddedSkylightArea) for sl in new_sky_lights):
             new_area = sum(sl.skylight_area for sl in new_sky_lights)
             new_sky_light = GriddedSkylightArea(new_area)
@@ -2370,11 +2434,7 @@ class Room2D(_BaseGeometry):
         # if the floor-to-ceiling height is lower than the max, re-trim windows
         if new_ftc < max_ftc:
             new_w_pars = []
-            zip_items = zip(
-                new_room._window_parameters,
-                new_room.floor_segments,
-                new_room._boundary_conditions)
-            for i, (w_par, seg, bc) in enumerate(zip_items):
+            for w_par, seg in zip(new_room._window_parameters, new_room.floor_segments):
                 if isinstance(w_par, DetailedWindows):
                     new_w_par = w_par.adjust_for_segment(seg, new_ftc, tolerance)
                 else:
@@ -2383,6 +2443,93 @@ class Room2D(_BaseGeometry):
             new_room._window_parameters = new_w_pars
 
         return new_room
+
+    @staticmethod
+    def grouped_horizontal_boundary(room_2ds, min_separation=0, tolerance=0.01):
+        """Get a list of Face3D for the horizontal boundary around several Room2Ds.
+
+        This method will attempt to produce a boundary that follows along the
+        walls of the Room2Ds and it is not suitable for groups of Room2Ds that
+        overlap one another in plan. This method may return an empty list if the
+        min_separation is so large that a continuous boundary could not be determined
+        or if overlaps between input Room2Ds result in failure.
+
+        Args:
+            room_2ds: A list of Room2Ds for which the horizontal boundary will
+                be computed.
+            min_separation: A number for the minimum distance between Room2Ds that
+                is considered a meaningful separation. Gaps between Room2Ds that
+                are less than this distance will be ignored and the boundary
+                will continue across the gap. When the input Room2Ds have floor_geometry
+                representing the boundaries defined by the interior wall finishes,
+                this input can be thought of as the maximum interior wall thickness,
+                which should be ignored in the calculation of the overall boundary
+                of the Room2Ds. When Room2Ds are touching one another (with Room2D
+                floor_geometry drawn to the center lines of interior walls), this
+                value can be set to zero or anything less than or equal to the
+                tolerance. Doing so will yield a cleaner result for the
+                boundary, which will be faster. Note that care should be taken
+                not to set this value higher than the length of any meaningful
+                exterior wall segments. Otherwise, the exterior segments
+                will be ignored in the result. This can be particularly dangerous
+                around curved exterior walls that have been planarized through
+                subdivision into small segments. (Default: 0).
+            tolerance: The maximum difference between coordinate values of two
+                vertices at which they can be considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # get the floor geometry of the rooms
+        floor_geos = [room.floor_geometry for room in room_2ds]
+
+        # remove colinear vertices and degenerate rooms
+        clean_floor_geos = []
+        for geo in floor_geos:
+            try:
+                clean_floor_geos.append(geo.remove_colinear_vertices(tolerance))
+            except AssertionError:  # degenerate geometry to ignore
+                pass
+        if len(clean_floor_geos) == 0:
+            return []  # no Room boundary to be found
+
+        # convert the floor Face3Ds into counterclockwise Polygon2Ds
+        floor_polys, z_vals = [], []
+        for flr_geo in clean_floor_geos:
+            z_vals.append(flr_geo.min.z)
+            b_poly = Polygon2D([Point2D(pt.x, pt.y) for pt in flr_geo.boundary])
+            floor_polys.append(b_poly)
+            if flr_geo.has_holes:
+                for hole in flr_geo.holes:
+                    h_poly = Polygon2D([Point2D(pt.x, pt.y) for pt in hole])
+                    floor_polys.append(h_poly)
+        z_min = min(z_vals)
+
+        # if the min_separation is small, use the more reliable intersection method
+        if min_separation <= tolerance:
+            closed_polys = Polygon2D.joined_intersected_boundary(floor_polys, tolerance)
+        else:  # otherwise, use the more intense and less reliable gap crossing method
+            closed_polys = Polygon2D.gap_crossing_boundary(
+                floor_polys, min_separation, tolerance)
+
+        # remove colinear vertices from the resulting polygons
+        clean_polys = []
+        for poly in closed_polys:
+            try:
+                clean_polys.append(poly.remove_colinear_vertices(tolerance))
+            except AssertionError:
+                pass  # degenerate polygon to ignore
+
+        # figure out if polygons represent holes in the others and make Face3D
+        if len(clean_polys) == 0:
+            return []
+        elif len(clean_polys) == 1:  # can be represented with a single Face3D
+            pts3d = [Point3D(pt.x, pt.y, z_min) for pt in clean_polys[0]]
+            return [Face3D(pts3d)]
+        else:  # need to separate holes from distinct Face3Ds
+            bound_faces = []
+            for poly in clean_polys:
+                pts3d = tuple(Point3D(pt.x, pt.y, z_min) for pt in poly)
+                bound_faces.append(Face3D(pts3d))
+            return Face3D.merge_faces_to_holes(bound_faces, tolerance)
 
     @staticmethod
     def generate_alignment_axes(room_2ds, distance, direction=Vector2D(0, 1),
