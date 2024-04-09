@@ -415,6 +415,12 @@ def test_join_room_2ds():
     assert second_story.exterior_aperture_area == \
         pytest.approx(joined_rooms[0].exterior_aperture_area, rel=1e-3)
 
+    clean_joined_room = joined_rooms[0].remove_colinear_vertices()
+    cp_rooms = clean_joined_room.to_core_perimeter(2)
+    assert len(cp_rooms) == 5
+    clean_ap_area = sum(r.exterior_aperture_area for r in cp_rooms)
+    assert second_story.exterior_aperture_area == pytest.approx(clean_ap_area, rel=1e-3)
+
 
 def test_suggested_alignment_axes():
     """Test the suggested_alignment_axes method on Buildings and Stories."""
