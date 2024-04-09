@@ -1160,8 +1160,17 @@ class Model(_BaseGeometry):
 
         # create the model objects
         if len(self.buildings) == 0:  # model containing only context shade
-            hb_shades = [s for shd in self.context_shades for s in shd.to_honeybee()]
-            models = [HBModel(self.identifier, orphaned_shades=hb_shades)]
+            hb_shades, hb_shade_meshes = [], []
+            for shd in self.context_shades:
+                for s in shd.to_honeybee():
+                    if isinstance(s, HBShade):
+                        hb_shades.append(s)
+                    else:
+                        hb_shade_meshes.append(s)
+            h_model = HBModel(self.identifier, orphaned_shades=hb_shades,
+                              shade_meshes=hb_shade_meshes)
+            h_model.display_name = self.display_name
+            models = [h_model]
         elif object_per_model is None or object_per_model.title() == 'Building':
             models = Building.buildings_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
