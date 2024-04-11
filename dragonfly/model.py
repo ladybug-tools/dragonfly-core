@@ -313,12 +313,15 @@ class Model(_BaseGeometry):
             bldgs = [Building.from_honeybee(model, conversion_method)]
         # translate the orphaned shades to context shades
         shades = []
-        if len(model.orphaned_shades) != 0:
-            for shd in model.orphaned_shades:
-                shades.append(ContextShade.from_honeybee(shd))
-        if len(model.shade_meshes) != 0:
-            for shd in model.shade_meshes:
-                shades.append(ContextShade.from_honeybee(shd))
+        for shd_grp in model.grouped_shades:
+            base_obj = shd_grp[0]
+            shd_geo = [s.geometry for s in shd_grp]
+            con_shade = ContextShade(base_obj.identifier, shd_geo, base_obj.is_detached)
+            con_shade.display_name = base_obj.display_name
+            con_shade._user_data = None if base_obj.user_data is None \
+                else base_obj.user_data.copy()
+            con_shade.properties.from_honeybee(base_obj.properties)
+            shades.append(con_shade)
         new_model = cls(model.identifier, bldgs, shades, model.units,
                         model.tolerance, model.angle_tolerance)
         new_model._display_name = model._display_name

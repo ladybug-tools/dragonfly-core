@@ -213,7 +213,7 @@ class ContextShade(_BaseGeometry):
                 shade = ShadeMesh('{}_{}'.format(self.identifier, i), shd_geo,
                                   is_detached=self.is_detached)
                 shade._properties = self.properties.to_honeybee(shade, True)
-            shade.display_name = '{}_{}'.format(self.display_name, i)
+            shade.display_name = self.display_name
             shades.append(shade)
         return shades
 
