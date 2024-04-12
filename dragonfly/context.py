@@ -214,6 +214,7 @@ class ContextShade(_BaseGeometry):
                                   is_detached=self.is_detached)
                 shade._properties = self.properties.to_honeybee(shade, True)
             shade.display_name = self.display_name
+            shade.user_data = None if self.user_data is None else self.user_data.copy()
             shades.append(shade)
         return shades
 
