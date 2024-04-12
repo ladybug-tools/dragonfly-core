@@ -1522,7 +1522,7 @@ class Model(_BaseGeometry):
                         new_stories = []
                         for s_dict in b_dict['unique_stories']:
                             r_dicts = [r for r in s_dict['room_2ds']
-                                    if r['identifier'] in room_ids]
+                                       if r['identifier'] in room_ids]
                             if len(r_dicts) != 0:
                                 new_story = s_dict.copy()
                                 new_story['room_2ds'] = r_dicts
