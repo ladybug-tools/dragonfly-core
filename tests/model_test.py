@@ -4,7 +4,7 @@ import json
 import os
 
 from ladybug.location import Location
-from ladybug_geometry.geometry2d import Vector2D, Point2D, Polygon2D
+from ladybug_geometry.geometry2d import Vector2D, Point2D, Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Plane, Face3D
 from ladybug.futil import nukedir
 
@@ -400,6 +400,48 @@ def test_reset_room_2d_boundaries():
     assert len(new_story.room_2ds[0].skylight_parameters) == 2
     assert second_story.exterior_aperture_area == \
         pytest.approx(new_story.exterior_aperture_area, rel=1e-3)
+
+
+def test_room_2ds_pulling_methods():
+    """Test the Room2d.join_room_2ds method."""
+    model_file = './tests/json/model_for_pulling.dfjson'
+    original_model = Model.from_file(model_file)
+
+    model = original_model.duplicate()
+    all_rooms = model.room_2ds
+    all_rooms[1].pull_to_room_2d(all_rooms[0], 1.8)
+    all_rooms[1].remove_duplicate_vertices(model.tolerance)
+    all_rooms = Room2D.intersect_adjacency([all_rooms[0], all_rooms[1]], model.tolerance)
+    Room2D.solve_adjacency(all_rooms, model.tolerance)
+    assert all_rooms[0].interior_wall_area == pytest.approx(474.199, rel=1e-3)
+    assert all_rooms[1].interior_wall_area == pytest.approx(474.199, rel=1e-3)
+
+    model = original_model.duplicate()
+    all_rooms = list(model.room_2ds)
+    p_line_dict = {
+        "vertices": [
+            [41.948730157743668, -158.55282855259856], 
+            [40.342412085619216, -155.436554667964], 
+            [38.964213381250516, -152.21289386009886], 
+            [37.266824978903102, -146.93482869788193], 
+            [36.179711222359543, -141.49816768901238], 
+            [35.716933133643359, -135.97323007075525], 
+            [35.884476409153223, -130.43147687380934], 
+            [36.545268095082271, -125.63224336825779], 
+            [38.495343179376093, -118.87011597488173], 
+            [42.69922884129204, -107.96430429448071]
+        ], 
+        "type": "Polyline2D"
+    }
+    p_line = Polyline2D.from_dict(p_line_dict)
+    for i, room in enumerate(all_rooms):
+        room.pull_to_polyline(p_line, 1.8)
+        all_rooms[i] = room.remove_colinear_vertices(model.tolerance)
+    all_rooms = Room2D.intersect_adjacency(all_rooms, model.tolerance)
+    Room2D.solve_adjacency(all_rooms, model.tolerance)
+    assert all_rooms[0].interior_wall_area == pytest.approx(659.7238, rel=1e-3)
+    assert all_rooms[1].interior_wall_area == pytest.approx(1088.794, rel=1e-3)
+    assert all_rooms[2].interior_wall_area == pytest.approx(801.180, rel=1e-3)
 
 
 def test_join_room_2ds():

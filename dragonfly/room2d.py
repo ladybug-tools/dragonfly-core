@@ -674,6 +674,16 @@ class Room2D(_BaseGeometry):
         return sum(wall_areas)
 
     @property
+    def interior_wall_area(self):
+        """Get a the total wall area of the Room without an Outdoors or Ground BC.
+        """
+        wall_areas = []
+        for seg, bc in zip(self.floor_segments, self._boundary_conditions):
+            if not isinstance(bc, (Outdoors, Ground)):
+                wall_areas.append(seg.length * self.floor_to_ceiling_height)
+        return sum(wall_areas)
+
+    @property
     def exterior_aperture_area(self):
         """Get a the total aperture area of the Room with an Outdoors boundary condition.
         """
@@ -1093,6 +1103,185 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
+    def pull_to_polyline(self, polyline, distance, snap_vertices=True):
+        """Pull this Room2D's vertices to a Polyline2D.
+
+        This includes both an alignment to the polyline's segments as well as an
+        optional snapping to the polyline's vertices.
+
+        All properties assigned to this Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            polyline: A ladybug_geometry Polyline2D to which this Room2D's vertices
+                will be pulled.
+            distance: The maximum distance between a Room2D vertex and the polyline where
+                the vertex will be moved to lie on the polyline. Vertices beyond
+                this distance will be left as they are.
+            snap_vertices: A boolean to note whether Room2D vertices that are
+                close to the polyline vertices within the distance should be snapped
+                to the polyline vertex instead of simply being aligned to the nearest
+                polyline segment. (Default: True).
+        """
+        # create LineSegment3Ds from the polyline
+        line_segs = []
+        for seg in polyline.segments:
+            pt_3d = Point3D(seg.p.x, seg.p.y, self.floor_height)
+            line_ray_3d = LineSegment3D(pt_3d, Vector3D(seg.v.x, seg.v.y, 0))
+            line_segs.append(line_ray_3d)
+
+        # pull this Room2D to the segments
+        self._pull_to_segments(line_segs, distance, snap_vertices)
+
+    def pull_to_polygon(self, polygon, distance, snap_vertices=True):
+        """Pull this Room2D's vertices to a Polygon2D.
+
+        This includes both an alignment to the polygon's segments as well as an
+        optional snapping to the polygon's vertices.
+
+        All properties assigned to this Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            polygon: A ladybug_geometry Polygon2D to which this Room2D's vertices
+                will be pulled.
+            distance: The maximum distance between a Room2D vertex and the polygon where
+                the vertex will be moved to lie on the polygon. Vertices beyond
+                this distance will be left as they are.
+            snap_vertices: A boolean to note whether Room2D vertices that are
+                close to the polygon vertices within the distance should be snapped
+                to the polygon vertex instead of simply being aligned to the nearest
+                polygon segment. (Default: True).
+        """
+        # create LineSegment3Ds from the polygon
+        line_segs = []
+        for seg in polygon.segments:
+            pt_3d = Point3D(seg.p.x, seg.p.y, self.floor_height)
+            line_ray_3d = LineSegment3D(pt_3d, Vector3D(seg.v.x, seg.v.y, 0))
+            line_segs.append(line_ray_3d)
+
+        # pull this Room2D to the segments
+        self._pull_to_segments(line_segs, distance, snap_vertices)
+
+    def pull_to_room_2d(self, room_2d, distance, snap_vertices=True):
+        """Pull this Room2D's vertices to another Room2D.
+
+        This includes both an alignment to the other Room2D's segments as well
+        as an optional snapping to the Room2D's vertices.
+
+        All properties assigned to this Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            room_2d: A Room2D to which the Room2D vertices
+                will be pulled.
+            distance: The maximum distance between a Room2D vertex and the other
+                Room2D where the vertex will be moved to lie on the other Room2D.
+                Vertices beyond this distance will be left as they are.
+            snap_vertices: A boolean to note whether Room2D vertices that are
+                close to the other Room2D vertices within the distance should be snapped
+                to the Room2D vertex instead of simply being aligned to the nearest
+                Room2D segment. (Default: True).
+        """
+        # convert the other Room2D to a list of polygons
+        f_geo = room_2d.floor_geometry
+        other_room_polys = [Polygon2D([Point2D(pt.x, pt.y) for pt in f_geo.boundary])]
+        if f_geo.has_holes:
+            for hole in f_geo.holes:
+                h_poly = Polygon2D([Point2D(pt.x, pt.y) for pt in hole])
+                other_room_polys.append(h_poly)
+        # pull this Room2D to each of the polygons
+        for o_poly in other_room_polys:
+            self.pull_to_polygon(o_poly, distance, snap_vertices)
+
+    def _pull_to_segments(self, line_segments, distance, snap_vertices=True):
+        """Pull this Room2D's vertices to LineSegment3D that are at this Room2D's height.
+
+        Args:
+            line_segments: A list of ladybug_geometry LineSegment3D with Z-values at
+                this Room2D's floor_height to which this Room2D's vertices
+                will be pulled.
+            distance: The maximum distance between a Room2D vertex and the room_2d
+                where the vertex will be moved to lie on the segments. Vertices beyond
+                this distance will be left as they are.
+            snap_vertices: A boolean to note whether Room2D vertices that are
+                close to the segment end points within the distance should be snapped
+                to the end point instead of simply being aligned to the nearest
+                segment. (Default: True).
+        """
+        # get lists of vertices for the Room2D.floor_geometry to be edited
+        edit_boundary = self._floor_geometry.boundary
+        edit_holes = self._floor_geometry.holes \
+            if self._floor_geometry.has_holes else None
+
+        # loop through the Room2D vertices and align them to the segments
+        new_boundary = []
+        for pt in edit_boundary:
+            dists, c_pts = [], []
+            for line_ray_3d in line_segments:
+                close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
+                c_pts.append(close_pt)
+                dists.append(pt.distance_to_point(close_pt))
+            sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+            if sort_pt[0][0] <= distance:
+                new_boundary.append(sort_pt[0][1])
+            else:
+                new_boundary.append(pt)
+        edit_boundary = new_boundary
+        if edit_holes is not None:
+            new_holes = []
+            for hole in edit_holes:
+                new_hole = []
+                for pt in hole:
+                    dists, c_pts = [], []
+                    for line_ray_3d in line_segments:
+                        close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
+                        c_pts.append(close_pt)
+                        dists.append(pt.distance_to_point(close_pt))
+                    sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+                    if sort_pt[0][0] <= distance:
+                        new_hole.append(sort_pt[0][1])
+                    else:
+                        new_hole.append(pt)
+                new_holes.append(new_hole)
+            edit_holes = new_holes
+
+        # if snap_vertices was requested, perform an additional operation to snap them
+        if snap_vertices:
+            vertices = [line.p for line in line_segments]
+            new_boundary = []
+            for pt in edit_boundary:
+                dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+                sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                if sort_pt[0][0] <= distance:
+                    new_boundary.append(sort_pt[0][1])
+                else:
+                    new_boundary.append(pt)
+            edit_boundary = new_boundary
+            if edit_holes is not None:
+                new_holes = []
+                for hole in edit_holes:
+                    new_hole = []
+                    for pt in hole:
+                        dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+                        sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                        if sort_pt[0][0] <= distance:
+                            new_hole.append(sort_pt[0][1])
+                        else:
+                            new_hole.append(pt)
+                    new_holes.append(new_hole)
+                edit_holes = new_holes
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            edit_boundary, self._floor_geometry.plane, edit_holes)
+
     def snap_to_grid(self, grid_increment):
         """Snap this Room2D's vertices to the nearest grid node defined by an increment.
 
@@ -1187,6 +1376,158 @@ class Room2D(_BaseGeometry):
         self._shading_parameters = new_shd
         self._air_boundaries = new_abs
         return removed_indices
+
+    def remove_degenerate_holes(self, tolerance=0.01):
+        """Remove any holes in this Room2D with an area that evaluates to zero.
+
+        All properties assigned to the Room2D will be preserved.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. Default: 0.01,
+                suitable for objects in meters.
+        """
+        if self.floor_geometry.has_holes:
+            # first identify any zero-area holes
+            holes_to_remove = []
+            for i, hole in enumerate(self.floor_geometry.holes):
+                tf = Face3D(hole, self.floor_geometry.plane)
+                max_dim = max((tf.max.x - tf.min.x, tf.max.y - tf.min.y))
+                if tf.area < max_dim * tolerance:
+                    holes_to_remove.append(i)
+            # if zero-area holes were found, rebuild the Room2D
+            if len(holes_to_remove) > 0:
+                # first collect the properties of the boundary
+                exist_abs = self.air_boundaries
+                new_bcs, new_win, new_shd, new_abs = [], [], [], []
+                seg_count = len(self.floor_geometry.boundary)
+                for i in range(seg_count):
+                    new_bcs.append(self._boundary_conditions[i])
+                    new_win.append(self._window_parameters[i])
+                    new_shd.append(self._shading_parameters[i])
+                    new_abs.append(exist_abs[i])
+                # collect the properties of the new holes
+                new_holes = []
+                for hi, hole in enumerate(self.floor_geometry.holes):
+                    if hi not in holes_to_remove:
+                        for i, vert in enumerate(hole):
+                            new_bcs.append(self._boundary_conditions[seg_count + i])
+                            new_win.append(self._window_parameters[seg_count + i])
+                            new_shd.append(self._shading_parameters[seg_count + i])
+                            new_abs.append(exist_abs[i])
+                        new_holes.append(hole)
+                    seg_count += len(hole)
+                # reset the properties of the Room2D
+                self._floor_geometry = Face3D(
+                    self.floor_geometry.boundary, self.floor_geometry.plane, new_holes)
+                self._segment_count = len(new_bcs)
+                self._boundary_conditions = new_bcs
+                self._window_parameters = new_win
+                self._shading_parameters = new_shd
+                self._air_boundaries = new_abs
+
+    def update_floor_geometry(self, new_floor_geometry, edit_code, tolerance=0.01):
+        """Change the floor_geometry of the Room2D with segment-altering specifications.
+
+        This method is intended to be used when the floor geometry has been edited
+        by some external means and this Room2D should be updated for coordination.
+
+        The method tries to infer whether an removed floor segment means that an
+        original segment has been merged into another or removed completely using
+        the colinearity of the original segments. A removed segment that is colinear
+        with its neighbor will be merged into it while a removed segment that was
+        not colinear will simply be deleted. Similarly, the method will infer if
+        an added segment indicates a split in an original segment using colinearity.
+        When the result in the new_floor_geometry is two colinear segments,
+        properties of the original segment will be split across the new segments.
+        Otherwise the new segment will receive default properties.
+
+        Args:
+            new_floor_geometry: A Face3D for the new floor_geometry of this Room2D.
+                Note that this method expects the plane of this Face3D to match
+                the original floor_geometry Face3D and for the counter-clockwise
+                vertex ordering of the segments to be the same as the original
+                floor geometry (though segments can obviously be added or removed).
+            edit_code: A text string that indicates the operations that were
+                performed on the original floor_geometry segments to yield the
+                new_floor_geometry. The following letters are used in this code
+                to indicate the following:
+
+                * K = a segment that has been kept (possibly moved but not removed)
+                * X = a segment that has been removed
+                * A = a segment that has been added
+
+                For example, KXKAKKA means that the first segment was kept, the
+                next removed, the next kept, the next added, followed by two kept
+                segments and ending in an added segment.
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located, used to determine
+                colinearity. Default: 0.01, suitable for objects in meters.
+        """
+        # get the original and the new floor segments
+        orig_segs = self.floor_segments
+        new_segs = new_floor_geometry.boundary_segments if new_floor_geometry.holes is \
+            None else new_floor_geometry.boundary_segments + \
+            tuple(seg for hole in new_floor_geometry.hole_segments for seg in hole)
+
+        # figure out the new properties based on the edit code
+        new_bcs, new_win, new_shd = [], [], []
+        last_o_seg = orig_segs[-1]
+        orig_i, new_i = 0, 0
+        for edit_val in edit_code:
+            if edit_val == 'K':
+                new_bcs.append(self._boundary_conditions[orig_i])
+                new_win.append(self._window_parameters[orig_i])
+                new_shd.append(self._shading_parameters[orig_i])
+                last_o_seg = orig_segs[orig_i]
+                orig_i += 1
+                new_i += 1
+            elif edit_val == 'X':
+                # determine if the removed segment is colinear
+                del_seg = orig_segs[orig_i]
+                full_line = LineSegment3D.from_end_points(last_o_seg.p1, del_seg.p2)
+                if full_line.distance_to_point(del_seg.p1) <= tolerance:  # colinear!
+                    if len(new_bcs) != 0:
+                        # TODO: figure out a strategy to merge first to end of the list
+                        new_bcs[-1] = bcs.outdoors
+                        new_win[-1] = DetailedWindows.merge(
+                            (new_win[-1], self._window_parameters[orig_i]),
+                            (last_o_seg, del_seg), self.floor_to_ceiling_height)
+                    last_o_seg = full_line
+                orig_i += 1
+            elif edit_val == 'A':
+                # determine if the added segment is colinear and within the original
+                add_seg = new_segs[new_i]
+                if last_o_seg.distance_to_point(add_seg.p1) <= tolerance and \
+                        last_o_seg.distance_to_point(add_seg.p2) <= tolerance:
+                    # colinear!
+                    new_bcs.append(self._boundary_conditions[orig_i])
+                    if len(new_win) != 0 and new_win[-1] is not None:
+                        # TODO: figure out a strategy to split the end of the list
+                        p_lin = LineSegment3D.from_end_points(last_o_seg.p1, add_seg.p1)
+                        a_lin = LineSegment3D.from_end_points(add_seg.p1, last_o_seg.p2)
+                        w_to_spl = new_win.pop(-1)
+                        new_win.extend(w_to_spl.split((p_lin, a_lin), tolerance))
+                        last_o_seg = a_lin
+                    else:
+                        new_win.append(None)
+                    new_shd.append(self._shading_parameters[orig_i])
+                else:  # not colinear; use default properties
+                    new_bcs.append(bcs.outdoors)
+                    new_win.append(None)
+                    new_shd.append(None)
+                new_i += 1
+
+        # assign the updated properties to this Room2D
+        self._floor_geometry = new_floor_geometry
+        self._segment_count = len(new_segs)
+        assert self._segment_count == len(new_bcs), 'The operations in the edit_code ' \
+            'denote a geometry with {} segments but the new_floor_geometry has {} ' \
+            'segments.'.format(len(new_bcs), self._segment_count)
+        self._boundary_conditions = new_bcs
+        self._window_parameters = new_win
+        self._shading_parameters = new_shd
+        self._air_boundaries = None  # reset to avoid any conflicts
 
     def remove_colinear_vertices(self, tolerance=0.01, preserve_wall_props=True):
         """Get a version of this Room2D without colinear or duplicate vertices.
@@ -1389,158 +1730,6 @@ class Room2D(_BaseGeometry):
         rebuilt_room._abridged_properties = self._abridged_properties
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
-
-    def remove_degenerate_holes(self, tolerance=0.01):
-        """Remove any holes in this Room2D with an area that evaluates to zero.
-
-        All properties assigned to the Room2D will be preserved.
-
-        Args:
-            tolerance: The minimum difference between the coordinate values at
-                which they are considered co-located. Default: 0.01,
-                suitable for objects in meters.
-        """
-        if self.floor_geometry.has_holes:
-            # first identify any zero-area holes
-            holes_to_remove = []
-            for i, hole in enumerate(self.floor_geometry.holes):
-                tf = Face3D(hole, self.floor_geometry.plane)
-                max_dim = max((tf.max.x - tf.min.x, tf.max.y - tf.min.y))
-                if tf.area < max_dim * tolerance:
-                    holes_to_remove.append(i)
-            # if zero-area holes were found, rebuild the Room2D
-            if len(holes_to_remove) > 0:
-                # first collect the properties of the boundary
-                exist_abs = self.air_boundaries
-                new_bcs, new_win, new_shd, new_abs = [], [], [], []
-                seg_count = len(self.floor_geometry.boundary)
-                for i in range(seg_count):
-                    new_bcs.append(self._boundary_conditions[i])
-                    new_win.append(self._window_parameters[i])
-                    new_shd.append(self._shading_parameters[i])
-                    new_abs.append(exist_abs[i])
-                # collect the properties of the new holes
-                new_holes = []
-                for hi, hole in enumerate(self.floor_geometry.holes):
-                    if hi not in holes_to_remove:
-                        for i, vert in enumerate(hole):
-                            new_bcs.append(self._boundary_conditions[seg_count + i])
-                            new_win.append(self._window_parameters[seg_count + i])
-                            new_shd.append(self._shading_parameters[seg_count + i])
-                            new_abs.append(exist_abs[i])
-                        new_holes.append(hole)
-                    seg_count += len(hole)
-                # reset the properties of the Room2D
-                self._floor_geometry = Face3D(
-                    self.floor_geometry.boundary, self.floor_geometry.plane, new_holes)
-                self._segment_count = len(new_bcs)
-                self._boundary_conditions = new_bcs
-                self._window_parameters = new_win
-                self._shading_parameters = new_shd
-                self._air_boundaries = new_abs
-
-    def update_floor_geometry(self, new_floor_geometry, edit_code, tolerance=0.01):
-        """Change the floor_geometry of the Room2D with segment-altering specifications.
-
-        This method is intended to be used when the floor geometry has been edited
-        by some external means and this Room2D should be updated for coordination.
-
-        The method tries to infer whether an removed floor segment means that an
-        original segment has been merged into another or removed completely using
-        the colinearity of the original segments. A removed segment that is colinear
-        with its neighbor will be merged into it while a removed segment that was
-        not colinear will simply be deleted. Similarly, the method will infer if
-        an added segment indicates a split in an original segment using colinearity.
-        When the result in the new_floor_geometry is two colinear segments,
-        properties of the original segment will be split across the new segments.
-        Otherwise the new segment will receive default properties.
-
-        Args:
-            new_floor_geometry: A Face3D for the new floor_geometry of this Room2D.
-                Note that this method expects the plane of this Face3D to match
-                the original floor_geometry Face3D and for the counter-clockwise
-                vertex ordering of the segments to be the same as the original
-                floor geometry (though segments can obviously be added or removed).
-            edit_code: A text string that indicates the operations that were
-                performed on the original floor_geometry segments to yield the
-                new_floor_geometry. The following letters are used in this code
-                to indicate the following:
-
-                * K = a segment that has been kept (possibly moved but not removed)
-                * X = a segment that has been removed
-                * A = a segment that has been added
-
-                For example, KXKAKKA means that the first segment was kept, the
-                next removed, the next kept, the next added, followed by two kept
-                segments and ending in an added segment.
-            tolerance: The minimum difference between the coordinate values at
-                which they are considered co-located, used to determine
-                colinearity. Default: 0.01, suitable for objects in meters.
-        """
-        # get the original and the new floor segments
-        orig_segs = self.floor_segments
-        new_segs = new_floor_geometry.boundary_segments if new_floor_geometry.holes is \
-            None else new_floor_geometry.boundary_segments + \
-            tuple(seg for hole in new_floor_geometry.hole_segments for seg in hole)
-
-        # figure out the new properties based on the edit code
-        new_bcs, new_win, new_shd = [], [], []
-        last_o_seg = orig_segs[-1]
-        orig_i, new_i = 0, 0
-        for edit_val in edit_code:
-            if edit_val == 'K':
-                new_bcs.append(self._boundary_conditions[orig_i])
-                new_win.append(self._window_parameters[orig_i])
-                new_shd.append(self._shading_parameters[orig_i])
-                last_o_seg = orig_segs[orig_i]
-                orig_i += 1
-                new_i += 1
-            elif edit_val == 'X':
-                # determine if the removed segment is colinear
-                del_seg = orig_segs[orig_i]
-                full_line = LineSegment3D.from_end_points(last_o_seg.p1, del_seg.p2)
-                if full_line.distance_to_point(del_seg.p1) <= tolerance:  # colinear!
-                    if len(new_bcs) != 0:
-                        # TODO: figure out a strategy to merge first to end of the list
-                        new_bcs[-1] = bcs.outdoors
-                        new_win[-1] = DetailedWindows.merge(
-                            (new_win[-1], self._window_parameters[orig_i]),
-                            (last_o_seg, del_seg), self.floor_to_ceiling_height)
-                    last_o_seg = full_line
-                orig_i += 1
-            elif edit_val == 'A':
-                # determine if the added segment is colinear and within the original
-                add_seg = new_segs[new_i]
-                if last_o_seg.distance_to_point(add_seg.p1) <= tolerance and \
-                        last_o_seg.distance_to_point(add_seg.p2) <= tolerance:
-                    # colinear!
-                    new_bcs.append(self._boundary_conditions[orig_i])
-                    if len(new_win) != 0 and new_win[-1] is not None:
-                        # TODO: figure out a strategy to split the end of the list
-                        p_lin = LineSegment3D.from_end_points(last_o_seg.p1, add_seg.p1)
-                        a_lin = LineSegment3D.from_end_points(add_seg.p1, last_o_seg.p2)
-                        w_to_spl = new_win.pop(-1)
-                        new_win.extend(w_to_spl.split((p_lin, a_lin), tolerance))
-                        last_o_seg = a_lin
-                    else:
-                        new_win.append(None)
-                    new_shd.append(self._shading_parameters[orig_i])
-                else:  # not colinear; use default properties
-                    new_bcs.append(bcs.outdoors)
-                    new_win.append(None)
-                    new_shd.append(None)
-                new_i += 1
-
-        # assign the updated properties to this Room2D
-        self._floor_geometry = new_floor_geometry
-        self._segment_count = len(new_segs)
-        assert self._segment_count == len(new_bcs), 'The operations in the edit_code ' \
-            'denote a geometry with {} segments but the new_floor_geometry has {} ' \
-            'segments.'.format(len(new_bcs), self._segment_count)
-        self._boundary_conditions = new_bcs
-        self._window_parameters = new_win
-        self._shading_parameters = new_shd
-        self._air_boundaries = None  # reset to avoid any conflicts
 
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horizontal within a tolerance.
