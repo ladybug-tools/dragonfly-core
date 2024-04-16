@@ -5,7 +5,7 @@ from __future__ import division
 import math
 
 from ladybug_geometry.geometry2d import Point2D, Vector2D, Ray2D, LineSegment2D, \
-    Polygon2D
+    Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D, \
     Plane, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_between_line2d
@@ -1042,6 +1042,40 @@ class Room2D(_BaseGeometry):
 
         self.properties.scale(factor, origin)
 
+    def snap_to_grid(self, grid_increment):
+        """Snap this Room2D's vertices to the nearest grid node defined by an increment.
+
+        All properties assigned to the Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            grid_increment: A positive number for dimension of each grid cell. This
+                typically should be equal to the tolerance or larger but should
+                not be larger than the smallest detail of the Room2D that you
+                wish to resolve.
+        """
+        # loop through the vertices and snap them
+        new_boundary, new_holes = [], None
+        for pt in self._floor_geometry.boundary:
+            new_x = grid_increment * round(pt.x / grid_increment)
+            new_y = grid_increment * round(pt.y / grid_increment)
+            new_boundary.append(Point3D(new_x, new_y, pt.z))
+        if self._floor_geometry.holes is not None:
+            new_holes = []
+            for hole in self._floor_geometry.holes:
+                new_hole = []
+                for pt in hole:
+                    new_x = grid_increment * round(pt.x / grid_increment)
+                    new_y = grid_increment * round(pt.y / grid_increment)
+                    new_hole.append(Point3D(new_x, new_y, pt.z))
+                new_holes.append(new_hole)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            new_boundary, self._floor_geometry.plane, new_holes)
+
     def align(self, line_ray, distance):
         """Move any Room2D vertices within a given distance of a line to be on that line.
 
@@ -1236,8 +1270,7 @@ class Room2D(_BaseGeometry):
         method after running this one.
 
         Args:
-            room_2d: A Room2D to which the Room2D vertices
-                will be pulled.
+            room_2d: A Room2D to which this Room2D's vertices will be pulled.
             distance: The maximum distance between a Room2D vertex and the other
                 Room2D where the vertex will be moved to lie on the other Room2D.
                 Vertices beyond this distance will be left as they are.
@@ -1339,39 +1372,73 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             edit_boundary, self._floor_geometry.plane, edit_holes)
 
-    def snap_to_grid(self, grid_increment):
-        """Snap this Room2D's vertices to the nearest grid node defined by an increment.
+    def coordinate_room_2d_vertices(self, room_2d, distance, tolerance=0.01):
+        """Insert vertices to this Room2D to coordinate this Room2D with another Room2D.
 
-        All properties assigned to the Room2D will be preserved and the number of
-        vertices will remain constant. This means that this method can often create
-        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
-        method after running this one.
+        This is sometimes a useful operation to run after using the pull_to_room_2d
+        method in order to address the case that the Room2D to which this one was
+        pulled has more vertices along the adjacency boundary than this Room2D.
+        In this case, the adjacency between the two Room2Ds will not be clean and
+        extra vertices must be inserted into this Room2D so that geometry matches
+        along the room adjacency.
+
+        Any vertices of the neighboring input room_2d that are within the specified
+        distance but cannot be matched to a vertex on this Room2D within the tolerance
+        will be inserted into this Room2D, splitting the wall segment in the process.
 
         Args:
-            grid_increment: A positive number for dimension of each grid cell. This
-                typically should be equal to the tolerance or larger but should
-                not be larger than the smallest detail of the Room2D that you
-                wish to resolve.
+            room_2d: A Room2D with which the vertices of this Room2D will be coordinated.
+            distance: The maximum distance between a Room2D vertex and the other
+                Room2D where the vertex will be moved to lie on the other Room2D.
+                Vertices beyond this distance will be left as they are.
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
         """
-        # loop through the vertices and snap them
-        new_boundary, new_holes = [], None
-        for pt in self._floor_geometry.boundary:
-            new_x = grid_increment * round(pt.x / grid_increment)
-            new_y = grid_increment * round(pt.y / grid_increment)
-            new_boundary.append(Point3D(new_x, new_y, pt.z))
-        if self._floor_geometry.holes is not None:
-            new_holes = []
-            for hole in self._floor_geometry.holes:
-                new_hole = []
-                for pt in hole:
-                    new_x = grid_increment * round(pt.x / grid_increment)
-                    new_y = grid_increment * round(pt.y / grid_increment)
-                    new_hole.append(Point3D(new_x, new_y, pt.z))
-                new_holes.append(new_hole)
+        # determine all of the vertices of the other Room2D that should be inserted
+        self_segs = list(self.floor_segments_2d)
+        self_pts_2d = [seg.p for seg in self_segs]
+        other_pts_2d = [seg.p for seg in room_2d.floor_segments_2d]
+        insert_pts = []
+        for o_pt in other_pts_2d:
+            possible_insert = False
+            for i, seg in enumerate(self_segs):
+                if seg.distance_to_point(o_pt) < distance:
+                    possible_insert = True
+                    break
+            if possible_insert:
+                for s_pt in self_pts_2d:
+                    if s_pt.distance_to_point(o_pt) <= tolerance:
+                        break
+                else:
+                    insert_pts.append((i, o_pt))
 
-        # rebuild the new floor geometry and assign it to the Room2D
-        self._floor_geometry = Face3D(
-            new_boundary, self._floor_geometry.plane, new_holes)
+        # loop through the segments and split them if insertion points were found
+        if len(insert_pts) == 0:
+            return
+        sort_int_pts = sorted(insert_pts, key=lambda x: x[0], reverse=True)
+        edit_code = ['K'] * len(self_segs)
+        for ins_ind, pt in sort_int_pts:
+            split_seg = self_segs[ins_ind]
+            new_seg1 = LineSegment2D.from_end_points(split_seg.p1, pt)
+            new_seg2 = LineSegment2D.from_end_points(pt, split_seg.p2)
+            self_segs[ins_ind] = new_seg2
+            self_segs.insert(ins_ind, new_seg1)
+            edit_code.insert(ins_ind, 'A')
+
+        # create a new floor_geometry Face3D and update the geometry with the edit code
+        z_val = self.floor_geometry.boundary[0].z
+        if not self.floor_geometry.has_holes:
+            pts = [Point3D(seg.p.x, seg.p.y, z_val) for seg in self_segs]
+            new_geo = Face3D(pts, self.floor_geometry.plane)
+        else:
+            joined_segs = Polyline2D.join_segments(self_segs, tolerance)
+            new_loops = []
+            for p_line in joined_segs:
+                pts = [Point3D(pt.x, pt.y, z_val) for pt in p_line.vertices[:-1]]
+                new_loops.append(pts)
+            new_geo = Face3D(new_loops[0], self.floor_geometry.plane, new_loops[1:])
+        self.update_floor_geometry(new_geo, edit_code, tolerance)
 
     def remove_duplicate_vertices(self, tolerance=0.01):
         """Remove duplicate vertices from this Room2D.
@@ -1441,8 +1508,8 @@ class Room2D(_BaseGeometry):
 
         Args:
             tolerance: The minimum difference between the coordinate values at
-                which they are considered co-located. Default: 0.01,
-                suitable for objects in meters.
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
         """
         if self.floor_geometry.has_holes:
             # first identify any zero-area holes

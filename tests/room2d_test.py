@@ -695,6 +695,33 @@ def test_room2d_align():
     os.remove(new_model_file)
 
 
+def test_coordinate_room_2d_vertices():
+    """Test the coordinate_room_2d_vertices method"""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10.5, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3),
+             Point3D(10.5, 10, 3), Point3D(10, 5, 3))
+    room1 = Room2D('SquareShoebox1', Face3D(list(reversed(pts_1))), 3)
+    room2 = Room2D('SquareShoebox2', Face3D(list(reversed(pts_2))), 3)
+
+    distance = 0.6
+    new_room = room1.duplicate()
+    new_room.pull_to_room_2d(room2, distance, True)
+    new_room.coordinate_room_2d_vertices(room2, distance, 0.01)
+    assert len(new_room.floor_geometry.vertices) == 5
+    assert room1.floor_area == pytest.approx(100, abs=1e-3)
+    assert new_room.floor_area == pytest.approx(102.5, abs=1e-3)
+
+    pts_3 = (Point3D(10.5, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3),
+             Point3D(10.5, 10, 3), Point3D(10, 5, 3), Point3D(10, 2, 3))
+    room1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
+    room3 = Room2D('SquareShoebox3', Face3D(pts_3), 3)
+    new_room = room1.duplicate()
+    new_room.pull_to_room_2d(room3, distance, True)
+    new_room.coordinate_room_2d_vertices(room3, distance, 0.01)
+    assert len(new_room.floor_geometry.vertices) == 6
+    assert new_room.floor_area == pytest.approx(101.75, abs=1e-3)
+
+
 def test_room2d_solve_adjacency():
     """Test the Room2D solve_adjacency method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
