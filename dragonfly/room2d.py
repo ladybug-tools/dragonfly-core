@@ -2617,7 +2617,7 @@ class Room2D(_BaseGeometry):
             if h_bnd.has_holes:
                 h_p = []
                 for hole in h_bnd.holes:
-                    h_p.append(Polygon2D([Point2D(pt.x, pt.y) for pt in h_bnd.boundary]))
+                    h_p.append(Polygon2D([Point2D(pt.x, pt.y) for pt in hole]))
             new_room = Room2D.join_by_boundary(
                 room_2ds, bnd_p_gon, h_p, tolerance=tolerance)
             joined_rooms.append(new_room)
