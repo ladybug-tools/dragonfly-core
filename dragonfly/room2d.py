@@ -1511,8 +1511,7 @@ class Room2D(_BaseGeometry):
                 which they are considered co-located. (Default: 0.01,
                 suitable for objects in meters).
         """
-        if self.floor_geometry.has_holes:
-            # first identify any zero-area holes
+        if self.floor_geometry.has_holes:  # first identify any zero-area holes
             holes_to_remove = []
             for i, hole in enumerate(self.floor_geometry.holes):
                 tf = Face3D(hole, self.floor_geometry.plane)
@@ -1521,34 +1520,60 @@ class Room2D(_BaseGeometry):
                     holes_to_remove.append(i)
             # if zero-area holes were found, rebuild the Room2D
             if len(holes_to_remove) > 0:
-                # first collect the properties of the boundary
-                exist_abs = self.air_boundaries
-                new_bcs, new_win, new_shd, new_abs = [], [], [], []
-                seg_count = len(self.floor_geometry.boundary)
-                for i in range(seg_count):
-                    new_bcs.append(self._boundary_conditions[i])
-                    new_win.append(self._window_parameters[i])
-                    new_shd.append(self._shading_parameters[i])
+                self._remove_holes(holes_to_remove)
+
+    def remove_small_holes(self, area_threshold):
+        """Remove any holes in this Room2D that are below a certain area threshold.
+
+        All properties assigned to the Room2D will be preserved.
+
+        Args:
+            area_threshold: A number for the area below which holes will be removed.
+        """
+        if self.floor_geometry.has_holes:  # first identify any holes to remove
+            holes_to_remove = []
+            for i, hole in enumerate(self.floor_geometry.holes):
+                tf = Face3D(hole, self.floor_geometry.plane)
+                if tf.area < area_threshold:
+                    holes_to_remove.append(i)
+            # if removable holes were found, rebuild the Room2D
+            if len(holes_to_remove) > 0:
+                self._remove_holes(holes_to_remove)
+
+    def _remove_holes(self, holes_to_remove):
+        """Remove holes in the Room2D given the indices of the holes.
+
+        Args:
+            holes_to_remove: A list of integers for the indices of holes to be removed.
+        """
+        # first collect the properties of the boundary
+        exist_abs = self.air_boundaries
+        new_bcs, new_win, new_shd, new_abs = [], [], [], []
+        seg_count = len(self.floor_geometry.boundary)
+        for i in range(seg_count):
+            new_bcs.append(self._boundary_conditions[i])
+            new_win.append(self._window_parameters[i])
+            new_shd.append(self._shading_parameters[i])
+            new_abs.append(exist_abs[i])
+        # collect the properties of the new holes
+        new_holes = []
+        for hi, hole in enumerate(self.floor_geometry.holes):
+            if hi not in holes_to_remove:
+                for i, vert in enumerate(hole):
+                    new_bcs.append(self._boundary_conditions[seg_count + i])
+                    new_win.append(self._window_parameters[seg_count + i])
+                    new_shd.append(self._shading_parameters[seg_count + i])
                     new_abs.append(exist_abs[i])
-                # collect the properties of the new holes
-                new_holes = []
-                for hi, hole in enumerate(self.floor_geometry.holes):
-                    if hi not in holes_to_remove:
-                        for i, vert in enumerate(hole):
-                            new_bcs.append(self._boundary_conditions[seg_count + i])
-                            new_win.append(self._window_parameters[seg_count + i])
-                            new_shd.append(self._shading_parameters[seg_count + i])
-                            new_abs.append(exist_abs[i])
-                        new_holes.append(hole)
-                    seg_count += len(hole)
-                # reset the properties of the Room2D
-                self._floor_geometry = Face3D(
-                    self.floor_geometry.boundary, self.floor_geometry.plane, new_holes)
-                self._segment_count = len(new_bcs)
-                self._boundary_conditions = new_bcs
-                self._window_parameters = new_win
-                self._shading_parameters = new_shd
-                self._air_boundaries = new_abs
+                new_holes.append(hole)
+            seg_count += len(hole)
+        # reset the properties of the Room2D
+        self._floor_geometry = Face3D(
+            self.floor_geometry.boundary, self.floor_geometry.plane, new_holes)
+        self._segment_count = len(new_bcs)
+        self._boundary_conditions = new_bcs
+        self._window_parameters = new_win
+        self._shading_parameters = new_shd
+        self._air_boundaries = new_abs
 
     def update_floor_geometry(self, new_floor_geometry, edit_code, tolerance=0.01):
         """Change the floor_geometry of the Room2D with segment-altering specifications.
