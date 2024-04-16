@@ -4,7 +4,8 @@ import json
 import os
 
 from ladybug.location import Location
-from ladybug_geometry.geometry2d import Vector2D, Point2D, Polyline2D, Polygon2D
+from ladybug_geometry.geometry2d import Vector2D, Point2D, LineSegment2D, \
+    Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Plane, Face3D
 from ladybug.futil import nukedir
 
@@ -442,6 +443,13 @@ def test_room_2ds_pulling_methods():
     assert all_rooms[0].interior_wall_area == pytest.approx(659.7238, rel=1e-3)
     assert all_rooms[1].interior_wall_area == pytest.approx(1088.794, rel=1e-3)
     assert all_rooms[2].interior_wall_area == pytest.approx(801.180, rel=1e-3)
+
+    model = original_model.duplicate()
+    all_rooms = list(model.room_2ds)
+    line_seg = LineSegment2D.from_end_points(p_line[0], p_line[1])
+    for i, room in enumerate(all_rooms):
+        room.snap_to_line_end_points(line_seg, 1.8)
+        all_rooms[i] = room.remove_colinear_vertices(model.tolerance)
 
 
 def test_join_room_2ds():

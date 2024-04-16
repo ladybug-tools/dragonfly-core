@@ -1103,6 +1103,62 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
+    def snap_to_line_end_points(self, line, distance):
+        """Snap this Room2D's vertices to the endpoints of a line segment.
+
+        All properties assigned to this Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            line: A ladybug_geometry LineSegment2D to which the Room2D
+                vertices will be snapped if they are near the end points.
+            distance: The maximum distance between a Room2D vertex and the polyline where
+                the vertex will be moved to lie on the polyline. Vertices beyond
+                this distance will be left as they are.
+        """
+        # create a 3D version of the line segment
+        if isinstance(line, LineSegment2D):
+            line_ray_3d = LineSegment3D(
+                Point3D(line.p.x, line.p.y, self.floor_height),
+                Vector3D(line.v.x, line.v.y, 0)
+            )
+        else:
+            return
+
+        # get lists of vertices for the Room2D.floor_geometry to be edited
+        edit_boundary = self._floor_geometry.boundary
+        edit_holes = self._floor_geometry.holes \
+            if self._floor_geometry.has_holes else None
+
+        # perform the snapping operation to snap them
+        vertices = line_ray_3d.endpoints
+        new_boundary, new_holes = [], None
+        for pt in edit_boundary:
+            dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+            sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+            if sort_pt[0][0] <= distance:
+                new_boundary.append(sort_pt[0][1])
+            else:
+                new_boundary.append(pt)
+        if edit_holes is not None:
+            new_holes = []
+            for hole in edit_holes:
+                new_hole = []
+                for pt in hole:
+                    dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+                    sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                    if sort_pt[0][0] <= distance:
+                        new_hole.append(sort_pt[0][1])
+                    else:
+                        new_hole.append(pt)
+                new_holes.append(new_hole)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            edit_boundary, self._floor_geometry.plane, edit_holes)
+
     def pull_to_polyline(self, polyline, distance, snap_vertices=True):
         """Pull this Room2D's vertices to a Polyline2D.
 
@@ -1131,6 +1187,7 @@ class Room2D(_BaseGeometry):
             pt_3d = Point3D(seg.p.x, seg.p.y, self.floor_height)
             line_ray_3d = LineSegment3D(pt_3d, Vector3D(seg.v.x, seg.v.y, 0))
             line_segs.append(line_ray_3d)
+        line_segs.append(line_segs[0].flip())  # ensure last vertex is counted
 
         # pull this Room2D to the segments
         self._pull_to_segments(line_segs, distance, snap_vertices)
