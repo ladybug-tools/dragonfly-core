@@ -2357,6 +2357,8 @@ class DetailedWindows(_AsymmetricBase):
                     return _WindowParameterBase.merge_to_rectangular(
                         window_parameters, segments, floor_to_ceiling_height)
             base_x += s.length
+        if len(polygons) == 0:  # all of the input window parameters were None
+            return None
         new_w_par = DetailedWindows(polygons, are_doors)
         new_w_par._merge_user_data(window_parameters)
         return new_w_par
