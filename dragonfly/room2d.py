@@ -1159,7 +1159,8 @@ class Room2D(_BaseGeometry):
                 Vector3D(line.v.x, line.v.y, 0)
             )
         else:
-            return
+            msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+            raise TypeError(msg)
 
         # get lists of vertices for the Room2D.floor_geometry to be edited
         edit_boundary = self._floor_geometry.boundary
@@ -1188,6 +1189,114 @@ class Room2D(_BaseGeometry):
                     else:
                         new_hole.append(pt)
                 new_holes.append(new_hole)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            new_boundary, self._floor_geometry.plane, new_holes)
+
+    def pull_to_segments(self, line_segments, distance, snap_vertices=True):
+        """Pull this Room2D's vertices to several LineSegment2D.
+
+        This includes both an alignment to the line segments as well as an optional
+        snapping to the line end points.
+
+        The benefit of calling this method as opposed to iterating over the
+        segments and calling align (and snap_to_line_end_points) is that this
+        method will only align (and snap) to the closest segment across all of
+        the input line_segments. This often helps avoid snapping to undesirable
+        line segments, particularly when there are two ore more segments that
+        are within the distance.
+
+        Args:
+            line_segments: A list of ladybug_geometry LineSegment2D to which this
+                Room2D's vertices will be pulled.
+            distance: The maximum distance between a Room2D vertex and the line_segments
+                where the vertex will be moved to lie on the segments. Vertices beyond
+                this distance will be left as they are.
+            snap_vertices: A boolean to note whether Room2D vertices that are
+                close to the segment end points within the distance should be snapped
+                to the end point instead of simply being aligned to the nearest
+                segment. (Default: True).
+        """
+        # create a 3D version of the relevant line segments
+        lines_3d = []
+        for line in line_segments:
+            if isinstance(line, LineSegment2D):
+                if line.length > distance:
+                    line_3d = LineSegment3D(
+                        Point3D(line.p.x, line.p.y, self.floor_height),
+                        Vector3D(line.v.x, line.v.y, 0)
+                    )
+                    lines_3d.append(line_3d)
+            else:
+                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+                raise TypeError(msg)
+        
+        # get lists of vertices for the Room2D.floor_geometry to be edited
+        edit_boundary = self._floor_geometry.boundary
+        edit_holes = self._floor_geometry.holes \
+            if self._floor_geometry.has_holes else None
+
+        # loop through the Room2D vertices and align them to the segments
+        new_boundary = []
+        for pt in edit_boundary:
+            dists, c_pts = [], []
+            for line_ray_3d in lines_3d:
+                close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
+                c_pts.append(close_pt)
+                dists.append(pt.distance_to_point(close_pt))
+            sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+            if sort_pt[0][0] <= distance:
+                new_boundary.append(sort_pt[0][1])
+            else:
+                new_boundary.append(pt)
+        edit_boundary = new_boundary
+        if edit_holes is not None:
+            new_holes = []
+            for hole in edit_holes:
+                new_hole = []
+                for pt in hole:
+                    dists, c_pts = [], []
+                    for line_ray_3d in lines_3d:
+                        close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
+                        c_pts.append(close_pt)
+                        dists.append(pt.distance_to_point(close_pt))
+                    sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+                    if sort_pt[0][0] <= distance:
+                        new_hole.append(sort_pt[0][1])
+                    else:
+                        new_hole.append(pt)
+                new_holes.append(new_hole)
+            edit_holes = new_holes
+
+        # if snap_vertices was requested, perform an additional operation to snap them
+        if snap_vertices:
+            vertices = []
+            for line in lines_3d:
+                vertices.append(line.p1)
+                vertices.append(line.p2)
+            new_boundary = []
+            for pt in edit_boundary:
+                dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+                sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                if sort_pt[0][0] <= distance:
+                    new_boundary.append(sort_pt[0][1])
+                else:
+                    new_boundary.append(pt)
+            edit_boundary = new_boundary
+            if edit_holes is not None:
+                new_holes = []
+                for hole in edit_holes:
+                    new_hole = []
+                    for pt in hole:
+                        dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+                        sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                        if sort_pt[0][0] <= distance:
+                            new_hole.append(sort_pt[0][1])
+                        else:
+                            new_hole.append(pt)
+                    new_holes.append(new_hole)
+                edit_holes = new_holes
 
         # rebuild the new floor geometry and assign it to the Room2D
         self._floor_geometry = Face3D(
@@ -1224,7 +1333,7 @@ class Room2D(_BaseGeometry):
         line_segs.append(line_segs[0].flip())  # ensure last vertex is counted
 
         # pull this Room2D to the segments
-        self._pull_to_segments(line_segs, distance, snap_vertices)
+        self._pull_to_poly_segments(line_segs, distance, snap_vertices)
 
     def pull_to_polygon(self, polygon, distance, snap_vertices=True):
         """Pull this Room2D's vertices to a Polygon2D.
@@ -1256,7 +1365,7 @@ class Room2D(_BaseGeometry):
             line_segs.append(line_ray_3d)
 
         # pull this Room2D to the segments
-        self._pull_to_segments(line_segs, distance, snap_vertices)
+        self._pull_to_poly_segments(line_segs, distance, snap_vertices)
 
     def pull_to_room_2d(self, room_2d, distance, snap_vertices=True):
         """Pull this Room2D's vertices to another Room2D.
@@ -1290,14 +1399,14 @@ class Room2D(_BaseGeometry):
         for o_poly in other_room_polys:
             self.pull_to_polygon(o_poly, distance, snap_vertices)
 
-    def _pull_to_segments(self, line_segments, distance, snap_vertices=True):
-        """Pull this Room2D's vertices to LineSegment3D that are at this Room2D's height.
+    def _pull_to_poly_segments(self, line_segments, distance, snap_vertices=True):
+        """Pull this Room2D's vertices to LineSegment3D originating from a poly-line/gon.
 
         Args:
             line_segments: A list of ladybug_geometry LineSegment3D with Z-values at
                 this Room2D's floor_height to which this Room2D's vertices
                 will be pulled.
-            distance: The maximum distance between a Room2D vertex and the room_2d
+            distance: The maximum distance between a Room2D vertex and the line_segments
                 where the vertex will be moved to lie on the segments. Vertices beyond
                 this distance will be left as they are.
             snap_vertices: A boolean to note whether Room2D vertices that are
