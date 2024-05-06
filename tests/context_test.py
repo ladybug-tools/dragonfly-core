@@ -2,10 +2,8 @@ from dragonfly.context import ContextShade
 
 from honeybee.shade import Shade
 
-from ladybug_geometry.geometry2d.pointvector import Point2D
-from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.face import Face3D
+from ladybug_geometry.geometry2d import Point2D
+from ladybug_geometry.geometry3d import Point3D, Vector3D, Plane, Face3D, Mesh3D
 
 import pytest
 
@@ -102,6 +100,21 @@ def test_reflect():
     assert test_1[0][1].x == pytest.approx(0, rel=1e-3)
     assert test_1[0][1].y == pytest.approx(2, rel=1e-3)
     assert test_1[0][1].z == pytest.approx(2, rel=1e-3)
+
+
+def test_snap_to_grid():
+    """Test the ContextShade snap_to_grid method."""
+    pts1 = (Point3D(1.1, 1.1, 4), Point3D(2.1, 1.1, 4), Point3D(2.1, 2.1, 4), Point3D(1.1, 2.1, 4))
+    plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
+    face = Face3D(pts1, plane)
+    pts2 = (Point3D(0, 0, 2), Point3D(0, 2.1, 2), Point3D(2.1, 2.1, 2),
+           Point3D(2.1, 0, 2), Point3D(4.1, 0, 2))
+    mesh = Mesh3D(pts2, [(0, 1, 2, 3), (2, 3, 4)])
+    awning_canopy = ContextShade('Awning_Canopy', [face, mesh])
+
+    awning_canopy.snap_to_grid(1.0, 0.01)
+    assert awning_canopy[0].vertices != pts1
+    assert awning_canopy[1].vertices != pts2
 
 
 def test_to_honeybee():
