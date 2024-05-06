@@ -3,7 +3,7 @@
 from __future__ import division
 import math
 
-from ladybug_geometry.geometry3d import Face3D, Mesh3D
+from ladybug_geometry.geometry3d import Point3D, Face3D, Mesh3D
 
 from honeybee.shade import Shade
 from honeybee.shademesh import ShadeMesh
@@ -199,6 +199,64 @@ class ContextShade(_BaseGeometry):
         self._geometry = tuple(shd_geo.scale(factor, origin)
                                for shd_geo in self._geometry)
         self.properties.scale(factor, origin)
+
+    def snap_to_grid(self, grid_increment, tolerance=0.01):
+        """Snap this object to the nearest XY grid node defined by an increment.
+
+        Note that, even though ContextShade geometry is defined using 3D vertices,
+        only the X and Y coordinates will be snapped, which is consistent with
+        how the Room2D.snap_to_grid method works.
+
+        All properties assigned to the ContextShade will be preserved and any
+        degenerate geometries are automatically cleaned out of the result.
+
+        Args:
+            grid_increment: A positive number for dimension of each grid cell. This
+                typically should be equal to the tolerance or larger but should
+                not be larger than the smallest detail of the ContextShade that you
+                wish to resolve.
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # define a list to hold all of the new geometry
+        new_geometry = []
+
+        # loop through the current geometry and snap the vertices
+        for geo in self._geometry:
+            if isinstance(geo, Face3D):
+                new_boundary, new_holes = [], None
+                for pt in geo.boundary:
+                    new_x = grid_increment * round(pt.x / grid_increment)
+                    new_y = grid_increment * round(pt.y / grid_increment)
+                    new_boundary.append(Point3D(new_x, new_y, pt.z))
+                if geo.holes is not None:
+                    new_holes = []
+                    for hole in geo.holes:
+                        new_hole = []
+                        for pt in hole:
+                            new_x = grid_increment * round(pt.x / grid_increment)
+                            new_y = grid_increment * round(pt.y / grid_increment)
+                            new_hole.append(Point3D(new_x, new_y, pt.z))
+                        new_holes.append(new_hole)
+                n_geo = Face3D(new_boundary, geo.plane, new_holes)
+                try:  # catch all degeneracy in the process
+                    n_geo = n_geo.remove_duplicate_vertices(tolerance)
+                    new_geometry.append(n_geo)
+                except:  # degenerate geometry
+                    pass
+            elif isinstance(geo, Mesh3D):
+                new_vertices = []
+                for pt in geo.vertices:
+                    new_x = grid_increment * round(pt.x / grid_increment)
+                    new_y = grid_increment * round(pt.y / grid_increment)
+                    new_vertices.append(Point3D(new_x, new_y, pt.z))
+                n_geo = Mesh3D(new_vertices, geo.faces)
+                new_geometry.append(n_geo)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        if len(new_geometry) != 0:
+            self._geometry = new_geometry
 
     def to_honeybee(self):
         """Convert Dragonfly ContextShade to a list of Honeybee Shades and ShadeMeshes.
