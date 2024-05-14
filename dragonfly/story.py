@@ -1306,9 +1306,14 @@ using-multipliers-zone-and-or-window.html
             for bc, w_par in zip(room._boundary_conditions, room._window_parameters):
                 if isinstance(bc, Surface):
                     bc_objs = bc.boundary_condition_objects
-                    bc_ind = int(bc_objs[0].split('..Face')[-1]) - 1
-                    srf_bc_dict[(bc_objs[-1], bc_ind)] = \
-                        (room.identifier, bc_objs[0], w_par, room)
+                    try:
+                        bc_ind = int(bc_objs[0].split('..Face')[-1]) - 1
+                        srf_bc_dict[(bc_objs[-1], bc_ind)] = \
+                            (room.identifier, bc_objs[0], w_par, room)
+                    except ValueError:  # Surface BC not following dragonfly convention
+                        # this will be reported as a missing adjacency later
+                        srf_bc_dict[(bc_objs[-1], 10000)] = \
+                            (room.identifier, bc_objs[0], w_par, room)
             rid_map[room.identifier] = room.full_id
         # check the adjacencies for all Surface boundary conditions
         msgs = []
