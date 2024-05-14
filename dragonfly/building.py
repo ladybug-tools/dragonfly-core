@@ -336,6 +336,9 @@ class Building(_BaseGeometry):
                 bldg.convert_all_room_3ds_to_2d(
                     extrusion_rooms_only=True, tolerance=model.tolerance,
                     angle_tolerance=model.angle_tolerance)
+                for story in bldg.unique_stories:
+                    story._reset_adjacencies_from_honeybee(
+                        story.room_2ds, model.tolerance)
             return bldg
         elif method != 'allroom2d':
             msg = 'Building.from_honeybee conversion_method "{}" is not recognized\n' \

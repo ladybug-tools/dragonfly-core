@@ -186,6 +186,24 @@ class Story(_BaseGeometry):
 
         room_2ds = [room for room in room_2ds if room is not None]
         # re-set the adjacencies in relation to the Room2D segments
+        room_2ds = cls._reset_adjacencies_from_honeybee(room_2ds, tolerance)
+        return cls(identifier, room_2ds)
+
+    @staticmethod
+    def _reset_adjacencies_from_honeybee(room_2ds, tolerance):
+        """Re-set the adjacencies in relation to the Room2D segments.
+
+        It is customary to run this method after converting the Story from Honeybee.
+        This will ensure that any Surface boundary conditions from the Honeybee
+        translation survive the translation process to the Dragonfly conventions
+        of Surface boundary conditions.
+
+        Args:
+            room_2ds: A list of Room2Ds of the same Story for which adjacencies
+                will be reset.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same.
+        """
         all_adj_faces = [[x for x, bc in enumerate(room_1._boundary_conditions)
                          if isinstance(bc, Surface)] for room_1 in room_2ds]
         for i, room_1 in enumerate(room_2ds):
@@ -226,7 +244,7 @@ class Story(_BaseGeometry):
                 room_2ds[r_i]._air_boundaries[seg_i] = False
                 if remove_win:
                     room_2ds[r_i]._window_parameters[seg_i] = None
-        return cls(identifier, room_2ds)
+        return room_2ds
 
     @property
     def room_2ds(self):
