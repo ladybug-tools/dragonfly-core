@@ -1231,7 +1231,7 @@ class Room2D(_BaseGeometry):
             else:
                 msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
                 raise TypeError(msg)
-        
+
         # get lists of vertices for the Room2D.floor_geometry to be edited
         edit_boundary = self._floor_geometry.boundary
         edit_holes = self._floor_geometry.holes \
@@ -2184,7 +2184,7 @@ class Room2D(_BaseGeometry):
             else:
                 core_b = [Point3D(p.x, p.y, z_val) for p in subp_core[0]]
                 core_h = [[Point3D(p.x, p.y, z_val) for p in hole]
-                            for hole in subp_core[1:]]
+                          for hole in subp_core[1:]]
                 core_face = Face3D(core_b, holes=core_h)
                 new_face3d_array.append(core_face)
                 for spl in subp_perim:
@@ -2206,7 +2206,7 @@ class Room2D(_BaseGeometry):
         # if core/perimeter geometry could not be generated, return the current room
         if len(new_face3d_array) <= 1:
             return [self]
-        
+
         # create the new Room2D objects from the result
         parent_zip = (
             self.floor_segments_2d, self.boundary_conditions,
