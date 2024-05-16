@@ -790,10 +790,19 @@ class Room2D(_BaseGeometry):
         """Convert all of the windows of the Room2D to the RectangularWindows format."""
         glz_ps = []
         for seg, glz in zip(self.floor_segments, self._window_parameters):
-            glz_p = None
             if glz is not None:
-                glz_p = glz.to_rectangular_windows(seg, self.floor_to_ceiling_height)
-            glz_ps.append(glz_p)
+                glz = glz.to_rectangular_windows(seg, self.floor_to_ceiling_height)
+            glz_ps.append(glz)
+        self._window_parameters = glz_ps
+
+    def to_detailed_windows(self):
+        """Convert all of the windows of the Room2D to the DetailedWindows format."""
+        glz_ps = []
+        for seg, glz in zip(self.floor_segments, self._window_parameters):
+            if glz is not None and not isinstance(glz, DetailedWindows):
+                glz = glz.to_rectangular_windows(seg, self.floor_to_ceiling_height)
+                glz = glz.to_detailed_windows()
+            glz_ps.append(glz)
         self._window_parameters = glz_ps
 
     def add_prefix(self, prefix):
@@ -4160,14 +4169,15 @@ class Room2D(_BaseGeometry):
             if wp_par_to_split is None:
                 for i in m_i:
                     new_win[i] = None
-            elif len(m_i) == 1:
-                new_win[m_i[0]] = wp_par_to_split
-            else:  # windows to be split
+            else:
                 full_len = sum(sg.length for sg in m_win_segs)
                 if abs(seg1.length - full_len) <= tolerance:  # all segments accounted
-                    split_par = wp_par_to_split.split(m_win_segs, tolerance)
-                    for i, w_par in zip(m_i, split_par):
-                        new_win[i] = w_par
+                    if len(m_i) == 1:  # no change to the segment
+                        new_win[m_i[0]] = wp_par_to_split
+                    else:  # windows to be split
+                        split_par = wp_par_to_split.split(m_win_segs, tolerance)
+                        for i, w_par in zip(m_i, split_par):
+                            new_win[i] = w_par
                 else:  # not all segment accounted; trim each window par from original
                     for i, n_seg in zip(m_i, m_win_segs):
                         new_win[i] = wp_par_to_split.trim(seg1, n_seg, tolerance)

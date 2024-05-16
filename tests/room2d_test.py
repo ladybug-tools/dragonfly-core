@@ -16,7 +16,8 @@ from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.facetype import AirBoundary
 from honeybee.room import Room
 
-from ladybug_geometry.geometry2d import Point2D, Vector2D, LineSegment2D, Polygon2D
+from ladybug_geometry.geometry2d import Point2D, Vector2D, LineSegment2D, \
+    Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, LineSegment3D, Plane, \
     Face3D, Polyface3D
 
@@ -720,6 +721,187 @@ def test_coordinate_room_2d_vertices():
     new_room.coordinate_room_2d_vertices(room3, distance, 0.01)
     assert len(new_room.floor_geometry.vertices) == 6
     assert new_room.floor_area == pytest.approx(101.75, abs=1e-3)
+
+
+def test_subtract_room_2ds():
+    """Test the Room2D subtract_room_2ds method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
+    room2d = Room2D('SquareShoebox1', Face3D(f_pts), 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 4
+    room2d.to_rectangular_windows()
+
+    sub_pts = (Point3D(1, -1, 2), Point3D(1, 1, 2), Point3D(3, 1, 2), Point3D(3, -1, 2))
+    sub_room2d = Room2D('SquareShoebox2', Face3D(sub_pts), 3)
+    new_room = room2d.subtract_room_2ds([sub_room2d], 0.01)
+    assert len(new_room) == 1
+    assert len(new_room[0].floor_geometry) == 6
+    assert new_room[0].floor_area == pytest.approx(room2d.floor_area * 0.75, rel=1e-2)
+    assert new_room[0].exterior_aperture_area == \
+        pytest.approx(room2d.exterior_aperture_area * 0.75, rel=1e-2)
+
+    sub_pts = (Point3D(0.5, 0.5, 1), Point3D(1.5, 0.5, 1), Point3D(1.5, 1.5, 1),
+               Point3D(0.5, 1.5, 1))
+    sub_room2d = Room2D('SquareShoebox2', Face3D(sub_pts), 3)
+    new_room = room2d.subtract_room_2ds([sub_room2d], 0.01)
+    assert len(new_room) == 1
+    assert len(new_room[0].floor_geometry) == 10
+    assert new_room[0].floor_area == pytest.approx(room2d.floor_area * 0.75, rel=1e-2)
+    assert new_room[0].exterior_aperture_area == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+
+
+def test_split_with_line():
+    """Test the Room2D split_with_line method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
+    room2d = Room2D('SquareShoebox1', Face3D(f_pts), 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 4
+    room2d.to_detailed_windows()
+
+    l_pts = (Point2D(1, -1), Point2D(1, 3))
+    line = LineSegment2D.from_end_points(*l_pts)
+    int_result = room2d.split_with_line(line, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry) == 4
+    assert len(int_result[1].floor_geometry) == 4
+    assert int_result[0].floor_area == pytest.approx(room2d.floor_area / 2, rel=1e-2)
+    assert int_result[1].floor_area == pytest.approx(room2d.floor_area / 2, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+    assert int_result[0].exterior_aperture_area == \
+        pytest.approx(room2d.exterior_aperture_area / 2, rel=1e-2)
+
+    l_pts = (Point2D(1, 0), Point2D(1, 2))
+    line = LineSegment2D.from_end_points(*l_pts)
+    int_result = room2d.split_with_line(line, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry) == 4
+    assert len(int_result[1].floor_geometry) == 4
+    assert int_result[0].floor_area == pytest.approx(room2d.floor_area / 2, rel=1e-2)
+    assert int_result[1].floor_area == pytest.approx(room2d.floor_area / 2, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+    assert int_result[0].exterior_aperture_area == \
+        pytest.approx(room2d.exterior_aperture_area / 2, rel=1e-2)
+
+    l_pts = (Point2D(1, 0), Point2D(1, 1))
+    line = LineSegment2D.from_end_points(*l_pts)
+    int_result = room2d.split_with_line(line, 0.01)
+    assert len(int_result) == 1
+    assert int_result[0] is room2d
+
+    l_pts = (Point2D(-1, -1), Point2D(3, 3))
+    line = LineSegment2D.from_end_points(*l_pts)
+    int_result = room2d.split_with_line(line, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry) == 3
+    assert len(int_result[1].floor_geometry) == 3
+    assert int_result[0].floor_area == pytest.approx(room2d.floor_area / 2, rel=1e-2)
+    assert int_result[1].floor_area == pytest.approx(room2d.floor_area / 2, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+    assert int_result[0].exterior_aperture_area == \
+        pytest.approx(room2d.exterior_aperture_area / 2, rel=1e-2)
+
+
+def test_split_with_polyline():
+    """Test the Room2D split_with_polyline method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
+    room2d = Room2D('SquareShoebox1', Face3D(f_pts), 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 4
+    room2d.to_detailed_windows()
+
+    pl_pts = (Point2D(1, -1), Point2D(1, 1), Point2D(3, 1))
+    line = Polyline2D(pl_pts)
+    int_result = room2d.split_with_polyline(line, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry) == 6
+    assert len(int_result[1].floor_geometry) == 4
+    assert int_result[0].floor_area == pytest.approx(room2d.floor_area * 0.75, rel=1e-2)
+    assert int_result[1].floor_area == pytest.approx(room2d.floor_area * 0.25, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+
+    pl_pts = (Point2D(1, -1), Point2D(1, 1), Point2D(1.5, 1))
+    line = Polyline2D(pl_pts)
+    int_result = room2d.split_with_polyline(line, 0.01)
+    assert len(int_result) == 1
+    assert int_result[0] is room2d
+
+
+def test_split_with_polygon():
+    """Test the Room2D split_with_line method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
+    room2d = Room2D('SquareShoebox1', Face3D(f_pts), 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 4
+    room2d.to_rectangular_windows()
+
+    poly_pts = (Point2D(1, -1), Point2D(1, 1), Point2D(3, 1), Point2D(3, -1))
+    polygon = Polygon2D(poly_pts)
+    int_result = room2d.split_with_polygon(polygon, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry) == 6
+    assert len(int_result[1].floor_geometry) == 4
+    assert int_result[0].floor_area == pytest.approx(room2d.floor_area * 0.75, rel=1e-2)
+    assert int_result[1].floor_area == pytest.approx(room2d.floor_area * 0.25, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+    
+    poly_pts = (Point2D(0.5, 0.5), Point2D(1.5, 0.5), Point2D(1.5, 1.5), Point2D(0.5, 1.5))
+    polygon = Polygon2D(poly_pts)
+    int_result = room2d.split_with_polygon(polygon, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry) == 10
+    assert len(int_result[1].floor_geometry) == 4
+    assert int_result[0].floor_area == pytest.approx(room2d.floor_area * 0.75, rel=1e-2)
+    assert int_result[1].floor_area == pytest.approx(room2d.floor_area * 0.25, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+
+
+def test_split_with_lines():
+    """Test the Room2D split_with_line method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
+    room2d = Room2D('SquareShoebox1', Face3D(f_pts), 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 4
+    room2d.to_rectangular_windows()
+
+    l_pts1 = (Point2D(1, -1), Point2D(1, 1))
+    line1 = LineSegment2D.from_end_points(*l_pts1)
+    l_pts2 = (Point2D(-1, 1), Point2D(1, 1))
+    line2 = LineSegment2D.from_end_points(*l_pts2)
+    l_pts3 = (Point2D(1, 1), Point2D(3, 3))
+    line3 = LineSegment2D.from_end_points(*l_pts3)
+    all_lines = [line1, line2, line3]
+    int_result = room2d.split_with_lines(all_lines, 0.01)
+
+    assert len(int_result) == 3
+    for int_f in int_result:
+        assert int_f.floor_area == pytest.approx(room2d.floor_area * 0.25, rel=1e-2) or \
+            int_f.floor_area == pytest.approx(room2d.floor_area * 0.375, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
+
+    l_pts1 = (Point2D(1, -1), Point2D(1, 1))
+    line1 = LineSegment2D.from_end_points(*l_pts1)
+    l_pts2 = (Point2D(-1, 1), Point2D(1, 1))
+    line2 = LineSegment2D.from_end_points(*l_pts2)
+    l_pts3 = (Point2D(1, 1), Point2D(3, 1))
+    line3 = LineSegment2D.from_end_points(*l_pts3)
+    l_pts4 = (Point2D(1, 1), Point2D(1, 3))
+    line4 = LineSegment2D.from_end_points(*l_pts4)
+    all_lines = [line1, line2, line3, line4]
+    int_result = room2d.split_with_lines(all_lines, 0.01)
+
+    assert len(int_result) == 4
+    for int_f in int_result:
+        assert int_f.floor_area == pytest.approx(room2d.floor_area * 0.25, rel=1e-2)
+    assert sum(r.exterior_aperture_area for r in int_result) == \
+        pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
 
 
 def test_room2d_solve_adjacency():

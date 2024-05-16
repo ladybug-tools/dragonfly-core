@@ -1554,7 +1554,7 @@ class RectangularWindows(_AsymmetricBase):
         return ''
 
     def to_rectangular_windows(self, segment, floor_to_ceiling_height):
-        """Get a version of these WindowParameters as RectangularWindows.
+        """Returns the class instance. Provided here for consistency with other classes.
 
         Args:
             segment: A LineSegment3D to which these parameters are applied.
@@ -1562,6 +1562,15 @@ class RectangularWindows(_AsymmetricBase):
                 to which the segment belongs.
         """
         return self
+    
+    def to_detailed_windows(self):
+        """Get a version of these WindowParameters as DetailedWindows."""
+        polygons = []
+        for o, w, h in zip(self.origins, self.widths, self.heights):
+            poly_pts = (o, Point2D(o.x + w, o.y), Point2D(o.x + w, o.y + h),
+                        Point2D(o.x, o.y + h))
+            polygons.append(Polygon2D(poly_pts))
+        return DetailedWindows(polygons, self.are_doors)
 
     def add_window_to_face(self, face, tolerance=0.01):
         """Add Apertures to a Honeybee Face using these Window Parameters.
