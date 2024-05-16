@@ -7,7 +7,7 @@ import math
 from ladybug_geometry.geometry2d import Point2D, Vector2D, Ray2D, LineSegment2D, \
     Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D, \
-    Plane, Face3D, Polyface3D
+    Plane, Polyline3D, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_between_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
@@ -1989,6 +1989,235 @@ class Room2D(_BaseGeometry):
         rebuilt_room._properties._duplicate_extension_attr(self._properties)
         return rebuilt_room
 
+    def subtract_room_2ds(self, room_2ds, tolerance=0.01):
+        """Get (a) version(s) of this Room2D with other Room2Ds subtracted from it.
+
+        This is useful for resolving overlaps between Room2Ds of the same Story.
+
+        Args:
+            room_2d: A Room2D that will be subtracted from this Room2D.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input line. Will be a list with only the current Room2D if the line
+            does not split it into two or more pieces.
+        """
+        # first check that the two geometries have the same Z coordinate
+        self_face = self.floor_geometry
+        z_v = self_face[0].z
+        other_faces = []
+        for room_2d in room_2ds:
+            face2 = room_2d.floor_geometry
+            if abs(self_face[0].z - face2[0].z) > tolerance:
+                new_bound = [Point3D(pt.x, pt.y, z_v) for pt in face2.boundary]
+                new_orig = Point3D(face2[0].x, face2[0].y, z_v)
+                new_plane = Plane(n=face2.plane.n, o=new_orig)
+                new_holes = [[Point3D(p.x, p.y, z_v) for p in h] for h in face2.holes] \
+                    if face2.has_holes else None
+                face2 = Face3D(new_bound, new_plane, new_holes)
+            other_faces.append(face2)
+        
+        # subtract the other Room2Ds from this one
+        ang_tol = math.radians(1)
+        new_geos = self_face.coplanar_difference(other_faces, tolerance, ang_tol)
+        if len(new_geos) == 1 and new_geos[0] is self_face:
+            return [self]  # the Face3D did not overlap with one another
+        new_geos.sort(key=lambda x: x.area, reverse=True)
+
+        # create the final rebuilt Room2Ds and return them
+        new_rooms = []
+        for i, new_geo in enumerate(new_geos):
+            rm_id = self.identifier if i == 0 else '{}{}'.format(self.identifier, i)
+            rebuilt_room = Room2D(
+                rm_id, new_geo, self.floor_to_ceiling_height,
+                is_ground_contact=self.is_ground_contact,
+                is_top_exposed=self.is_top_exposed)
+            self._match_and_transfer_wall_props(rebuilt_room, tolerance)
+            if i == 0:
+                rebuilt_room._skylight_parameters = self._skylight_parameters
+            rebuilt_room._display_name = self._display_name
+            rebuilt_room._user_data = self._user_data
+            rebuilt_room._parent = self._parent
+            rebuilt_room._abridged_properties = self._abridged_properties
+            rebuilt_room._properties._duplicate_extension_attr(self._properties)
+            new_rooms.append(rebuilt_room)
+        return new_rooms
+
+    def split_with_line(self, line, tolerance=0.01):
+        """Get versions of this Room2D that are split by a line.
+
+        If the input line does not intersect this Room2D in a manner that splits
+        it into two or more pieces, a list with only the current room will be
+        returned.
+
+        Args:
+            line: A LineSegment2D object that will be used to split this Room2D
+                into two or more pieces.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input line. Will be a list with only the current Room2D if the line
+            does not split it into two or more pieces.
+        """
+        # create a 3D version of the line for the closest point calculation
+        if isinstance(line, LineSegment2D):
+            line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, self.floor_height),
+                                    Vector3D(line.v.x, line.v.y, 0))
+        else:
+            msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+            raise TypeError(msg)
+        # split the Room2D with the line
+        new_geos = self.floor_geometry.split_with_line(line_3d, tolerance)
+        if new_geos is None or len(new_geos) == 1:
+            return [self]  # the Face3D did not overlap with one another
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
+
+    def split_with_polyline(self, polyline, tolerance=0.01):
+        """Get versions of this Room2D that are split into two or more by a polyline.
+
+        If the input polyline does not intersect this Room2D in a manner that splits
+        it into two or more pieces, a list with only the current room will be
+        returned.
+
+        Args:
+            polyline: A Polyline2D object that will be used to split this Room2D
+                into two or more pieces.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input polyline. Will be a list with only the current Room2D if the
+            polyline does not split it into two or more pieces.
+        """
+        # create a 3D version of the polyline for the closest point calculation
+        if isinstance(polyline, Polyline2D):
+            polyline_3d = Polyline3D(
+                [Point3D(pt.x, pt.y, self.floor_height) for pt in polyline])
+        else:
+            msg = 'Expected Polyline2D. Got {}.'.format(type(polyline))
+            raise TypeError(msg)
+        # split the Room2D with the polyline
+        new_geos = self.floor_geometry.split_with_polyline(polyline_3d, tolerance)
+        if new_geos is None or len(new_geos) == 1:
+            return [self]  # the Face3D did not overlap with one another
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
+
+    def split_with_polygon(self, polygon, tolerance=0.01):
+        """Get versions of this Room2D that are split into two or more by a polygon.
+
+        If the input polygon does not intersect this Room2D in a manner that splits
+        it into two or more pieces, a list with only the current room will be
+        returned.
+
+        Args:
+            polygon: A Polygon2D object that will be used to split this Room2D
+                into two or more pieces.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input polygon. Will be a list with only the current Room2D if the
+            polygon does not split it into two or more pieces.
+        """
+        # create a 3D version of the polygon for the closest point calculation
+        if isinstance(polygon, Polygon2D):
+            face_3d = Face3D(
+                [Point3D(pt.x, pt.y, self.floor_height) for pt in polygon])
+        else:
+            msg = 'Expected Polygon2D. Got {}.'.format(type(polygon))
+            raise TypeError(msg)
+        # split the Room2D with the polygon
+        ang_tol = math.radians(1)
+        new_geos, _ = Face3D.coplanar_split(
+            self.floor_geometry, face_3d, tolerance, ang_tol)
+        if new_geos is None or len(new_geos) == 1:
+            return [self]  # the Face3D did not overlap with one another
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
+
+    def split_with_lines(self, lines, tolerance=0.01):
+        """Get versions of this Room2D that are split by a line.
+
+        Using this method is distinct from looping over the Room2D.split_with_line
+        in that this method will resolve cases where multiple segments branch out
+        from nodes in a network of input lines. So, if three line segments
+        meet at a point in the middle of this Room2D and each extend past the
+        edges of this Room2D, this method can split the Room2D in 3 parts whereas
+        looping over the Room2D.split_with_line will not do this given that each
+        individual segment cannot split the Room2D.
+
+        If the input lines together do not intersect this Room2D in a manner
+        that splits it into two or more pieces, a list with only the current
+        room will be returned.
+
+        Args:
+            lines: A list of LineSegment2D objects that will be used to split
+                this Room2D into two or more pieces.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input line. Will be a list with only the current Room2D if the line
+            does not split it into two or more pieces.
+        """
+        # create 3D versions of the lines for the closest point calculation
+        lines_3d = []
+        for line in lines:
+            if isinstance(line, LineSegment2D):
+                line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, self.floor_height),
+                                        Vector3D(line.v.x, line.v.y, 0))
+                lines_3d.append(line_3d)
+            else:
+                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+                raise TypeError(msg)
+        # split the Room2D with the line
+        new_geos = self.floor_geometry.split_with_lines(lines_3d, tolerance)
+        if new_geos is None or len(new_geos) == 1:
+            return [self]  # the Face3D did not overlap with one another
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
+
+    def _create_split_rooms(self, face_3ds, tolerance):
+        """Create Room2Ds from Face3Ds that were split from this Room2D."""
+        # create the Room2Ds
+        new_rooms = []
+        for i, new_geo in enumerate(face_3ds):
+            rm_id = '{}{}'.format(self.identifier, i)
+            rebuilt_room = Room2D(
+                rm_id, new_geo, self.floor_to_ceiling_height,
+                is_ground_contact=self.is_ground_contact,
+                is_top_exposed=self.is_top_exposed)
+            self._match_and_transfer_wall_props(rebuilt_room, tolerance)
+            rebuilt_room._display_name = self._display_name
+            rebuilt_room._user_data = self._user_data
+            rebuilt_room._parent = self._parent
+            rebuilt_room._abridged_properties = self._abridged_properties
+            rebuilt_room._properties._duplicate_extension_attr(self._properties)
+            new_rooms.append(rebuilt_room)
+
+        # split the skylights if they exist
+        if self.skylight_parameters is not None:
+            room_faces = [r.floor_geometry for r in new_rooms]
+            new_skys = self.skylight_parameters.split(room_faces, tolerance)
+            for room, sky_par in zip(new_rooms, new_skys):
+                room.skylight_parameters = sky_par
+        
+        return new_rooms
+
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horizontal within a tolerance.
 
@@ -2248,6 +2477,13 @@ class Room2D(_BaseGeometry):
             new_room.display_name = '{}_{}'.format(self.display_name, i)
             new_room._properties._duplicate_extension_attr(self._properties)
             new_rooms.append(new_room)
+
+        # re-assign skylights if they exist
+        if self.skylight_parameters is not None:
+            room_faces = [r.floor_geometry for r in new_rooms]
+            new_skys = self.skylight_parameters.split(room_faces, tol)
+            for room, sky_par in zip(new_rooms, new_skys):
+                room.skylight_parameters = sky_par
 
         # solve adjacency between the Room2Ds
         adj_info = Room2D.solve_adjacency(new_rooms, tol)
@@ -2689,44 +2925,7 @@ class Room2D(_BaseGeometry):
         # transfer the wall properties if requested
         if preserve_wall_props:
             for orig_r, new_r in zip(room_2ds, intersected_rooms):
-                # get the relevant original segments to check for matches
-                rel_segs, rel_bcs, rel_win, rel_shd = [], [], [], []
-                o_zip_props = zip(orig_r.floor_segments, orig_r._boundary_conditions,
-                                  orig_r._window_parameters, orig_r._shading_parameters)
-                for seg, bc, win, shd in o_zip_props:
-                    rel_segs.append(seg)
-                    rel_win.append(win)
-                    rel_shd.append(shd)
-                    if not isinstance(bc, Surface):
-                        rel_bcs.append(bc)
-                    else:
-                        rel_bcs.append(bcs.outdoors)
-                # build up new lists of parameters if the segments match
-                new_bcs, new_win, new_shd = {}, {}, {}
-                for k, seg1 in enumerate(rel_segs):
-                    m_win_segs, m_i = [], []
-                    for i, seg2 in enumerate(new_r.floor_segments):
-                        if seg1.distance_to_point(seg2.p1) <= tol and \
-                                seg1.distance_to_point(seg2.p2) <= tol:  # colinear
-                            new_bcs[i] = rel_bcs[k]
-                            new_shd[i] = rel_shd[k]
-                            m_win_segs.append(seg2)
-                            m_i.append(i)
-                    # split the window parameters across the matched segments
-                    wp_par_to_split = rel_win[k]
-                    if wp_par_to_split is None:
-                        for i in m_i:
-                            new_win[i] = None
-                    elif len(m_i) == 1:
-                        new_win[m_i[0]] = wp_par_to_split
-                    else:
-                        split_par = wp_par_to_split.split(m_win_segs)
-                        for i, w_par in zip(m_i, split_par):
-                            new_win[i] = w_par
-
-                new_r.boundary_conditions = [new_bcs[i] for i in range(len(new_r))]
-                new_r.window_parameters = [new_win[i] for i in range(len(new_r))]
-                new_r.shading_parameters = [new_shd[i] for i in range(len(new_r))]
+                orig_r._match_and_transfer_wall_props(new_r, tolerance)
 
         return tuple(intersected_rooms)
 
@@ -2808,9 +3007,14 @@ class Room2D(_BaseGeometry):
         if len(h_bnds) == len(room_2ds):  # no Room2Ds to join; return them as they are
             return room_2ds
 
-        # join the Room2Ds according to the horizontal boundaries that were found
+        # ensure vertices at the boundary exist
         if min_separation <= tolerance:
             room_2ds = Room2D.intersect_adjacency(room_2ds, tolerance)
+        else:
+            pass
+            #update_floor_geometry
+
+        # join the Room2Ds according to the horizontal boundaries that were found
         joined_rooms = []
         for h_bnd in h_bnds:
             bnd_p_gon = Polygon2D([Point2D(pt.x, pt.y) for pt in h_bnd.boundary])
@@ -3730,37 +3934,6 @@ class Room2D(_BaseGeometry):
 
         return plenum_hb_room
 
-    def _match_and_transfer_wall_props(self, other_room, tolerance):
-        """Transfer wall properties for matching segments between this room and another.
-
-        This includes boundary conditions, window/shading parameters, and the
-        air boundary property.
-
-        Args:
-            other_room: An other Room2D to which wall properties will be transferred.
-        """
-        # build up new lists of parameters if the segments match
-        exist_abs = self.air_boundaries
-        new_bcs, new_win, new_shd, new_abs = [], [], [], []
-        for seg1 in other_room.floor_segments:
-            for k, seg2 in enumerate(self.floor_segments):
-                if seg1.p1.is_equivalent(seg2.p1, tolerance):
-                    if seg1.p2.is_equivalent(seg2.p2, tolerance):  # a match!
-                        new_bcs.append(self._boundary_conditions[k])
-                        new_win.append(self._window_parameters[k])
-                        new_shd.append(self._shading_parameters[k])
-                        new_abs.append(exist_abs[k])
-                        break
-            else:  # the segment could not be matched
-                new_bcs.append(bcs.outdoors)
-                new_win.append(None)
-                new_shd.append(None)
-                new_abs.append(False)
-        other_room.boundary_conditions = new_bcs
-        other_room.window_parameters = new_win
-        other_room.shading_parameters = new_shd
-        other_room.air_boundaries = new_abs
-
     def _check_wall_assigned_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""
         try:
@@ -3940,6 +4113,82 @@ class Room2D(_BaseGeometry):
                         for v2 in verts:
                             if p2.is_equivalent(v2, tolerance):
                                 return face
+
+    def _match_and_transfer_wall_props(self, new_room, tolerance):
+        """Transfer wall properties of matching segments between this room and a new one.
+
+        All wall properties are transferred exactly as they are when segments
+        are perfectly equal between this room and the new room. When segments
+        are colinear/overlapping but the segment on the new_room is shorter than
+        that on this room, the wall properties on this room will be split in
+        order to assign them correctly to the new room. When a given segment
+        of the new_room is not overlapping/colinear with any segment of this
+        room, it will be given default properties with an outdoor boundary
+        condition.
+
+        This all makes this method suitable for preserving properties across
+        operations that trim or split the original room to make the new_room.
+
+        Args:
+            new_room: An new Room2D to which wall properties will be transferred.
+        """
+        # get the relevant original segments by copying the lists on this Room2D
+        rel_segs = self.floor_segments
+        rel_win = self._window_parameters
+        rel_shd = self._shading_parameters
+        rel_abs = self.air_boundaries
+        rel_bcs = []
+        for bc in self._boundary_conditions:
+            if not isinstance(bc, Surface):
+                rel_bcs.append(bc)
+            else:  # Surface boundary conditions can mess up window splitting
+                rel_bcs.append(bcs.outdoors)
+        # build up new lists of parameters if the segments match
+        new_bcs, new_win, new_shd, new_abs = {}, {}, {}, {}
+        for k, seg1 in enumerate(rel_segs):
+            m_win_segs, m_i = [], []
+            for i, seg2 in enumerate(new_room.floor_segments):
+                if seg1.distance_to_point(seg2.p1) <= tolerance and \
+                        seg1.distance_to_point(seg2.p2) <= tolerance:  # colinear
+                    new_bcs[i] = rel_bcs[k]
+                    new_shd[i] = rel_shd[k]
+                    new_abs[i] = rel_abs[k]
+                    m_win_segs.append(seg2)
+                    m_i.append(i)
+            # split the window parameters across the matched segments
+            wp_par_to_split = rel_win[k]
+            if wp_par_to_split is None:
+                for i in m_i:
+                    new_win[i] = None
+            elif len(m_i) == 1:
+                new_win[m_i[0]] = wp_par_to_split
+            else:  # windows to be split
+                full_len = sum(sg.length for sg in m_win_segs)
+                if abs(seg1.length - full_len) <= tolerance:  # all segments accounted
+                    split_par = wp_par_to_split.split(m_win_segs, tolerance)
+                    for i, w_par in zip(m_i, split_par):
+                        new_win[i] = w_par
+                else:  # not all segment accounted; trim each window par from original
+                    for i, n_seg in zip(m_i, m_win_segs):
+                        new_win[i] = wp_par_to_split.trim(seg1, n_seg, tolerance)
+
+        # assign the matched properties to the new room
+        final_bcs, final_win, final_shd, final_abs = [], [], [], []
+        for i in range(len(new_room)):
+            try:
+                final_bcs.append(new_bcs[i])
+                final_win.append(new_win[i])
+                final_shd.append(new_shd[i])
+                final_abs.append(new_abs[i])
+            except KeyError:  # segment not matched to any in existing room
+                final_bcs.append(bcs.outdoors)
+                final_win.append(None)
+                final_shd.append(None)
+                final_abs.append(False)
+        new_room.boundary_conditions = final_bcs
+        new_room.window_parameters = final_win
+        new_room.shading_parameters = final_shd
+        new_room.air_boundaries = final_abs
 
     @staticmethod
     def _remove_colinear_props(

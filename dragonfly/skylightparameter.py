@@ -46,6 +46,20 @@ class _SkylightParameterBase(object):
         """
         return self
 
+    def split(self, face_3ds, tolerance=0.01):
+        """Split these skylight parameters across several Face3D.
+        
+        This is useful when the Room2D to which the skylight is assigned has been
+        split into multiple Room2Ds.
+
+        Args:
+            face_3ds: A list of horizontal Face3D representing the floor geometries
+                of a Room2D to which these skylight parameters are split across.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+        """
+        return self  # assume even distribution by default
+
     @classmethod
     def from_dict(cls, data):
         """Create SkylightParameterBase from a dictionary.
@@ -159,6 +173,22 @@ class GriddedSkylightArea(_SkylightParameterBase):
         """
         spc = self.spacing * factor if self.spacing is not None else None
         return GriddedSkylightArea(self.skylight_area * factor, spc)
+
+    def split(self, face_3ds, tolerance=0.01):
+        """Split these skylight parameters across several Face3D.
+        
+        This is useful when the Room2D to which the skylight is assigned has been
+        split into multiple Room2Ds.
+
+        Args:
+            face_3ds: A list of horizontal Face3D representing the floor geometries
+                of a Room2D to which these skylight parameters are split across.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+        """
+        total_area = sum(face.area for face in face_3ds)
+        return [GriddedSkylightArea(self.area * (face.area / total_area), self.spacing)
+                for face in face_3ds]
 
     @classmethod
     def from_dict(cls, data):
@@ -472,59 +502,6 @@ class DetailedSkylights(_SkylightParameterBase):
                 return msg_template.format(i)
         return ''
 
-    def offset_polygons_for_face(self, face_3d, offset_distance=0.05, tolerance=0.01):
-        """Offset the polygons until all vertices are inside the boundaries of a Face3D.
-
-        Args:
-            face_3d: A horizontal Face3D representing the floor geometry of a Room2D
-                to which these skylight parameters are assigned.
-            offset_distance: Distance from the edge of the face_3d that
-                the polygons will be offset to. (Default: 0.05, suitable for
-                objects in meters).
-            tolerance: The maximum difference between point values for them to be
-                considered distinct. (Default: 0.01, suitable for objects in meters).
-        """
-        # get the polygons that represent the roof face
-        face_z = face_3d[0].z
-        verts2d = tuple(Point2D(pt.x, pt.y) for pt in face_3d.boundary)
-        parent_poly, parent_holes = Polygon2D(verts2d), None
-        if face_3d.has_holes:
-            parent_holes = tuple(
-                Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
-                for hole in face_3d.holes
-            )
-        # loop through the polygons and offset them if they are not correctly bounded
-        new_polygons, new_are_doors = [], []
-        for polygon, isd in zip(self.polygons, self.are_doors):
-            if not self._is_sub_polygon(polygon, parent_poly, parent_holes):
-                # find the boolean intersection of the polygon with the room
-                sub_face = Face3D([Point3D.from_point2d(pt, face_z) for pt in polygon])
-                bool_int = Face3D.coplanar_intersection(
-                    face_3d, sub_face, tolerance, math.radians(1))
-                if bool_int is None:  # skylight completely outside parent
-                    continue
-                # offset the result of the boolean intersection from the edge
-                parent_edges = face_3d.boundary_segments if face_3d.holes is None \
-                    else face_3d.boundary_segments + \
-                    tuple(seg for hole in face_3d.hole_segments for seg in hole)
-                for new_f in bool_int:
-                    new_pts_2d = []
-                    for pt in new_f.boundary:
-                        for edge in parent_edges:
-                            close_pt = edge.closest_point(pt)
-                            if pt.distance_to_point(close_pt) < offset_distance:
-                                move_vec = edge.v.rotate_xy(math.pi / 2).normalize()
-                                move_vec = move_vec * offset_distance
-                                pt = pt.move(move_vec)
-                        new_pts_2d.append(Point2D(pt.x, pt.y))
-                    new_polygons.append(Polygon2D(new_pts_2d))
-            else:
-                new_polygons.append(polygon)
-                new_are_doors.append(isd)
-        # assign the offset polygons to this face
-        self._polygons = tuple(new_polygons)
-        self._are_doors = tuple(new_are_doors)
-
     def add_skylight_to_face(self, face, tolerance=0.01):
         """Add Apertures to a Honeybee Roof Face using these Skylight Parameters.
 
@@ -613,6 +590,93 @@ class DetailedSkylights(_SkylightParameterBase):
             new_verts = tuple(pt.reflect(normal, origin) for pt in polygon.vertices)
             new_polygons.append(Polygon2D(tuple(reversed(new_verts))))
         return DetailedSkylights(new_polygons, self.are_doors)
+
+    def split(self, face_3ds, tolerance=0.01):
+        """Split these skylight parameters across several Face3D.
+        
+        This is useful when the Room2D to which the skylight is assigned has been
+        split into multiple Room2Ds.
+
+        Args:
+            face_3ds: A list of horizontal Face3D representing the floor geometries
+                of a Room2D to which these skylight parameters are split across.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+        """
+        # loop through the polygons and build up new skylight parameters
+        new_sky_par = []
+        for face_3d in face_3ds:
+            verts2d = tuple(Point2D(pt.x, pt.y) for pt in face_3d.boundary)
+            room_poly = Polygon2D(verts2d)
+            rel_poly, rel_doors, offset_needed = [], [], False
+            for sky_poly, isd in zip(self.polygons, self.are_doors):
+                poly_rel = room_poly.polygon_relationship(sky_poly, tolerance)
+                if poly_rel >= 0:
+                    rel_poly.append(sky_poly)
+                    rel_doors.append(isd)
+                    if poly_rel == 0:
+                        offset_needed = True
+            if len(rel_poly) == 0:
+                new_sky_par.append(None)
+                continue
+            new_sky = DetailedSkylights(rel_poly, rel_doors)
+            if offset_needed:
+                new_sky.offset_polygons_for_face(face_3d, tolerance, tolerance)
+            new_sky_par.append(new_sky)
+        return new_sky_par
+
+    def offset_polygons_for_face(self, face_3d, offset_distance=0.05, tolerance=0.01):
+        """Offset the polygons until all vertices are inside the boundaries of a Face3D.
+
+        Args:
+            face_3d: A horizontal Face3D representing the floor geometry of a Room2D
+                to which these skylight parameters are assigned.
+            offset_distance: Distance from the edge of the face_3d that
+                the polygons will be offset to. (Default: 0.05, suitable for
+                objects in meters).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+        """
+        # get the polygons that represent the roof face
+        face_z = face_3d[0].z
+        verts2d = tuple(Point2D(pt.x, pt.y) for pt in face_3d.boundary)
+        parent_poly, parent_holes = Polygon2D(verts2d), None
+        if face_3d.has_holes:
+            parent_holes = tuple(
+                Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
+                for hole in face_3d.holes
+            )
+        # loop through the polygons and offset them if they are not correctly bounded
+        new_polygons, new_are_doors = [], []
+        for polygon, isd in zip(self.polygons, self.are_doors):
+            if not self._is_sub_polygon(polygon, parent_poly, parent_holes):
+                # find the boolean intersection of the polygon with the room
+                sub_face = Face3D([Point3D.from_point2d(pt, face_z) for pt in polygon])
+                bool_int = Face3D.coplanar_intersection(
+                    face_3d, sub_face, tolerance, math.radians(1))
+                if bool_int is None:  # skylight completely outside parent
+                    continue
+                # offset the result of the boolean intersection from the edge
+                parent_edges = face_3d.boundary_segments if face_3d.holes is None \
+                    else face_3d.boundary_segments + \
+                    tuple(seg for hole in face_3d.hole_segments for seg in hole)
+                for new_f in bool_int:
+                    new_pts_2d = []
+                    for pt in new_f.boundary:
+                        for edge in parent_edges:
+                            close_pt = edge.closest_point(pt)
+                            if pt.distance_to_point(close_pt) < offset_distance:
+                                move_vec = edge.v.rotate_xy(math.pi / 2).normalize()
+                                move_vec = move_vec * offset_distance
+                                pt = pt.move(move_vec)
+                        new_pts_2d.append(Point2D(pt.x, pt.y))
+                    new_polygons.append(Polygon2D(new_pts_2d))
+            else:
+                new_polygons.append(polygon)
+                new_are_doors.append(isd)
+        # assign the offset polygons to this face
+        self._polygons = tuple(new_polygons)
+        self._are_doors = tuple(new_are_doors)
 
     def union_overlaps(self, tolerance=0.01):
         """Union any skylight polygons that overlap with one another.
