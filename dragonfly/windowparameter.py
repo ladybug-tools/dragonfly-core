@@ -66,6 +66,22 @@ class _WindowParameterBase(object):
         """
         return self
 
+    def trim(self, original_segment, sub_segment, tolerance=0.01):
+        """Trim window parameters for a sub segment given the original segment.
+
+        Args:
+            original_segment: The original LineSegment3D to which the window
+                parameters are assigned.
+            sub_segment: A LineSegment3D that is a sub-segment of the original_segment,
+                which will be used to trim the window parameters to fit this segment.
+                Note that this sub_segment should have the same orientation as
+                the original segment.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        return self  # windows are assumed to repeat
+
     @staticmethod
     def merge_to_rectangular(window_parameters, segments, floor_to_ceiling_height):
         """Merge any window parameters together into rectangular windows.
@@ -497,6 +513,26 @@ class SimpleWindowArea(_WindowParameterBase):
         total_len = sum(lengths)
         n_par = [SimpleWindowArea(self.window_area * (sl / total_len)) for sl in lengths]
         self._add_user_data(n_par)
+        return n_par
+
+    def trim(self, original_segment, sub_segment, tolerance=0.01):
+        """Trim window parameters for a sub segment given the original segment.
+
+        Args:
+            original_segment: The original LineSegment3D to which the window
+                parameters are assigned.
+            sub_segment: A LineSegment3D that is a sub-segment of the original_segment,
+                which will be used to trim the window parameters to fit this segment.
+                Note that this sub_segment should have the same orientation as
+                the original segment.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        # evenly distribute the windows
+        len_ratio = sub_segment.length / original_segment.length
+        n_par = SimpleWindowArea(self.window_area * len_ratio)
+        n_par._user_data = self._user_data
         return n_par
 
     @staticmethod
@@ -1679,6 +1715,53 @@ class RectangularWindows(_AsymmetricBase):
         self._split_user_data(new_win_pars, win_par_is)
         return new_win_pars
 
+    def trim(self, original_segment, sub_segment, tolerance=0.01):
+        """Trim RectangularWindows for a sub segment given the original segment.
+
+        Args:
+            original_segment: The original LineSegment3D to which the window
+                parameters are assigned.
+            sub_segment: A LineSegment3D that is a sub-segment of the original_segment,
+                which will be used to trim the window parameters to fit this segment.
+                Note that this sub_segment should have the same orientation as
+                the original segment.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        # shift all origins to be relevant for the sub segment
+        rel_pt = self.origins
+        shift_dist = original_segment.p1.distance_to_point(sub_segment.p1)
+        if shift_dist > tolerance:
+            rel_pt = []
+            for pt in self.origins:
+                rel_pt.append(Point2D(pt.x - shift_dist, pt.y))
+        # loop through the rectangles and trim them for the segment
+        max_width = sub_segment.length - tolerance
+        new_pts, new_w, new_h, new_d = [], [], [], []
+        for pt, w, h, d in zip(rel_pt, self.widths, self.heights, self.are_doors):
+            x_val = pt.x
+            if x_val >= max_width or x_val + w < tolerance:  
+                continue  # completely outside of the segment
+            if x_val < tolerance:  # split by segment on left
+                w = tolerance - x_val
+                x_val = tolerance
+            if x_val + w >= max_width:  # split by segment on right
+                split_dist = max_width - x_val
+                new_pts.append(Point2D(x_val, pt.y))
+                new_w.append(split_dist - tolerance)
+                new_h.append(h)
+                new_d.append(d)
+            else:  # completely inside segment
+                new_pts.append(pt)
+                new_w.append(w)
+                new_h.append(h)
+                new_d.append(d)
+        # build the final window parameters from the adjusted windows
+        if len(new_pts) == 0:
+            return None
+        return RectangularWindows(new_pts, new_w, new_h, new_d)
+
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
         """Merge RectangularWindows parameters together using their assigned segments.
@@ -2332,6 +2415,55 @@ class DetailedWindows(_AsymmetricBase):
         # apply the user_data to the split window parameters
         self._split_user_data(new_win_pars, win_par_is)
         return new_win_pars
+
+    def trim(self, original_segment, sub_segment, tolerance=0.01):
+        """Trim DetailedWindows for a sub segment given the original segment.
+
+        Args:
+            original_segment: The original LineSegment3D to which the window
+                parameters are assigned.
+            sub_segment: A LineSegment3D that is a sub-segment of the original_segment,
+                which will be used to trim the window parameters to fit this segment.
+                Note that this sub_segment should have the same orientation as
+                the original segment.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        # shift all polygons to be relevant for the sub segment
+        rel_polygons = self.polygons
+        shift_dist = original_segment.p1.distance_to_point(sub_segment.p1)
+        if shift_dist > tolerance:
+            rel_polygons = []
+            for p_gon in self.polygons:
+                new_v = [Point2D(p.x - shift_dist, p.y) for p in p_gon]
+                rel_polygons.append(Polygon2D(new_v))
+        # loop through the polygon vertices and trim them for the segment
+        max_width = sub_segment.length - tolerance
+        new_polygons, new_dr, out_polygons, out_dr = [], [], [], []
+        for p_gon, is_dr in zip(rel_polygons, self.are_doors):
+            new_verts, verts_moved = [], []
+            for vert in p_gon:
+                x_val, v_moved = vert.x, False
+                if x_val < tolerance:
+                    x_val, v_moved = tolerance, True
+                if x_val >= max_width:
+                    x_val, v_moved = max_width, True
+                new_verts.append(Point2D(x_val, vert.y))
+                verts_moved.append(v_moved)
+            if not all(verts_moved):
+                new_polygons.append(Polygon2D(new_verts))
+                new_dr.append(is_dr)
+                if True in verts_moved:  # outside of the segment
+                    out_polygons.append(p_gon)
+                    out_dr.append(is_dr)
+            else:
+                out_polygons.append(p_gon)
+                out_dr.append(is_dr)
+        # build the final window parameters from the adjusted polygons
+        if len(new_polygons) == 0:
+            return None
+        return DetailedWindows(new_polygons, new_dr)
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
