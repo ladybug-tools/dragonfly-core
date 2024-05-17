@@ -1731,6 +1731,13 @@ class Room2D(_BaseGeometry):
                 which they are considered co-located, used to determine
                 colinearity. Default: 0.01, suitable for objects in meters.
         """
+        # process the new floor geometry so that it abides by Room2D rules
+        if new_floor_geometry.normal.z <= 0:  # ensure upward-facing Face3D
+            new_floor_geometry = new_floor_geometry.flip()
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, new_floor_geometry.plane.o.z))
+        new_floor_geometry = Face3D(new_floor_geometry.boundary, o_pl,
+                                    new_floor_geometry.holes)
+
         # get the original and the new floor segments
         orig_segs = self.floor_segments
         new_segs = new_floor_geometry.boundary_segments if new_floor_geometry.holes is \
@@ -3016,12 +3023,50 @@ class Room2D(_BaseGeometry):
         if len(h_bnds) == len(room_2ds):  # no Room2Ds to join; return them as they are
             return room_2ds
 
-        # ensure vertices at the boundary exist
+        # ensure Room2D vertices at the boundary exist
         if min_separation <= tolerance:
             room_2ds = Room2D.intersect_adjacency(room_2ds, tolerance)
-        else:
-            pass
-            #update_floor_geometry
+        else:  # we have to figure out if new vertices were added to cross the boundary
+            # gather all vertices across the horizontal boundaries
+            bnd_verts = []
+            for h_bnd in h_bnds:
+                bnd_verts.extend([Point2D(pt.x, pt.y) for pt in h_bnd.boundary])
+                if h_bnd.has_holes:
+                    for hole in h_bnd.holes:
+                        bnd_verts.extend([Point2D(pt.x, pt.y) for pt in hole])
+            # loop through rooms and identify vertices to insert
+            inter_rooms = []
+            search_dist = tolerance * 2
+            for room in room_2ds:
+                floor_segs = [room.floor_geometry.boundary_polygon2d.segments]
+                if room.floor_geometry.has_holes:
+                    for hole in room.floor_geometry.hole_polygon2d:
+                        floor_segs.append(hole.segments)
+                pts_2d, edit_code = [], []
+                for loop in floor_segs:
+                    loop_pts_2d = []
+                    for seg in loop:
+                        loop_pts_2d.append(seg.p1)
+                        edit_code.append('K')
+                        for bnd_pt in bnd_verts:
+                            if seg.distance_to_point(bnd_pt) <= search_dist:
+                                if not seg.p1.is_equivalent(bnd_pt, tolerance) and \
+                                        not seg.p2.is_equivalent(bnd_pt, tolerance):
+                                    loop_pts_2d.append(bnd_pt)  # vertex to insert !
+                                    edit_code.append('A')
+                    pts_2d.append(loop_pts_2d)
+                edit_code = ''.join(edit_code)
+                if 'A' in edit_code:  # room geometry must be updated
+                    room = room.duplicate()  # duplicate to avoid editing original geo
+                    z_v = room.floor_height
+                    pts_3d = []
+                    for loop in pts_2d:
+                        pts_3d.append([Point3D(pt.x, pt.y, z_v) for pt in loop])
+                    new_geo = Face3D(pts_3d[0]) if len(pts_3d) == 1 else \
+                        Face3D(pts_3d[0], holes=pts_3d[1:])
+                    room.update_floor_geometry(new_geo, edit_code, search_dist)
+                inter_rooms.append(room)
+            room_2ds = inter_rooms
 
         # join the Room2Ds according to the horizontal boundaries that were found
         joined_rooms = []

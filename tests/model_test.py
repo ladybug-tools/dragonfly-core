@@ -404,7 +404,7 @@ def test_reset_room_2d_boundaries():
 
 
 def test_room_2ds_pulling_methods():
-    """Test the Room2d.join_room_2ds method."""
+    """Test the methods that pull Room2Ds to target objects."""
     model_file = './tests/json/model_for_pulling.dfjson'
     original_model = Model.from_file(model_file)
 
@@ -470,6 +470,21 @@ def test_join_room_2ds():
     assert len(cp_rooms) == 5
     clean_ap_area = sum(r.exterior_aperture_area for r in cp_rooms)
     assert second_story.exterior_aperture_area == pytest.approx(clean_ap_area, rel=1e-3)
+
+
+def test_join_room_2ds_separation():
+    """Test the Room2d.join_room_2ds method with a separation distance."""
+    model_file = './tests/json/model_with_with_separation.dfjson'
+    model = Model.from_file(model_file)
+
+    second_story = model.stories[0]
+    joined_room_2ds = Room2D.join_room_2ds(
+        second_story.room_2ds, min_separation=0.3, tolerance=model.tolerance)
+    assert len(joined_room_2ds) == 1
+    joined_room = joined_room_2ds[0]
+    window_count = sum(1 for wp in joined_room.window_parameters if wp is not None)
+    assert window_count == 7
+    assert len(joined_room.skylight_parameters) == 2
 
 
 def test_suggested_alignment_axes():
