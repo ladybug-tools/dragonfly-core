@@ -2096,7 +2096,8 @@ class DetailedWindows(_AsymmetricBase):
                 return msg_template.format('Y', max_pt.y)
         return ''
 
-    def adjust_for_segment(self, segment, floor_to_ceiling_height, tolerance=0.01):
+    def adjust_for_segment(self, segment, floor_to_ceiling_height, tolerance=0.01,
+                           sliver_tolerance=None):
         """Get these parameters with vertices excluded beyond the domain of a given line.
 
         Args:
@@ -2106,6 +2107,9 @@ class DetailedWindows(_AsymmetricBase):
             tolerance: The minimum distance between a vertex and the edge of the
                 wall segment that is considered not touching. (Default: 0.01, suitable
                 for objects in meters).
+            sliver_tolerance: A number to be used for the tolerance at which sliver
+                polygons should be removed if they are created during the adjustment
+                process. If None, the tolerance will be used. (Default: None).
 
         Returns:
             A new DetailedWindows object that fits entirely in the domain of the
@@ -2120,6 +2124,7 @@ class DetailedWindows(_AsymmetricBase):
         max_height = floor_to_ceiling_height - tolerance
 
         # loop through the vertices and adjust them
+        sliver_tol = sliver_tolerance if sliver_tolerance is not None else tolerance
         new_polygons, new_are_doors, kept_i = [], [], []
         for i, (p_gon, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
             new_verts = []
@@ -2135,7 +2140,7 @@ class DetailedWindows(_AsymmetricBase):
                     y_val = max_height
                 new_verts.append(Point2D(x_val, y_val))
             new_poly = Polygon2D(new_verts)
-            if new_poly.area > tolerance:
+            if new_poly.area > sliver_tol:
                 new_polygons.append(new_poly)
                 new_are_doors.append(is_dr)
                 kept_i.append(i)
