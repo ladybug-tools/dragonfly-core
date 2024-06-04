@@ -2112,27 +2112,31 @@ class DetailedWindows(_AsymmetricBase):
             input line segment and floor_to_ceiling_height.
         """
         # compute the maximum width and height
-        max_width = segment.length - tolerance
+        seg_len = segment.length
+        double_tol = 2 * tolerance
+        if seg_len - double_tol < 0 or floor_to_ceiling_height - double_tol < 0:
+            return None
+        max_width = seg_len - tolerance
         max_height = floor_to_ceiling_height - tolerance
 
         # loop through the vertices and adjust them
         new_polygons, new_are_doors, kept_i = [], [], []
         for i, (p_gon, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
-            new_verts, verts_moved = [], []
+            new_verts = []
             for vert in p_gon:
-                x_val, y_val, v_moved = vert.x, vert.y, False
+                x_val, y_val = vert.x, vert.y
                 if x_val <= tolerance:
-                    x_val, v_moved = tolerance, True
+                    x_val = tolerance
                 if y_val <= tolerance:
-                    y_val, v_moved = tolerance, True
+                    y_val = tolerance
                 if x_val >= max_width:
-                    x_val, v_moved = max_width, True
+                    x_val = max_width
                 if y_val >= max_height:
-                    y_val, v_moved = max_height, True
+                    y_val = max_height
                 new_verts.append(Point2D(x_val, y_val))
-                verts_moved.append(v_moved)
-            if not all(verts_moved):
-                new_polygons.append(Polygon2D(new_verts))
+            new_poly = Polygon2D(new_verts)
+            if new_poly.area > tolerance:
+                new_polygons.append(new_poly)
                 new_are_doors.append(is_dr)
                 kept_i.append(i)
 
