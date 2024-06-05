@@ -3656,12 +3656,11 @@ class Room2D(_BaseGeometry):
                             rf_pts.append(
                                 rf_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
                             break
-                    if current_poly is None or len(rf_pts) < 2:
-                        # point not inside a roof, invalid roof
-                        return None
                     # remove duplicated vertices from the list
                     rf_pts = [pt for i, pt in enumerate(rf_pts)
                               if not pt.is_equivalent(rf_pts[i - 1], tolerance)]
+                    if current_poly is None or len(rf_pts) < 2:
+                        return None  # point not inside a roof; invalid roof
                     # check that the first two vertices are not a sliver
                     if abs(rf_pts[0].x - rf_pts[1].x) < tolerance and \
                             abs(rf_pts[0].y - rf_pts[1].y) < tolerance:
