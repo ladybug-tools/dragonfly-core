@@ -1303,13 +1303,22 @@ class Building(_BaseGeometry):
         try:
             ad_bc = bcs.adiabatic
         except AttributeError:  # honeybee_energy is not loaded
-            ad_bc = bcs.outdoors
+            ad_bc = bcs.outdoors if not adiabatic else bcs.ground
 
         # get the footprints, heights and bounding points of all of the buildings
-        footprints = [b.footprint(tolerance) for b in buildings]
-        foot_poly = [[Polygon2D((Point2D(p.x, p.y) for p in f.vertices)) for f in face]
-                     for face in footprints]
-        heights = [b.height for b in buildings]
+        story_heights, story_polys = [], []
+        for bldg in buildings:
+            bldg_polys, bldg_s_hgts = [], []
+            for story in bldg.unique_stories:
+                flr_hgt = story.floor_height
+                bldg_s_hgts.append((flr_hgt, flr_hgt + story.floor_to_floor_height))
+                story_foot = story.footprint(tolerance)
+                st_poly = [Polygon2D((Point2D(p.x, p.y) for p in face.vertices))
+                           for face in story_foot]
+                bldg_polys.append(st_poly)
+            story_heights.append(bldg_s_hgts)
+            story_polys.append(bldg_polys)
+        bldg_heights = [b.height for b in buildings]
         bldg_pts = []
         for bldg in buildings:
             b_min, b_max = bldg.min, bldg.max
@@ -1319,34 +1328,42 @@ class Building(_BaseGeometry):
         # loop through the buildings and set the properties of the relevant walls
         for i, bldg in enumerate(buildings):
             # first determine the relevant buildings and building heights
-            rel_polys, rel_heights = [], []
-            other_indices = range(i) + range(i + 1, len(buildings))
+            rel_st_polys, rel_st_heights, rel_b_heights = [], [], []
+            other_indices = list(range(i)) + list(range(i + 1, len(buildings)))
             for j in other_indices:
                 if Building._bound_rect_in_dist(bldg_pts[i], bldg_pts[j], distance):
-                    rel_polys.append(foot_poly[j])
-                    rel_heights.append(heights[j])
+                    rel_st_polys.append(story_polys[j])
+                    rel_st_heights.append(story_heights[j])
+                    rel_b_heights.append(bldg_heights[j])
+
             # then, loop through the story Room2Ds and set properties of relevant walls
             for story in bldg.unique_stories:
+                st_hgt, st_f2f = story.floor_height, story.floor_to_floor_height
+                st_c_hgt = st_hgt + st_f2f
                 for rm in story.room_2ds:
-                    zip_obj = zip(
-                        rm.boundary_conditions, rm.floor_segments_2d, rm.segment_normals)
+                    zip_r_objs = zip(rm.boundary_conditions, rm.floor_segments_2d,
+                                     rm.segment_normals)
                     new_bcs = list(rm.boundary_conditions)
                     new_win_pars = list(rm.window_parameters)
-                    for k, (bc, seg, normal) in enumerate(zip_obj):
+                    for k, (bc, seg, normal) in enumerate(zip_r_objs):
                         if not isinstance(bc, Outdoors):  # nothing to change
                             continue
                         seg_mid = seg.midpoint.move(normal * -tolerance)
                         seg_ray = LineSegment2D.from_sdl(seg_mid, normal, distance)
-                        for rel_poly, rel_hgt in zip(rel_polys, rel_heights):
-                            if story.floor_height >= rel_hgt - tolerance:
+                        zip_b_objs = zip(rel_b_heights, rel_st_polys, rel_st_heights)
+                        for bh, rel_poly, rel_hgt in zip_b_objs:
+                            if st_hgt >= bh - tolerance:
                                 continue  # story above other bldg; we can ignore it
-                            for o_poly in rel_poly:
-                                if len(o_poly.intersect_line_ray(seg_ray)) > 0:
-                                    # we have found an alleyway!
-                                    new_win_pars[k] = None
-                                    if adiabatic:
-                                        new_bcs[k] = ad_bc
-                                    break
+                            for o_story, o_h in zip(rel_poly, rel_hgt):
+                                overlap = min((o_h[1], st_c_hgt)) - max((o_h[0], st_hgt))
+                                if overlap >= st_f2f * 0.33:  # more than 1/3 overlap
+                                    for o_poly in o_story:
+                                        if len(o_poly.intersect_line_ray(seg_ray)) > 0:
+                                            # we have found an alleyway!
+                                            new_win_pars[k] = None
+                                            if adiabatic:
+                                                new_bcs[k] = ad_bc
+                                            break
                     # assign the new window parameters and boundary conditions
                     rm.window_parameters = new_win_pars
                     rm.boundary_conditions = new_bcs

@@ -551,6 +551,29 @@ def test_snap_to_grid():
     assert len(model.room_2ds) == 180
 
 
+def test_process_alleys():
+    """Test the Building.process_alleys method."""
+    model_file = './tests/json/alleyway_detailed.dfjson'
+    model = Model.from_file(model_file)
+    Building.process_alleys(model.buildings, adiabatic=True)
+
+    ad_count = 0
+    for story in model.buildings[0]:
+        for room in story:
+            for bc in room.boundary_conditions:
+                if not isinstance(bc, (Outdoors, Surface)):
+                    ad_count += 1
+    assert ad_count == 2
+
+    ad_count = 0
+    for story in model.buildings[1]:
+        for room in story:
+            for bc in room.boundary_conditions:
+                if not isinstance(bc, (Outdoors, Surface)):
+                    ad_count += 1
+    assert ad_count == 2
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
