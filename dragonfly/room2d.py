@@ -2083,6 +2083,15 @@ class Room2D(_BaseGeometry):
         """
         # create a 3D version of the line for the closest point calculation
         if isinstance(line, LineSegment2D):
+            # check if the coordinate values are too high to resolve with tolerance
+            t_up = tolerance * 1e6
+            if line.p.x > t_up or line.p.y > t_up or line.v.x > t_up or line.v.y > t_up:
+                min_pt, max_pt = self.min, self.max
+                base, hgt = max_pt.x - min_pt.x, max_pt.y - min_pt.y
+                bound_rect = Polygon2D.from_rectangle(min_pt, Vector2D(0, 1), base, hgt)
+                inter_pts = bound_rect.intersect_line_ray(line)
+                if len(inter_pts) == 2:
+                    line = LineSegment2D.from_end_points(inter_pts[0], inter_pts[1])
             line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, self.floor_height),
                                     Vector3D(line.v.x, line.v.y, 0))
         else:
@@ -2192,8 +2201,19 @@ class Room2D(_BaseGeometry):
         """
         # create 3D versions of the lines for the closest point calculation
         lines_3d = []
+        t_up = tolerance * 1e6
         for line in lines:
             if isinstance(line, LineSegment2D):
+                # check if the coordinate values are too high to resolve with tolerance
+                if line.p.x > t_up or line.p.y > t_up or \
+                        line.v.x > t_up or line.v.y > t_up:
+                    min_pt, max_pt = self.min, self.max
+                    base, hgt = max_pt.x - min_pt.x, max_pt.y - min_pt.y
+                    bound_rect = Polygon2D.from_rectangle(
+                        min_pt, Vector2D(0, 1), base, hgt)
+                    inter_pts = bound_rect.intersect_line_ray(line)
+                    if len(inter_pts) == 2:
+                        line = LineSegment2D.from_end_points(inter_pts[0], inter_pts[1])
                 line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, self.floor_height),
                                         Vector3D(line.v.x, line.v.y, 0))
                 lines_3d.append(line_3d)

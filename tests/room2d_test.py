@@ -805,6 +805,20 @@ def test_split_with_line():
         pytest.approx(room2d.exterior_aperture_area / 2, rel=1e-2)
 
 
+def test_split_with_line_extreme_coordinate():
+    """Test the Room2D split_with_line method with extreme coordinate values."""
+    f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
+    room2d = Room2D('SquareShoebox1', Face3D(f_pts), 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 4
+    room2d.to_detailed_windows()
+
+    l_pts = (Point2D(1, -99999), Point2D(1, 99999))
+    line = LineSegment2D.from_end_points(*l_pts)
+    int_result = room2d.split_with_line(line, 0.01)
+    assert len(int_result) == 2
+
+
 def test_split_with_polyline():
     """Test the Room2D split_with_polyline method."""
     f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
