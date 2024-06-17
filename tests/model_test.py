@@ -582,8 +582,8 @@ def test_check_duplicate_identifiers():
     pts_4 = (Point3D(10, 20, 3), Point3D(10, 30, 3), Point3D(20, 30, 3), Point3D(20, 20, 3))
     room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
     room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
-    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
-    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    room2d_3 = Room2D('Office1', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office2', Face3D(pts_4), 3)
     story_1 = Story('OfficeFloor1', [room2d_1, room2d_2])
     story_2 = Story('OfficeFloor2', [room2d_3, room2d_4])
     story_1.solve_room_2d_adjacency(0.01)
@@ -607,13 +607,17 @@ def test_check_duplicate_identifiers():
 
     model_1.add_building(building_2)
     model_1.add_context_shade(tree_canopy_2)
-
-    assert model_1.check_duplicate_building_identifiers(False) != ''
+    assert model_1.check_duplicate_room_2d_identifiers(False) != ''
     with pytest.raises(ValueError):
-        model_1.check_duplicate_building_identifiers(True)
+        model_1.check_duplicate_room_2d_identifiers(True)
     assert model_1.check_duplicate_context_shade_identifiers(False) != ''
     with pytest.raises(ValueError):
         model_1.check_duplicate_context_shade_identifiers(True)
+
+    model_2 = Model('NewDevelopment1', [building_1, building_2], [tree_canopy_1])
+    assert model_2.check_duplicate_building_identifiers(False) != ''
+    with pytest.raises(ValueError):
+        model_2.check_duplicate_building_identifiers(True)
 
 
 def test_to_honeybee():
