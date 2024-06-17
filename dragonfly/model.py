@@ -109,7 +109,9 @@ class Model(_BaseGeometry):
         self._context_shades = []
         if buildings is not None:
             for bldg in buildings:
-                self.add_building(bldg)
+                assert isinstance(bldg, Building), \
+                    'Expected Building. Got {}.'.format(type(bldg))
+                self._buildings.append(bldg)
         if context_shades is not None:
             for shade in context_shades:
                 self.add_context_shade(shade)
@@ -546,7 +548,13 @@ class Model(_BaseGeometry):
     def add_building(self, obj):
         """Add a Building object to the model."""
         assert isinstance(obj, Building), 'Expected Building. Got {}.'.format(type(obj))
-        self._buildings.append(obj)
+        for e_bldg in self._buildings:
+            if obj.identifier == e_bldg.identifier:
+                e_bldg.add_stories(obj.unique_stories)
+                e_bldg.add_room_3ds(obj.room_3ds)
+                break
+        else:
+            self._buildings.append(obj)
 
     def add_context_shade(self, obj):
         """Add a ContextShade object to the model."""
@@ -1564,7 +1572,8 @@ class Model(_BaseGeometry):
         # loop through the ContextShades and grab the relevant objects
         if shade_ids is not None and len(shade_ids) != 0:
             cs_ids = set(shade_ids)
-            if 'context_shades' in model_dict and model_dict['context_shades'] is not None:
+            if 'context_shades' in model_dict and \
+                    model_dict['context_shades'] is not None:
                 new_shades = []
                 for cs_dict in model_dict['context_shades']:
                     if cs_dict['identifier'] in cs_ids:

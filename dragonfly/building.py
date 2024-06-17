@@ -841,12 +841,22 @@ class Building(_BaseGeometry):
         Args:
             stories: A list or tuple of Story objects to be added to this building.
         """
+        # check to be sure all of the input is correct
         for story in stories:
             assert isinstance(story, Story), \
                 'Expected dragonfly Story. Got {}'.format(type(story))
-            story._parent = self
-        unique_stories = list(self._unique_stories) + list(stories)
-        unique_stories = tuple(sorted(unique_stories, key=lambda x: x.floor_height))
+        # create the list of new stories, merging stories that have the same identifier
+        new_stories = list(self._unique_stories)
+        for o_story in stories:
+            for e_story in new_stories:
+                if o_story.identifier == e_story.identifier:
+                    e_story.add_room_2ds(o_story.room_2ds)
+                    break
+            else:
+                o_story._parent = self
+                new_stories.append(o_story)
+        # sort the stories by floor level and assign them to this Building
+        unique_stories = tuple(sorted(new_stories, key=lambda x: x.floor_height))
         self._unique_stories = unique_stories
 
     def add_room_3ds(self, rooms):
