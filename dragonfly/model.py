@@ -19,7 +19,7 @@ from ladybug_geometry.geometry3d.polyface import Polyface3D
 from ladybug.futil import preparedir
 from ladybug.location import Location
 
-from honeybee.typing import float_positive, invalid_dict_error
+from honeybee.typing import float_positive, invalid_dict_error, clean_and_number_string
 from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, parse_distance_string, \
     UNITS, UNITS_TOLERANCES
@@ -542,16 +542,16 @@ class Model(_BaseGeometry):
         if self.units != other_model.units:
             other_model.convert_to_units(self.units)
         # add the Buildings while checking to see if they should be merged
-        bldg_to_add = []
+        bldg_to_add = list(self._buildings)
         for o_bldg in other_model._buildings:
-            for e_bldg in self._buildings:
+            for e_bldg in bldg_to_add:
                 if o_bldg.identifier == e_bldg.identifier:
                     e_bldg.add_stories(o_bldg.unique_stories)
                     e_bldg.add_room_3ds(o_bldg.room_3ds)
                     break
             else:
                 bldg_to_add.append(o_bldg)
-        self._buildings = self._buildings + bldg_to_add
+        self._buildings = bldg_to_add
         # add the ContextShades while checking for duplicate IDs
         if len(other_model._context_shades) != 0:
             new_context = self._context_shades
@@ -559,6 +559,7 @@ class Model(_BaseGeometry):
             for o_shd in other_model._context_shades:
                 if o_shd.identifier not in exist_set:
                     new_context.append(o_shd)
+                    exist_set.add(o_shd.identifier)
             self._context_shades = new_context
 
     def add_building(self, obj):
@@ -649,6 +650,142 @@ class Model(_BaseGeometry):
                 raise ValueError(
                     'ContextShade "{}" was not found in the model.'.format(identifier))
         return context_shades
+
+    def add_prefix(self, prefix):
+        """Change the identifier of this object and child objects by inserting a prefix.
+
+        This is particularly useful in workflows where you duplicate and edit
+        a starting object and then want to combine it with the original object
+        since all objects within a Model must have unique identifiers to be valid.
+
+        Args:
+            prefix: Text that will be inserted at the start of this object's
+                (and child objects') identifier and display_name. It is recommended
+                that this prefix be short to avoid maxing out the 100 allowable
+                characters for identifiers.
+        """
+        for bldg in self._buildings:
+            bldg.add_prefix(prefix)
+        for shade in self._context_shades:
+            shade.add_prefix(prefix)
+
+    def resolve_id_collisions(self):
+        """Resolve collisions of duplicate identifiers that exist in the Model.
+
+        In the case that Building or Story identifiers are duplicated, these objects
+        will be merged together. In the case that Room2Ds that have matching
+        identifiers, an integer will be automatically appended to the Room2D ID
+        to make it unique. Context Shades and 3D Rooms that collide will similarly
+        have their IDs tweaked with an integer if they are duplicated.
+        """
+        # loop through the Buildings and Stories and combine duplicated IDs
+        merged_buildings = []
+        for o_bldg in self._buildings:
+            for e_bldg in merged_buildings:
+                if o_bldg.identifier == e_bldg.identifier:
+                    e_bldg.add_stories(o_bldg.unique_stories, add_duplicate_ids=True)
+                    e_bldg.add_room_3ds(o_bldg.room_3ds, add_duplicate_ids=True)
+                    break
+            else:
+                merged_buildings.append(o_bldg)
+        self._buildings = merged_buildings
+        # loop through all Rooms and ensure their identifiers are unique
+        rm_dict = {}
+        for room_2d in self.room_2ds + self.room_3ds:
+            room_2d.identifier = clean_and_number_string(
+                room_2d.identifier, rm_dict, 'Room identifier')
+        # loop through all ContextShades ans ensure their identifiers are unique
+        shd_dict = {}
+        for shade in self._context_shades:
+            shade.identifier = clean_and_number_string(
+                shade.identifier, shd_dict, 'Shade identifier')
+
+    def reset_ids(self, repair_surface_bcs=True):
+        """Reset the identifiers of all Model objects to be derived from display_names.
+
+        In the event that duplicate identifiers are found, an integer will be
+        automatically appended to the new ID to make it unique. This is similar
+        to the routines that automatically assign unique names to OpenStudio SDK
+        objects.
+
+        Args:
+            repair_surface_bcs: A Boolean to note whether all Surface boundary
+                conditions across the model should be updated with the new
+                identifiers that were generated from the display names. (Default: True).
+        """
+        # set up dictionaries to hold various pieces of information
+        room_map, face_map, ap_map, dr_map = {}, {}, {}, {}
+        bldg_dict, story_dict, rm_dict, shd_dict = {}, {}, {}, {}
+        face_dict, ap_dict, dr_dict = {}, {}, {}
+
+        # loop through the objects and change their identifiers
+        for shade in self._context_shades:
+            shade.identifier = clean_and_number_string(
+                shade.display_name, shd_dict, 'Shade identifier')
+        for bldg in self._buildings:
+            bldg.identifier = clean_and_number_string(
+                bldg.display_name, bldg_dict, 'Building identifier')
+        for story in self.stories:
+            story.identifier = clean_and_number_string(
+                story.display_name, story_dict, 'Story identifier')
+        for rm in self.room_2ds + self.room_3ds:
+            new_id = clean_and_number_string(
+                rm.display_name, rm_dict, 'Room identifier')
+            room_map[rm.identifier] = new_id
+            rm.identifier = new_id
+            if isinstance(rm, HBRoom):
+                for face in rm.faces:
+                    new_id = clean_and_number_string(
+                        face.display_name, face_dict, 'Face identifier')
+                    face_map[face.identifier] = new_id
+                    face.identifier = new_id
+                    for ap in face.apertures:
+                        new_id = clean_and_number_string(
+                            ap.display_name, ap_dict, 'Aperture identifier')
+                        ap_map[ap.identifier] = new_id
+                        ap.identifier = new_id
+                    for dr in face.doors:
+                        new_id = clean_and_number_string(
+                            dr.display_name, dr_dict, 'Door identifier')
+                        dr_map[dr.identifier] = new_id
+                        dr.identifier = new_id
+
+        # reset all of the Surface boundary conditions if requested
+        if repair_surface_bcs:
+            # reset all of the Surface conditions on the Room2Ds
+            for room in self.room_2ds:
+                new_bcs = []
+                for bc in room.boundary_conditions:
+                    if isinstance(bc, Surface):
+                        old_objs = bc.boundary_condition_objects
+                        face_id = old_objs[0].split('..')[-1]
+                        new_adj_f = '{}..{}'.format(room_map[old_objs[1]], face_id)
+                        new_objs = (new_adj_f, room_map[old_objs[1]])
+                        new_bc = Surface(new_objs)
+                        new_bcs.append(new_bc)
+                    else:
+                        new_bcs.append(bc)
+                room.boundary_conditions = new_bcs
+            # reset all of the Surface conditions on the 3D Rooms
+            for room in self.room_3ds:
+                for face in room.faces:
+                    if isinstance(face.boundary_condition, Surface):
+                        old_objs = face.boundary_condition.boundary_condition_objects
+                        new_objs = (face_map[old_objs[0]], room_map[old_objs[1]])
+                        new_bc = Surface(new_objs)
+                        face.boundary_condition = new_bc
+                        for ap in face.apertures:
+                            old_objs = ap.boundary_condition.boundary_condition_objects
+                            new_objs = (ap_map[old_objs[0]], face_map[old_objs[1]],
+                                        room_map[old_objs[2]])
+                            new_bc = Surface(new_objs, True)
+                            ap.boundary_condition = new_bc
+                        for dr in face.doors:
+                            old_objs = dr.boundary_condition.boundary_condition_objects
+                            new_objs = (dr_map[old_objs[0]], face_map[old_objs[1]],
+                                        room_map[old_objs[2]])
+                            new_bc = Surface(new_objs, True)
+                            dr.boundary_condition = new_bc
 
     def separate_top_bottom_floors(self, separate_mid=False):
         """Separate top/bottom Stories with non-unity multipliers into their own Stories.

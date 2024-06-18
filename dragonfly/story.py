@@ -654,6 +654,9 @@ using-multipliers-zone-and-or-window.html
     def add_room_2d(self, room_2d):
         """Add a Room2D to this Story.
 
+        No check will be performed for whether the input room_2d's identifier
+        matches one in the current Story.
+
         Args:
             room_2d: A Room2D object to be added to this Story.
         """
@@ -662,23 +665,33 @@ using-multipliers-zone-and-or-window.html
         room_2d._parent = self
         self._room_2ds = self._room_2ds + (room_2d,)
 
-    def add_room_2ds(self, rooms_2ds):
-        """Add a list of Room2Ds to this Story.
-
-        Room2Ds that have matching identifiers within the current Story
-        will not be added in order to avoid ID conflicts.
+    def add_room_2ds(self, rooms_2ds, add_duplicate_ids=False):
+        """Add a list of Room2Ds to this Story with checks for duplicate identifiers.
 
         Args:
             room_2d: A list of Room2D objects to be added to this Story.
+            add_duplicate_ids: A boolean to note whether added Room2Ds that
+                have matching identifiers within the current Story should be
+                ignored (False) or they should be added to the Story creating
+                an ID collision that can be resolved later (True). (Default: False).
         """
-        new_room_2ds = list(self._room_2ds)
-        exist_set = {rm.identifier for rm in self._room_2ds}
+        # check to be sure that the input is composed of Room2Ds
         for o_room_2d in rooms_2ds:
             assert isinstance(o_room_2d, Room2D), \
                 'Expected dragonfly Room2D. Got {}'.format(type(o_room_2d))
-            if o_room_2d.identifier not in exist_set:
+        # add the rooms and deal with duplicated IDs appropriately
+        new_room_2ds = list(self._room_2ds)
+        if add_duplicate_ids:
+            for o_room_2d in rooms_2ds:
                 o_room_2d._parent = self
                 new_room_2ds.append(o_room_2d)
+        else:
+            exist_set = {rm.identifier for rm in self._room_2ds}
+            for o_room_2d in rooms_2ds:
+                if o_room_2d.identifier not in exist_set:
+                    o_room_2d._parent = self
+                    new_room_2ds.append(o_room_2d)
+        # assign the new Room2Ds to this Story
         self._room_2ds = tuple(new_room_2ds)
 
     def reset_room_2d_boundaries(

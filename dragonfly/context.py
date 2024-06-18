@@ -243,7 +243,7 @@ class ContextShade(_BaseGeometry):
                 try:  # catch all degeneracy in the process
                     n_geo = n_geo.remove_duplicate_vertices(tolerance)
                     new_geometry.append(n_geo)
-                except:  # degenerate geometry
+                except AssertionError:  # degenerate geometry
                     pass
             elif isinstance(geo, Mesh3D):
                 new_vertices = []

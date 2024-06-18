@@ -832,17 +832,22 @@ class Building(_BaseGeometry):
         return Room2D.generate_alignment_axes(
             self.unique_room_2ds, distance, direction, angle_tolerance)
 
-    def add_stories(self, stories):
+    def add_stories(self, stories, add_duplicate_ids=False):
         """Add additional Story objects to this Building.
 
         Using this method will ensure that Stories are ordered according to their
         floor height as they are added. Also, in the case that Story identifiers
         match an existing one in this Building, these Stories will be merged
-        together. Room2Ds that have matching identifiers within a merged Story
-        will not be added in order to avoid ID conflicts.
+        together. If add_duplicate_ids is False, Room2Ds that have matching
+        identifiers within a merged Story will not be ignored in order to
+        avoid ID conflicts.
 
         Args:
             stories: A list or tuple of Story objects to be added to this Building.
+            add_duplicate_ids: A boolean to note whether added Room2Ds that
+                have matching identifiers within each Story should be ignored (False)
+                or they should be added to the Story creating an ID collision
+                that can be resolved later (True). (Default: False).
         """
         # check to be sure all of the input is correct
         for story in stories:
@@ -853,7 +858,7 @@ class Building(_BaseGeometry):
         for o_story in stories:
             for e_story in new_stories:
                 if o_story.identifier == e_story.identifier:
-                    e_story.add_room_2ds(o_story.room_2ds)
+                    e_story.add_room_2ds(o_story.room_2ds, add_duplicate_ids)
                     break
             else:
                 o_story._parent = self
@@ -862,20 +867,39 @@ class Building(_BaseGeometry):
         unique_stories = tuple(sorted(new_stories, key=lambda x: x.floor_height))
         self._unique_stories = unique_stories
 
-    def add_room_3ds(self, rooms):
+    def add_room_3ds(self, rooms, add_duplicate_ids=False):
         """Add additional 3D Honeybee Room objects to this Building.
 
         Args:
             stories: A list or tuple of Honeybee Room objects to be added to
                 this building.
+            add_duplicate_ids: A boolean to note whether added Rooms that
+                have matching identifiers within the current Building should be
+                ignored (False) or they should be added to the Building creating
+                an ID collision that can be resolved later (True). (Default: False).
         """
+        # check to be sure that the input is composed of Rooms
         for room in rooms:
             assert isinstance(room, Room), \
                 'Expected honeybee Room. Got {}'.format(type(room))
-            room._parent = self
-            if room.story is None:
-                room.story = 'Unknown'
-        self._room_3ds = self._room_3ds + tuple(rooms)
+        # add the rooms and deal with duplicated IDs appropriately
+        new_room_3ds = list(self._room_3ds)
+        if add_duplicate_ids:
+            for room in rooms:
+                room._parent = self
+                if room.story is None:
+                    room.story = 'Unknown'
+                new_room_3ds.append(room)
+        else:
+            exist_set = {rm.identifier for rm in self._room_3ds}
+            for room in rooms:
+                if room.identifier not in exist_set:
+                    room._parent = self
+                    if room.story is None:
+                        room.story = 'Unknown'
+                    new_room_3ds.append(room)
+        # assign the new Rooms to this Building
+        self._room_3ds = tuple(new_room_3ds)
 
     def convert_room_3d_to_2d(self, room_3d_identifier, tolerance=0.01):
         """Convert a single 3D Honeybee Room to a Dragonfly Room2D on this Building.
