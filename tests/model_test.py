@@ -223,6 +223,64 @@ def test_model_add_model():
     assert len(model_1.buildings) == 2
     assert len(model_1.context_shades) == 2
 
+    # check that duplicated ids are handled
+    model_3 = Model('NewDevelopment3', [building_1], [tree_canopy_1])
+    model_4 = Model('NewDevelopment4', [building_1], [tree_canopy_1])
+    assert len(model_3.buildings) == 1
+    assert len(model_3.context_shades) == 1
+    assert len(model_4.buildings) == 1
+    assert len(model_4.context_shades) == 1
+    combined_model = model_3 + model_4
+    assert len(combined_model.buildings) == 1
+    assert len(combined_model.stories) == 1
+    assert len(combined_model.room_2ds) == 2
+    assert len(combined_model.context_shades) == 1
+
+
+def test_model_add_prefix():
+    """Test the Model.add_prefix method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office_Building', [story])
+
+    tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
+    tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
+    tree_canopy = ContextShade('Tree_Canopy', [tree_canopy_geo1, tree_canopy_geo2])
+
+    model = Model('Development', [building], [tree_canopy])
+    prefix = 'New'
+    model.add_prefix(prefix)
+
+    assert building.identifier.startswith(prefix)
+    for story in building.unique_stories:
+        assert story.identifier.startswith(prefix)
+        for rm in story.room_2ds:
+            assert rm.identifier.startswith(prefix)
+    for shd in model.context_shades:
+        assert shd.identifier.startswith(prefix)
+
+
+def test_reset_ids():
+    """Test the reset_ids method."""
+    model_json = './tests/json/model_with_doors_skylights.dfjson'
+    parsed_model = Model.from_dfjson(model_json)
+
+    new_model = parsed_model.duplicate()
+    new_model.reset_ids(True)
+
+    assert new_model.room_2ds[0].identifier != parsed_model.room_2ds[0].identifier
+    assert new_model.check_missing_adjacencies() == ''
+
 
 def test_move():
     """Test the Model move method."""
@@ -328,12 +386,18 @@ def test_rotate_xy():
     origin_1 = Point3D(1, 1, 0)
     test_1 = model.duplicate()
     test_1.rotate_xy(180, origin_1)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[0].x == pytest.approx(1, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[0].y == pytest.approx(1, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[0].z == pytest.approx(2, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[2].x == pytest.approx(0, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[2].y == pytest.approx(0, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[2].z == pytest.approx(2, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[0].x == \
+        pytest.approx(1, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[0].y == \
+        pytest.approx(1, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[0].z == \
+        pytest.approx(2, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[2].x == \
+        pytest.approx(0, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[2].y == \
+        pytest.approx(0, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[2].z == \
+        pytest.approx(2, rel=1e-3)
 
     assert test_1.context_shades[0][0][0].x == pytest.approx(1, rel=1e-3)
     assert test_1.context_shades[0][0][0].y == pytest.approx(1, rel=1e-3)
@@ -363,12 +427,18 @@ def test_reflect():
 
     test_1 = model.duplicate()
     test_1.reflect(plane_1)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[-1].x == pytest.approx(1, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[-1].y == pytest.approx(1, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[-1].z == pytest.approx(2, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[1].x == pytest.approx(0, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[1].y == pytest.approx(2, rel=1e-3)
-    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[1].z == pytest.approx(2, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[-1].x == \
+        pytest.approx(1, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[-1].y == \
+        pytest.approx(1, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[-1].z == \
+        pytest.approx(2, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[1].x == \
+        pytest.approx(0, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[1].y == \
+        pytest.approx(2, rel=1e-3)
+    assert test_1.buildings[0].unique_stories[0].room_2ds[0].floor_geometry[1].z == \
+        pytest.approx(2, rel=1e-3)
 
     assert test_1.context_shades[0][0][-1].x == pytest.approx(1, rel=1e-3)
     assert test_1.context_shades[0][0][-1].y == pytest.approx(1, rel=1e-3)
@@ -385,9 +455,9 @@ def test_reset_room_2d_boundaries():
     bound_dict = {
         "type": "Polygon2D",
         "vertices": [
-            [-4.8880684825623826, -3.3025939785814966], 
-            [13.162931517437627, -3.3025939785814966], 
-            [13.162931517437627, 2.8994060214182316], 
+            [-4.8880684825623826, -3.3025939785814966],
+            [13.162931517437627, -3.3025939785814966],
+            [13.162931517437627, 2.8994060214182316],
             [-4.8880684825623826, 2.8994060214182316]
         ]
     }
@@ -421,17 +491,17 @@ def test_room_2ds_pulling_methods():
     all_rooms = list(model.room_2ds)
     p_line_dict = {
         "vertices": [
-            [41.948730157743668, -158.55282855259856], 
-            [40.342412085619216, -155.436554667964], 
-            [38.964213381250516, -152.21289386009886], 
-            [37.266824978903102, -146.93482869788193], 
-            [36.179711222359543, -141.49816768901238], 
-            [35.716933133643359, -135.97323007075525], 
-            [35.884476409153223, -130.43147687380934], 
-            [36.545268095082271, -125.63224336825779], 
-            [38.495343179376093, -118.87011597488173], 
+            [41.948730157743668, -158.55282855259856],
+            [40.342412085619216, -155.436554667964],
+            [38.964213381250516, -152.21289386009886],
+            [37.266824978903102, -146.93482869788193],
+            [36.179711222359543, -141.49816768901238],
+            [35.716933133643359, -135.97323007075525],
+            [35.884476409153223, -130.43147687380934],
+            [36.545268095082271, -125.63224336825779],
+            [38.495343179376093, -118.87011597488173],
             [42.69922884129204, -107.96430429448071]
-        ], 
+        ],
         "type": "Polyline2D"
     }
     p_line = Polyline2D.from_dict(p_line_dict)
@@ -614,10 +684,17 @@ def test_check_duplicate_identifiers():
     with pytest.raises(ValueError):
         model_1.check_duplicate_context_shade_identifiers(True)
 
+    model_1.resolve_id_collisions()
+    assert model_1.check_duplicate_room_2d_identifiers(False) == ''
+    assert model_1.check_duplicate_context_shade_identifiers(False) == ''
+
     model_2 = Model('NewDevelopment1', [building_1, building_2], [tree_canopy_1])
     assert model_2.check_duplicate_building_identifiers(False) != ''
     with pytest.raises(ValueError):
         model_2.check_duplicate_building_identifiers(True)
+
+    model_2.resolve_id_collisions()
+    assert model_1.check_duplicate_building_identifiers(False) == ''
 
 
 def test_to_honeybee():
@@ -801,6 +878,7 @@ def test_to_honeybee_hip_roof():
     assert upper_story.roof is not None
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models) == 1
 
 
 def test_to_honeybee_vertical_gap():
@@ -824,7 +902,7 @@ def test_to_honeybee_roof_with_dormer():
     assert upper_story.roof is not None
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
-    assert len(hb_models[0].rooms[0].shades) ==  2
+    assert len(hb_models[0].rooms[0].shades) == 2
 
     # try moving the dormer to see if it still translates successfully
     roof_polys = upper_story.roof.boundary_geometry_2d
@@ -837,9 +915,10 @@ def test_to_honeybee_roof_with_dormer():
                     else pt.move(Vector2D(5, 0))
                 new_poly_pts.append(new_pt)
             upper_story.roof.update_geometry_2d(Polygon2D(new_poly_pts), i)
-    
+
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
-    assert len(hb_models[0].rooms[0].shades) ==  2
+    assert len(hb_models[0].rooms[0].shades) == 2
+
 
 def test_to_honeybee_invalid_roof_1():
     """Test to_honeybee with an invalid roof to ensure all exceptions are caught."""
@@ -849,6 +928,7 @@ def test_to_honeybee_invalid_roof_1():
     assert upper_story.roof is not None
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models) == 1
 
 
 def test_to_honeybee_invalid_roof_2():
@@ -859,6 +939,7 @@ def test_to_honeybee_invalid_roof_2():
     assert upper_story.roof is not None
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models) == 1
 
 
 def test_model_with_room3ds():
@@ -1326,7 +1407,7 @@ def test_from_geojson_coordinates_simple_location():
     vertices = bldg1.footprint()[0].vertices
     test_vertices = test_building.footprint()[0].vertices
     for point, test_point in zip(vertices, test_vertices):
-        assert point.is_equivalent(test_point, 1e-3) # reduce precision due to conversion
+        assert point.is_equivalent(test_point, 1e-3)  # reduce precision due to conversion
 
     nukedir(os.path.join(geojson_folder, test_model.identifier), True)
 
@@ -1340,7 +1421,7 @@ def test_geojson_coordinates_to_face3d():
     convert_facs = (1 / convert_facs[0], 1 / convert_facs[1])
 
     # Test a Polygon
-    geojson_polygon_coords = {'coordinates':[
+    geojson_polygon_coords = {'coordinates': [
         [[-70.0, 42.0],
          [-69.99997578750273, 42.0],
          [-69.99997578750273, 42.00001799339205],
@@ -1362,7 +1443,7 @@ def test_geojson_coordinates_to_face3d():
     assert poly2d.is_equivalent(test_poly2d, 1e-5)
 
     # Test a Polygon w/ holes
-    geojson_polygon_coords = {'coordinates':[
+    geojson_polygon_coords = {'coordinates': [
         [[-70.0, 42.0],
          [-69.99997578750273, 42.0],
          [-69.99997578750273, 42.00001799339205],
