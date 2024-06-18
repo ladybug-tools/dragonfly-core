@@ -528,11 +528,20 @@ class Model(_BaseGeometry):
         return self._calculate_max(self._buildings + self._context_shades)
 
     def add_model(self, other_model):
-        """Add another Dragonfly Model object to this one."""
+        """Add another Dragonfly Model object to this one.
+
+        In the case that Building or Story identifiers in the other_model match
+        one the current model, these objects will be merged together. Room2Ds
+        that have matching identifiers within a merged Story will not be added
+        in order to avoid ID conflicts. Context Shades will also not be added if their
+        identifier matches one that is already in the Model.
+        """
+        # check that the object to merge is a Model and its units are correct
         assert isinstance(other_model, Model), \
             'Expected Dragonfly Model. Got {}.'.format(type(other_model))
         if self.units != other_model.units:
             other_model.convert_to_units(self.units)
+        # add the Buildings while checking to see if they should be merged
         bldg_to_add = []
         for o_bldg in other_model._buildings:
             for e_bldg in self._buildings:
@@ -543,10 +552,23 @@ class Model(_BaseGeometry):
             else:
                 bldg_to_add.append(o_bldg)
         self._buildings = self._buildings + bldg_to_add
-        self._context_shades = self._context_shades + other_model._context_shades
+        # add the ContextShades while checking for duplicate IDs
+        if len(other_model._context_shades) != 0:
+            new_context = self._context_shades
+            exist_set = {shd.identifier for shd in self._context_shades}
+            for o_shd in other_model._context_shades:
+                if o_shd.identifier not in exist_set:
+                    new_context.append(o_shd)
+            self._context_shades = new_context
 
     def add_building(self, obj):
-        """Add a Building object to the model."""
+        """Add a Building object to the model.
+
+        In the case that the Building or Story identifiers of the input obj match
+        one the current model, these objects will be merged together. Room2Ds
+        that are identical within a merged Story will not be merged in order
+        to avoid ID conflicts.
+        """
         assert isinstance(obj, Building), 'Expected Building. Got {}.'.format(type(obj))
         for e_bldg in self._buildings:
             if obj.identifier == e_bldg.identifier:

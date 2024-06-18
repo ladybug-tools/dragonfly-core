@@ -836,10 +836,13 @@ class Building(_BaseGeometry):
         """Add additional Story objects to this Building.
 
         Using this method will ensure that Stories are ordered according to their
-        floor height as they are added.
+        floor height as they are added. Also, in the case that Story identifiers
+        match an existing one in this Building, these Stories will be merged
+        together. Room2Ds that have matching identifiers within a merged Story
+        will not be added in order to avoid ID conflicts.
 
         Args:
-            stories: A list or tuple of Story objects to be added to this building.
+            stories: A list or tuple of Story objects to be added to this Building.
         """
         # check to be sure all of the input is correct
         for story in stories:

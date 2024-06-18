@@ -665,11 +665,21 @@ using-multipliers-zone-and-or-window.html
     def add_room_2ds(self, rooms_2ds):
         """Add a list of Room2Ds to this Story.
 
+        Room2Ds that have matching identifiers within the current Story
+        will not be added in order to avoid ID conflicts.
+
         Args:
             room_2d: A list of Room2D objects to be added to this Story.
         """
-        for room in rooms_2ds:
-            self.add_room_2d(room)
+        new_room_2ds = list(self._room_2ds)
+        exist_set = {rm.identifier for rm in self._room_2ds}
+        for o_room_2d in rooms_2ds:
+            assert isinstance(o_room_2d, Room2D), \
+                'Expected dragonfly Room2D. Got {}'.format(type(o_room_2d))
+            if o_room_2d.identifier not in exist_set:
+                o_room_2d._parent = self
+                new_room_2ds.append(o_room_2d)
+        self._room_2ds = tuple(new_room_2ds)
 
     def reset_room_2d_boundaries(
             self, polygons, identifiers=None, display_names=None,
