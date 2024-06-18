@@ -8,7 +8,6 @@ from dragonfly.shadingparameter import Overhang
 
 from honeybee.room import Room
 from honeybee.boundarycondition import Outdoors, Surface
-from honeybee.boundarycondition import boundary_conditions as bcs
 
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.line import LineSegment3D
