@@ -2460,7 +2460,7 @@ class Room2D(_BaseGeometry):
                 base_p = base_p.reverse()
             try:
                 sub_polys_perim, sub_polys_core = perimeter_core_subpolygons(
-                    polygon=base_p, distance=perimeter_offset, tol=tol)
+                    polygon=base_p, distance=perimeter_offset, tolerance=tol)
                 for spl in sub_polys_perim + sub_polys_core:
                     sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in spl])
                     new_face3d_array.append(sub_face)
