@@ -10,8 +10,7 @@ except ImportError:
 
 from ladybug_geometry.geometry2d import Vector2D, Point2D, LineSegment2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D
-from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons, \
-    perimeter_core_by_offset
+from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
 
 from honeybee.model import Model
 from honeybee.room import Room
@@ -1667,14 +1666,14 @@ class Building(_BaseGeometry):
 
         Pure extrusions can be converted into Room2Ds without any loss or
         simplification of geometry.
-        
+
         Args:
             hb_room: The 3D Honeybee Room to be tested.
             tolerance: The absolute tolerance with which the Room geometry will
                 be evaluated.
             angle_tolerance: The angle tolerance at which the geometry will
                 be evaluated in degrees.
-        
+
         Returns:
             True if the 3D Room is a pure extrusion. False if not.
         """
@@ -1787,7 +1786,7 @@ class Building(_BaseGeometry):
                             hp = hp.reverse()
                         hole_p.append(hp)
                     subp_perim, subp_core = \
-                        perimeter_core_by_offset(bound_p, perim_offset, hole_p)
+                        Polygon2D.perimeter_core_by_offset(bound_p, perim_offset, hole_p)
                     if subp_core is None:  # failed to offset the Face3D with holes
                         new_face3d_array.append(floor_face)  # just use existing floor
                     else:
