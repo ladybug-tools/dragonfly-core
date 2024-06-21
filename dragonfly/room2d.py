@@ -12,8 +12,7 @@ from ladybug_geometry.intersection2d import closest_point2d_between_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
 import ladybug_geometry.boolean as pb
-from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons, \
-    perimeter_core_by_offset
+from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
 
 from honeybee.typing import float_positive, clean_string, clean_and_id_string
 import honeybee.boundarycondition as hbc
@@ -2251,7 +2250,7 @@ class Room2D(_BaseGeometry):
             new_skys = self.skylight_parameters.split(room_faces, tolerance)
             for room, sky_par in zip(new_rooms, new_skys):
                 room.skylight_parameters = sky_par
-        
+
         return new_rooms
 
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
@@ -2443,7 +2442,7 @@ class Room2D(_BaseGeometry):
                     hp = hp.reverse()
                 hole_p.append(hp)
             subp_perim, subp_core = \
-                perimeter_core_by_offset(bound_p, perimeter_offset, hole_p)
+                Polygon2D.perimeter_core_by_offset(bound_p, perimeter_offset, hole_p)
             if subp_core is None:  # failed to offset the Face3D with holes
                 new_face3d_array.append(floor_face)  # just use existing floor
             else:
