@@ -9,8 +9,8 @@ except ImportError:
     xrange = range  # python 3
 
 from ladybug_geometry.geometry2d import Vector2D, Point2D, LineSegment2D, Polygon2D
-from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D
-from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
+from ladybug_geometry.geometry3d import Vector3D
+from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
 from honeybee.model import Model
 from honeybee.room import Room
@@ -233,7 +233,6 @@ class Building(_BaseGeometry):
                          floor_to_floor_heights[0])]
 
         # generate the remaining unique stories from the floor_to_floor_heights
-        # TODO: Add an input for core_perimeter_offsets once we have straight skeletons
         remaining_geo = all_story_geometry[1:]
         remaining_flr_hgts = floor_to_floor_heights[1:]
         prev_geo = all_story_geometry[0]
@@ -1774,43 +1773,14 @@ class Building(_BaseGeometry):
             assert perim_offset > 0, 'perimeter_offset cannot be less than than 0.'
             new_face3d_array = []
             for floor_face in face3d_array:
-                z_val = floor_face[0].z
-                if floor_face.has_holes:  # holes are not managed well in polyskel
-                    bound_p = Polygon2D([Point2D(p.x, p.y) for p in floor_face.boundary])
-                    if bound_p.is_clockwise:
-                        bound_p = bound_p.reverse()
-                    hole_p = []
-                    for hole in floor_face.holes:
-                        hp = Polygon2D([Point2D(p.x, p.y) for p in hole])
-                        if hp.is_clockwise:
-                            hp = hp.reverse()
-                        hole_p.append(hp)
-                    subp_perim, subp_core = \
-                        Polygon2D.perimeter_core_by_offset(bound_p, perim_offset, hole_p)
-                    if subp_core is None:  # failed to offset the Face3D with holes
-                        new_face3d_array.append(floor_face)  # just use existing floor
-                    else:
-                        core_b = [Point3D(p.x, p.y, z_val) for p in subp_core[0]]
-                        core_h = [[Point3D(p.x, p.y, z_val) for p in hole]
-                                  for hole in subp_core[1:]]
-                        core_face = Face3D(core_b, holes=core_h)
-                        new_face3d_array.append(core_face)
-                        for spl in subp_perim:
-                            sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in spl])
-                            new_face3d_array.append(sub_face)
-                else:
-                    base_p = Polygon2D([Point2D(p.x, p.y) for p in floor_face.boundary])
-                    if base_p.is_clockwise:
-                        base_p = base_p.reverse()
-                    try:
-                        sub_polys_perim, sub_polys_core = perimeter_core_subpolygons(
-                            polygon=base_p, distance=perim_offset, tolerance=tolerance)
-                        for spl in sub_polys_perim + sub_polys_core:
-                            sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in spl])
-                            new_face3d_array.append(sub_face)
-                    except (RuntimeError, TypeError):
-                        # the generation of the polyskel failed
-                        new_face3d_array.append(floor_face)  # just use existing floor
+                try:
+                    floor_face = floor_face.remove_colinear_vertices(tolerance)
+                    perimeter, core = perimeter_core_subfaces(
+                        floor_face, perim_offset, tolerance)
+                    new_face3d_array.extend(perimeter)
+                    new_face3d_array.extend(core)
+                except Exception:  # the generation of the polyskel failed
+                    new_face3d_array.append(floor_face)  # just use existing floor
             face3d_array = new_face3d_array  # replace with offset core/perimeter
 
         # create the Room2D objects
@@ -1822,6 +1792,8 @@ class Building(_BaseGeometry):
 
         # solve for interior adjacency if there core/perimeter zoning was requested
         if perim_offset != 0:
+            room_2ds = Room2D.intersect_adjacency(
+                room_2ds, tolerance, preserve_wall_props=False)
             Room2D.solve_adjacency(room_2ds, tolerance)
         return room_2ds
 
