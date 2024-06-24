@@ -132,6 +132,49 @@ def test_building_init_from_all_story_geometry_offset():
     assert len(building.all_room_2ds()) == 2 * 5 + 2 * 4
 
 
+def test_building_init_from_all_story_geometry_edge_case_1():
+    """Test Building objects from_all_story_geometry with an edge case."""
+    polygon_verts = [[
+        (107.3941737837053, -123.90058332855111, -7.3412644496784196e-07),
+        (102.62848174575154, -111.31680648528064, -7.3412644496784196e-07),
+        (108.11529717809981, -109.23890066739676, -7.3412644496784196e-07),
+        (113.71137779135827, -107.11949406422913, -7.3412644496784196e-07),
+        (124.32037644785611, -103.10169465481637, -7.3412644496784196e-07),
+        (124.67352580740192, -104.03386144134423, -7.3412644496784196e-07),
+        (136.00758020471866, -99.741399951079885, -7.3412644496784196e-07),
+        (142.10780771023394, -97.431092335497723, -7.3412644496784196e-07),
+        (146.5203533213477, -109.08239760629957, -7.3412644496784196e-07),
+        (140.60948597825234, -111.32104468525282, -7.3412644496784196e-07),
+        (129.05060543500056, -115.69859773284709, -7.3412644496784196e-07),
+        (118.30852718352381, -119.76693650194935, -7.3412644496784196e-07),
+        (112.78555819528032, -121.85868640512085, -7.3412644496784196e-07)
+    ]]
+    face = Face3D.from_array(polygon_verts)
+    story_geo = [[face], [face], [face], [face]]
+    building = Building.from_all_story_geometry(
+        'Office_Tower', story_geo, [4.0, 4.0, 4.0, 4.7642257402299624],
+        perimeter_offset=5.0, tolerance=0.01)
+    assert len(building.unique_stories) == 2
+    assert len(building.unique_room_2ds) == 14
+
+
+def test_building_init_from_all_story_geometry_edge_case_2():
+    """Test Building objects from_all_story_geometry with another edge case."""
+    polygon_verts = [[
+        (7.9267071033662715, 81.146691398793536, -7.3412650181126082e-07),
+        (27.970712187994433, 88.171049675350162, -7.341265004301267e-07),
+        (35.957768158530882, 66.542573700967381, -7.3412650041210438e-07),
+        (15.779534964130475, 59.365500395894841, -7.3412649469936309e-07)
+    ]]
+    face = Face3D.from_array(polygon_verts)
+    story_geo = [[face]]
+    building = Building.from_all_story_geometry(
+        'Office_Tower', story_geo, [5.0000565240740116],
+        perimeter_offset=3.0, tolerance=0.01)
+    assert len(building.unique_stories) == 1
+    assert len(building.unique_room_2ds) == 5
+
+
 def test_building_footprint_simple():
     """Test the building footprint method with simple geometry."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))

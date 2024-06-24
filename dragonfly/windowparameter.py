@@ -2537,8 +2537,10 @@ class DetailedWindows(_AsymmetricBase):
         """
         assert data['type'] == 'DetailedWindows', \
             'Expected DetailedWindows dictionary. Got {}.'.format(data['type'])
+        if len(data['polygons']) == 0:
+            return None  # empty object; just treat it as no windows
         are_doors = data['are_doors'] if 'are_doors' in data else None
-        if len(data['polygons'][0][0]) == 2:
+        if len(data['polygons'][0][0]) == 2: 
             new_w_par = cls(
                 tuple(Polygon2D(tuple(Point2D.from_array(pt) for pt in poly))
                       for poly in data['polygons']),

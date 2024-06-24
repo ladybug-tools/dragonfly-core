@@ -1779,7 +1779,8 @@ class Building(_BaseGeometry):
                         floor_face, perim_offset, tolerance)
                     new_face3d_array.extend(perimeter)
                     new_face3d_array.extend(core)
-                except Exception:  # the generation of the polyskel failed
+                except Exception as e:  # the generation of the polyskel failed
+                    print('Core/perimeter generation failed:\n{}'.format(e))
                     new_face3d_array.append(floor_face)  # just use existing floor
             face3d_array = new_face3d_array  # replace with offset core/perimeter
 
