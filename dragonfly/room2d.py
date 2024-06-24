@@ -12,7 +12,7 @@ from ladybug_geometry.intersection2d import closest_point2d_between_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
 import ladybug_geometry.boolean as pb
-from ladybug_geometry_polyskel.polysplit import perimeter_core_subpolygons
+from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
 from honeybee.typing import float_positive, clean_string, clean_and_id_string
 import honeybee.boundarycondition as hbc
@@ -2412,7 +2412,7 @@ class Room2D(_BaseGeometry):
             perimeter_offset: An optional positive number that will be used to offset
                 the perimeter of the all_story_geometry to create core/perimeter
                 zones. If this value is 0, no offset will occur and each story
-                will be represented with a single Room2D per polygon (Default: 0).
+                will be represented with a single Room2D per polygon.
             air_boundary: A boolean to note whether all of the new wall adjacencies
                 should be set to an AirBoundary type. (Default: False).
             tolerance: The maximum difference between x, y, and z values at which
@@ -2428,48 +2428,12 @@ class Room2D(_BaseGeometry):
         """
         # create the floor Face3Ds from this Room2D's floor_geometry
         tol = tolerance
-        new_face3d_array = []
-        floor_face = self.floor_geometry
-        z_val = floor_face[0].z
-        if floor_face.has_holes:
-            bound_p = Polygon2D([Point2D(p.x, p.y) for p in floor_face.boundary])
-            if bound_p.is_clockwise:
-                bound_p = bound_p.reverse()
-            hole_p = []
-            for hole in floor_face.holes:
-                hp = Polygon2D([Point2D(p.x, p.y) for p in hole])
-                if hp.is_clockwise:
-                    hp = hp.reverse()
-                hole_p.append(hp)
-            subp_perim, subp_core = \
-                Polygon2D.perimeter_core_by_offset(bound_p, perimeter_offset, hole_p)
-            if subp_core is None:  # failed to offset the Face3D with holes
-                new_face3d_array.append(floor_face)  # just use existing floor
-            else:
-                core_b = [Point3D(p.x, p.y, z_val) for p in subp_core[0]]
-                core_h = [[Point3D(p.x, p.y, z_val) for p in hole]
-                          for hole in subp_core[1:]]
-                core_face = Face3D(core_b, holes=core_h)
-                new_face3d_array.append(core_face)
-                for spl in subp_perim:
-                    sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in spl])
-                    new_face3d_array.append(sub_face)
-        else:
-            base_p = Polygon2D([Point2D(p.x, p.y) for p in floor_face.boundary])
-            if base_p.is_clockwise:
-                base_p = base_p.reverse()
-            try:
-                sub_polys_perim, sub_polys_core = perimeter_core_subpolygons(
-                    polygon=base_p, distance=perimeter_offset, tolerance=tol)
-                for spl in sub_polys_perim + sub_polys_core:
-                    sub_face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in spl])
-                    new_face3d_array.append(sub_face)
-            except (RuntimeError, TypeError):  # the generation of the polyskel failed
-                new_face3d_array.append(floor_face)  # just use existing floor
-
-        # if core/perimeter geometry could not be generated, return the current room
-        if len(new_face3d_array) <= 1:
-            return [self]
+        try:
+            perimeter, core = perimeter_core_subfaces(
+                self.floor_geometry, perimeter_offset, tol)
+            new_face3d_array = perimeter + core
+        except Exception:  # the generation of the polyskel failed; possibly neg offset
+            return [self]  # just use existing floor
 
         # create the new Room2D objects from the result
         parent_zip = (
@@ -2521,6 +2485,7 @@ class Room2D(_BaseGeometry):
                 room.skylight_parameters = sky_par
 
         # solve adjacency between the Room2Ds
+        new_rooms = Room2D.intersect_adjacency(new_rooms, tol)
         adj_info = Room2D.solve_adjacency(new_rooms, tol)
         if air_boundary:  # set air boundary type if requested
             for room_pair in adj_info:
