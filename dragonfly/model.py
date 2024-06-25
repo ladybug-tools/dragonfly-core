@@ -1369,8 +1369,18 @@ class Model(_BaseGeometry):
         # solve ceiling adjacencies if requested
         if solve_ceiling_adjacencies and \
                 object_per_model.title() in ('Building', 'District'):
+            story_rel_types = {}
+            for bldg in self.buildings:
+                for i, story in enumerate(bldg.unique_stories):
+                    rel_types = []
+                    if i == 0 or bldg.unique_stories[i - 1].multiplier == 1:
+                        rel_types.append(Floor)
+                    if story.multiplier == 1:
+                        rel_types.append(RoofCeiling)
+                    story_rel_types[story.display_name] = rel_types
             for model in models:
-                self._solve_ceil_adj(model.rooms, tolerance, self.angle_tolerance)
+                self._solve_ceil_adj(model.rooms, story_rel_types,
+                                     tolerance, self.angle_tolerance)
 
         # change the tolerance and units systems to match the dragonfly model
         for model in models:
@@ -1741,7 +1751,7 @@ class Model(_BaseGeometry):
         return filtered_model
 
     @staticmethod
-    def _solve_ceil_adj(rooms, tolerance=0.01, angle_tolerance=1):
+    def _solve_ceil_adj(rooms, story_rel_types, tolerance=0.01, angle_tolerance=1):
         """Solve Floor/Ceiling adjacencies between a list of rooms."""
         # intersect the Rooms with one another for matching adjacencies
         HBRoom.intersect_adjacency(rooms, tolerance, angle_tolerance)
@@ -1765,8 +1775,9 @@ class Model(_BaseGeometry):
         # change any remaining Floor/Roof boundary conditions to be outdoors
         relevant_bcs = (Outdoors, Surface, Ground)
         for room in rooms:
+            rel_types = story_rel_types[room.display_name]
             for face in room._faces:
-                if isinstance(face.type, relevant_types):
+                if isinstance(face.type, rel_types):
                     if not isinstance(face.boundary_condition, relevant_bcs):
                         face.boundary_condition = boundary_conditions.outdoors
 
