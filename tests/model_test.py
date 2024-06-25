@@ -1563,3 +1563,10 @@ def test_model_dict_room_2d_subset():
     assert len(model.room_2ds) == 1
     assert model.room_2ds[0].identifier == 'KitchenDining'
     assert len(model.context_shades) == 0
+
+
+def test_model_from_dfjson_encoding():
+    """Test the from_file method with a UTF-8 encoded JSON."""
+    model_json = './tests/json/model_editor_encoded.dfjson'
+    parsed_model = Model.from_file(model_json)
+    assert isinstance(parsed_model, Model)

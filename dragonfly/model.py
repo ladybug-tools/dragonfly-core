@@ -3,6 +3,7 @@
 from __future__ import division
 
 import os
+import io
 import re
 import json
 import datetime
@@ -342,9 +343,10 @@ class Model(_BaseGeometry):
         """
         # sense the file type from the first character to avoid maxing memory with JSON
         # this is needed since queenbee overwrites all file extensions
-        with open(df_file) as inf:
+        with io.open(df_file, encoding='utf-8') as inf:
             first_char = inf.read(1)
-        is_json = True if first_char == '{' else False
+            second_char = inf.read(1)
+        is_json = True if first_char == '{' or second_char == '{' else False
         # load the file using either DFJSON pathway or DFpkl
         if is_json:
             return cls.from_dfjson(df_file)
@@ -359,7 +361,12 @@ class Model(_BaseGeometry):
                 a Dragonfly model should be derived.
         """
         assert os.path.isfile(dfjson_file), 'Failed to find %s' % dfjson_file
-        with open(dfjson_file) as inf:
+        with io.open(dfjson_file, encoding='utf-8') as inf:
+            inf.read(1)
+            second_char = inf.read(1)
+        with io.open(dfjson_file, encoding='utf-8') as inf:
+            if second_char == '{':
+                inf.read(1)
             data = json.load(inf)
         if 'buildings' in data or 'context_shades' in data:
             return cls.from_dict(data)
