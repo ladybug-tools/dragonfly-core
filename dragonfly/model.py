@@ -1384,7 +1384,7 @@ class Model(_BaseGeometry):
                         rel_types.append(Floor)
                     if story.multiplier == 1:
                         rel_types.append(RoofCeiling)
-                    story_rel_types[story.display_name] = rel_types
+                    story_rel_types[story.display_name] = tuple(rel_types)
             for model in models:
                 self._solve_ceil_adj(model.rooms, story_rel_types,
                                      tolerance, self.angle_tolerance)
@@ -1782,7 +1782,7 @@ class Model(_BaseGeometry):
         # change any remaining Floor/Roof boundary conditions to be outdoors
         relevant_bcs = (Outdoors, Surface, Ground)
         for room in rooms:
-            rel_types = story_rel_types[room.display_name]
+            rel_types = story_rel_types[room.story]
             for face in room._faces:
                 if isinstance(face.type, rel_types):
                     if not isinstance(face.boundary_condition, relevant_bcs):
