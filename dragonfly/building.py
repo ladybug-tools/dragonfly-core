@@ -57,6 +57,9 @@ class Building(_BaseGeometry):
             that the Honeybee Room.multiplier property takes precedence over
             whatever multiplier is assigned to the Dragonfly Story that the
             Room.story may reference. (Default: None).
+        sort_stories: A boolean to note whether the unique_stories should be sorted
+            from lowest to highest story upon initialization (True) or whether
+            the input order of unique_stories should be left as-is. (Default: True).
 
     Properties:
         * identifier
@@ -90,7 +93,8 @@ class Building(_BaseGeometry):
     """
     __slots__ = ('_unique_stories', '_room_3ds')
 
-    def __init__(self, identifier, unique_stories=None, room_3ds=None):
+    def __init__(self, identifier, unique_stories=None, room_3ds=None,
+                 sort_stories=True):
         """A complete Building defined by Stories."""
         # initialize and perform a basic check that there's some geometry
         _BaseGeometry.__init__(self, identifier)  # process the identifier
@@ -105,7 +109,11 @@ class Building(_BaseGeometry):
                 assert isinstance(story, Story), \
                     'Expected dragonfly Story. Got {}'.format(type(story))
                 story._parent = self
-            unique_stories = tuple(sorted(unique_stories, key=lambda x: x.floor_height))
+            if sort_stories:
+                unique_stories = \
+                    tuple(sorted(unique_stories, key=lambda x: x.floor_height))
+            else:
+                unique_stories = tuple(unique_stories)
             self._unique_stories = unique_stories
         else:
             self._unique_stories = ()
@@ -254,7 +262,7 @@ class Building(_BaseGeometry):
         return cls(identifier, stories)
 
     @classmethod
-    def from_dict(cls, data, tolerance=0, angle_tolerance=0):
+    def from_dict(cls, data, tolerance=0, angle_tolerance=0, sort_stories=True):
         """Initialize an Building from a dictionary.
 
         Args:
@@ -267,6 +275,9 @@ class Building(_BaseGeometry):
                 allowed to differ from one another in order to consider them colinear.
                 Default is 0, which makes no attempt to evaluate whether the Room
                 volume is closed.
+            sort_stories: A boolean to note whether the unique_stories should be sorted
+                from lowest to highest story upon initialization (True) or whether
+                the input order of unique_stories should be left as-is. (Default: True).
         """
         # check the type of dictionary
         assert data['type'] == 'Building', 'Expected Building dictionary. ' \
@@ -288,7 +299,7 @@ class Building(_BaseGeometry):
                 except Exception as e:
                     invalid_dict_error(r_dict, e)
         # create the Building object
-        building = Building(data['identifier'], stories, room_3ds)
+        building = cls(data['identifier'], stories, room_3ds, sort_stories=sort_stories)
         if 'display_name' in data and data['display_name'] is not None:
             building.display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -1058,6 +1069,11 @@ class Building(_BaseGeometry):
             story.add_prefix(prefix)
         for room in self.room_3ds:
             room.add_prefix(prefix)
+
+    def sort_stories(self):
+        """Sort the stories assigned to this Building by their floor heights"""
+        self._unique_stories = \
+            tuple(sorted(self._unique_stories, key=lambda x: x.floor_height))
 
     def separate_top_bottom_floors(self):
         """Separate top/bottom Stories with non-unity multipliers into their own Stories.
