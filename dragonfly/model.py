@@ -264,7 +264,8 @@ class Model(_BaseGeometry):
             buildings = []
             for bldg in data['buildings']:
                 try:
-                    buildings.append(Building.from_dict(bldg, tol, angle_tol))
+                    buildings.append(
+                        Building.from_dict(bldg, tol, angle_tol, sort_stories=False))
                 except Exception as e:
                     invalid_dict_error(bldg, e)
         context_shades = None  # import context shades
@@ -286,6 +287,10 @@ class Model(_BaseGeometry):
 
         # assign extension properties to the model
         model.properties.apply_properties_from_dict(data)
+
+        # sort stories now that properties were ordered correctly during assignment
+        for building in model.buildings:
+            building.sort_stories()
         return model
 
     @classmethod
