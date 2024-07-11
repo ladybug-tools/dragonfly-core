@@ -841,6 +841,43 @@ class Building(_BaseGeometry):
         return Room2D.generate_alignment_axes(
             self.unique_room_2ds, distance, direction, angle_tolerance)
 
+    def find_adjacency_gaps(self, gap_distance=0.1, tolerance=0.01):
+        """Identify gaps smaller than a gap_distance between this Building's Room2Ds.
+
+        All cases where gaps can create failed adjacency solving or failed
+        intersections between adjacent stories will be checked.
+
+        Args:
+            gap_distance: The maximum distance between two Room2Ds that is considered
+                an adjacency gap. Differences between Room2Ds that are higher than
+                this distance are considered meaningful gaps to be preserved.
+                This value should be higher than the tolerance to be
+                meaningful. (Default: 0.1, suitable for objects in meters).
+            tolerance: The minimum difference between the coordinate values at
+                which point they are considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of Point2Ds that note the location of any gaps between this
+            Building's  Room2Ds, which are larger than the tolerance but less
+            than the gap_distance.
+        """
+        gap_points = []
+        prev_mult, story_count = 0, len(self._unique_stories)
+        for i, story in enumerate(self._unique_stories):
+            if prev_mult == 1:  # test this story together with the one below
+                room_group = story.room_2ds + self._unique_stories[i - 1].room_2ds
+                pts = Room2D.find_adjacency_gaps(room_group, gap_distance, tolerance)
+                gap_points.extend(pts)
+            elif story.multiplier != 1:  # lone bottom/middle story to test
+                pts = Room2D.find_adjacency_gaps(story.room_2ds, gap_distance, tolerance)
+                gap_points.extend(pts)
+            elif i + 1 == story_count:  # lone top story to test
+                pts = Room2D.find_adjacency_gaps(story.room_2ds, gap_distance, tolerance)
+                gap_points.extend(pts)
+            prev_mult = story.multiplier
+        return list(set(gap_points))  # remove duplicates in the result
+
     def add_stories(self, stories, add_duplicate_ids=False):
         """Add additional Story objects to this Building.
 
