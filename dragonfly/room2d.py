@@ -2759,6 +2759,53 @@ class Room2D(_BaseGeometry):
         return writer
 
     @staticmethod
+    def find_adjacency_gaps(room_2ds, gap_distance=0.1, tolerance=0.01):
+        """Identify gaps between a list of Room2Ds that are smaller than a gap_distance.
+
+        This is useful for identifying cases where gaps can result in failed
+        intersections between Room2Ds of adjacent stories or failed adjacency
+        solving within each story.
+
+        Args:
+            room_2ds: A list of Room2Ds for which adjacency gaps will be identified.
+            gap_distance: The maximum distance between two Room2Ds that is considered
+                an adjacency gap. Differences between Room2Ds that are higher than
+                this distance are considered meaningful gaps to be preserved.
+                This value should be higher than the tolerance to be
+                meaningful. (Default: 0.1, suitable for objects in meters).
+            tolerance: The minimum difference between the coordinate values at
+                which point they are considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of Point2Ds that note the location of any gaps between the input
+            room_2ds, which are larger than the tolerance but less than the
+            gap_distance.
+        """
+        gap_points = []
+        for i, room_1 in enumerate(room_2ds):
+            try:
+                for room_2 in room_2ds[i + 1:]:
+                    poly_1 = room_1._floor_geometry.boundary_polygon2d
+                    poly_2 = room_2._floor_geometry.boundary_polygon2d
+                    if not Polygon2D.overlapping_bounding_rect(
+                            poly_1, poly_2, gap_distance):
+                        continue  # no overlap in bounding rect; gap impossible
+                    # check the first polygon against the second
+                    for pt_1 in poly_1:
+                        pt_dist = poly_2.distance_from_edge_to_point(pt_1)
+                        if tolerance < pt_dist <= gap_distance:
+                            gap_points.append(pt_1)
+                    # check the second polygon against the first
+                    for pt_2 in poly_2:
+                        pt_dist = poly_1.distance_from_edge_to_point(pt_2)
+                        if tolerance < pt_dist <= gap_distance:
+                            gap_points.append(pt_2)
+            except IndexError:
+                pass  # we have reached the end of the list of rooms
+        return gap_points
+
+    @staticmethod
     def solve_adjacency(room_2ds, tolerance=0.01, resolve_window_conflicts=True):
         """Solve for all adjacencies between a list of input Room2Ds.
 
