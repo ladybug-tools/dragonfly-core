@@ -61,6 +61,10 @@ def test_building_init():
     assert building.exterior_aperture_area == 60 * 4 * 4 * 0.4
     assert building.volume == 100 * 3 * 4 * 4
 
+    building.convert_multipliers_to_stories()
+    assert len(building.unique_stories) == len(building.unique_stories_above_ground) == 4
+    assert len(building.unique_room_2ds) == 16
+
 
 def test_building_init_from_footprint():
     """Test the initialization of Building objects from_footprint."""
