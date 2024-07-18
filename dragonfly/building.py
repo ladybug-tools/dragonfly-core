@@ -705,14 +705,13 @@ class Building(_BaseGeometry):
         all_stories = []
         for story in self._unique_stories:
             new_story = story.duplicate()
-            new_story.add_prefix('Flr1')
             new_story.multiplier = 1
             all_stories.append(new_story)
 
             if story.multiplier != 1:
                 for i in range(story.multiplier - 1):
                     new_story = story.duplicate()
-                    new_story.add_prefix('Flr{}'.format(i + 2))
+                    new_story.add_prefix('Flr{}'.format(i + 1))
                     new_story.multiplier = 1
                     m_vec = Vector3D(0, 0, story.floor_to_floor_height * (i + 1))
                     new_story.move(m_vec)
@@ -877,6 +876,16 @@ class Building(_BaseGeometry):
                 gap_points.extend(pts)
             prev_mult = story.multiplier
         return list(set(gap_points))  # remove duplicates in the result
+
+    def convert_multipliers_to_stories(self):
+        """Convert this Building's stories with non-unity multipliers to geometry."""
+        exist_story_ids = set(story.identifier for story in self.unique_stories)
+        stories_to_add = []
+        for story in self.all_stories():
+            if story.identifier not in exist_story_ids:
+                stories_to_add.append(story)
+            story.multiplier = 1
+        self.add_stories(stories_to_add)
 
     def add_stories(self, stories, add_duplicate_ids=False):
         """Add additional Story objects to this Building.
