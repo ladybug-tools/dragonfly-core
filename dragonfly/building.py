@@ -884,8 +884,9 @@ class Building(_BaseGeometry):
         for story in self.all_stories():
             if story.identifier not in exist_story_ids:
                 stories_to_add.append(story)
-            story.multiplier = 1
         self.add_stories(stories_to_add)
+        for story in self.unique_stories:
+            story.multiplier = 1
 
     def add_stories(self, stories, add_duplicate_ids=False):
         """Add additional Story objects to this Building.
