@@ -1084,6 +1084,120 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
+    def snap_to_points(self, points, distance):
+        """Snap this Room2D's vertices to a list of points.
+
+        All properties assigned to this Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            points: A list of ladybug_geometry Point2Ds to which the Room2D
+                vertices will be snapped if they are near.
+            distance: The maximum distance between a Room2D vertex and the input
+                point where the vertex will be moved to lie on the polyline.
+                Vertices beyond this distance will be left as they are.
+        """
+        # create a 3D version of the points
+        if len(points) == 0:
+            return
+        vertices = []
+        for pt in points:
+            if isinstance(pt, Point2D):
+                vertices.append(Point3D(pt.x, pt.y, self.floor_height))
+            else:
+                msg = 'Expected point2D. Got {}.'.format(type(pt))
+                raise TypeError(msg)
+
+        # get lists of vertices for the Room2D.floor_geometry to be edited
+        edit_boundary = self._floor_geometry.boundary
+        edit_holes = self._floor_geometry.holes \
+            if self._floor_geometry.has_holes else None
+
+        # perform the snapping operation
+        new_boundary, new_holes = [], None
+        for pt in edit_boundary:
+            dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+            sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+            if sort_pt[0][0] <= distance:
+                new_boundary.append(sort_pt[0][1])
+            else:
+                new_boundary.append(pt)
+        if edit_holes is not None:
+            new_holes = []
+            for hole in edit_holes:
+                new_hole = []
+                for pt in hole:
+                    dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+                    sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                    if sort_pt[0][0] <= distance:
+                        new_hole.append(sort_pt[0][1])
+                    else:
+                        new_hole.append(pt)
+                new_holes.append(new_hole)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            new_boundary, self._floor_geometry.plane, new_holes)
+
+    def snap_to_line_end_points(self, line, distance):
+        """Snap this Room2D's vertices to the endpoints of a line segment.
+
+        All properties assigned to this Room2D will be preserved and the number of
+        vertices will remain constant. This means that this method can often create
+        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
+        method after running this one.
+
+        Args:
+            line: A ladybug_geometry LineSegment2D to which the Room2D
+                vertices will be snapped if they are near the end points.
+            distance: The maximum distance between a Room2D vertex and the polyline where
+                the vertex will be moved to lie on the polyline. Vertices beyond
+                this distance will be left as they are.
+        """
+        # create a 3D version of the line segment
+        if isinstance(line, LineSegment2D):
+            line_ray_3d = LineSegment3D(
+                Point3D(line.p.x, line.p.y, self.floor_height),
+                Vector3D(line.v.x, line.v.y, 0)
+            )
+        else:
+            msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+            raise TypeError(msg)
+
+        # get lists of vertices for the Room2D.floor_geometry to be edited
+        edit_boundary = self._floor_geometry.boundary
+        edit_holes = self._floor_geometry.holes \
+            if self._floor_geometry.has_holes else None
+
+        # perform the snapping operation
+        vertices = line_ray_3d.endpoints
+        new_boundary, new_holes = [], None
+        for pt in edit_boundary:
+            dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+            sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+            if sort_pt[0][0] <= distance:
+                new_boundary.append(sort_pt[0][1])
+            else:
+                new_boundary.append(pt)
+        if edit_holes is not None:
+            new_holes = []
+            for hole in edit_holes:
+                new_hole = []
+                for pt in hole:
+                    dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
+                    sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                    if sort_pt[0][0] <= distance:
+                        new_hole.append(sort_pt[0][1])
+                    else:
+                        new_hole.append(pt)
+                new_holes.append(new_hole)
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        self._floor_geometry = Face3D(
+            new_boundary, self._floor_geometry.plane, new_holes)
+
     def align(self, line_ray, distance):
         """Move any Room2D vertices within a given distance of a line to be on that line.
 
@@ -1145,63 +1259,6 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
-    def snap_to_line_end_points(self, line, distance):
-        """Snap this Room2D's vertices to the endpoints of a line segment.
-
-        All properties assigned to this Room2D will be preserved and the number of
-        vertices will remain constant. This means that this method can often create
-        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
-        method after running this one.
-
-        Args:
-            line: A ladybug_geometry LineSegment2D to which the Room2D
-                vertices will be snapped if they are near the end points.
-            distance: The maximum distance between a Room2D vertex and the polyline where
-                the vertex will be moved to lie on the polyline. Vertices beyond
-                this distance will be left as they are.
-        """
-        # create a 3D version of the line segment
-        if isinstance(line, LineSegment2D):
-            line_ray_3d = LineSegment3D(
-                Point3D(line.p.x, line.p.y, self.floor_height),
-                Vector3D(line.v.x, line.v.y, 0)
-            )
-        else:
-            msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
-            raise TypeError(msg)
-
-        # get lists of vertices for the Room2D.floor_geometry to be edited
-        edit_boundary = self._floor_geometry.boundary
-        edit_holes = self._floor_geometry.holes \
-            if self._floor_geometry.has_holes else None
-
-        # perform the snapping operation to snap them
-        vertices = line_ray_3d.endpoints
-        new_boundary, new_holes = [], None
-        for pt in edit_boundary:
-            dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
-            sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
-            if sort_pt[0][0] <= distance:
-                new_boundary.append(sort_pt[0][1])
-            else:
-                new_boundary.append(pt)
-        if edit_holes is not None:
-            new_holes = []
-            for hole in edit_holes:
-                new_hole = []
-                for pt in hole:
-                    dists = [pt.distance_to_point(pt_3d) for pt_3d in vertices]
-                    sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
-                    if sort_pt[0][0] <= distance:
-                        new_hole.append(sort_pt[0][1])
-                    else:
-                        new_hole.append(pt)
-                new_holes.append(new_hole)
-
-        # rebuild the new floor geometry and assign it to the Room2D
-        self._floor_geometry = Face3D(
-            new_boundary, self._floor_geometry.plane, new_holes)
-
     def pull_to_segments(self, line_segments, distance, snap_vertices=True):
         """Pull this Room2D's vertices to several LineSegment2D.
 
@@ -1230,15 +1287,16 @@ class Room2D(_BaseGeometry):
         lines_3d = []
         for line in line_segments:
             if isinstance(line, LineSegment2D):
-                if line.length > distance:
-                    line_3d = LineSegment3D(
-                        Point3D(line.p.x, line.p.y, self.floor_height),
-                        Vector3D(line.v.x, line.v.y, 0)
-                    )
-                    lines_3d.append(line_3d)
+                line_3d = LineSegment3D(
+                    Point3D(line.p.x, line.p.y, self.floor_height),
+                    Vector3D(line.v.x, line.v.y, 0)
+                )
+                lines_3d.append(line_3d)
             else:
                 msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
                 raise TypeError(msg)
+        if len(lines_3d) == 0:
+            return
 
         # get lists of vertices for the Room2D.floor_geometry to be edited
         edit_boundary = self._floor_geometry.boundary
@@ -1422,6 +1480,9 @@ class Room2D(_BaseGeometry):
                 to the end point instead of simply being aligned to the nearest
                 segment. (Default: True).
         """
+        # first make sure that there are line segments to be pulled to
+        if len(line_segments) == 0:
+            return
         # get lists of vertices for the Room2D.floor_geometry to be edited
         edit_boundary = self._floor_geometry.boundary
         edit_holes = self._floor_geometry.holes \
@@ -2034,7 +2095,7 @@ class Room2D(_BaseGeometry):
                     if face2.has_holes else None
                 face2 = Face3D(new_bound, new_plane, new_holes)
             other_faces.append(face2)
-        
+
         # subtract the other Room2Ds from this one
         ang_tol = math.radians(1)
         new_geos = self_face.coplanar_difference(other_faces, tolerance, ang_tol)
@@ -2166,61 +2227,6 @@ class Room2D(_BaseGeometry):
         ang_tol = math.radians(1)
         new_geos, _ = Face3D.coplanar_split(
             self.floor_geometry, face_3d, tolerance, ang_tol)
-        if new_geos is None or len(new_geos) == 1:
-            return [self]  # the Face3D did not overlap with one another
-        # create the final Room2Ds
-        return self._create_split_rooms(new_geos, tolerance)
-
-    def split_with_lines(self, lines, tolerance=0.01):
-        """Get versions of this Room2D that are split by a line.
-
-        Using this method is distinct from looping over the Room2D.split_with_line
-        in that this method will resolve cases where multiple segments branch out
-        from nodes in a network of input lines. So, if three line segments
-        meet at a point in the middle of this Room2D and each extend past the
-        edges of this Room2D, this method can split the Room2D in 3 parts whereas
-        looping over the Room2D.split_with_line will not do this given that each
-        individual segment cannot split the Room2D.
-
-        If the input lines together do not intersect this Room2D in a manner
-        that splits it into two or more pieces, a list with only the current
-        room will be returned.
-
-        Args:
-            lines: A list of LineSegment2D objects that will be used to split
-                this Room2D into two or more pieces.
-            tolerance: The maximum difference between point values for them to be
-                considered distinct from one another. (Default: 0.01; suitable
-                for objects in Meters).
-
-        Returns:
-            A list of Room2D for the result of splitting this Room2D with the
-            input line. Will be a list with only the current Room2D if the line
-            does not split it into two or more pieces.
-        """
-        # create 3D versions of the lines for the closest point calculation
-        lines_3d = []
-        t_up = tolerance * 1e6
-        for line in lines:
-            if isinstance(line, LineSegment2D):
-                # check if the coordinate values are too high to resolve with tolerance
-                if line.p.x > t_up or line.p.y > t_up or \
-                        line.v.x > t_up or line.v.y > t_up:
-                    min_pt, max_pt = self.min, self.max
-                    base, hgt = max_pt.x - min_pt.x, max_pt.y - min_pt.y
-                    bound_rect = Polygon2D.from_rectangle(
-                        min_pt, Vector2D(0, 1), base, hgt)
-                    inter_pts = bound_rect.intersect_line_ray(line)
-                    if len(inter_pts) == 2:
-                        line = LineSegment2D.from_end_points(inter_pts[0], inter_pts[1])
-                line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, self.floor_height),
-                                        Vector3D(line.v.x, line.v.y, 0))
-                lines_3d.append(line_3d)
-            else:
-                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
-                raise TypeError(msg)
-        # split the Room2D with the line
-        new_geos = self.floor_geometry.split_with_lines(lines_3d, tolerance)
         if new_geos is None or len(new_geos) == 1:
             return [self]  # the Face3D did not overlap with one another
         # create the final Room2Ds

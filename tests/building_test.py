@@ -638,7 +638,7 @@ def test_from_honeybee():
     room_south[3].apertures_by_ratio(0.4, 0.01)
     room_north[3].apertures_by_ratio(0.4, 0.01)
     Room.solve_adjacency([room_south, room_north], 0.01)
-    
+
     model = Model('Test_Building', [room_south, room_north, room_up], tolerance=0.01)
     bldg = Building.from_honeybee(model)
 
