@@ -1698,9 +1698,10 @@ class RectangularWindows(_AsymmetricBase):
                 new_origins.append(Point2D(new_x, o.y))
                 new_heights.append(height)
                 new_are_doors.append(is_dr)
-        new_w = RectangularWindows(new_origins, new_widths, new_heights, new_are_doors)
-        new_w._user_data = None if self.user_data is None else self.user_data.copy()
-        return new_w
+        if len(new_origins) != 0:
+            new_w = RectangularWindows(new_origins, new_widths, new_heights, new_are_doors)
+            new_w._user_data = None if self.user_data is None else self.user_data.copy()
+            return new_w
 
     def split(self, segments, tolerance=0.01):
         """Split RectangularWindows parameters across a list of ordered segments.
@@ -1725,6 +1726,8 @@ class RectangularWindows(_AsymmetricBase):
             out_pts, out_w, out_h, out_d = [], [], [], []
             for pt, w, h, d, i in zip(rel_pt, rel_w, rel_h, rel_d, rel_i):
                 x_val = pt.x
+                if w < tolerance:
+                    continue
                 if x_val >= max_width:  # completely outside of the segment
                     out_pts.append(Point2D(x_val - seg_len, pt.y))
                     out_w.append(w)
@@ -1733,16 +1736,18 @@ class RectangularWindows(_AsymmetricBase):
                     out_i.append(i)
                 elif x_val + w >= max_width:  # split by segment
                     split_dist = max_width - x_val
-                    new_pts.append(Point2D(x_val, pt.y))
-                    new_w.append(split_dist - tolerance)
-                    new_h.append(h)
-                    new_d.append(d)
-                    win_par_i.append(i)
-                    out_pts.append(Point2D(tolerance, pt.y))
-                    out_w.append(w - split_dist - (2 * tolerance))
-                    out_h.append(h)
-                    out_d.append(d)
-                    out_i.append(i)
+                    new_width = split_dist - tolerance
+                    if new_width > tolerance:
+                        new_pts.append(Point2D(x_val, pt.y))
+                        new_w.append(new_width)
+                        new_h.append(h)
+                        new_d.append(d)
+                        win_par_i.append(i)
+                        out_pts.append(Point2D(tolerance, pt.y))
+                        out_w.append(w - split_dist - (2 * tolerance))
+                        out_h.append(h)
+                        out_d.append(d)
+                        out_i.append(i)
                 else:  # completely inside segment
                     new_pts.append(pt)
                     new_w.append(w)
