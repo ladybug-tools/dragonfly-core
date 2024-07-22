@@ -879,7 +879,7 @@ class Room2D(_BaseGeometry):
         wp1 = self._window_parameters[self_seg_index]
         wp2 = other_room_2d._window_parameters[other_seg_index]
         if wp1 is not None or wp2 is not None:
-            if wp1 != wp2 or isinstance(wp1, DetailedWindows):
+            if wp1 != wp2 or isinstance(wp1, _AsymmetricBase):
                 if resolve_window_conflicts:
                     ftc1 = self.floor_to_ceiling_height
                     ftc2 = other_room_2d.floor_to_ceiling_height
