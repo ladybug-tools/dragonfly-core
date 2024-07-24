@@ -1663,7 +1663,7 @@ using-multipliers-zone-and-or-window.html
     @staticmethod
     def _resolve_roof_adj(face_1, face_2, tol):
         """Resolve incorrect adjacency where walls of two roofs meet."""
-        # remove air boundary conditions so the split result is valid
+        # remove air boundaries so the split result is valid
         use_ab = False
         if isinstance(face_1.type, AirBoundary) or isinstance(face_2.type, AirBoundary):
             face_1.type = ftyp.wall
@@ -1682,6 +1682,9 @@ using-multipliers-zone-and-or-window.html
         for j, f_1 in enumerate(new_faces1):
             for k, f_2 in enumerate(new_faces2):
                 if f_1.geometry.is_centered_adjacent(f_2.geometry, tol):
+                    if f_1.has_sub_faces or f_2.has_sub_faces:
+                        f_1.remove_sub_faces()
+                        f_2.remove_sub_faces()
                     f_1.set_adjacency(f_2)
                     adj_geo = f_1.geometry
                     if use_ab:
@@ -1695,6 +1698,9 @@ using-multipliers-zone-and-or-window.html
         for nf in new_faces1:
             for of in room_2.faces:
                 if nf.geometry.is_centered_adjacent(of.geometry, tol):
+                    if nf.has_sub_faces or of.has_sub_faces:
+                        nf.remove_sub_faces()
+                        of.remove_sub_faces()
                     nf.set_adjacency(of)
                     if use_ab:
                         nf.type = ftyp.air_boundary
@@ -1709,6 +1715,9 @@ using-multipliers-zone-and-or-window.html
         for nf in new_faces2:
             for of in room_1.faces:
                 if nf.geometry.is_centered_adjacent(of.geometry, tol):
+                    if nf.has_sub_faces or of.has_sub_faces:
+                        nf.remove_sub_faces()
+                        of.remove_sub_faces()
                     nf.set_adjacency(of)
                     if use_ab:
                         nf.type = ftyp.air_boundary
