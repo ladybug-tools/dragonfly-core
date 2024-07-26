@@ -272,6 +272,25 @@ def test_room2d_segment_orientations():
     assert orientations[3] == pytest.approx(180, rel=1e-3)
 
 
+def test_room2d_overlap_area():
+    """Test the Room2D overlap_area method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(20, 20, 3), Point3D(30, 20, 3), Point3D(30, 30, 3), Point3D(20, 30, 3))
+    pts_3 = (Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 20, 3), Point3D(10, 20, 3))
+    pts_4 = (Point3D(5, 5, 3), Point3D(15, 5, 3), Point3D(15, 15, 3), Point3D(5, 15, 3))
+    pts_5 = (Point3D(5, 5, 0), Point3D(15, 5, 0), Point3D(15, 15, 0), Point3D(5, 15, 0))
+    room_1 = Room2D('SquareShoebox1', Face3D(pts_1), 3)
+    room_2 = Room2D('SquareShoebox2', Face3D(pts_2), 3)
+    room_3 = Room2D('SquareShoebox3', Face3D(pts_3), 3)
+    room_4 = Room2D('SquareShoebox4', Face3D(pts_4), 3)
+    room_5 = Room2D('SquareShoebox5', Face3D(pts_5), 3)
+
+    assert room_1.overlap_area(room_2) == 0
+    assert room_1.overlap_area(room_3) == 0
+    assert room_1.overlap_area(room_4) == pytest.approx(25.0, rel=1e-3)
+    assert room_1.overlap_area(room_5) == 0
+
+
 def test_room2d_set_outdoor_window_shading_parameters():
     """Test the Room2D set_outdoor_window_parameters method."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))

@@ -765,6 +765,37 @@ class Room2D(_BaseGeometry):
         normals = (Vector2D(sg.v.y, -sg.v.x) for sg in self.floor_segments)
         return [math.degrees(north_vector.angle_clockwise(norm)) for norm in normals]
 
+    def overlap_area(self, other_room2d, tolerance=0.01):
+        """Get the area of this Room2D that overlaps with another Room2D.
+
+        This is useful for helping identify cases where a given Room2D might be an
+        updated version of this Room2D (in the same location within a larger Story)
+        and should therefore replace this Room2D. This method first performs a
+        bounding rectangle check between the Room2Ds to evaluate whether an overlap
+        is possible before computing the percentage, making it efficient to run
+        with large groups of Room2Ds.
+
+        Args:
+            other_room_2d: Another Room2D object to be checked for overlap with
+                this one.
+            tolerance: The minimum difference in coordinate values that the
+                room vertices must have for them to be considered
+                overlapping. (Default: 0.01).
+        """
+        # first check whether the bounding rectangles around the geometry overlap
+        self_face, other_face = self.floor_geometry, other_room2d.floor_geometry
+        poly_1, poly_2 = self_face.boundary_polygon2d, other_face.boundary_polygon2d
+        if not Polygon2D.overlapping_bounding_rect(poly_1, poly_2, tolerance):
+            return 0  # no overlap in bounding rect; gap impossible
+        # perform a boolean intersection operation between the two floor Face3Ds
+        self._floor_geometry
+        ang_tol = math.radians(1)
+        new_geos = Face3D.coplanar_intersection(
+            self_face, other_face, tolerance, ang_tol)
+        if new_geos is None or len(new_geos) == 0:
+            return 0  # the Face3Ds did not overlap with one another
+        return sum(f.area for f in new_geos)
+
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
         assert isinstance(window_parameter, _WindowParameterBase), \
