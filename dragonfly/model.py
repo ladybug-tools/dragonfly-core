@@ -1792,6 +1792,16 @@ class Model(_BaseGeometry):
                 if isinstance(face.type, rel_types):
                     if not isinstance(face.boundary_condition, relevant_bcs):
                         face.boundary_condition = boundary_conditions.outdoors
+        # remove any degenerate geometry from the rooms
+        adj_dict = {}  # dictionary to track adjacent geometries
+        for room in rooms:
+            try:
+                r_adj = room.clean_envelope(adj_dict, tolerance=tolerance)
+                adj_dict.update(r_adj)
+            except AssertionError as e:  # room removed; likely wrong units
+                error = 'Failed to remove degenerate geometry for Room {}.\n{}'.format(
+                    room.full_id, e)
+                raise ValueError(error)
 
     @staticmethod
     def _objects_from_geojson(bldgs_data, existing_to_context, scale_to_meters,
