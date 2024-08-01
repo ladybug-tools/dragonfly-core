@@ -1480,11 +1480,55 @@ using-multipliers-zone-and-or-window.html
             raise ValueError(full_msg)
         return full_msg
 
+    def check_roofs_above_rooms(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check that geometries of RoofSpecifications all lie above the Room2D geometry.
+
+        Roofs that lie below the Room2Ds will result in invalid Honeybee Rooms
+        with self-intersecting walls.
+
+        Args:
+            tolerance: The minimum distance between coordinate values that is
+                considered a meaningful difference. (Default: 0.01, suitable
+                for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised if
+                roof geometries are found below the Room2D geometries. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        # find the number of overlaps in the Roof specification
+        msgs = []
+        if self.roof is not None:
+            roof_min = self.roof.min_height
+            room_max = self.room_2ds[0].floor_geometry.max.z
+            for room in self.room_2ds[1:]:
+                if room.floor_geometry.max.z > room_max:
+                    room_max = room.floor_geometry.max.z
+            if roof_min < room_max - tolerance:
+                msg = 'Roof geometry of story "{}" extends down to a height of {}, ' \
+                    'which is lower than the height of the room floor plates at {}. ' \
+                    'This may result in invalid room volumes.'.format(
+                        self.display_name, roof_min, room_max)
+                msg = self._validation_message_child(
+                    msg, self.roof, detailed, '100105', error_type='Invalid Roof')
+                msgs.append(msg)
+        # report any errors
+        if detailed:
+            return msgs
+        full_msg = '\n '.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
     def check_no_roof_overlaps(
             self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.
 
-        Overlaps make the Roof geometry unusable for translation to Honeybee.
+        This is not required for the Story to be valid but it is sometimes
+        useful to check.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
@@ -1551,6 +1595,14 @@ using-multipliers-zone-and-or-window.html
         # set up the multiplier
         mult = self.multiplier if use_multiplier else 1
 
+        # if this story has any overlaps, resolve them before translation
+        original_roof = None
+        if self.roof is not None:
+            original_roof = self.roof
+            res_roof_geo = self.roof.resolved_geometry(tolerance)
+            res_roof = RoofSpecification(res_roof_geo)
+            self.roof = res_roof
+
         # convert all of the Room2Ds to honeybee Rooms
         hb_rooms = []
         adjacencies = []
@@ -1594,6 +1646,9 @@ using-multipliers-zone-and-or-window.html
                                     adj_set.add(face.identifier)
                                     break
                             break
+        # put back the original roof to avoid mutating the story
+        if original_roof is not None:
+            self.roof = original_roof
         return hb_rooms
 
     def to_dict(self, abridged=False, included_prop=None):

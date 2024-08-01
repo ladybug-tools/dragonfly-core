@@ -111,15 +111,107 @@ class RoofSpecification(object):
         """
         return self._calculate_max(self._geometry)
 
-    def overlap_count(self, tolerance=0.01):
-        """Get the number of times that the Roof geometries overlap with one another.
+    @property
+    def min_height(self):
+        """Get lowest Z-value of the roof geometry."""
+        min_z = self._geometry[0].min.z
+        for r_geo in self._geometry[1:]:
+            if r_geo.min.z < min_z:
+                min_z = r_geo.min.z
+        return min_z
 
-        This should be zero for the RoofSpecification to be valid.
+    @property
+    def max_height(self):
+        """Get highest Z-value of the roof geometry."""
+        max_z = self._geometry[0].max.z
+        for r_geo in self._geometry[1:]:
+            if r_geo.max.z > max_z:
+                max_z = r_geo.max.z
+        return max_z
+
+    def resolved_geometry(self, tolerance=0.01):
+        """Get a version of this object's geometry with all overlaps in plan resolved.
+
+        In the case of overlaps, the roof geometry that has the lowest average
+        z-value for the overlap will become the "correct" one that actually
+        bounds the room geometry.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
-                with one another and still be considered valid. Default: 0.01,
-                suitable for objects in meters.
+                with one another and still be considered distinct. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of Face3D that have no overlaps in plan.
+        """
+        # first check to see if an overlap is possible
+        if len(self._geometry) == 1:
+            return self._geometry
+        # loop through the geometries and test for any overlaps
+        proj_dir = Vector3D(0, 0, 1)
+        planes = [pl for _, pl in sorted(zip(self.boundary_geometry_2d, self.planes),
+                                         key=lambda pair: pair[0].area, reverse=True)]
+        geo_2d = sorted(self.boundary_geometry_2d, key=lambda x: x.area, reverse=True)
+        gei = list(range(len(geo_2d)))
+        overlap_count = 0
+        for i, (poly_1, pln_1) in enumerate(zip(geo_2d, planes)):
+            try:
+                for poly_2, pln_2, j in zip(geo_2d[i + 1:], planes[i + 1:], gei[i + 1:]):
+                    if poly_1.polygon_relationship(poly_2, tolerance) == 0:
+                        # resolve the overlap between the polygons
+                        overlap_count += 1
+                        try:
+                            overlap_polys = poly_1.boolean_intersect(poly_2, tolerance)
+                        except Exception:  # tolerance is likely not set correctly
+                            continue
+                        for o_poly in overlap_polys:
+                            o_face_1, o_face_2 = [], []
+                            for pt in o_poly.vertices:
+                                pt1 = pln_1.project_point(Point3D(pt.x, pt.y), proj_dir)
+                                pt2 = pln_2.project_point(Point3D(pt.x, pt.y), proj_dir)
+                                o_face_1.append(pt1)
+                                o_face_2.append(pt2)
+                            o_face_1 = Face3D(o_face_1, plane=pln_1)
+                            o_face_2 = Face3D(o_face_2, plane=pln_2)
+                            if o_face_1.center.z > o_face_2.center.z:
+                                # remove the overlap from the first polygon
+                                try:
+                                    new_polys = poly_1.boolean_difference(o_poly, tolerance)
+                                    poly_1 = new_polys[0] if len(new_polys) == 1 else poly_1
+                                    geo_2d[i] = poly_1
+                                except Exception:  # tolerance is likely not set correctly
+                                    pass
+                            else:  # remove the overlap from the second polygon
+                                try:
+                                    new_polys = poly_2.boolean_difference(o_poly, tolerance)
+                                    poly_2 = new_polys[0] if len(new_polys) == 1 else poly_2
+                                    geo_2d[j] = poly_2
+                                except Exception:  # tolerance is likely not set correctly
+                                    pass
+            except IndexError:
+                pass  # we have reached the end of the list
+        # if any overlaps were found, rebuild the 3D roof geometry
+        if overlap_count != 0:
+            resolved_geo = []
+            for r_poly, r_pln in zip(geo_2d, planes):
+                r_face = []
+                for pt2 in r_poly.vertices:
+                    pt3 = r_pln.project_point(Point3D(pt2.x, pt2.y), proj_dir)
+                    r_face.append(pt3)
+                resolved_geo.append(Face3D(r_face, plane=r_pln))
+            return resolved_geo
+        return self._geometry  # no overlaps in the geometry; just return as is
+
+    def overlap_count(self, tolerance=0.01):
+        """Get the number of times that the Roof geometries overlap with one another.
+
+        This should be zero for the RoofSpecification to be be translated to
+        Honeybee without any loss of geometry.
+
+        Args:
+            tolerance: The minimum distance that two Roof geometries can overlap
+                with one another and still be considered distinct. (Default: 0.01,
+                suitable for objects in meters).
 
         Returns:
             An integer for the number of times that the roof geometries overlap
@@ -258,7 +350,7 @@ class RoofSpecification(object):
         else:
             msg = 'Expected Ray2D or LineSegment2D. Got {}.'.format(type(line_ray))
             raise TypeError(msg)
-        
+
         # get the polygons and intersect them for matching segments
         polygons, planes = self.boundary_geometry_2d, self.planes
         poly_ridge_info = self._compute_ridge_line_info(tolerance)
@@ -414,11 +506,11 @@ class RoofSpecification(object):
         """
         min_pt = [geometry_objects[0].min.x, geometry_objects[0].min.y]
 
-        for room in geometry_objects[1:]:
-            if room.min.x < min_pt[0]:
-                min_pt[0] = room.min.x
-            if room.min.y < min_pt[1]:
-                min_pt[1] = room.min.y
+        for r_geo in geometry_objects[1:]:
+            if r_geo.min.x < min_pt[0]:
+                min_pt[0] = r_geo.min.x
+            if r_geo.min.y < min_pt[1]:
+                min_pt[1] = r_geo.min.y
 
         return Point2D(min_pt[0], min_pt[1])
 
@@ -431,11 +523,11 @@ class RoofSpecification(object):
         """
         max_pt = [geometry_objects[0].max.x, geometry_objects[0].max.y]
 
-        for room in geometry_objects[1:]:
-            if room.max.x > max_pt[0]:
-                max_pt[0] = room.max.x
-            if room.max.y > max_pt[1]:
-                max_pt[1] = room.max.y
+        for r_geo in geometry_objects[1:]:
+            if r_geo.max.x > max_pt[0]:
+                max_pt[0] = r_geo.max.x
+            if r_geo.max.y > max_pt[1]:
+                max_pt[1] = r_geo.max.y
 
         return Point2D(max_pt[0], max_pt[1])
 
