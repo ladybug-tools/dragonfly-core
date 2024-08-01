@@ -264,6 +264,13 @@ class Model(_BaseGeometry):
             buildings = []
             for bldg in data['buildings']:
                 try:
+                    unique_stories = bldg['unique_stories'] \
+                        if 'unique_stories' in bldg else None
+                    room_3ds = bldg['room_3ds'] \
+                        if 'room_3ds' in bldg else None
+                    if (unique_stories is None or len(unique_stories) == 0) and \
+                            (room_3ds is None or len(room_3ds) == 0):
+                        continue  # empty Building object that should be ignored
                     buildings.append(
                         Building.from_dict(bldg, tol, angle_tol, sort_stories=False))
                 except Exception as e:
