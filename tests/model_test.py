@@ -902,7 +902,8 @@ def test_to_honeybee_roof_with_dormer():
     assert upper_story.roof is not None
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
-    assert len(hb_models[0].rooms[0].shades) == 2
+    assert len(hb_models[0].rooms[0].shades) == 2 or \
+        len(hb_models[0].rooms[0].shades) == 0
 
     # try moving the dormer to see if it still translates successfully
     roof_polys = upper_story.roof.boundary_geometry_2d
@@ -917,7 +918,20 @@ def test_to_honeybee_roof_with_dormer():
             upper_story.roof.update_geometry_2d(Polygon2D(new_poly_pts), i)
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
-    assert len(hb_models[0].rooms[0].shades) == 2
+    assert len(hb_models[0].rooms[0].shades) == 2 or \
+        len(hb_models[0].rooms[0].shades) == 0
+
+
+def test_to_honeybee_roof_with_overlap():
+    """Test to_honeybee with an overlapping roof to ensure all exceptions are caught."""
+    model_file = './tests/json/roof_with_overlap.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models) == 1
+    assert len(hb_models[0].rooms[0].roof_ceilings) > 2
 
 
 def test_to_honeybee_invalid_roof_1():

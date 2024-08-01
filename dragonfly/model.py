@@ -950,7 +950,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_window_parameters_valid(tol, False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
-        msgs.append(self.check_no_roof_overlaps(tol, False, detailed))
+        msgs.append(self.check_roofs_above_rooms(tol, False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
@@ -1202,11 +1202,50 @@ class Model(_BaseGeometry):
             return msg
         return ''
 
-    def check_no_roof_overlaps(
+    def check_roofs_above_rooms(
             self, tolerance=None, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.
 
         Overlaps make the Roof geometry unusable for translation to Honeybee.
+
+        Args:
+            tolerance: The minimum distance that two Roof geometries can overlap
+                with one another and still be considered valid. If None, the Model
+                tolerance will be used. (Default: None).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if overlapping geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        tolerance = self.tolerance if tolerance is None else tolerance
+        bldg_ids = []
+        for bldg in self._buildings:
+            for story in bldg._unique_stories:
+                ov_msg = story.check_roofs_above_rooms(tolerance, False, detailed)
+                if ov_msg:
+                    if detailed:
+                        bldg_ids.extend(ov_msg)
+                    else:
+                        bldg_ids.append('{}\n {}'.format(bldg.full_id, ov_msg))
+        if detailed:
+            return bldg_ids
+        if bldg_ids != []:
+            msg = 'The following Buildings have overlaps in their roof geometry' \
+                ':\n{}'.format('\n'.join(bldg_ids))
+            if raise_exception:
+                raise ValueError(msg)
+            return msg
+        return ''
+
+    def check_no_roof_overlaps(
+            self, tolerance=None, raise_exception=True, detailed=False):
+        """Check that geometries of RoofSpecifications do not overlap with one another.
+
+        This is not a requirement for the Model to be valid but it is sometimes
+        useful to check.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
