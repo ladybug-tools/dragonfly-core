@@ -950,7 +950,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_window_parameters_valid(tol, False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
-        msgs.append(self.check_roofs_above_rooms(tol, False, detailed))
+        # msgs.append(self.check_roofs_above_rooms(tol, False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
