@@ -34,6 +34,7 @@ from honeybee.model import Model as HBModel
 from ._base import _BaseGeometry
 from .properties import ModelProperties
 from .building import Building
+from .roof import RoofSpecification
 from .context import ContextShade
 from .windowparameter import SimpleWindowRatio
 from .projection import meters_to_long_lat_factors, polygon_to_lon_lat, \
@@ -260,6 +261,7 @@ class Model(_BaseGeometry):
 
         # import all of the geometry
         buildings = None  # import buildings
+        building_roofs = []
         if 'buildings' in data and data['buildings'] is not None:
             buildings = []
             for bldg in data['buildings']:
@@ -271,8 +273,14 @@ class Model(_BaseGeometry):
                     if (unique_stories is None or len(unique_stories) == 0) and \
                             (room_3ds is None or len(room_3ds) == 0):
                         continue  # empty Building object that should be ignored
-                    buildings.append(
-                        Building.from_dict(bldg, tol, angle_tol, sort_stories=False))
+                    if 'roof' in bldg and bldg['roof'] is not None:
+                        roof = RoofSpecification.from_dict(data['roof'])
+                        building_roofs.append(roof.geometry)
+                        bldg['roof'] = None
+                    else:
+                        building_roofs.append([])
+                    bldg = Building.from_dict(bldg, tol, angle_tol, sort_stories=False)
+                    buildings.append(bldg)
                 except Exception as e:
                     invalid_dict_error(bldg, e)
         context_shades = None  # import context shades
@@ -296,8 +304,10 @@ class Model(_BaseGeometry):
         model.properties.apply_properties_from_dict(data)
 
         # sort stories now that properties were ordered correctly during assignment
-        for building in model.buildings:
+        for building, bldg_roof in zip(model.buildings, building_roofs):
             building.sort_stories()
+            if len(bldg_roof) != 0:
+                building.add_roof_geometry(bldg_roof, tol)
         return model
 
     @classmethod
@@ -950,7 +960,6 @@ class Model(_BaseGeometry):
         msgs.append(self.check_window_parameters_valid(tol, False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
-        # msgs.append(self.check_roofs_above_rooms(tol, False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
@@ -1233,8 +1242,8 @@ class Model(_BaseGeometry):
         if detailed:
             return bldg_ids
         if bldg_ids != []:
-            msg = 'The following Buildings have overlaps in their roof geometry' \
-                ':\n{}'.format('\n'.join(bldg_ids))
+            msg = 'The following Buildings have roof geometries located below ' \
+                'their assigned story:\n{}'.format('\n'.join(bldg_ids))
             if raise_exception:
                 raise ValueError(msg)
             return msg
