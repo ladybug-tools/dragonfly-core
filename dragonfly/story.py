@@ -1502,16 +1502,12 @@ using-multipliers-zone-and-or-window.html
         # find the number of overlaps in the Roof specification
         msgs = []
         if self.roof is not None:
-            roof_min = self.roof.min_height
-            room_max = self.room_2ds[0].floor_geometry.max.z
-            for room in self.room_2ds[1:]:
-                if room.floor_geometry.max.z > room_max:
-                    room_max = room.floor_geometry.max.z
-            if roof_min < room_max - tolerance:
-                msg = 'Roof geometry of story "{}" extends down to a height of {}, ' \
-                    'which is lower than the height of the room floor plates at {}. ' \
+            roof_max = self.roof.max_height
+            if roof_max < self.floor_height:
+                msg = 'Roof geometry of story "{}" has a maximum height of {}, ' \
+                    'which is lower than the story floor height at {}. ' \
                     'This may result in invalid room volumes.'.format(
-                        self.display_name, roof_min, room_max)
+                        self.display_name, roof_max, self.floor_height)
                 msg = self._validation_message_child(
                     msg, self.roof, detailed, '100105', error_type='Invalid Roof')
                 msgs.append(msg)

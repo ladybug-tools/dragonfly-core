@@ -9,7 +9,7 @@ except ImportError:
     xrange = range  # python 3
 
 from ladybug_geometry.geometry2d import Vector2D, Point2D, LineSegment2D, Polygon2D
-from ladybug_geometry.geometry3d import Vector3D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Ray3D
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
 from honeybee.model import Model
@@ -23,6 +23,7 @@ from honeybee.units import parse_distance_string
 from ._base import _BaseGeometry
 from .properties import BuildingProperties
 from .story import Story
+from .roof import RoofSpecification
 from .room2d import Room2D
 import dragonfly.writer.building as writer
 
@@ -300,6 +301,9 @@ class Building(_BaseGeometry):
                     invalid_dict_error(r_dict, e)
         # create the Building object
         building = cls(data['identifier'], stories, room_3ds, sort_stories=sort_stories)
+        if 'roof' in data and data['roof'] is not None:
+            roof = RoofSpecification.from_dict(data['roof'])
+            building.add_roof_geometry(roof.geometry, tolerance)
         if 'display_name' in data and data['display_name'] is not None:
             building.display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -956,6 +960,88 @@ class Building(_BaseGeometry):
                     new_room_3ds.append(room)
         # assign the new Rooms to this Building
         self._room_3ds = tuple(new_room_3ds)
+
+    def add_roof_geometry(self, roof_geometry, tolerance=0.01, overlap_threshold=0.05):
+        """Add roof geometry to the stories of this Building.
+
+        This method will attempt add each roof geometry to the best Story in the
+        Building by checking for overlaps between the Story's Room2Ds and the
+        Roof geometry in plan. When a given roof geometry overlaps with several
+        Stories more than the specified overlap_threshold, the top-most Story
+        will get the roof geometry assigned to it unless this top Story has a
+        floor_height above the roof geometry, in which case the next highest story
+        will be checked until a compatible one is found. If a given roof geometry
+        does not overlap with any story geometry or lies below all of the stories,
+        it will not be assigned to the Building.
+
+        Args:
+            roof_geometry: An array of Face3D objects representing the geometry
+                of the Roof.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same. (Default: 0.01, suitable for
+                objects in Meters).
+            overlap_threshold: A number between 0 and 1 for the fraction of a room's
+                area that must be covered by a given roof geometry for it to be
+                considered overlapping with that room. This is intended to prevent
+                incorrect roof assignment in cases where roofs extend slightly
+                past the room they are intended for. (Default: 0.05).
+        """
+        # first check to be sure that roof_geometry has been supplied
+        if len(roof_geometry) == 0:
+            return
+
+        # convert all rooms and roof geometries to 2D polygons to evaluate overlaps
+        roof_polygons = tuple(
+            Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))
+            for geo in roof_geometry)
+        rev_stories = list(reversed(self.unique_stories))
+        story_polygons, story_heights, room_heights = [], [], []
+        for story in rev_stories:
+            room_polygons = tuple(rm.floor_geometry.polygon2d for rm in story.room_2ds)
+            rm_heights = tuple(rm.floor_height for rm in story.room_2ds)
+            story_polygons.append(room_polygons)
+            story_heights.append(story.floor_height)
+            room_heights.append(rm_heights)
+
+        # loop through the roof_geometry and find a compatible story
+        proj_dir = Vector3D(0, 0, 1)
+        ot = overlap_threshold
+        story_roofs = [[] for _ in rev_stories]  # holds geo assigned to each story
+        for rf_geo, rf_poly in zip(roof_geometry, roof_polygons):
+            zip_obj = zip(story_heights, story_polygons, room_heights)
+            for i, (st_ht, story_poly, rm_hts) in enumerate(zip_obj):
+                if rf_geo.max.z < st_ht:
+                    continue  # roof completely below story; valid assignment impossible
+                overlaps_story = False
+                for rm_poly, rm_ht in zip(story_poly, rm_hts):
+                    poly_rel = rf_poly.polygon_relationship(rm_poly, tolerance)
+                    if poly_rel >= 0:
+                        overlap_polys = rf_poly.boolean_intersect(rm_poly, tolerance) \
+                            if poly_rel == 0 else [rm_poly]
+                        if sum(ply.area for ply in overlap_polys) < rm_poly.area * ot:
+                            continue  # not considered a significant overlap
+                        plane_ints = []
+                        for ov_poly in overlap_polys:
+                            for pt in ov_poly:
+                                r_ray = Ray3D(Point3D(pt.x, pt.y, rm_ht), proj_dir)
+                                plane_ints.append(rf_geo.plane.intersect_line_ray(r_ray))
+                        if all(pi is not None for pi in plane_ints):
+                            overlaps_story = True
+                        else:  # roof extends below room; valid assignment impossible
+                            overlaps_story = False
+                            break
+                if overlaps_story:  # we have found the story to assign the roof geometry
+                    story_roofs[i].append(rf_geo)
+                    break
+
+        # create the RoofSpecification objects and assign them to the stories
+        for story, roof_geos in zip(rev_stories, story_roofs):
+            if len(roof_geos) != 0:
+                if story.roof is not None:  # combine the existing roof with the new one
+                    new_roof = RoofSpecification(story.roof.geometry + tuple(roof_geos))
+                else:
+                    new_roof = RoofSpecification(roof_geos)
+                story.roof = new_roof
 
     def convert_room_3d_to_2d(self, room_3d_identifier, tolerance=0.01):
         """Convert a single 3D Honeybee Room to a Dragonfly Room2D on this Building.
