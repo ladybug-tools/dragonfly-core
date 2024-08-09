@@ -644,6 +644,42 @@ def test_process_alleys():
     assert ad_count == 2
 
 
+def test_remove_duplicate_roofs():
+    """Test the serialization of a model with roofs assigned to the building."""
+    model_file = './tests/json/Model_with_duplicated_roofs.dfjson'
+    model = Model.from_file(model_file)
+
+    all_roof_geos = []
+    for story in model.stories:
+        if story.roof is not None:
+            all_roof_geos.extend(story.roof.geometry)
+    assert len(all_roof_geos) == 45
+
+    model.remove_duplicate_roofs()
+
+    all_roof_geos = []
+    for story in model.stories:
+        if story.roof is not None:
+            all_roof_geos.extend(story.roof.geometry)
+    assert (len(all_roof_geos)) == 14
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models) == 1
+
+
+def test_building_assigned_roof():
+    """Test the serialization of a model with roofs assigned to the building."""
+    model_file = './tests/json/Model_with_building_roofs.dfjson'
+    model = Model.from_file(model_file)
+    stories = model.stories
+
+    assert len(stories[0].roof) == 1
+    assert len(stories[1].roof) == 2
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert len(hb_models) == 1
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))

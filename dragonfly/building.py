@@ -961,7 +961,7 @@ class Building(_BaseGeometry):
         # assign the new Rooms to this Building
         self._room_3ds = tuple(new_room_3ds)
 
-    def add_roof_geometry(self, roof_geometry, tolerance=0.01, overlap_threshold=0.05):
+    def add_roof_geometry(self, roof_geometry, tolerance=0.01, overlap_threshold=0):
         """Add roof geometry to the stories of this Building.
 
         This method will attempt add each roof geometry to the best Story in the
@@ -1042,6 +1042,33 @@ class Building(_BaseGeometry):
                 else:
                     new_roof = RoofSpecification(roof_geos)
                 story.roof = new_roof
+
+    def remove_duplicate_roofs(self, tolerance=0.01):
+        """Remove any roof geometries in the Building that appear more than once.
+
+        This includes duplicated roof geometries assigned to different stories.
+
+        Args:
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same. (Default: 0.01, suitable for
+                objects in Meters).
+        """
+        # collect all roof geometries across all stories
+        roof_geos = []
+        for story in self.unique_stories:
+            if story.roof is not None:
+                roof_geos.extend(story.roof.geometry)
+                story.roof = None
+        # remove duplicate geometries from the list
+        clean_roof_geo = []
+        for r_geo in roof_geos:
+            for exist_geo in clean_roof_geo:
+                if r_geo.is_geometrically_equivalent(exist_geo, tolerance):
+                    break  # duplicate geometry found
+            else:  # the geometry is not yet in the clean list
+                clean_roof_geo.append(r_geo)
+        # re-assign the roof geometry to the stories
+        self.add_roof_geometry(clean_roof_geo, tolerance)
 
     def convert_room_3d_to_2d(self, room_3d_identifier, tolerance=0.01):
         """Convert a single 3D Honeybee Room to a Dragonfly Room2D on this Building.

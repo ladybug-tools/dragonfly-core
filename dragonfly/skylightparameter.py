@@ -48,7 +48,7 @@ class _SkylightParameterBase(object):
 
     def split(self, face_3ds, tolerance=0.01):
         """Split these skylight parameters across several Face3D.
-        
+
         This is useful when the Room2D to which the skylight is assigned has been
         split into multiple Room2Ds.
 
@@ -176,7 +176,7 @@ class GriddedSkylightArea(_SkylightParameterBase):
 
     def split(self, face_3ds, tolerance=0.01):
         """Split these skylight parameters across several Face3D.
-        
+
         This is useful when the Room2D to which the skylight is assigned has been
         split into multiple Room2Ds.
 
@@ -519,22 +519,39 @@ class DetailedSkylights(_SkylightParameterBase):
                 for hole in face.geometry.holes
             )
         # loop through each polygon and create its geometry
+        sub_count = 1
         p_dir = Vector3D(0, 0, 1)
-        for i, (polygon, isd) in enumerate(zip(self.polygons, self.are_doors)):
-            pt_in_poly = polygon.center if polygon.is_convex else \
-                polygon.pole_of_inaccessibility(tolerance)
-            if not self._is_sub_point(pt_in_poly, parent_poly, parent_holes):
+        for polygon, isd in zip(self.polygons, self.are_doors):
+            poly_relation = self._sub_poly_relation(
+                polygon, parent_poly, parent_holes, tolerance)
+            if poly_relation == -1:
                 continue
             pt3d = tuple(
                 face.geometry.plane.project_point(Point3D(p.x, p.y, 0), p_dir)
                 for p in polygon)
-            s_geo = Face3D(pt3d)
-            if isd:
-                sub_f = Door('{}_Door{}'.format(face.identifier, i + 1), s_geo)
-                face.add_door(sub_f)
-            else:
-                sub_f = Aperture('{}_Glz{}'.format(face.identifier, i + 1), s_geo)
-                face.add_aperture(sub_f)
+            if None in pt3d:
+                continue
+            s_geos = [Face3D(pt3d)]
+            if poly_relation == 0:  # find the boolean difference
+                par_geo = face.geometry
+                bool_int = Face3D.coplanar_intersection(
+                    par_geo, s_geos[0], tolerance, math.radians(1))
+                if bool_int is None or len(bool_int) == 0:  # boolean intersection failed
+                    continue
+                # offset the result of the boolean intersection from the edge
+                s_geos = []
+                for res in bool_int:
+                    new_pts = [res.plane.xy_to_xyz(pt2) for pt2 in
+                               res.boundary_polygon2d.offset(tolerance * 2)]
+                    s_geos.append(Face3D(new_pts))
+            for s_geo in s_geos:
+                if isd:
+                    sub_f = Door('{}_Door{}'.format(face.identifier, sub_count), s_geo)
+                    face.add_door(sub_f)
+                else:
+                    sub_f = Aperture('{}_Glz{}'.format(face.identifier, sub_count), s_geo)
+                    face.add_aperture(sub_f)
+                sub_count += 1
 
     def move(self, moving_vec):
         """Get this DetailedSkylights moved along a vector.
@@ -593,7 +610,7 @@ class DetailedSkylights(_SkylightParameterBase):
 
     def split(self, face_3ds, tolerance=0.01):
         """Split these skylight parameters across several Face3D.
-        
+
         This is useful when the Room2D to which the skylight is assigned has been
         split into multiple Room2Ds.
 
@@ -827,6 +844,28 @@ class DetailedSkylights(_SkylightParameterBase):
                 if not hole_poly.is_polygon_outside(sub_poly):
                     return False
             return True
+
+    @staticmethod
+    def _sub_poly_relation(sub_polygon, parent_poly, parent_holes, tolerance):
+        """Check the relationship between a sub_polygon and a parent polygon.
+
+        Args:
+            sub_polygon: A Polygon2D which will be checked if it lies inside the parent.
+            parent_poly: A parent Polygon2D.
+            parent_holes: An optional list of Polygon2D for any holes that may
+                exist in the parent polygon. (Default: None).
+        """
+        base_relation = parent_poly.polygon_relationship(sub_polygon, tolerance)
+        if parent_holes is None:
+            return base_relation
+        else:
+            if base_relation == -1:
+                return -1
+            for hole_poly in parent_holes:
+                hole_relation = hole_poly.polygon_relationship(sub_polygon, tolerance)
+                if hole_relation == 1:
+                    return -1
+            return base_relation
 
     @staticmethod
     def _is_sub_point(sub_point, parent_poly, parent_holes=None):

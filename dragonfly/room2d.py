@@ -3584,18 +3584,25 @@ class Room2D(_BaseGeometry):
         else:
             all_segments = [flr_segs]
 
-        # create the walls from the segments by intersecting them with the roof
-        walls = self._wall_faces_with_roof(
-            all_room_poly, all_segments, rel_rf_polys, rel_rf_planes, tolerance)
-        if walls is None:  # invalid roof geometry
-            return None, None, None
-        p_faces.extend(walls)
-
-        # add the roof faces using polygon boolean operations
+        # get the roof faces using polygon boolean operations
         roof_faces = self._roof_faces(
             all_room_poly, rel_rf_polys, rel_rf_planes, tolerance)
         if roof_faces is None:  # invalid roof geometry
             return None, None, None
+
+        # create the walls from the segments by intersecting them with the roof
+        if len(roof_faces) > len(rel_rf_polys):  # new roofs added; rebuild polygons
+            rel_rf_polys = [
+                Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))
+                for geo in roof_faces]
+            rel_rf_planes = [geo.plane for geo in roof_faces]
+        walls = self._wall_faces_with_roof(
+            all_room_poly, all_segments, rel_rf_polys, rel_rf_planes, tolerance)
+        if walls is None:  # invalid roof geometry
+            return None, None, None
+
+        # combine all of the room volume faces together
+        p_faces.extend(walls)
         roof_face_i = list(range(-1, -len(roof_faces) - 1, -1))
         p_faces.extend(roof_faces)
 
@@ -3769,9 +3776,11 @@ class Room2D(_BaseGeometry):
             rom_poly = rom_poly.remove_colinear_vertices(tolerance)
             room_polys.append((pb.BooleanPoint(pt.x, pt.y) for pt in rom_poly.vertices))
         b_room_poly = pb.BooleanPolygon(room_polys)
+        room_poly_area = all_room_poly[0].area - sum(h.area for h in all_room_poly[1:])
+
         # find the boolean intersection with each roof polygon and project the result
         int_tol = tolerance / 100  # intersection tolerance must be finer
-
+        roof_poly_area = 0
         for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
             # snap the polygons to one another to avoid tolerance issues
             rf_poly = rf_poly.remove_colinear_vertices(tolerance)
@@ -3798,6 +3807,7 @@ class Room2D(_BaseGeometry):
                         poly_groups.append([sub_poly])
                 # convert all vertices to 3D and append the roof Face3D
                 for pg in poly_groups:
+                    roof_poly_area += pg[0].area - sum(h.area for h in pg[1:])
                     pg_3d = []
                     for shp in pg:
                         pt3s = tuple(
@@ -3807,10 +3817,30 @@ class Room2D(_BaseGeometry):
                     roof_faces.append(Face3D(pg_3d[0], rf_plane, holes=pg_3d[1:]))
             else:  # no holes are possible in the result; project all polygons directly
                 for sub_poly in polys:
+                    roof_poly_area += sub_poly.area
                     pt3s = tuple(
                         rf_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
                         for pt2 in sub_poly.vertices)
                     roof_faces.append(Face3D(pt3s, rf_plane))
+
+        # if all of the polygons didn't cover the Room2D, add extra horizontal roof faces
+        tol_area = math.sqrt(all_room_poly[0].area) * tolerance
+        if abs(room_poly_area - roof_poly_area) > tol_area:  # room not covered by roofs
+            rm_z = self.ceiling_height
+            subtract_geo = []
+            for rf_face in roof_faces:
+                proj_pts = [Point3D(pt.x, pt.y, rm_z) for pt in rf_face.boundary]
+                if rf_face.has_holes:
+                    hole_pts = [[Point3D(pt.x, pt.y, rm_z) for pt in hole]
+                                for hole in rf_face.holes]
+                    subtract_geo.append(Face3D(proj_pts, holes=hole_pts))
+                else:
+                    subtract_geo.append(Face3D(proj_pts))
+            ang_tol = math.radians(1)
+            ceil_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
+            ceil_geo = self.floor_geometry.move(ceil_vec)
+            cover_faces = ceil_geo.coplanar_difference(subtract_geo, tolerance, ang_tol)
+            roof_faces.extend(cover_faces)
 
         return roof_faces
 
