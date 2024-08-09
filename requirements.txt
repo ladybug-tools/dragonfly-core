@@ -1,2 +1,2 @@
-honeybee-core==1.58.37
+honeybee-core==1.58.38
 dragonfly-schema==1.12.0;python_version>='3.7'
