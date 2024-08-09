@@ -274,7 +274,7 @@ class Model(_BaseGeometry):
                             (room_3ds is None or len(room_3ds) == 0):
                         continue  # empty Building object that should be ignored
                     if 'roof' in bldg and bldg['roof'] is not None:
-                        roof = RoofSpecification.from_dict(data['roof'])
+                        roof = RoofSpecification.from_dict(bldg['roof'])
                         building_roofs.append(roof.geometry)
                         bldg['roof'] = None
                     else:
@@ -836,6 +836,19 @@ class Model(_BaseGeometry):
             p_tol = parse_distance_string('0.01m', self.units)
             for bldg in self._buildings:
                 bldg.separate_mid_floors(p_tol)
+
+    def remove_duplicate_roofs(self):
+        """Remove any roof geometries that appear more than once in each building.
+
+        This includes duplicated roof geometries assigned to different stories.
+
+        Args:
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same. (Default: 0.01, suitable for
+                objects in Meters).
+        """
+        for bldg in self._buildings:
+            bldg.remove_duplicate_roofs(self.tolerance)
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all outdoor walls of the Buildings to have the same window parameters."""
