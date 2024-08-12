@@ -761,6 +761,44 @@ def test_coordinate_room_2d_vertices():
     assert new_room.floor_area == pytest.approx(101.75, abs=1e-3)
 
 
+def test_pull_to_room_2d():
+    """Test the pull_to_room_2d method"""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(10.5, -0.5, 3), Point3D(20, 0, 3), Point3D(20, 9.5, 3),
+             Point3D(10.5, 9.5, 3))
+    room1 = Room2D('SquareShoebox1', Face3D(list(reversed(pts_1))), 3)
+    room2 = Room2D('SquareShoebox2', Face3D(list(reversed(pts_2))), 3)
+
+    distance = 0.8
+    new_room = room1.duplicate()
+    new_room.pull_to_room_2d(room2, distance, True, False, 0.01)
+    assert new_room.floor_geometry[1].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[1].y == pytest.approx(-0.5, abs=1e-3)
+    assert new_room.floor_geometry[2].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[2].y == pytest.approx(9.5, abs=1e-3)
+
+    new_room = room1.duplicate()
+    new_room.pull_to_room_2d(room2, distance, True, True, 0.01)
+    assert new_room.floor_geometry[1].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[1].y == pytest.approx(0.0, abs=1e-3)
+    assert new_room.floor_geometry[2].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[2].y == pytest.approx(10.0, abs=1e-3)
+
+    new_room = room1.duplicate()
+    new_room.pull_to_segments(room2.floor_segments_2d, distance, True, False, 0.01)
+    assert new_room.floor_geometry[1].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[1].y == pytest.approx(-0.5, abs=1e-3)
+    assert new_room.floor_geometry[2].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[2].y == pytest.approx(9.5, abs=1e-3)
+
+    new_room = room1.duplicate()
+    new_room.pull_to_segments(room2.floor_segments_2d, distance, True, True, 0.01)
+    assert new_room.floor_geometry[1].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[1].y == pytest.approx(0.0, abs=1e-3)
+    assert new_room.floor_geometry[2].x == pytest.approx(10.5, abs=1e-3)
+    assert new_room.floor_geometry[2].y == pytest.approx(10.0, abs=1e-3)
+
+
 def test_subtract_room_2ds():
     """Test the Room2D subtract_room_2ds method."""
     f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))

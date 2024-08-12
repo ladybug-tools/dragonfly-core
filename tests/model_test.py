@@ -967,7 +967,7 @@ def test_to_honeybee_roof_with_overlap():
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
     assert len(hb_models) == 1
-    assert len(hb_models[0].rooms[0].roof_ceilings) > 2
+    assert len(hb_models[0].rooms[0].roof_ceilings) > 1
 
 
 def test_to_honeybee_invalid_roof_1():

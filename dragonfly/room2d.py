@@ -1290,11 +1290,14 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
-    def pull_to_segments(self, line_segments, distance, snap_vertices=True):
+    def pull_to_segments(self, line_segments, distance, snap_vertices=True,
+                         constrain_edges=False, tolerance=0.01):
         """Pull this Room2D's vertices to several LineSegment2D.
 
         This includes both an alignment to the line segments as well as an optional
         snapping to the line end points.
+
+        All properties assigned to this Room2D will be preserved.
 
         The benefit of calling this method as opposed to iterating over the
         segments and calling align (and snap_to_line_end_points) is that this
@@ -1313,6 +1316,17 @@ class Room2D(_BaseGeometry):
                 close to the segment end points within the distance should be snapped
                 to the end point instead of simply being aligned to the nearest
                 segment. (Default: True).
+            constrain_edges: A boolean to note whether all axes of the edges that
+                were not pulled to the Room2D should be preserved. This is
+                accomplished by evaluating the changed vertices after all pulling
+                operations are performed and identifying stretches of vertices
+                that changed. For each stretch of changed vertices, the start and end
+                points of this stretch will be moved to the intersection between
+                the new pulled room segment and the adjacent original room
+                segment whose axis is to be preserved. (Default: False).
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
         """
         # create a 3D version of the relevant line segments
         lines_3d = []
@@ -1396,19 +1410,24 @@ class Room2D(_BaseGeometry):
                 edit_holes = new_holes
 
         # rebuild the new floor geometry and assign it to the Room2D
-        self._floor_geometry = Face3D(
-            edit_boundary, self._floor_geometry.plane, edit_holes)
+        f_geo = self._floor_geometry
+        self._floor_geometry = Face3D(edit_boundary, f_geo.plane, edit_holes)
+        # if constrain_edges is true, move the end points of each stretch
+        if constrain_edges:
+            self._constrain_edges(f_geo, tolerance)
 
-    def pull_to_polyline(self, polyline, distance, snap_vertices=True):
+    def pull_to_polyline(self, polyline, distance, snap_vertices=True,
+                         constrain_edges=False, tolerance=0.01):
         """Pull this Room2D's vertices to a Polyline2D.
 
         This includes both an alignment to the polyline's segments as well as an
         optional snapping to the polyline's vertices.
 
-        All properties assigned to this Room2D will be preserved and the number of
-        vertices will remain constant. This means that this method can often create
-        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
-        method after running this one.
+        All properties assigned to this Room2D will be preserved.
+
+        Note that this method can often create duplicate vertices and degenerate
+        geometry. So it might be desirable to run the remove_colinear_vertices or the
+        remove_degenerate_holes method after running this one.
 
         Args:
             polyline: A ladybug_geometry Polyline2D to which this Room2D's vertices
@@ -1420,6 +1439,17 @@ class Room2D(_BaseGeometry):
                 close to the polyline vertices within the distance should be snapped
                 to the polyline vertex instead of simply being aligned to the nearest
                 polyline segment. (Default: True).
+            constrain_edges: A boolean to note whether all axes of the edges that
+                were not pulled to the Room2D should be preserved. This is
+                accomplished by evaluating the changed vertices after all pulling
+                operations are performed and identifying stretches of vertices
+                that changed. For each stretch of changed vertices, the start and end
+                points of this stretch will be moved to the intersection between
+                the new pulled room segment and the adjacent original room
+                segment whose axis is to be preserved. (Default: False).
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
         """
         # create LineSegment3Ds from the polyline
         line_segs = []
@@ -1430,18 +1460,21 @@ class Room2D(_BaseGeometry):
         line_segs.append(line_segs[0].flip())  # ensure last vertex is counted
 
         # pull this Room2D to the segments
-        self._pull_to_poly_segments(line_segs, distance, snap_vertices)
+        self._pull_to_poly_segments(line_segs, distance, snap_vertices,
+                                    constrain_edges, tolerance)
 
-    def pull_to_polygon(self, polygon, distance, snap_vertices=True):
+    def pull_to_polygon(self, polygon, distance, snap_vertices=True,
+                        constrain_edges=False, tolerance=0.01):
         """Pull this Room2D's vertices to a Polygon2D.
 
         This includes both an alignment to the polygon's segments as well as an
         optional snapping to the polygon's vertices.
 
-        All properties assigned to this Room2D will be preserved and the number of
-        vertices will remain constant. This means that this method can often create
-        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
-        method after running this one.
+        All properties assigned to this Room2D will be preserved.
+
+        Note that this method can often create duplicate vertices and degenerate
+        geometry. So it might be desirable to run the remove_colinear_vertices or the
+        remove_degenerate_holes method after running this one.
 
         Args:
             polygon: A ladybug_geometry Polygon2D to which this Room2D's vertices
@@ -1453,6 +1486,17 @@ class Room2D(_BaseGeometry):
                 close to the polygon vertices within the distance should be snapped
                 to the polygon vertex instead of simply being aligned to the nearest
                 polygon segment. (Default: True).
+            constrain_edges: A boolean to note whether all axes of the edges that
+                were not pulled to the Room2D should be preserved. This is
+                accomplished by evaluating the changed vertices after all pulling
+                operations are performed and identifying stretches of vertices
+                that changed. For each stretch of changed vertices, the start and end
+                points of this stretch will be moved to the intersection between
+                the new pulled room segment and the adjacent original room
+                segment whose axis is to be preserved. (Default: False).
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
         """
         # create LineSegment3Ds from the polygon
         line_segs = []
@@ -1462,30 +1506,52 @@ class Room2D(_BaseGeometry):
             line_segs.append(line_ray_3d)
 
         # pull this Room2D to the segments
-        self._pull_to_poly_segments(line_segs, distance, snap_vertices)
+        self._pull_to_poly_segments(line_segs, distance, snap_vertices,
+                                    constrain_edges, tolerance)
 
-    def pull_to_room_2d(self, room_2d, distance, snap_vertices=True):
+    def pull_to_room_2d(self, room_2d, distance, coordinate_vertices=True,
+                        constrain_edges=False, tolerance=0.01):
         """Pull this Room2D's vertices to another Room2D.
 
         This includes both an alignment to the other Room2D's segments as well
-        as an optional snapping to the Room2D's vertices.
+        as an optional snapping to the Room2D's vertices. Furthermore, if
+        coordinate_vertices is True, any vertices of the neighboring input room_2d
+        that are within the specified distance but cannot be matched to a vertex
+        on this Room2D within the tolerance will be inserted into this Room2D,
+        splitting the wall segment in the process.
 
-        All properties assigned to this Room2D will be preserved and the number of
-        vertices will remain constant. This means that this method can often create
-        duplicate vertices and it might be desirable to run the remove_duplicate_vertices
-        method after running this one.
+        All properties assigned to this Room2D will be preserved.
+
+        Note that this method can often create duplicate vertices and degenerate
+        geometry. So it might be desirable to run the remove_colinear_vertices or the
+        remove_degenerate_holes method after running this one.
 
         Args:
             room_2d: A Room2D to which this Room2D's vertices will be pulled.
             distance: The maximum distance between a Room2D vertex and the other
                 Room2D where the vertex will be moved to lie on the other Room2D.
                 Vertices beyond this distance will be left as they are.
-            snap_vertices: A boolean to note whether Room2D vertices that are
+            coordinate_vertices: A boolean to note whether Room2D vertices that are
                 close to the other Room2D vertices within the distance should be snapped
                 to the Room2D vertex instead of simply being aligned to the nearest
-                Room2D segment. (Default: True).
+                Room2D segment. Additionally, any vertices of the neighboring room_2d
+                that are within the specified distance but cannot be matched to a vertex
+                on this Room2D within the tolerance will be inserted into this Room2D,
+                splitting the wall segment in the process. (Default: True).
+            constrain_edges: A boolean to note whether all axes of the edges that
+                were not pulled to the Room2D should be preserved. This is
+                accomplished by evaluating the changed vertices after all pulling
+                operations are performed and identifying stretches of vertices
+                that changed. For each stretch of changed vertices, the start and end
+                points of this stretch will be moved to the intersection between
+                the new pulled room segment and the adjacent original room
+                segment whose axis is to be preserved. (Default: False).
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
         """
         # convert the other Room2D to a list of polygons
+        original_geo = self.floor_geometry
         f_geo = room_2d.floor_geometry
         other_room_polys = [Polygon2D([Point2D(pt.x, pt.y) for pt in f_geo.boundary])]
         if f_geo.has_holes:
@@ -1494,9 +1560,16 @@ class Room2D(_BaseGeometry):
                 other_room_polys.append(h_poly)
         # pull this Room2D to each of the polygons
         for o_poly in other_room_polys:
-            self.pull_to_polygon(o_poly, distance, snap_vertices)
+            self.pull_to_polygon(o_poly, distance, coordinate_vertices)
+        # if coordinate_vertices is True, insert extra vertices
+        if coordinate_vertices:
+            self.coordinate_room_2d_vertices(room_2d, distance, tolerance)
+        # if constrain_edges is true, move the end points of each stretch
+        if constrain_edges:
+            self._constrain_edges(original_geo, tolerance)
 
-    def _pull_to_poly_segments(self, line_segments, distance, snap_vertices=True):
+    def _pull_to_poly_segments(self, line_segments, distance, snap_vertices=True,
+                               constrain_edges=False, tolerance=0.01):
         """Pull this Room2D's vertices to LineSegment3D originating from a poly-line/gon.
 
         Args:
@@ -1510,6 +1583,17 @@ class Room2D(_BaseGeometry):
                 close to the segment end points within the distance should be snapped
                 to the end point instead of simply being aligned to the nearest
                 segment. (Default: True).
+            constrain_edges: A boolean to note whether all axes of the edges that
+                were not pulled to the Room2D should be preserved. This is
+                accomplished by evaluating the changed vertices after all pulling
+                operations are performed and identifying stretches of vertices
+                that changed. For each stretch of changed vertices, the start and end
+                points of this stretch will be moved to the intersection between
+                the new pulled room segment and the adjacent original room
+                segment whose axis is to be preserved. (Default: False).
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
         """
         # first make sure that there are line segments to be pulled to
         if len(line_segments) == 0:
@@ -1578,8 +1662,82 @@ class Room2D(_BaseGeometry):
                 edit_holes = new_holes
 
         # rebuild the new floor geometry and assign it to the Room2D
+        f_geo = self._floor_geometry
+        self._floor_geometry = Face3D(edit_boundary, f_geo.plane, edit_holes)
+        # if constrain_edges is true, move the end points of each stretch
+        if constrain_edges:
+            self._constrain_edges(f_geo, tolerance)
+
+    def _constrain_edges(self, original_floor_geo, tolerance):
+        """Move vertices of this Room2D to preserve original edges."""
+        # get all of the vertices and segments needed for the operation
+        new_verts = self._floor_geometry.boundary
+        old_verts = original_floor_geo.boundary
+        new_segs = self._floor_geometry.boundary_polygon2d.segments
+        old_segs = original_floor_geo.boundary_polygon2d.segments
+
+        # loop through the vertices and figure out which ones have changed
+        pts_moved, any_moved = [], False
+        for pt in new_verts:
+            for o_pt in old_verts:
+                if pt.is_equivalent(o_pt, tolerance):
+                    pts_moved.append(False)
+                    break
+            else:
+                pts_moved.append(True)
+                any_moved = True
+        if not any_moved:
+            return
+
+        # identify the start and end points of each stretch and move them
+        edit_boundary = []
+        last_vert_i = len(new_verts) - 1
+        for i, (pt, moved) in enumerate(zip(new_verts, pts_moved)):
+            if moved:
+                prev_i = i - 1
+                next_i = i + 1 if i != last_vert_i else 0
+                if pts_moved[prev_i] and pts_moved[next_i]:  # middle of a stretch
+                    edit_boundary.append(pt)
+                elif not pts_moved[prev_i] and not pts_moved[next_i]:  # lone moved point
+                    edit_boundary.append(pt)
+                elif pts_moved[prev_i]:  # the end of a stretch
+                    prev_seg, next_new_seg = new_segs[prev_i], new_segs[i]
+                    for o_seg in old_segs:
+                        if o_seg.p2.is_equivalent(next_new_seg.p2, tolerance):
+                            next_seg = o_seg
+                            break
+                    else:  # failed to find the original segment
+                        edit_boundary.append(pt)
+                        continue
+                    ray_1 = Ray2D(prev_seg.p1, prev_seg.v)
+                    ray_2 = Ray2D(next_seg.p2, -next_seg.v)
+                    int_pt_2d = ray_1.intersect_line_ray(ray_2)
+                    if int_pt_2d is None:
+                        edit_boundary.append(pt)
+                    else:
+                        edit_boundary.append(Point3D(int_pt_2d.x, int_pt_2d.y, pt.z))
+                else:  # the beginning of a stretch
+                    prev_new_seg, next_seg = new_segs[prev_i], new_segs[i]
+                    for o_seg in old_segs:
+                        if o_seg.p1.is_equivalent(prev_new_seg.p1, tolerance):
+                            prev_seg = o_seg
+                            break
+                    else:  # failed to find the original segment
+                        edit_boundary.append(pt)
+                        continue
+                    ray_1 = Ray2D(prev_seg.p1, prev_seg.v)
+                    ray_2 = Ray2D(next_seg.p2, -next_seg.v)
+                    int_pt_2d = ray_1.intersect_line_ray(ray_2)
+                    if int_pt_2d is None:
+                        edit_boundary.append(pt)
+                    else:
+                        edit_boundary.append(Point3D(int_pt_2d.x, int_pt_2d.y, pt.z))
+            else:
+                edit_boundary.append(pt)
+
+        # rebuild the floor_geometry of this room and add back any holes
         self._floor_geometry = Face3D(
-            edit_boundary, self._floor_geometry.plane, edit_holes)
+            edit_boundary, self._floor_geometry.plane, self._floor_geometry.holes)
 
     def coordinate_room_2d_vertices(self, room_2d, distance, tolerance=0.01):
         """Insert vertices to this Room2D to coordinate this Room2D with another Room2D.
