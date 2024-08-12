@@ -3920,8 +3920,8 @@ class Room2D(_BaseGeometry):
                 pass  # invalid sliver face
 
         # rebuild the room polyface
-        st_v = -len(roof_face_i) - 1
-        roof_face_i = roof_face_i + list(range(st_v, st_v - len(clean_vert_faces), -1))
+        st_v = -len(clean_vert_faces) - 1
+        roof_face_i = list(range(st_v, st_v - len(roof_face_i), -1))
         p_faces.extend(clean_vert_faces)
         room_polyface = Polyface3D.from_faces(p_faces, tolerance)
         return room_polyface, roof_face_i
