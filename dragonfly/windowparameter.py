@@ -2389,6 +2389,24 @@ class DetailedWindows(_AsymmetricBase):
         else:
             new_polys = Polygon2D.gap_crossing_boundary(
                 clean_polys, max_separation, tolerance)
+            is_self_intersect = False
+            for poly in new_polys:
+                if poly.is_self_intersecting:
+                    is_self_intersect = True
+            if is_self_intersect:  # we hit the frame distance exactly in float tolerance
+                max_separation = max_separation - tolerance
+                if max_separation <= tolerance:
+                    new_polys = Polygon2D.joined_intersected_boundary(
+                        clean_polys, tolerance)
+                else:
+                    new_polys = Polygon2D.gap_crossing_boundary(
+                        clean_polys, max_separation, tolerance)
+                is_self_intersect = False
+                for poly in new_polys:
+                    if poly.is_self_intersecting:
+                        is_self_intersect = True
+                if is_self_intersect:
+                    new_polys = clean_polys
         self._reassign_are_doors(new_polys)
         self._polygons = tuple(new_polys)
 
