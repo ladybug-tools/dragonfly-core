@@ -680,6 +680,18 @@ def test_building_assigned_roof():
     assert len(hb_models) == 1
 
 
+def test_roof_resolved_geometry():
+    """Test the roof.resolved_geometry method."""
+    model_file = './tests/json/roof_party_test.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    res_rof = upper_story.roof.resolved_geometry(0.03)
+    assert sum(g.area for g in res_rof) <= 86916.0
+    assert len(res_rof) == 93
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
