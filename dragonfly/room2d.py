@@ -3696,13 +3696,16 @@ class Room2D(_BaseGeometry):
                 rel_rf_planes.append(rf_pl)
             if poly_rel == 1:  # simple solution of one roof
                 is_full_bound = True
+                rel_rf_polys = [rel_rf_polys[-1]]
+                rel_rf_planes = [rel_rf_planes[-1]]
+                break
 
         # make the room volume
         p_faces = [self.floor_geometry.flip()]  # a list of Room volume faces
         proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
 
         # when fully bounded, simply project the segments onto the single Roof face
-        if is_full_bound and len(rel_rf_polys) == 1:
+        if is_full_bound:
             roof_plane = rel_rf_planes[0]
             roof_verts = []
             for seg in self.floor_segments:
