@@ -3669,8 +3669,8 @@ class Room2D(_BaseGeometry):
             A tuple with the two items below.
 
             * room_polyface -- A Polyface3D object for the Room volume. This will
-                be None whenever the Room has no Roof geometries above it or there
-                are gaps or overlaps in the Roof geometries above the room.
+                be None whenever the Room has no Roof geometries above it or the
+                roof calculation otherwise failed.
 
             * roof_face_i -- A list of integers for the indices of the faces in
                 the Polyface3D that correspond to the roof. Will be None whenever
@@ -3678,10 +3678,8 @@ class Room2D(_BaseGeometry):
 
             * shade_geometry -- An list of Face3D for roof geometries that overlapped
                 with the Room2D but could not be easily incorporated into the Room
-                volume. Typical examples include roof geometries representing dormers
-                or roof elements that projected out and overhung into the Room2D
-                geometry. These should be translated to Room-assigned shades. Will
-                be None whenever the roof is not successfully applied to the Room.
+                volume. Will be None whenever the roof is not successfully applied
+                to the Room.
         """
         # get the roof polygons and the bounding Room2D polygon
         roof_polys = roof_spec.boundary_geometry_2d
@@ -3698,16 +3696,13 @@ class Room2D(_BaseGeometry):
                 rel_rf_planes.append(rf_pl)
             if poly_rel == 1:  # simple solution of one roof
                 is_full_bound = True
-                rel_rf_polys = [rel_rf_polys[-1]]
-                rel_rf_planes = [rel_rf_planes[-1]]
-                break
 
         # make the room volume
         p_faces = [self.floor_geometry.flip()]  # a list of Room volume faces
         proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
 
         # when fully bounded, simply project the segments onto the single Roof face
-        if is_full_bound:
+        if is_full_bound and len(rel_rf_polys) == 1:
             roof_plane = rel_rf_planes[0]
             roof_verts = []
             for seg in self.floor_segments:
@@ -3922,8 +3917,8 @@ class Room2D(_BaseGeometry):
             tolerance: The distance value for absolute tolerance.
 
         Returns:
-            A list of Face3D for the Roofs of the Room. Will be None if the Roof
-            geometries are invalid.
+            A list of Face3D for the Roofs of the Room. Will be None if computing
+            the roof geometry failed.
         """
         roof_faces = []
         proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes

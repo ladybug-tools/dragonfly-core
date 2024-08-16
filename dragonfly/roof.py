@@ -150,14 +150,21 @@ class RoofSpecification(object):
             return self._geometry
         # loop through the geometries and test for any overlaps
         proj_dir = Vector3D(0, 0, 1)
-        planes = [pl for _, pl in sorted(zip(self.boundary_geometry_2d, self.planes),
-                                         key=lambda pair: pair[0].area, reverse=True)]
-        geo_2d = sorted(self.boundary_geometry_2d, key=lambda x: x.area, reverse=True)
+        planes, geo_2d = [], []
+        sort_obj = sorted(zip(self.boundary_geometry_2d, self.planes),
+                          key=lambda pair: pair[0].area, reverse=True)
+        for geo, pl in sort_obj:
+            planes.append(pl)
+            geo_2d.append(geo)
         gei = list(range(len(geo_2d)))
         overlap_count = 0
-        for i, (poly_1, pln_1) in enumerate(zip(geo_2d, planes)):
+        for i in gei:
+            poly_1 = geo_2d[i]
+            pln_1 = planes[i]
             try:
-                for poly_2, pln_2, j in zip(geo_2d[i + 1:], planes[i + 1:], gei[i + 1:]):
+                for j in gei[i + 1:]:
+                    poly_2 = geo_2d[j]
+                    pln_2 = planes[j]
                     if poly_1.polygon_relationship(poly_2, tolerance) == 0:
                         # resolve the overlap between the polygons
                         overlap_count += 1
