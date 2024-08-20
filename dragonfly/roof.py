@@ -148,14 +148,23 @@ class RoofSpecification(object):
         # first check to see if an overlap is possible
         if len(self._geometry) == 1:
             return self._geometry
-        # loop through the geometries and test for any overlaps
+
+        # set up global variables
         proj_dir = Vector3D(0, 0, 1)
         planes, geo_2d = [], []
         sort_obj = sorted(zip(self.boundary_geometry_2d, self.planes),
                           key=lambda pair: pair[0].area, reverse=True)
+
+        # remove colinear vertices from all roof polygons
         for geo, pl in sort_obj:
-            planes.append(pl)
-            geo_2d.append(geo)
+            try:
+                clean_geo = geo.remove_colinear_vertices(tolerance)
+                geo_2d.append(clean_geo)
+                planes.append(pl)
+            except AssertionError:  # degenerate geometry to ignore
+                pass
+
+        # loop through the geometries and test for any overlaps
         gei = list(range(len(geo_2d)))
         overlap_count = 0
         for i in gei:
@@ -198,6 +207,7 @@ class RoofSpecification(object):
                                     pass
             except IndexError:
                 pass  # we have reached the end of the list
+
         # if any overlaps were found, rebuild the 3D roof geometry
         if overlap_count != 0:
             resolved_geo = []
