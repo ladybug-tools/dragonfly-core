@@ -1669,6 +1669,24 @@ class RectangularWindows(_AsymmetricBase):
         new_w._user_data = None if self.user_data is None else self.user_data.copy()
         return new_w
 
+    def remove_small_windows(self, area_threshold):
+        """Remove any small windows that are below a certain area threshold.
+
+        Args:
+            area_threshold: A number for the area below which a window will be removed.
+        """
+        new_origins, new_widths, new_heights, new_are_doors = [], [], [], []
+        for o, w, h, isd in zip(self.origins, self.widths, self.heights, self.are_doors):
+            if w * h > area_threshold:
+                new_origins.append(o)
+                new_widths.append(w)
+                new_heights.append(h)
+                new_are_doors.append(isd)
+        self._origins = tuple(new_origins)
+        self._widths = tuple(new_widths)
+        self._heights = tuple(new_heights)
+        self._are_doors = tuple(new_are_doors)
+
     def flip(self, seg_length):
         """Flip the direction of the windows along a segment.
 
@@ -2435,6 +2453,21 @@ class DetailedWindows(_AsymmetricBase):
                     new_polys.append(rect_poly)
             self._reassign_are_doors(new_polys)
             self._polygons = tuple(new_polys)
+
+    def remove_small_windows(self, area_threshold):
+        """Remove any small window polygons that are below a certain area threshold.
+
+        Args:
+            area_threshold: A number for the area below which a window polygon
+                will be removed.
+        """
+        new_polygons, new_are_doors = [], []
+        for poly, is_dr in zip(self.polygons, self.are_doors):
+            if poly.area > area_threshold:
+                new_polygons.append(poly)
+                new_are_doors.append(is_dr)
+        self._polygons = tuple(new_polygons)
+        self._are_doors = tuple(new_are_doors)
 
     def split(self, segments, tolerance=0.01):
         """Split DetailedWindows parameters across a list of ordered segments.
