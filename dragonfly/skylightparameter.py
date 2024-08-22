@@ -776,6 +776,21 @@ class DetailedSkylights(_SkylightParameterBase):
             self._reassign_are_doors(new_polys)
             self._polygons = tuple(new_polys)
 
+    def remove_small_skylights(self, area_threshold):
+        """Remove any small skylight polygons that are below a certain area threshold.
+
+        Args:
+            area_threshold: A number for the area below which a skylight polygon
+                will be removed.
+        """
+        new_polygons, new_are_doors = [], []
+        for poly, is_dr in zip(self.polygons, self.are_doors):
+            if poly.area > area_threshold:
+                new_polygons.append(poly)
+                new_are_doors.append(is_dr)
+        self._polygons = tuple(new_polygons)
+        self._are_doors = tuple(new_are_doors)
+
     @classmethod
     def from_dict(cls, data):
         """Create DetailedSkylights from a dictionary.
