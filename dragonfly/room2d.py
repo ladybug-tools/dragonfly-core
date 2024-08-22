@@ -1689,6 +1689,11 @@ class Room2D(_BaseGeometry):
         if not any_moved:
             return
 
+        # set a maximum distance for which constrained points can move
+        o_geo = original_floor_geo
+        max_dist = max((o_geo.max.x - o_geo.min.x, o_geo.max.y - o_geo.min.y))
+        max_d = max_dist * 10
+
         # identify the start and end points of each stretch and move them
         edit_boundary = []
         last_vert_i = len(new_verts) - 1
@@ -1711,11 +1716,11 @@ class Room2D(_BaseGeometry):
                         continue
                     ray_1 = Ray2D(prev_seg.p1, prev_seg.v)
                     ray_2 = Ray2D(next_seg.p2, -next_seg.v)
-                    int_pt_2d = ray_1.intersect_line_ray(ray_2)
-                    if int_pt_2d is None:
+                    int_pt = ray_1.intersect_line_ray(ray_2)
+                    if int_pt is None or int_pt.distance_to_point(next_seg.p1) > max_d:
                         edit_boundary.append(pt)
                     else:
-                        edit_boundary.append(Point3D(int_pt_2d.x, int_pt_2d.y, pt.z))
+                        edit_boundary.append(Point3D(int_pt.x, int_pt.y, pt.z))
                 else:  # the beginning of a stretch
                     prev_new_seg, next_seg = new_segs[prev_i], new_segs[i]
                     for o_seg in old_segs:
@@ -1727,11 +1732,11 @@ class Room2D(_BaseGeometry):
                         continue
                     ray_1 = Ray2D(prev_seg.p1, prev_seg.v)
                     ray_2 = Ray2D(next_seg.p2, -next_seg.v)
-                    int_pt_2d = ray_1.intersect_line_ray(ray_2)
-                    if int_pt_2d is None:
+                    int_pt = ray_1.intersect_line_ray(ray_2)
+                    if int_pt is None or int_pt.distance_to_point(next_seg.p1) > max_d:
                         edit_boundary.append(pt)
                     else:
-                        edit_boundary.append(Point3D(int_pt_2d.x, int_pt_2d.y, pt.z))
+                        edit_boundary.append(Point3D(int_pt.x, int_pt.y, pt.z))
             else:
                 edit_boundary.append(pt)
 
