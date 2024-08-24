@@ -2029,6 +2029,8 @@ class Room2D(_BaseGeometry):
                 if last_o_seg.distance_to_point(add_seg.p1) <= tolerance and \
                         last_o_seg.distance_to_point(add_seg.p2) <= tolerance:
                     # colinear!
+                    orig_i = -1 if orig_i >= len(self._boundary_conditions) - 1 \
+                        else orig_i
                     new_bcs.append(self._boundary_conditions[orig_i])
                     if len(new_win) != 0 and new_win[-1] is not None:
                         # TODO: figure out a strategy to split the end of the list
