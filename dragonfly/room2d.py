@@ -3612,7 +3612,7 @@ class Room2D(_BaseGeometry):
                 its original location.
             direction: A Vector2D object to represent the direction in which the
                 common axes will be evaluated and generated.
-            angle_tolerance: The max angle difference in radians that the Room2D
+            angle_tolerance: The max angle difference in degrees that the Room2D
                 segment direction can differ from the input direction before the
                 segments are not factored into this calculation of common axes.
 

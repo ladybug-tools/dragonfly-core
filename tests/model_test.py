@@ -689,7 +689,7 @@ def test_roof_resolved_geometry():
 
     res_rof = upper_story.roof.resolved_geometry(0.03)
     assert sum(g.area for g in res_rof) <= 86916.0
-    assert len(res_rof) == 93
+    assert len(res_rof) == 86
 
 
 def test_check_duplicate_identifiers():

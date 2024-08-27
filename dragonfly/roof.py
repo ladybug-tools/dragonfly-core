@@ -130,6 +130,67 @@ class RoofSpecification(object):
                 max_z = r_geo.max.z
         return max_z
 
+    def union_coplanar(self, tolerance=0.01, angle_tolerance=1.0):
+        """Union coplanar and overlapping geometries on this Roof together.
+
+        This is useful for removing duplicated roof geometries that would
+        otherwise slow down the translation process and potentially create
+        unwanted results.
+
+        Args:
+            tolerance: The minimum distance between two roof geometries at which
+                point they will be unioned together. (Default: 0.01, suitable
+                for objects in meters).
+            angle_tolerance: The max angle difference in degrees that planes
+                can differ from one another for them to be considered
+                coplanar. (Default: 1.0).
+        """
+        # remove colinear vertices from all roof geometries
+        roof_geo = []
+        for geo in self.geometry:
+            try:
+                roof_geo.append(geo.remove_colinear_vertices(tolerance))
+            except AssertionError:  # degenerate geometry to ignore
+                pass
+
+        # group the roof geometries by the same plane
+        a_tol = math.radians(angle_tolerance)
+        tol = tolerance
+        plane_dict = {roof_geo[0].plane: [roof_geo[0]]}
+        for face in roof_geo[1:]:
+            for test_plane in plane_dict:
+                if test_plane.is_coplanar_tolerance(face.plane, tol, a_tol):
+                    plane_dict[test_plane].append(face)
+                    break
+            else:
+                plane_dict[face.plane] = [face]
+
+        # group the geometries by overlap
+        overlap_groups = []
+        for pl_group in plane_dict.values():
+            if len(pl_group) == 1:
+                overlap_groups.append(pl_group)
+            else:
+                overlap_groups.extend(Face3D.group_by_coplanar_overlap(pl_group, tol))
+
+        # union the overlapping groups together
+        clean_geo = []
+        for o_group in overlap_groups:
+            if len(o_group) == 1:
+                clean_geo.append(o_group[0])
+            else:
+                union_geo = Face3D.coplanar_union_all(o_group, tol, a_tol)
+                if union_geo is not None:
+                    clean_geo.extend(union_geo)
+                else:
+                    clean_geo.extend(o_group)
+
+        # assign the new unioned geometry to this object
+        if len(clean_geo) != 0:
+            self._geometry = tuple(clean_geo)
+            self._ridge_line_info = None
+            self._ridge_line_tolerance = None
+
     def resolved_geometry(self, tolerance=0.01):
         """Get a version of this object's geometry with all overlaps in plan resolved.
 
@@ -165,6 +226,7 @@ class RoofSpecification(object):
                 pass
 
         # loop through the geometries and test for any overlaps
+        remove_i = []
         gei = list(range(len(geo_2d)))
         overlap_count = 0
         for i in gei:
@@ -174,7 +236,8 @@ class RoofSpecification(object):
                 for j in gei[i + 1:]:
                     poly_2 = geo_2d[j]
                     pln_2 = planes[j]
-                    if poly_1.polygon_relationship(poly_2, tolerance) == 0:
+                    poly_relationship = poly_1.polygon_relationship(poly_2, tolerance)
+                    if poly_relationship == 0:
                         # resolve the overlap between the polygons
                         overlap_count += 1
                         try:
@@ -205,18 +268,22 @@ class RoofSpecification(object):
                                     geo_2d[j] = poly_2
                                 except Exception:  # tolerance is likely not set correctly
                                     pass
+                    elif poly_relationship == 1:
+                        # polygon is completely inside the other; remove it
+                        remove_i.append(j)
             except IndexError:
                 pass  # we have reached the end of the list
 
         # if any overlaps were found, rebuild the 3D roof geometry
-        if overlap_count != 0:
+        if overlap_count != 0 or len(remove_i) != 0:
             resolved_geo = []
-            for r_poly, r_pln in zip(geo_2d, planes):
-                r_face = []
-                for pt2 in r_poly.vertices:
-                    pt3 = r_pln.project_point(Point3D(pt2.x, pt2.y), proj_dir)
-                    r_face.append(pt3)
-                resolved_geo.append(Face3D(r_face, plane=r_pln))
+            for i, (r_poly, r_pln) in enumerate(zip(geo_2d, planes)):
+                if i not in remove_i:
+                    r_face = []
+                    for pt2 in r_poly.vertices:
+                        pt3 = r_pln.project_point(Point3D(pt2.x, pt2.y), proj_dir)
+                        r_face.append(pt3)
+                    resolved_geo.append(Face3D(r_face, plane=r_pln))
             return resolved_geo
         return self._geometry  # no overlaps in the geometry; just return as is
 
