@@ -4111,6 +4111,8 @@ class Room2D(_BaseGeometry):
         """
         # join all of the naked edges into closed loops
         naked_edges = room_polyface.naked_edges
+        if len(naked_edges) == 0:
+            return room_polyface, roof_face_i
         joined_loops = Polyline3D.join_segments(naked_edges, tolerance)
 
         # create Face3D from any closed planar loops
