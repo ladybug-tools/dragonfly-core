@@ -304,7 +304,15 @@ class Room2D(_BaseGeometry):
                 are considered to be the same.
         """
         # first get the floor_geometry for the Room2D using the horizontal boundary
-        flr_geo = room.horizontal_boundary(match_walls=True, tolerance=tolerance)
+        try:
+            flr_geo = room.horizontal_boundary(match_walls=True, tolerance=tolerance)
+        except ValueError as e:  # not a closed volume; maybe using the floors could work
+            flr_geos = room.horizontal_floor_boundaries(
+                match_walls=True, tolerance=tolerance)
+            if len(flr_geos) == 0:  # degenerate room
+                raise ValueError(e)
+            flr_geos = sorted(flr_geos, key=lambda x: x.area, reverse=True)
+            flr_geo = flr_geos[0]  # use the geometry with the largest area
         flr_geo = flr_geo if flr_geo.normal.z >= 0 else flr_geo.flip()
 
         # match the segments of the floor geometry to walls of the Room
