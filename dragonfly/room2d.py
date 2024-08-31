@@ -2326,7 +2326,7 @@ class Room2D(_BaseGeometry):
         return new_rooms
 
     def split_with_line(self, line, tolerance=0.01):
-        """Get versions of this Room2D that are split by a line.
+        """Get this Room2D split by a line.
 
         If the input line does not intersect this Room2D in a manner that splits
         it into two or more pieces, a list with only the current room will be
@@ -2368,7 +2368,7 @@ class Room2D(_BaseGeometry):
         return self._create_split_rooms(new_geos, tolerance)
 
     def split_with_polyline(self, polyline, tolerance=0.01):
-        """Get versions of this Room2D that are split into two or more by a polyline.
+        """Get this Room2D split into two or more Room2Ds by a polyline.
 
         If the input polyline does not intersect this Room2D in a manner that splits
         it into two or more pieces, a list with only the current room will be
@@ -2401,7 +2401,7 @@ class Room2D(_BaseGeometry):
         return self._create_split_rooms(new_geos, tolerance)
 
     def split_with_polygon(self, polygon, tolerance=0.01):
-        """Get versions of this Room2D that are split into two or more by a polygon.
+        """Get this Room2D split into two or more Room2Ds by a polygon.
 
         If the input polygon does not intersect this Room2D in a manner that splits
         it into two or more pieces, a list with only the current room will be
@@ -2430,6 +2430,50 @@ class Room2D(_BaseGeometry):
         ang_tol = math.radians(1)
         new_geos, _ = Face3D.coplanar_split(
             self.floor_geometry, face_3d, tolerance, ang_tol)
+        if new_geos is None or len(new_geos) == 1:
+            return [self]  # the Face3D did not overlap with one another
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
+
+    def split_with_lines(self, lines, tolerance=0.01):
+        """Get this Room2D split by multiple line segments together.
+
+        Using this method is distinct from looping over the Room2D.split_with_line
+        in that this method will resolve cases where multiple segments branch out
+        from nodes in a network of input lines. So, if three line segments
+        meet at a point in the middle of this Room2D and each extend past the
+        edges of this Room2D, this method can split the Room2D in 3 parts whereas
+        looping over the Room2D.split_with_line will not do this given that each
+        individual segment cannot split the Room2D.
+
+        If the input lines together do not intersect this Room2D in a manner
+        that splits it into two or more pieces, a list with only the current
+        room will be returned.
+
+        Args:
+            lines: A list of LineSegment2D objects that will be used to split
+                this Room2D into two or more pieces.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input line. Will be a list with only the current Room2D if the line
+            does not split it into two or more pieces.
+        """
+        # create 3D versions of the lines for the closest point calculation
+        lines_3d = []
+        for line in lines:
+            if isinstance(line, LineSegment2D):
+                line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, self.floor_height),
+                                        Vector3D(line.v.x, line.v.y, 0))
+                lines_3d.append(line_3d)
+            else:
+                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+                raise TypeError(msg)
+        # split the Room2D with the line
+        new_geos = self.floor_geometry.split_with_lines(lines_3d, tolerance)
         if new_geos is None or len(new_geos) == 1:
             return [self]  # the Face3D did not overlap with one another
         # create the final Room2Ds
