@@ -7,6 +7,9 @@ import io
 import re
 import json
 import datetime
+import tempfile
+import uuid
+import zipfile
 try:  # check if we are in IronPython
     import cPickle as pickle
 except ImportError:  # wea re in cPython
@@ -17,7 +20,7 @@ from ladybug_geometry.geometry3d.face import Face3D
 from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
 from ladybug_geometry.geometry3d.plane import Plane
 from ladybug_geometry.geometry3d.polyface import Polyface3D
-from ladybug.futil import preparedir
+from ladybug.futil import preparedir, unzip_file
 from ladybug.location import Location
 
 from honeybee.typing import float_positive, invalid_dict_error, clean_and_number_string
@@ -119,6 +122,197 @@ class Model(_BaseGeometry):
                 self.add_context_shade(shade)
 
         self._properties = ModelProperties(self)
+
+    @classmethod
+    def from_dict(cls, data):
+        """Initialize a Model from a dictionary.
+
+        Args:
+            data: A dictionary representation of a Model object.
+        """
+        # check the type of dictionary
+        assert data['type'] == 'Model', 'Expected Model dictionary. ' \
+            'Got {}.'.format(data['type'])
+
+        # import the units and tolerance values
+        units = 'Meters' if 'units' not in data or data['units'] is None \
+            else data['units']
+        tol = UNITS_TOLERANCES[units] if 'tolerance' not in data or \
+            data['tolerance'] is None else data['tolerance']
+        angle_tol = 1.0 if 'angle_tolerance' not in data or \
+            data['angle_tolerance'] is None else data['angle_tolerance']
+
+        # import all of the geometry
+        buildings = None  # import buildings
+        building_roofs = []
+        if 'buildings' in data and data['buildings'] is not None:
+            buildings = []
+            for bldg in data['buildings']:
+                try:
+                    unique_stories = bldg['unique_stories'] \
+                        if 'unique_stories' in bldg else None
+                    room_3ds = bldg['room_3ds'] \
+                        if 'room_3ds' in bldg else None
+                    if (unique_stories is None or len(unique_stories) == 0) and \
+                            (room_3ds is None or len(room_3ds) == 0):
+                        continue  # empty Building object that should be ignored
+                    if 'roof' in bldg and bldg['roof'] is not None:
+                        roof = RoofSpecification.from_dict(bldg['roof'])
+                        building_roofs.append(roof.geometry)
+                        bldg['roof'] = None
+                    else:
+                        building_roofs.append([])
+                    bldg = Building.from_dict(bldg, tol, angle_tol, sort_stories=False)
+                    buildings.append(bldg)
+                except Exception as e:
+                    invalid_dict_error(bldg, e)
+        context_shades = None  # import context shades
+        if 'context_shades' in data and data['context_shades'] is not None:
+            context_shades = []
+            for s in data['context_shades']:
+                try:
+                    context_shades.append(ContextShade.from_dict(s))
+                except Exception as e:
+                    invalid_dict_error(s, e)
+
+        # build the model object
+        model = Model(data['identifier'], buildings, context_shades,
+                      units, tol, angle_tol)
+        if 'display_name' in data and data['display_name'] is not None:
+            model.display_name = data['display_name']
+        if 'user_data' in data and data['user_data'] is not None:
+            model.user_data = data['user_data']
+
+        # assign extension properties to the model
+        model.properties.apply_properties_from_dict(data)
+
+        # sort stories now that properties were ordered correctly during assignment
+        for building, bldg_roof in zip(model.buildings, building_roofs):
+            building.sort_stories()
+            if len(bldg_roof) != 0:
+                building.add_roof_geometry(bldg_roof, tol)
+        return model
+
+    @classmethod
+    def from_file(cls, df_file):
+        """Initialize a Model from a DFJSON or DFpkl file, auto-sensing the type.
+
+        This will also sense if the input is a Honeybee Model and, if so,
+        the loaded Dragonfly model will be derived from the Honeybee one.
+
+        Args:
+            df_file: Path to either a DFJSON or DFpkl file. This can also be a
+                HBJSON or a HBpkl from which a Dragonfly model should be derived.
+        """
+        assert os.path.isfile(df_file), 'Failed to find %s' % df_file
+        # sense the file type by first checking it it's a zip file
+        if zipfile.is_zipfile(df_file):
+            return cls.from_pomf(df_file)
+        # check the first character to avoid maxing memory with JSON
+        with io.open(df_file, encoding='utf-8') as inf:
+            first_char = inf.read(1)
+            second_char = inf.read(1)
+        is_json = True if first_char == '{' or second_char == '{' else False
+        # load the file using either DFJSON pathway or DFpkl
+        if is_json:
+            return cls.from_dfjson(df_file)
+        return cls.from_dfpkl(df_file)
+
+    @classmethod
+    def from_dfjson(cls, dfjson_file):
+        """Initialize a Model from a DFJSON file.
+
+        Args:
+            dfjson_file: Path to DFJSON file. This can also be a HBJSON from which
+                a Dragonfly model should be derived.
+        """
+        assert os.path.isfile(dfjson_file), 'Failed to find %s' % dfjson_file
+        with io.open(dfjson_file, encoding='utf-8') as inf:
+            inf.read(1)
+            second_char = inf.read(1)
+        with io.open(dfjson_file, encoding='utf-8') as inf:
+            if second_char == '{':
+                inf.read(1)
+            data = json.load(inf)
+        if 'buildings' in data or 'context_shades' in data:
+            return cls.from_dict(data)
+        else:  # assume that it's a Honeybee Model to translate
+            hb_model = HBModel.from_dict(data)
+            return cls.from_honeybee(hb_model)
+
+    @classmethod
+    def from_dfpkl(cls, dfpkl_file):
+        """Initialize a Model from a DFpkl file.
+
+        Args:
+            dfpkl_file: Path to DFpkl file. This can also be a HBpkl from which
+                a Dragonfly model should be derived.
+        """
+        assert os.path.isfile(dfpkl_file), 'Failed to find %s' % dfpkl_file
+        with open(dfpkl_file, 'rb') as inf:
+            data = pickle.load(inf)
+        if 'buildings' in data or 'context_shades' in data:
+            return cls.from_dict(data)
+        else:  # assume that it's a Honeybee Model to translate
+            hb_model = HBModel.from_dict(data)
+            return cls.from_honeybee(hb_model)
+
+    @classmethod
+    def from_pomf(cls, pomf_file):
+        """Initialize a Model from a Pollination Model File (POMF).
+
+        Args:
+            pomf_file: Path to POMF file containing a dragonfly Model.
+        """
+        folder_name = str(uuid.uuid4())[:6]
+        temp_dir = tempfile.gettempdir()
+        folder_path = os.path.join(temp_dir, folder_name)
+        os.mkdir(folder_path)
+        unzip_file(pomf_file, folder_path)
+        df_file = os.path.join(folder_path, 'model.json')
+        return cls.from_dfjson(df_file)
+
+    @classmethod
+    def from_honeybee(cls, model, conversion_method='AllRoom2D'):
+        """Initialize a Dragonfly Model from a Honeybee Model.
+
+        Args:
+            model: A Honeybee Model to be converted to a Dragonfly Model.
+            conversion_method: Text to indicate how the Honeybee Rooms should be
+                converted to Dragonfly. Note that the AllRoom2D option may result
+                in some loss or simplification of the 3D Honeybee geometry but
+                ensures that all of Dragonfly's features for editing the rooms can
+                be used. The ExtrudedOnly method will convert only the 3D Rooms
+                that would have no loss or simplification of geometry when converted
+                to Room2D. AllRoom3D keeps all detailed 3D geometry on the
+                Building.room_3ds property, enabling you to convert the 3D Rooms
+                to Room2D using the Building.convert_room_3ds_to_2d() method as you
+                see fit. (Default: AllRoom2D). Choose from the following options.
+
+                * AllRoom2D - All Honeybee Rooms converted to Dragonfly Room2D
+                * ExtrudedOnly - Only pure extrusions converted to Dragonfly Room2D
+                * AllRoom3D - All Honeybee Rooms left as-is on Building.room_3ds
+
+        """
+        # translate the rooms to a dragonfly building
+        bldgs = None
+        if len(model.rooms) != 0:
+            bldgs = [Building.from_honeybee(model, conversion_method)]
+        # translate the orphaned shades to context shades
+        shades = []
+        for shd_grp in model.grouped_shades:
+            base_obj = shd_grp[0]
+            shd_geo = [s.geometry for s in shd_grp]
+            con_shade = ContextShade(base_obj.identifier, shd_geo, base_obj.is_detached)
+            con_shade.display_name = base_obj.display_name
+            con_shade._user_data = None if base_obj.user_data is None \
+                else base_obj.user_data.copy()
+            con_shade.properties.from_honeybee(base_obj.properties)
+            shades.append(con_shade)
+        new_model = cls(model.identifier, bldgs, shades, model.units,
+                        model.tolerance, model.angle_tolerance)
+        new_model._display_name = model._display_name
+        return new_model
 
     @classmethod
     def from_geojson(cls, geojson_file_path, location=None, point=Point2D(0, 0),
@@ -239,179 +433,6 @@ class Model(_BaseGeometry):
             model.convert_to_units(units)
 
         return model, location
-
-    @classmethod
-    def from_dict(cls, data):
-        """Initialize a Model from a dictionary.
-
-        Args:
-            data: A dictionary representation of a Model object.
-        """
-        # check the type of dictionary
-        assert data['type'] == 'Model', 'Expected Model dictionary. ' \
-            'Got {}.'.format(data['type'])
-
-        # import the units and tolerance values
-        units = 'Meters' if 'units' not in data or data['units'] is None \
-            else data['units']
-        tol = UNITS_TOLERANCES[units] if 'tolerance' not in data or \
-            data['tolerance'] is None else data['tolerance']
-        angle_tol = 1.0 if 'angle_tolerance' not in data or \
-            data['angle_tolerance'] is None else data['angle_tolerance']
-
-        # import all of the geometry
-        buildings = None  # import buildings
-        building_roofs = []
-        if 'buildings' in data and data['buildings'] is not None:
-            buildings = []
-            for bldg in data['buildings']:
-                try:
-                    unique_stories = bldg['unique_stories'] \
-                        if 'unique_stories' in bldg else None
-                    room_3ds = bldg['room_3ds'] \
-                        if 'room_3ds' in bldg else None
-                    if (unique_stories is None or len(unique_stories) == 0) and \
-                            (room_3ds is None or len(room_3ds) == 0):
-                        continue  # empty Building object that should be ignored
-                    if 'roof' in bldg and bldg['roof'] is not None:
-                        roof = RoofSpecification.from_dict(bldg['roof'])
-                        building_roofs.append(roof.geometry)
-                        bldg['roof'] = None
-                    else:
-                        building_roofs.append([])
-                    bldg = Building.from_dict(bldg, tol, angle_tol, sort_stories=False)
-                    buildings.append(bldg)
-                except Exception as e:
-                    invalid_dict_error(bldg, e)
-        context_shades = None  # import context shades
-        if 'context_shades' in data and data['context_shades'] is not None:
-            context_shades = []
-            for s in data['context_shades']:
-                try:
-                    context_shades.append(ContextShade.from_dict(s))
-                except Exception as e:
-                    invalid_dict_error(s, e)
-
-        # build the model object
-        model = Model(data['identifier'], buildings, context_shades,
-                      units, tol, angle_tol)
-        if 'display_name' in data and data['display_name'] is not None:
-            model.display_name = data['display_name']
-        if 'user_data' in data and data['user_data'] is not None:
-            model.user_data = data['user_data']
-
-        # assign extension properties to the model
-        model.properties.apply_properties_from_dict(data)
-
-        # sort stories now that properties were ordered correctly during assignment
-        for building, bldg_roof in zip(model.buildings, building_roofs):
-            building.sort_stories()
-            if len(bldg_roof) != 0:
-                building.add_roof_geometry(bldg_roof, tol)
-        return model
-
-    @classmethod
-    def from_honeybee(cls, model, conversion_method='AllRoom2D'):
-        """Initialize a Dragonfly Model from a Honeybee Model.
-
-        Args:
-            model: A Honeybee Model to be converted to a Dragonfly Model.
-            conversion_method: Text to indicate how the Honeybee Rooms should be
-                converted to Dragonfly. Note that the AllRoom2D option may result
-                in some loss or simplification of the 3D Honeybee geometry but
-                ensures that all of Dragonfly's features for editing the rooms can
-                be used. The ExtrudedOnly method will convert only the 3D Rooms
-                that would have no loss or simplification of geometry when converted
-                to Room2D. AllRoom3D keeps all detailed 3D geometry on the
-                Building.room_3ds property, enabling you to convert the 3D Rooms
-                to Room2D using the Building.convert_room_3ds_to_2d() method as you
-                see fit. (Default: AllRoom2D). Choose from the following options.
-
-                * AllRoom2D - All Honeybee Rooms converted to Dragonfly Room2D
-                * ExtrudedOnly - Only pure extrusions converted to Dragonfly Room2D
-                * AllRoom3D - All Honeybee Rooms left as-is on Building.room_3ds
-
-        """
-        # translate the rooms to a dragonfly building
-        bldgs = None
-        if len(model.rooms) != 0:
-            bldgs = [Building.from_honeybee(model, conversion_method)]
-        # translate the orphaned shades to context shades
-        shades = []
-        for shd_grp in model.grouped_shades:
-            base_obj = shd_grp[0]
-            shd_geo = [s.geometry for s in shd_grp]
-            con_shade = ContextShade(base_obj.identifier, shd_geo, base_obj.is_detached)
-            con_shade.display_name = base_obj.display_name
-            con_shade._user_data = None if base_obj.user_data is None \
-                else base_obj.user_data.copy()
-            con_shade.properties.from_honeybee(base_obj.properties)
-            shades.append(con_shade)
-        new_model = cls(model.identifier, bldgs, shades, model.units,
-                        model.tolerance, model.angle_tolerance)
-        new_model._display_name = model._display_name
-        return new_model
-
-    @classmethod
-    def from_file(cls, df_file):
-        """Initialize a Model from a DFJSON or DFpkl file, auto-sensing the type.
-
-        This will also sense if the input is a Honeybee Model and, if so,
-        the loaded Dragonfly model will be derived from the Honeybee one.
-
-        Args:
-            df_file: Path to either a DFJSON or DFpkl file. This can also be a
-                HBJSON or a HBpkl from which a Dragonfly model should be derived.
-        """
-        # sense the file type from the first character to avoid maxing memory with JSON
-        # this is needed since queenbee overwrites all file extensions
-        with io.open(df_file, encoding='utf-8') as inf:
-            first_char = inf.read(1)
-            second_char = inf.read(1)
-        is_json = True if first_char == '{' or second_char == '{' else False
-        # load the file using either DFJSON pathway or DFpkl
-        if is_json:
-            return cls.from_dfjson(df_file)
-        return cls.from_dfpkl(df_file)
-
-    @classmethod
-    def from_dfjson(cls, dfjson_file):
-        """Initialize a Model from a DFJSON file.
-
-        Args:
-            dfjson_file: Path to DFJSON file. This can also be a HBJSON from which
-                a Dragonfly model should be derived.
-        """
-        assert os.path.isfile(dfjson_file), 'Failed to find %s' % dfjson_file
-        with io.open(dfjson_file, encoding='utf-8') as inf:
-            inf.read(1)
-            second_char = inf.read(1)
-        with io.open(dfjson_file, encoding='utf-8') as inf:
-            if second_char == '{':
-                inf.read(1)
-            data = json.load(inf)
-        if 'buildings' in data or 'context_shades' in data:
-            return cls.from_dict(data)
-        else:  # assume that it's a Honeybee Model to translate
-            hb_model = HBModel.from_dict(data)
-            return cls.from_honeybee(hb_model)
-
-    @classmethod
-    def from_dfpkl(cls, dfpkl_file):
-        """Initialize a Model from a DFpkl file.
-
-        Args:
-            dfpkl_file: Path to DFpkl file. This can also be a HBpkl from which
-                a Dragonfly model should be derived.
-        """
-        assert os.path.isfile(dfpkl_file), 'Failed to find %s' % dfpkl_file
-        with open(dfpkl_file, 'rb') as inf:
-            data = pickle.load(inf)
-        if 'buildings' in data or 'context_shades' in data:
-            return cls.from_dict(data)
-        else:  # assume that it's a Honeybee Model to translate
-            hb_model = HBModel.from_dict(data)
-            return cls.from_honeybee(hb_model)
 
     @property
     def units(self):
