@@ -8,7 +8,8 @@ from ladybug_geometry.geometry2d import Point2D, Vector2D, Ray2D, LineSegment2D,
     Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D, \
     Plane, Polyline3D, Face3D, Polyface3D
-from ladybug_geometry.intersection2d import closest_point2d_between_line2d
+from ladybug_geometry.intersection2d import closest_point2d_between_line2d, \
+    closest_point2d_on_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
 import ladybug_geometry.boolean as pb
@@ -1421,7 +1422,7 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(edit_boundary, f_geo.plane, edit_holes)
         # if constrain_edges is true, move the end points of each stretch
         if constrain_edges:
-            self._constrain_edges(f_geo, tolerance)
+            self._constrain_edges(f_geo, line_segments, tolerance)
 
     def pull_to_polyline(self, polyline, distance, snap_vertices=True,
                          constrain_edges=False, tolerance=0.01):
@@ -1573,7 +1574,8 @@ class Room2D(_BaseGeometry):
             self.coordinate_room_2d_vertices(room_2d, distance, tolerance)
         # if constrain_edges is true, move the end points of each stretch
         if constrain_edges:
-            self._constrain_edges(original_geo, tolerance)
+            pull_segments = [s for poly in other_room_polys for s in poly.segments]
+            self._constrain_edges(original_geo, pull_segments, tolerance)
 
     def _pull_to_poly_segments(self, line_segments, distance, snap_vertices=True,
                                constrain_edges=False, tolerance=0.01):
@@ -1673,26 +1675,28 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(edit_boundary, f_geo.plane, edit_holes)
         # if constrain_edges is true, move the end points of each stretch
         if constrain_edges:
-            self._constrain_edges(f_geo, tolerance)
+            segs_2d = [LineSegment2D.from_array(((s.p1.x, s.p1.y), (s.p2.x, s.p2.y)))
+                       for s in line_segments]
+            self._constrain_edges(f_geo, segs_2d, tolerance)
 
-    def _constrain_edges(self, original_floor_geo, tolerance):
+    def _constrain_edges(self, original_floor_geo, pull_segments, tolerance):
         """Move vertices of this Room2D to preserve original edges."""
         # get all of the vertices and segments needed for the operation
         new_verts = self._floor_geometry.boundary
-        old_verts = original_floor_geo.boundary
         new_segs = self._floor_geometry.boundary_polygon2d.segments
         old_segs = original_floor_geo.boundary_polygon2d.segments
 
-        # loop through the vertices and figure out which ones have changed
+        # loop through the vertices and figure out which ones are along the pull_segments
         pts_moved, any_moved = [], False
-        for pt in new_verts:
-            for o_pt in old_verts:
-                if pt.is_equivalent(o_pt, tolerance):
-                    pts_moved.append(False)
+        for seg in new_segs:
+            for o_seg in pull_segments:
+                close_pt = closest_point2d_on_line2d(seg.p1, o_seg)
+                if seg.p1.distance_to_point(close_pt) <= tolerance:
+                    pts_moved.append(True)
+                    any_moved = True
                     break
             else:
-                pts_moved.append(True)
-                any_moved = True
+                pts_moved.append(False)
         if not any_moved:
             return
 
