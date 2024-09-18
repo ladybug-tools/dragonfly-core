@@ -3986,8 +3986,13 @@ class Room2D(_BaseGeometry):
         # create a BooleanPolygon for the Room2D
         room_polys = []
         for rom_poly in all_room_poly:
-            rom_poly = rom_poly.remove_colinear_vertices(tolerance)
+            try:
+                rom_poly = rom_poly.remove_colinear_vertices(tolerance)
+            except AssertionError:
+                continue  # degenerate polygon to ignore (usually degenerate hole)
             room_polys.append((pb.BooleanPoint(pt.x, pt.y) for pt in rom_poly.vertices))
+        if len(room_polys) == 0:  # completely degenerate room
+            return None
         b_room_poly = pb.BooleanPolygon(room_polys)
         room_poly_area = all_room_poly[0].area - sum(h.area for h in all_room_poly[1:])
 
@@ -3996,7 +4001,10 @@ class Room2D(_BaseGeometry):
         roof_poly_area = 0
         for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
             # snap the polygons to one another to avoid tolerance issues
-            rf_poly = rf_poly.remove_colinear_vertices(tolerance)
+            try:
+                rf_poly = rf_poly.remove_colinear_vertices(tolerance)
+            except AssertionError:
+                continue  # degenerate roof polygon to ignore
             for rom_poly in all_room_poly:
                 rf_poly = rom_poly.snap_to_polygon(rf_poly, tolerance)
             rf_pts = (pb.BooleanPoint(pt.x, pt.y) for pt in rf_poly.vertices)

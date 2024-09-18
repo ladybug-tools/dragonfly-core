@@ -692,6 +692,21 @@ def test_roof_resolved_geometry():
     assert len(res_rof) == 86
 
 
+def test_large_room_with_roof():
+    """Test the translation of a large room with a roof to test float tolerance limits.
+    """
+    model_file = './tests/json/ice_rink_with_roof.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False,
+                                  tolerance=0.001, enforce_solid=False)
+    hb_model = hb_models[0]
+    rink_room = hb_model.rooms[0]
+    assert len(rink_room.roof_ceilings) > 1
+    # uncomment after merging https://github.com/ladybug-tools/ladybug-geometry/pull/416
+    # assert rink_room.geometry.is_solid
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
