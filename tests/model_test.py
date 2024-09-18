@@ -703,8 +703,7 @@ def test_large_room_with_roof():
     hb_model = hb_models[0]
     rink_room = hb_model.rooms[0]
     assert len(rink_room.roof_ceilings) > 1
-    # uncomment after merging https://github.com/ladybug-tools/ladybug-geometry/pull/416
-    # assert rink_room.geometry.is_solid
+    assert rink_room.geometry.is_solid
 
 
 def test_check_duplicate_identifiers():
