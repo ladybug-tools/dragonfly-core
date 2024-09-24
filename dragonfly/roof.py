@@ -5,9 +5,11 @@ import math
 
 from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
     Polygon2D
-from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D, Polyface3D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
+    Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
+import ladybug_geometry.boolean as pb
 
 
 class RoofSpecification(object):
@@ -28,6 +30,12 @@ class RoofSpecification(object):
         * has_parent
         * min
         * max
+        * min_height
+        * max_height
+        * center_heights
+        * azimuths
+        * altitudes
+        * tilts
     """
     __slots__ = ('_geometry', '_parent', '_ridge_line_info', '_ridge_line_tolerance')
 
@@ -129,6 +137,38 @@ class RoofSpecification(object):
             if r_geo.max.z > max_z:
                 max_z = r_geo.max.z
         return max_z
+
+    @property
+    def center_heights(self):
+        """Get a tuple of average Z-values for each roof geometry."""
+        return tuple(r_geo.center.z for r_geo in self._geometry)
+
+    @property
+    def azimuths(self):
+        """Get a tuple of azimuths for each roof geometry in degrees.
+
+        These values start from 0, indicating the positive Y-axis, and move clockwise
+        up to 360, which indicates a return to the positive Y-axis.
+
+        This will be zero if a geometry is perfectly horizontal.
+        """
+        return tuple(abs(math.degrees(r_geo.azimuth)) for r_geo in self._geometry)
+
+    @property
+    def altitudes(self):
+        """Get a tuple of altitudes for each roof geometry in degrees.
+
+        These values range from 0 (vertical) up to 90 (horizontal).
+        """
+        return tuple(abs(math.degrees(r_geo.altitude)) for r_geo in self._geometry)
+
+    @property
+    def tilts(self):
+        """Get a tuple of tilts for each roof geometry in degrees.
+
+        These values range from 0 (horizontal) up to 90 (vertical).
+        """
+        return tuple(90 - alt for alt in self.altitudes)
 
     def union_coplanar(self, tolerance=0.01, angle_tolerance=1.0):
         """Union coplanar and overlapping geometries on this Roof together.
@@ -403,79 +443,6 @@ class RoofSpecification(object):
         new_face_3d = Face3D(roof_verts, plane=roof_plane)
         self.update_geometry_3d(new_face_3d, polygon_index)
 
-    def align(self, line_ray, distance, tolerance=0.01):
-        """Move naked roof vertices within a given distance of a line to be on that line.
-
-        This is useful for coordinating the Roof specification with the alignment
-        of Room2Ds that belong to the same Story as this Roof.
-
-        Note that the planes of the input roof Face3Ds will be preserved. This way,
-        the internal structure of the roof geometry will be conserved but the roof will
-        be extended to cover Room2Ds that might have otherwise been aligned to
-        the point that they have no Roof geometry above them.
-
-        Args:
-            line_ray: A ladybug_geometry Ray2D or LineSegment2D to which the roof
-                vertices will be aligned. Ray2Ds will be interpreted as being infinite
-                in both directions while LineSegment2Ds will be interpreted as only
-                existing between two points.
-            distance: The maximum distance between a vertex and the line_ray where
-                the vertex will be moved to lie on the line_ray. Vertices beyond
-                this distance will be left as they are.
-            tolerance: The minimum distance between vertices below which they are
-                considered co-located. This is used to ensure that the alignment process
-                does not create new overlaps in the roof geometry. (Default: 0.01,
-                suitable for objects in meters).
-        """
-        # check the input line_ray
-        if isinstance(line_ray, Ray2D):
-            closest_func = closest_point2d_on_line2d_infinite
-        elif isinstance(line_ray, LineSegment2D):
-            closest_func = closest_point2d_on_line2d
-        else:
-            msg = 'Expected Ray2D or LineSegment2D. Got {}.'.format(type(line_ray))
-            raise TypeError(msg)
-
-        # get the polygons and intersect them for matching segments
-        polygons, planes = self.boundary_geometry_2d, self.planes
-        poly_ridge_info = self._compute_ridge_line_info(tolerance)
-
-        # loop through the polygons and align the vertices
-        new_polygons = []
-        for poly, poly_info in zip(polygons, poly_ridge_info):
-            new_poly = []
-            for pt, pt_info in zip(poly, poly_info):
-                if len(pt_info) == 0:  # not on a ridge line; move it anywhere
-                    close_pt = closest_func(pt, line_ray)
-                    if pt.distance_to_point(close_pt) <= distance:
-                        new_poly.append(close_pt)
-                    else:
-                        new_poly.append(pt)
-                elif len(pt_info) == 1:  # only move it along a singe ridge line
-                    r_line = pt_info[0]
-                    vec_ang = math.degrees(r_line.v.angle(line_ray.v))
-                    if 1 <= vec_ang <= 179:  # not parallel; ridge will be intact
-                        close_pt = closest_func(pt, line_ray)
-                        if pt.distance_to_point(close_pt) <= distance:
-                            new_poly.append(close_pt)
-                        else:
-                            new_poly.append(pt)
-                    else:
-                        new_poly.append(pt)
-                else:  # multiple ridge lines; don't move that point!
-                    new_poly.append(pt)
-            new_polygons.append(new_poly)
-
-        # project the points back onto the roof
-        proj_dir = Vector3D(0, 0, 1)
-        new_geo = []
-        for poly, r_pl in zip(new_polygons, planes):
-            new_pts3d = []
-            for pt2 in poly:
-                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
-            new_geo.append(Face3D(new_pts3d, plane=r_pl))
-        self.geometry = new_geo
-
     def snap_to_grid(self, grid_increment, tolerance=0.01):
         """Snap naked roof vertices to the nearest grid node defined by an increment.
 
@@ -522,6 +489,362 @@ class RoofSpecification(object):
                 new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
             new_geo.append(Face3D(new_pts3d, plane=r_pl))
         self.geometry = new_geo
+
+    def align(self, line_ray, distance, tolerance=0.01):
+        """Move roof vertices within a given distance of a line to be on that line.
+
+        This is useful for coordinating the Roof specification with the alignment
+        of Room2Ds that belong to the same Story as this Roof.
+
+        Note that the planes of the input roof Face3Ds will be preserved. This way,
+        the internal structure of the roof geometry will be conserved but the roof will
+        be extended to cover Room2Ds that might have otherwise been aligned to
+        have no Roof geometry above them.
+
+        Args:
+            line_ray: A ladybug_geometry Ray2D or LineSegment2D to which the roof
+                vertices will be aligned. Ray2Ds will be interpreted as being infinite
+                in both directions while LineSegment2Ds will be interpreted as only
+                existing between two points.
+            distance: The maximum distance between a vertex and the line_ray where
+                the vertex will be moved to lie on the line_ray. Vertices beyond
+                this distance will be left as they are.
+            tolerance: The minimum distance between vertices below which they are
+                considered co-located. This is used to ensure that the alignment process
+                does not create new overlaps in the roof geometry. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # check the input line_ray
+        if isinstance(line_ray, Ray2D):
+            closest_func = closest_point2d_on_line2d_infinite
+        elif isinstance(line_ray, LineSegment2D):
+            closest_func = closest_point2d_on_line2d
+        else:
+            msg = 'Expected Ray2D or LineSegment2D. Got {}.'.format(type(line_ray))
+            raise TypeError(msg)
+
+        # get the polygons and planes
+        polygons, planes = self.boundary_geometry_2d, self.planes
+
+        # loop through the roof polygons and align the vertices
+        aligned_polygons = []
+        for poly in polygons:
+            new_poly = []
+            for pt in poly:
+                close_pt = closest_func(pt, line_ray)
+                if pt.distance_to_point(close_pt) <= distance:
+                    new_poly.append(close_pt)
+                else:
+                    new_poly.append(pt)
+            aligned_polygons.append(Polygon2D(new_poly))
+
+        # constrain the roof edges, which typically preserves roof ridge lines
+        new_polygons = []
+        for old_poly, new_poly in zip(polygons, aligned_polygons):
+            con_poly = self._constrain_edges(old_poly, new_poly, [line_ray], tolerance)
+            new_polygons.append(con_poly)
+
+        # project the points back onto the roof
+        proj_dir = Vector3D(0, 0, 1)
+        new_geo = []
+        for poly, r_pl in zip(new_polygons, planes):
+            new_pts3d = []
+            for pt2 in poly:
+                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
+            new_geo.append(Face3D(new_pts3d, plane=r_pl))
+        self.geometry = new_geo
+
+    def pull_to_segments(self, line_segments, distance, snap_vertices=True,
+                         selected_indices=None, tolerance=0.01):
+        """Pull the vertices of this roof to several LineSegment2D.
+
+        This includes both an alignment to the line segments as well as an optional
+        snapping to the line end points. The planes of the input roof Face3Ds
+        will be preserved.
+
+        The benefit of calling this method as opposed to iterating over the segments
+        and calling align is that this method will only align and snap to the
+        closest segment across all of the input line_segments. This often helps
+        avoid snapping to undesirable line segments, particularly when there are
+        two ore more segments that are within the distance.
+
+        Args:
+            line_segments: A list of ladybug_geometry LineSegment2D to which this
+                roof's vertices will be pulled.
+            distance: The maximum distance between a roof vertex and the line_segments
+                where the vertex will be moved to lie on the segments. Vertices beyond
+                this distance will be left as they are.
+            snap_vertices: A boolean to note whether roof vertices that are close
+                to the segment end points within the distance should be snapped
+                to the end point instead of simply being aligned to the nearest
+                segment. (Default: True).
+            selected_indices: An optional list of indices for specific roof
+                geometries to be split with the input polygon. If None, all of
+                the roof geometry will be tested for intersection with the
+                input polygon. (Default: None).
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # check that the input is as expected
+        if len(line_segments) == 0:
+            return
+        for line in line_segments:
+            if not isinstance(line, LineSegment2D):
+                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+                raise TypeError(msg)
+
+        # get the polygons and planes
+        polygons, planes = self.boundary_geometry_2d, self.planes
+
+        # loop through the roof polygons and align the vertices
+        aligned_polygons = []
+        for i, poly in enumerate(polygons):
+            if selected_indices is None or i in selected_indices:
+                new_boundary = []
+                for pt in poly:
+                    dists, c_pts = [], []
+                    for line_ray in line_segments:
+                        close_pt = closest_point2d_on_line2d(pt, line_ray)
+                        c_pts.append(close_pt)
+                        dists.append(pt.distance_to_point(close_pt))
+                    sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+                    if sort_pt[0][0] <= distance:
+                        new_boundary.append(sort_pt[0][1])
+                    else:
+                        new_boundary.append(pt)
+                aligned_polygons.append(Polygon2D(new_boundary))
+            else:
+                aligned_polygons.append(poly)
+
+        # if snap_vertices was requested, perform an additional operation to snap them
+        if snap_vertices:
+            vertices = []
+            for line in line_segments:
+                vertices.append(line.p1)
+                vertices.append(line.p2)
+            new_polygons = []
+            for i, poly in enumerate(aligned_polygons):
+                if selected_indices is None or i in selected_indices:
+                    new_boundary = []
+                    for pt in poly:
+                        dists = [pt.distance_to_point(pt_2d) for pt_2d in vertices]
+                        sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                        if sort_pt[0][0] <= distance:
+                            new_boundary.append(sort_pt[0][1])
+                        else:
+                            new_boundary.append(pt)
+                    new_polygons.append(Polygon2D(new_boundary))
+                else:
+                    new_polygons.append(poly)
+            aligned_polygons = new_polygons
+
+        # constrain the roof edges, which typically preserves roof ridge lines
+        new_polygons = []
+        for i, (old_poly, new_poly) in enumerate(zip(polygons, aligned_polygons)):
+            if selected_indices is None or i in selected_indices:
+                con_poly = self._constrain_edges(
+                    old_poly, new_poly, line_segments, tolerance)
+                new_polygons.append(con_poly)
+            else:
+                new_polygons.append(new_poly)
+
+        # project the points back onto the roof
+        proj_dir = Vector3D(0, 0, 1)
+        new_geo = []
+        for poly, r_pl in zip(new_polygons, planes):
+            new_pts3d = []
+            for pt2 in poly:
+                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
+            new_geo.append(Face3D(new_pts3d, plane=r_pl))
+        self.geometry = new_geo
+
+    def subtract_roofs(self, minuend_index, subtrahend_indices, tolerance=0.01):
+        """Subtract one or more geometries in this roof from a given geometry.
+
+        This is useful for resolving overlaps between geometries in the roof,
+        particularly when one geometry above another one should take precedence.
+
+        Args:
+            minuend_index: The index of a geometry in this roof from which the
+                subtrahend roof geometries will be subtracted.
+            subtrahend_indices: A list of indices for geometries in this roof
+                that will be used to remove part of the geometry at the minuend_index.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+        """
+        # get the minuend and subtrahend polygons
+        polygons, planes = self.boundary_geometry_2d, self.planes
+        minuend_poly = polygons[minuend_index]
+        minuend_plane = planes[minuend_index]
+        subtrahend_polys = [polygons[s_i] for s_i in subtrahend_indices]
+
+        # define the subtrahend boolean polygon
+        try:
+            minuend_poly = minuend_poly.remove_colinear_vertices(tolerance)
+        except AssertionError:  # degenerate roof geometry selected
+            return
+        minuend_bp = [(pb.BooleanPoint(pt.x, pt.y) for pt in minuend_poly.vertices)]
+        minuend_bp = pb.BooleanPolygon(minuend_bp)
+
+        # pre-process the roofs to be subtracted with
+        relevant_b_polys = []
+        for f2_poly in subtrahend_polys:
+            # test whether the two polygons have any overlap in 2D space
+            if minuend_poly.polygon_relationship(f2_poly, tolerance) == -1:
+                continue
+            # snap the polygons to one another to avoid tolerance issues
+            try:
+                f2_poly = f2_poly.remove_colinear_vertices(tolerance)
+            except AssertionError:  # degenerate polygon
+                continue
+            s2_poly = minuend_poly.snap_to_polygon(f2_poly, tolerance)
+            # create the BooleanPolygon
+            f2_polys = [(pb.BooleanPoint(pt.x, pt.y) for pt in s2_poly.vertices)]
+            b_poly2 = pb.BooleanPolygon(f2_polys)
+            relevant_b_polys.append(b_poly2)
+
+        # if no relevant polygons were found, don't perform any operation
+        if len(relevant_b_polys) == 0:
+            return
+
+        # loop through the boolean polygons and subtract them
+        int_tol = tolerance / 100
+        for b_poly2 in relevant_b_polys:
+            try:  # subtract the boolean polygons
+                minuend_bp = pb.difference(minuend_bp, b_poly2, int_tol)
+            except Exception:
+                return  # typically a tolerance issue causing failure
+        minuend_polys = Polygon2D._from_bool_poly(minuend_bp)
+        if len(minuend_polys) == 0:
+            return
+
+        # project the points back onto the roof
+        proj_dir = Vector3D(0, 0, 1)
+        new_geo = []
+        for poly in minuend_polys:
+            new_pts3d = []
+            for pt2 in poly:
+                pt3 = minuend_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
+                new_pts3d.append(pt3)
+            new_geo.append(Face3D(new_pts3d, plane=minuend_plane))
+
+        # update the geometry
+        updated_geo = list(self.geometry)
+        updated_geo[minuend_index] = new_geo[0]
+        for ng in new_geo[1:]:
+            updated_geo.append(ng)
+        self.geometry = updated_geo
+
+    def split_with_polygon(self, polygon, selected_indices=None, tolerance=0.01):
+        """Split the geometry of this roof using a polygon.
+
+        If the input polygon does not intersect the roof geometry in a manner
+        that splits it, this roof will remain unaltered.
+
+        Args:
+            polygon: A Polygon2D object that will be used to split the roof geometry.
+            selected_indices: An optional list of indices for specific roof
+                geometries to be split with the input polygon. If None, all of
+                the roof geometry will be tested for intersection with the
+                input polygon. (Default: None).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+        """
+        # check the inputs
+        if not isinstance(polygon, Polygon2D):
+            msg = 'Expected Polygon2D. Got {}.'.format(type(polygon))
+            raise TypeError(msg)
+
+        # split the geometries with the polygon
+        ang_tol = math.radians(1)
+        proj_dir = Vector3D(0, 0, 1)
+        split_geometries = []
+        for i, geo in enumerate(self.geometry):
+            if selected_indices is None or i in selected_indices:
+                # project the polygon into the plane of the roof geometry
+                new_pts3d = []
+                for pt2 in polygon:
+                    pt3 = geo.plane.project_point(Point3D.from_point2d(pt2), proj_dir)
+                    new_pts3d.append(pt3)
+                face_3d = Face3D(new_pts3d, plane=geo.plane)
+                # split the roof geometry with the polygon
+                new_geos, _ = Face3D.coplanar_split(geo, face_3d, tolerance, ang_tol)
+                if new_geos is None or len(new_geos) == 1:
+                    split_geometries.append(geo)  # no overlap with one another
+                else:
+                    split_geometries.extend(new_geos)  # roof successfully split
+            else:
+                split_geometries.append(geo)
+
+        # update the geometry
+        self.geometry = split_geometries
+
+    def split_with_lines(self, lines, selected_indices=None, tolerance=0.01):
+        """Split the geometry of this roof using multiple line segments together.
+
+        If the input lines do not intersect the roof geometry in a manner
+        that splits it, this roof will remain unaltered.
+
+        Args:
+            lines: A list of LineSegment2D objects that will be used to split
+                this roof geometry.
+            selected_indices: An optional list of indices for specific roof
+                geometries to be split with the input lines. If None, all of
+                the roof geometry will be tested for intersection with the
+                input polygon. (Default: None).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input line. Will be a list with only the current Room2D if the line
+            does not split it into two or more pieces.
+        """
+        # check the inputs
+        for line in lines:
+            if not isinstance(line, LineSegment2D):
+                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+                raise TypeError(msg)
+
+        # split the geometries with the lines
+        rt = self._rounding_tolerance(tolerance)
+        proj_dir = Vector3D(0, 0, 1)
+        split_geometries = []
+        for i, geo in enumerate(self.geometry):
+            if selected_indices is None or i in selected_indices:
+                # project the lines into the plane of the roof geometry
+                lines_3d = []
+                for seg in lines:
+                    pt1 = geo.plane.project_point(Point3D.from_point2d(seg.p1), proj_dir)
+                    pt2 = geo.plane.project_point(Point3D.from_point2d(seg.p2), proj_dir)
+                    pt1 = Point3D(round(pt1.x, rt), round(pt1.y, rt), round(pt1.z, rt))
+                    pt2 = Point3D(round(pt2.x, rt), round(pt2.y, rt), round(pt2.z, rt))
+                    lines_3d.append(LineSegment3D.from_end_points(pt1, pt2))
+                # split the roof geometry with the lines
+                new_geos = geo.split_with_lines(lines_3d, tolerance)
+                if new_geos is None or len(new_geos) == 1:
+                    split_geometries.append(geo)  # no overlap
+                else:
+                    split_geometries.extend(new_geos)  # roof successfully split
+            else:
+                split_geometries.append(geo)
+
+        # update the geometry
+        self.geometry = split_geometries
+
+    def to_dict(self):
+        """Return RoofSpecification as a dictionary."""
+        base = {'type': 'RoofSpecification'}
+        base['geometry'] = [geo.to_dict() for geo in self._geometry]
+        return base
+
+    def duplicate(self):
+        """Get a copy of this object."""
+        return self.__copy__()
 
     def _compute_ridge_line_info(self, tolerance):
         """Get a matrix of values for the ridge lines associated with each vertex.
@@ -572,15 +895,81 @@ class RoofSpecification(object):
             self._ridge_line_tolerance = tolerance
         return self._ridge_line_info
 
-    def to_dict(self):
-        """Return RoofSpecification as a dictionary."""
-        base = {'type': 'RoofSpecification'}
-        base['geometry'] = [geo.to_dict() for geo in self._geometry]
-        return base
+    @staticmethod
+    def _constrain_edges(original_polygon, new_polygon, pull_segments, tolerance):
+        """Move 2D vertices to constrain original edges not on the pull_segments."""
+        # get all of the vertices and segments needed for the operation
+        new_verts = new_polygon.vertices
+        new_segs = new_polygon.segments
+        old_segs = original_polygon.segments
 
-    def duplicate(self):
-        """Get a copy of this object."""
-        return self.__copy__()
+        # loop through the vertices and figure out which ones are along the pull_segments
+        pts_moved, any_moved = [], False
+        for seg in new_segs:
+            for o_seg in pull_segments:
+                close_pt = closest_point2d_on_line2d(seg.p1, o_seg)
+                if seg.p1.distance_to_point(close_pt) <= tolerance:
+                    pts_moved.append(True)
+                    any_moved = True
+                    break
+            else:
+                pts_moved.append(False)
+        if not any_moved:
+            return
+
+        # set a maximum distance for which constrained points can move
+        o_geo = original_polygon
+        max_dist = max((o_geo.max.x - o_geo.min.x, o_geo.max.y - o_geo.min.y))
+        max_d = max_dist * 10
+
+        # identify the start and end points of each stretch and move them
+        edit_boundary = []
+        last_vert_i = len(new_verts) - 1
+        for i, (pt, moved) in enumerate(zip(new_verts, pts_moved)):
+            if moved:
+                prev_i = i - 1
+                next_i = i + 1 if i != last_vert_i else 0
+                if pts_moved[prev_i] and pts_moved[next_i]:  # middle of a stretch
+                    edit_boundary.append(pt)
+                elif not pts_moved[prev_i] and not pts_moved[next_i]:  # lone moved point
+                    edit_boundary.append(pt)
+                elif pts_moved[prev_i]:  # the end of a stretch
+                    prev_seg, next_new_seg = new_segs[prev_i], new_segs[i]
+                    for o_seg in old_segs:
+                        if o_seg.p2.is_equivalent(next_new_seg.p2, tolerance):
+                            next_seg = o_seg
+                            break
+                    else:  # failed to find the original segment
+                        edit_boundary.append(pt)
+                        continue
+                    ray_1 = Ray2D(prev_seg.p1, prev_seg.v)
+                    ray_2 = Ray2D(next_seg.p2, -next_seg.v)
+                    int_pt = ray_1.intersect_line_ray(ray_2)
+                    if int_pt is None or int_pt.distance_to_point(next_seg.p1) > max_d:
+                        edit_boundary.append(pt)
+                    else:
+                        edit_boundary.append(Point2D(int_pt.x, int_pt.y))
+                else:  # the beginning of a stretch
+                    prev_new_seg, next_seg = new_segs[prev_i], new_segs[i]
+                    for o_seg in old_segs:
+                        if o_seg.p1.is_equivalent(prev_new_seg.p1, tolerance):
+                            prev_seg = o_seg
+                            break
+                    else:  # failed to find the original segment
+                        edit_boundary.append(pt)
+                        continue
+                    ray_1 = Ray2D(prev_seg.p1, prev_seg.v)
+                    ray_2 = Ray2D(next_seg.p2, -next_seg.v)
+                    int_pt = ray_1.intersect_line_ray(ray_2)
+                    if int_pt is None or int_pt.distance_to_point(next_seg.p1) > max_d:
+                        edit_boundary.append(pt)
+                    else:
+                        edit_boundary.append(Point2D(int_pt.x, int_pt.y))
+            else:
+                edit_boundary.append(pt)
+
+        # rebuild the input geometry
+        return Polygon2D(edit_boundary)
 
     @staticmethod
     def _calculate_min(geometry_objects):
@@ -590,13 +979,11 @@ class RoofSpecification(object):
         dragonfly objects and assess when two objects are in close proximity.
         """
         min_pt = [geometry_objects[0].min.x, geometry_objects[0].min.y]
-
         for r_geo in geometry_objects[1:]:
             if r_geo.min.x < min_pt[0]:
                 min_pt[0] = r_geo.min.x
             if r_geo.min.y < min_pt[1]:
                 min_pt[1] = r_geo.min.y
-
         return Point2D(min_pt[0], min_pt[1])
 
     @staticmethod
@@ -607,14 +994,31 @@ class RoofSpecification(object):
         dragonfly objects and assess when two objects are in close proximity.
         """
         max_pt = [geometry_objects[0].max.x, geometry_objects[0].max.y]
-
         for r_geo in geometry_objects[1:]:
             if r_geo.max.x > max_pt[0]:
                 max_pt[0] = r_geo.max.x
             if r_geo.max.y > max_pt[1]:
                 max_pt[1] = r_geo.max.y
-
         return Point2D(max_pt[0], max_pt[1])
+
+    @staticmethod
+    def _rounding_tolerance(tolerance):
+        """Get the number of integers to round to based on tolerance.
+
+        This is used to resolve issues when projecting points into the planes
+        of roof geometries.
+        """
+        try:  # get the relative tolerance using a log function
+            rtol = int(math.log10(tolerance)) * -1
+        except ValueError:
+            rtol = 0  # the tol is equal to 1 (out of range for log)
+        # account for the fact that the tolerance may not be base 10
+        base = int(tolerance * 10 ** (rtol + 1))
+        if base == 10 or base == 0:  # tolerance is base 10 (eg. 0.001)
+            base = 1
+        else:  # tolerance is not base 10 (eg. 0.003)
+            rtol += 1
+        return rtol
 
     def __copy__(self):
         return RoofSpecification(self._geometry)
