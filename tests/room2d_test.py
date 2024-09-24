@@ -3,6 +3,15 @@ import pytest
 import json
 import os
 
+from ladybug_geometry.geometry2d import Point2D, Vector2D, LineSegment2D, \
+    Polyline2D, Polygon2D
+from ladybug_geometry.geometry3d import Point3D, Vector3D, LineSegment3D, Plane, \
+    Face3D, Polyface3D
+from honeybee.boundarycondition import Outdoors, Ground, Surface
+from honeybee.boundarycondition import boundary_conditions as bcs
+from honeybee.facetype import AirBoundary
+from honeybee.room import Room
+
 from dragonfly.room2d import Room2D
 from dragonfly.story import Story
 from dragonfly.building import Building
@@ -10,16 +19,6 @@ from dragonfly.model import Model
 from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow, DetailedWindows
 from dragonfly.skylightparameter import DetailedSkylights
 from dragonfly.shadingparameter import Overhang
-
-from honeybee.boundarycondition import Outdoors, Ground, Surface
-from honeybee.boundarycondition import boundary_conditions as bcs
-from honeybee.facetype import AirBoundary
-from honeybee.room import Room
-
-from ladybug_geometry.geometry2d import Point2D, Vector2D, LineSegment2D, \
-    Polyline2D, Polygon2D
-from ladybug_geometry.geometry3d import Point3D, Vector3D, LineSegment3D, Plane, \
-    Face3D, Polyface3D
 
 
 def test_room2d_init():
@@ -735,7 +734,7 @@ def test_room2d_align():
 
 
 def test_coordinate_room_2d_vertices():
-    """Test the coordinate_room_2d_vertices method"""
+    """Test the coordinate_room_2d_vertices method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10.5, 0, 3), Point3D(20, 0, 3), Point3D(20, 10, 3),
              Point3D(10.5, 10, 3), Point3D(10, 5, 3))
@@ -762,7 +761,7 @@ def test_coordinate_room_2d_vertices():
 
 
 def test_pull_to_room_2d():
-    """Test the pull_to_room_2d method"""
+    """Test the pull_to_room_2d method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
     pts_2 = (Point3D(10.5, -0.5, 3), Point3D(20, 0, 3), Point3D(20, 9.5, 3),
              Point3D(10.5, 9.5, 3))
