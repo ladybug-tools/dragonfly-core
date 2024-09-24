@@ -152,7 +152,11 @@ class RoofSpecification(object):
 
         This will be zero if a geometry is perfectly horizontal.
         """
-        return tuple(abs(math.degrees(r_geo.azimuth)) for r_geo in self._geometry)
+        azimuths = []
+        for r_geo in self._geometry:
+            r_geo = r_geo if r_geo.normal.z >= 0 else r_geo.flip()
+            azimuths.append(math.degrees(r_geo.azimuth))
+        return tuple(azimuths)
 
     @property
     def altitudes(self):
