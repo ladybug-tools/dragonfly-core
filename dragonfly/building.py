@@ -301,7 +301,8 @@ class Building(_BaseGeometry):
                     invalid_dict_error(r_dict, e)
         # create the Building object
         building = cls(data['identifier'], stories, room_3ds, sort_stories=sort_stories)
-        if 'roof' in data and data['roof'] is not None:
+        if 'roof' in data and data['roof'] is not None and 'geometry' in data['roof'] \
+                and len(data['roof']['geometry']) > 0:
             roof = RoofSpecification.from_dict(data['roof'])
             building.add_roof_geometry(roof.geometry, tolerance)
         if 'display_name' in data and data['display_name'] is not None:
