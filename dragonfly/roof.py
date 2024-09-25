@@ -919,7 +919,7 @@ class RoofSpecification(object):
             else:
                 pts_moved.append(False)
         if not any_moved:
-            return
+            return new_polygon
 
         # set a maximum distance for which constrained points can move
         o_geo = original_polygon
