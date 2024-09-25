@@ -156,7 +156,9 @@ class Model(_BaseGeometry):
                     if (unique_stories is None or len(unique_stories) == 0) and \
                             (room_3ds is None or len(room_3ds) == 0):
                         continue  # empty Building object that should be ignored
-                    if 'roof' in bldg and bldg['roof'] is not None:
+                    if 'roof' in bldg and bldg['roof'] is not None \
+                            and 'geometry' in bldg['roof'] \
+                            and len(bldg['roof']['geometry']) > 0:
                         roof = RoofSpecification.from_dict(bldg['roof'])
                         building_roofs.append(roof.geometry)
                         bldg['roof'] = None
