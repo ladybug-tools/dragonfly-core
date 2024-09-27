@@ -165,7 +165,6 @@ def test_validate_model_json():
         assert result.exit_code == 0
         outp = result.output
         valid_report = json.loads(outp)
-        print(valid_report['errors'])
         assert not valid_report['valid']
         assert len(valid_report['errors']) == 2  # there are two Room2D overlaps
         runner = CliRunner()
@@ -185,7 +184,6 @@ def test_merge_models_to_honeybee():
     in_args = [input_df_model, '--dragonfly-model', extra_df_model,
                '--honeybee-model', input_hb_model, '--output-file', output_hb_model]
     result = runner.invoke(merge_models_to_honeybee, in_args)
-    print(result.output)
     assert result.exit_code == 0
 
     assert os.path.isfile(output_hb_model)

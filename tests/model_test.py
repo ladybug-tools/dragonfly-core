@@ -699,7 +699,7 @@ def test_large_room_with_roof():
     model = Model.from_file(model_file)
 
     hb_models = model.to_honeybee('District', None, False,
-                                  tolerance=0.001, enforce_solid=False)
+                                  tolerance=0.003, enforce_solid=False)
     hb_model = hb_models[0]
     rink_room = hb_model.rooms[0]
     assert len(rink_room.roof_ceilings) > 1
