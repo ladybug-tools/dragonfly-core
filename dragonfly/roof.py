@@ -276,47 +276,81 @@ class RoofSpecification(object):
         for i in gei:
             poly_1 = geo_2d[i]
             pln_1 = planes[i]
-            try:
-                for j in gei[i + 1:]:
-                    poly_2 = geo_2d[j]
-                    pln_2 = planes[j]
-                    poly_relationship = poly_1.polygon_relationship(poly_2, tolerance)
-                    if poly_relationship == 0:
-                        # resolve the overlap between the polygons
-                        overlap_count += 1
-                        try:
-                            overlap_polys = poly_1.boolean_intersect(poly_2, tolerance)
-                        except Exception:  # tolerance is likely not set correctly
+            for j in gei[i + 1:]:
+                poly_2 = geo_2d[j]
+                pln_2 = planes[j]
+                poly_relationship = poly_1.polygon_relationship(poly_2, tolerance)
+                tol = tolerance  # temporary tolerance value that may be adjusted
+                if poly_relationship == 0:
+                    # resolve the overlap between the polygons
+                    overlap_count += 1
+                    try:
+                        overlap_polys = poly_1.boolean_intersect(poly_2, tol)
+                    except Exception as e:  # tolerance is likely not correct
+                        try:  # make an attempt at a slightly lower tol
+                            tol = tol / 10
+                            overlap_polys = poly_1.boolean_intersect(poly_1, tol)
+                        except Exception:
+                            print('Failed to get boolean intersect.\n{}'.format(e))
                             continue
-                        for o_poly in overlap_polys:
-                            o_face_1, o_face_2 = [], []
-                            for pt in o_poly.vertices:
-                                pt1 = pln_1.project_point(Point3D(pt.x, pt.y), proj_dir)
-                                pt2 = pln_2.project_point(Point3D(pt.x, pt.y), proj_dir)
-                                o_face_1.append(pt1)
-                                o_face_2.append(pt2)
-                            o_face_1 = Face3D(o_face_1, plane=pln_1)
-                            o_face_2 = Face3D(o_face_2, plane=pln_2)
-                            if o_face_1.center.z > o_face_2.center.z:
-                                # remove the overlap from the first polygon
-                                try:
-                                    new_polys = poly_1.boolean_difference(o_poly, tolerance)
-                                    poly_1 = new_polys[0] if len(new_polys) == 1 else poly_1
-                                    geo_2d[i] = poly_1
-                                except Exception:  # tolerance is likely not set correctly
-                                    pass
-                            else:  # remove the overlap from the second polygon
-                                try:
-                                    new_polys = poly_2.boolean_difference(o_poly, tolerance)
-                                    poly_2 = new_polys[0] if len(new_polys) == 1 else poly_2
-                                    geo_2d[j] = poly_2
-                                except Exception:  # tolerance is likely not set correctly
-                                    pass
-                    elif poly_relationship == 1:
-                        # polygon is completely inside the other; remove it
-                        remove_i.append(j)
-            except IndexError:
-                pass  # we have reached the end of the list
+                    for o_poly in overlap_polys:
+                        o_face_1, o_face_2 = [], []
+                        for pt in o_poly.vertices:
+                            pt1 = pln_1.project_point(Point3D(pt.x, pt.y), proj_dir)
+                            pt2 = pln_2.project_point(Point3D(pt.x, pt.y), proj_dir)
+                            o_face_1.append(pt1)
+                            o_face_2.append(pt2)
+                        o_face_1 = Face3D(o_face_1, plane=pln_1)
+                        o_face_2 = Face3D(o_face_2, plane=pln_2)
+                        if o_face_1.center.z > o_face_2.center.z:
+                            try:  # remove the overlap from the first polygon
+                                np = poly_1.boolean_difference(o_poly, tol)
+                                if len(np) == 0:  # eliminated the polygon
+                                    remove_i.append(i)
+                                else:  # part-removed
+                                    try:
+                                        poly_1 = np[0].remove_colinear_vertices(tol)
+                                        geo_2d[i] = poly_1
+                                    except AssertionError:  # degenerate result
+                                        remove_i.append(i)
+                                    if len(np) > 1:  # split the polygon to multiple
+                                        for ply in np[1:]:
+                                            try:
+                                                cp = ply.remove_colinear_vertices(tol)
+                                                geo_2d.append(cp)
+                                                planes.append(pln_1)
+                                                gei.append(len(gei))
+                                            except AssertionError:  # degenerate result
+                                                pass
+                            except Exception as e:  # tolerance is likely not correct
+                                print('Failed to get boolean difference.\n{}'.format(e))
+                                pass
+                        else:  # remove the overlap from the second polygon
+                            try:
+                                np = poly_2.boolean_difference(o_poly, tol)
+                                if len(np) == 0:  # eliminated the polygon
+                                    remove_i.append(j)
+                                else:  # part-removed
+                                    try:
+                                        poly_2 = np[0].remove_colinear_vertices(tol)
+                                        geo_2d[j] = poly_2
+                                    except AssertionError:  # degenerate result
+                                        remove_i.append(j)
+                                    if len(np) > 1:  # split the polygon to multiple
+                                        for ply in np[1:]:
+                                            try:
+                                                cp = ply.remove_colinear_vertices(tol)
+                                                geo_2d.append(cp)
+                                                planes.append(pln_2)
+                                                gei.append(len(gei))
+                                            except AssertionError:  # degenerate result
+                                                pass
+                            except Exception as e:  # tolerance is likely not correct
+                                print('Failed to get boolean difference.\n{}'.format(e))
+                                pass
+                elif poly_relationship == 1:
+                    # polygon is completely inside the other; remove it
+                    remove_i.append(j)
 
         # if any overlaps were found, rebuild the 3D roof geometry
         if overlap_count != 0 or len(remove_i) != 0:
