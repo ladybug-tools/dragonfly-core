@@ -987,14 +987,21 @@ class Building(_BaseGeometry):
                 incorrect roof assignment in cases where roofs extend slightly
                 past the room they are intended for. (Default: 0.05).
         """
-        # first check to be sure that roof_geometry has been supplied
+        # convert all roof geometries to clean 2D polygons
+        roof_polygons, clean_roofs = [], []
+        for r_geo in roof_geometry:
+            try:
+                clean_geo = r_geo.remove_colinear_vertices(tolerance)
+            except AssertionError:  # degenerate roof geometry to ignore
+                continue
+            clean_poly = Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in r_geo.boundary))
+            clean_roofs.append(clean_geo)
+            roof_polygons.append(clean_poly)
+        roof_geometry = clean_roofs
         if len(roof_geometry) == 0:
             return
 
-        # convert all rooms and roof geometries to 2D polygons to evaluate overlaps
-        roof_polygons = tuple(
-            Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))
-            for geo in roof_geometry)
+        # prepare the stories for checking the roofs
         rev_stories = list(reversed(self.unique_stories))
         story_polygons, story_heights, room_heights = [], [], []
         for story in rev_stories:
@@ -1017,6 +1024,10 @@ class Building(_BaseGeometry):
                 for rm_poly, rm_ht in zip(story_poly, rm_hts):
                     poly_rel = rf_poly.polygon_relationship(rm_poly, tolerance)
                     if poly_rel >= 0:
+                        try:
+                            rm_poly = rm_poly.remove_colinear_vertices(tolerance)
+                        except AssertionError:  # degenerate room to ignore
+                            continue
                         overlap_polys = rf_poly.boolean_intersect(rm_poly, tolerance) \
                             if poly_rel == 0 else [rm_poly]
                         if sum(ply.area for ply in overlap_polys) < rm_poly.area * ot:
