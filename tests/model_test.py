@@ -19,6 +19,7 @@ from dragonfly.model import Model
 from dragonfly.building import Building
 from dragonfly.story import Story
 from dragonfly.room2d import Room2D
+from dragonfly.roof import RoofSpecification
 from dragonfly.context import ContextShade
 from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.projection import meters_to_long_lat_factors
@@ -696,9 +697,21 @@ def test_roof_resolved_geometry():
     upper_story = model.buildings[0][-1]
     assert upper_story.roof is not None
 
-    res_rof = upper_story.roof.resolved_geometry(0.03)
-    assert sum(g.area for g in res_rof) <= 86916.0
-    assert len(res_rof) == 86
+    res_geo = upper_story.roof.resolved_geometry(0.003)
+    assert sum(g.area for g in res_geo) <= 86916.0
+    res_roof = RoofSpecification(res_geo)
+    assert res_roof.overlap_count(0.003) == 0
+
+
+def test_roof_resolved_geometry_2():
+    """Test another case with the roof.resolved_geometry method."""
+    model_file = './tests/json/model_with_bldg_roofs.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+
+    res_geo = upper_story.roof.resolved_geometry(0.003)
+    res_roof = RoofSpecification(res_geo)
+    assert res_roof.overlap_count(0.003) == 0
 
 
 def test_large_room_with_roof():
