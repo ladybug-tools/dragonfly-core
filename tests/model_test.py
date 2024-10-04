@@ -680,6 +680,15 @@ def test_building_assigned_roof():
     assert len(hb_models) == 1
 
 
+def test_building_assigned_roofs_2():
+    """Test another serialization of a model with roofs assigned to the building."""
+    model_file = './tests/json/model_with_bldg_roofs.dfjson'
+    model = Model.from_file(model_file)
+    stories = model.stories
+
+    assert len(stories[0].roof) <= 30
+
+
 def test_roof_resolved_geometry():
     """Test the roof.resolved_geometry method."""
     model_file = './tests/json/roof_party_test.dfjson'

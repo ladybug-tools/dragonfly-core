@@ -295,8 +295,6 @@ def test_split_with_lines():
     pts = (Point3D(0., 5., 5.), Point3D(10., 5., 5.), Point3D(10., 10., 0.), Point3D(0., 10., 0.))
     face = Face3D(pts)
     split_line = LineSegment3D.from_end_points(Point3D(5., 3., 7.), Point3D(5., 12., -2.))
-    # print(face.vertices)
-    # print(split_line)
     face.split_with_line(split_line, 0.01)
 
     pts_1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 5, 5), Point3D(0, 5, 5))
@@ -312,3 +310,29 @@ def test_split_with_lines():
 
     assert len(roof) == 6
     assert sum(rg.area for rg in roof.geometry) == pytest.approx(roof_area, abs=1e-3)
+
+
+def test_split_with_line():
+    """Test another case of RoofSpecification split_with_lines method."""
+    in_roof = {
+        "type": "RoofSpecification",
+        "geometry": [
+            {
+                "type": "Face3D",
+                "boundary": [
+                    [7.0619315174376345, -3.4035939785815463, 2.2000000000000837],
+                    [13.061931517437632, -3.4035939785815463, 2.2000000000000837],
+                    [13.061931517437632, -15.201593978581808, 2.2000000000000837],
+                    [7.0619315174376345, -15.201593978581808, 2.2000000000000837]
+                ]
+            }
+        ]
+    }
+    roof = RoofSpecification.from_dict(in_roof)
+    split_line_array = [[16.26167736358605, -11.045644087390255],
+                        [5.753788558176589, -7.5595438697731]]
+    split_line = LineSegment2D.from_array(split_line_array)
+
+    assert len(roof.geometry) == 1
+    roof.split_with_lines([split_line])
+    assert len(roof.geometry) == 2
