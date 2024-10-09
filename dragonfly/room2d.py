@@ -2918,6 +2918,8 @@ class Room2D(_BaseGeometry):
         for hb_plenum in hb_plenums:  # transfer the parent's construction set
             hb_plenum._properties = self.properties.to_honeybee(hb_plenum)
             hb_plenum.exclude_floor_area = True
+            if self.has_parent:
+                hb_plenum.story = self.parent.display_name
             try:  # set the program to unconditioned plenum and assign infiltration
                 hb_plenum.properties.energy.program_type = None
                 hb_plenum.properties.energy.hvac = None

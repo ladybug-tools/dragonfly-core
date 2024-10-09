@@ -1474,9 +1474,10 @@ class Model(_BaseGeometry):
                 object_per_model.title() in ('Building', 'District'):
             story_rel_types = {}
             for bldg in self.buildings:
-                for i, story in enumerate(bldg.unique_stories):
+                stories = bldg.unique_stories if use_multiplier else bldg.all_stories()
+                for i, story in enumerate(stories):
                     rel_types = []
-                    if i == 0 or bldg.unique_stories[i - 1].multiplier == 1:
+                    if i == 0 or stories[i - 1].multiplier == 1:
                         rel_types.append(Floor)
                     if story.multiplier == 1:
                         rel_types.append(RoofCeiling)
