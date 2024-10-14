@@ -37,12 +37,14 @@ class RoofSpecification(object):
         * altitudes
         * tilts
     """
-    __slots__ = ('_geometry', '_parent', '_ridge_line_info', '_ridge_line_tolerance')
+    __slots__ = ('_geometry', '_parent', '_is_resolved',
+                 '_ridge_line_info', '_ridge_line_tolerance')
 
     def __init__(self, geometry):
         """Initialize RoofSpecification."""
         self.geometry = geometry
         self._parent = None  # will be set when RoofSpecification is added to a Story
+        self._is_resolved = False  # will be set during the serialization process
 
     @classmethod
     def from_dict(cls, data):
