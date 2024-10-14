@@ -92,7 +92,7 @@ class Building(_BaseGeometry):
         * max
         * user_data
     """
-    __slots__ = ('_unique_stories', '_room_3ds')
+    __slots__ = ('_unique_stories', '_room_3ds', '_roofs')
 
     def __init__(self, identifier, unique_stories=None, room_3ds=None,
                  sort_stories=True):
@@ -132,6 +132,8 @@ class Building(_BaseGeometry):
         else:
             self._room_3ds = ()
 
+        # initialize properties
+        self._roofs = None  # used under the hood to correctly assign roofs
         self._properties = BuildingProperties(self)  # properties for extensions
 
     @classmethod
@@ -1447,6 +1449,12 @@ class Building(_BaseGeometry):
         Returns:
             A honeybee Model that represent the Building.
         """
+        # compute the story heights once so they're not constantly recomputed
+        reset_roofs = False
+        if self._roofs is not None:
+            self._roofs = self._compute_roof_heights()
+            reset_roofs = True
+        # generate all of the Honeybee Rooms
         hb_rooms = []
         if use_multiplier:
             for story in self._unique_stories:
@@ -1463,6 +1471,9 @@ class Building(_BaseGeometry):
         hb_mod = Model(self.identifier, hb_rooms)
         hb_mod._display_name = self._display_name
         hb_mod._user_data = self._user_data
+        # put back the old roofs if they were not set originally
+        if reset_roofs:
+            self._roofs = None
         return hb_mod
 
     def to_dict(self, abridged=False, included_prop=None):
@@ -1820,6 +1831,42 @@ class Building(_BaseGeometry):
                         model = Model(story_id, hb_rooms, orphaned_shades=shds)
                         models.append(model)  # append to the final list of Models
         return models
+
+    def _compute_roof_heights(self):
+        """Get a list with the center height of each RoofSpecification in the Building.
+
+        This method is used internally during Honeybee serialization.
+        """
+        roof_specs = []
+        for story in self._unique_stories:
+            if story.roof is not None:
+                rf_height = (story.roof.max_height + story.roof.min_height) / 2
+                roof_specs.append((story.identifier, rf_height, story.roof))
+            else:
+                roof_specs.append((story.identifier, None, None))
+        return roof_specs
+
+    def _story_roofs(self, story):
+        """Get a list of RoofSpecifications that are relevant for a given Story.
+
+        The returned list will contain tuples where the first item is the center
+        height of the roof and the second item is the RoofSpecification object.
+        This is used under the hood to determine whether roofs of other Stories
+        should influence a given Room2D.
+
+        Args:
+            story: A Story object within the Building.
+        """
+        # compute the center height of each roof specification
+        bldg_roofs = self._compute_roof_heights() if self._roofs is None else self._roofs
+        # filter out the roofs for the relevant story
+        rel_roofs, story_found = [], False
+        for st_id, hgt, roof in bldg_roofs:
+            if story_found and roof is not None:
+                rel_roofs.append((hgt, roof))
+            if story.identifier == st_id:
+                story_found = True
+        return rel_roofs
 
     def _story_dict_room_3d(self):
         """Get a dictionary of 3D Honeybee Rooms organized by story."""

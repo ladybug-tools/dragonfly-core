@@ -2809,11 +2809,13 @@ class Room2D(_BaseGeometry):
         """
         # create the honeybee Room
         has_roof = False
-        if self._parent is not None and self._parent._roof is not None:
+        if self._parent is not None:
+            # get a roof specification for the room
+            roof_spec = self._parent._room_roofs(self, tolerance)
             # generate the room volume from the slanted roof
-            if self.is_top_exposed and multiplier == 1:
+            if roof_spec is not None:
                 room_polyface, roof_face_i = \
-                    self._room_volume_with_roof(self._parent._roof, tolerance)
+                    self._room_volume_with_roof(roof_spec, tolerance)
                 if room_polyface is None:  # complete failure to interpret roof
                     has_roof = False
                 elif enforce_solid and not room_polyface.is_solid:

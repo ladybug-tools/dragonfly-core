@@ -1597,6 +1597,7 @@ using-multipliers-zone-and-or-window.html
             original_roof = self.roof
             res_roof_geo = self.roof.resolved_geometry(tolerance)
             res_roof = RoofSpecification(res_roof_geo)
+            res_roof._is_resolved = True
             self.roof = res_roof
 
         # convert all of the Room2Ds to honeybee Rooms
@@ -1700,6 +1701,48 @@ using-multipliers-zone-and-or-window.html
         flr_hts = sorted([rm.floor_height for rm in room_2ds])
         min_flr_to_ceil = min([rm.floor_to_ceiling_height for rm in room_2ds])
         return True if flr_hts[-1] - flr_hts[0] < min_flr_to_ceil else False
+
+    def _room_roofs(self, room_2d, tolerance):
+        """Get a RoofSpecification to be used for a specific Room2D in the Story.
+
+        This will account for the case that a Room2D extends to the roof of
+        another Story within the parent Buildings.
+
+        Args:
+            room_2d: A Room2D object within the Story for which RoofSpecifications
+                will be evaluated.
+        """
+        # first check whether it's possible for the room to be shaped by a roof
+        if not room_2d.is_top_exposed or self.multiplier != 1:
+            return None  # it's impossible for the room to be shaped by a roof
+        # determine all roof specifications that can influence the Room2D
+        room_roofs = []
+        if self._roof is not None:
+            room_roofs.append(self._roof)
+        if self._parent is not None:
+            room_ch = room_2d.ceiling_height
+            story_roofs = self._parent._story_roofs(self)
+            for hgt, rf in story_roofs:
+                if room_ch > hgt:  # the room extends into the roof
+                    room_roofs.append(rf)
+        # if there is only one or no roofs, the solution is simple
+        if len(room_roofs) == 0:
+            return None  # no relevant roofs were found
+        if len(room_roofs) == 1:  # just return a variation of the lone roof
+            if room_roofs[0]._is_resolved:
+                return room_roofs[0]
+            else:  # the roof of another story; we must resolve it
+                res_roof_geo = room_roofs[0].resolved_geometry(tolerance)
+                res_roof = RoofSpecification(res_roof_geo)
+                res_roof._is_resolved = True
+                return res_roof
+        # if we have multiple roofs, create a new roof with everything resolved
+        all_geo = [g for roof in room_roofs for g in roof]
+        base_roof = RoofSpecification(all_geo)
+        res_roof_geo = base_roof.resolved_geometry(tolerance)
+        res_roof = RoofSpecification(res_roof_geo)
+        res_roof._is_resolved = True
+        return res_roof
 
     @staticmethod
     def _match_apertures(face_1, face2):
