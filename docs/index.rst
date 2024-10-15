@@ -29,6 +29,8 @@ extension's documentation page.
 Here are a number of popular Dragonfly extensions:
 
 - `dragonfly-energy <https://ladybug.tools/dragonfly-energy/docs>`_
+- `dragonfly-radiance <https://ladybug.tools/dragonfly-radiance/docs>`_
+- `dragonfly-uwg <https://ladybug.tools/dragonfly-uwg/docs>`_
 
 
 CLI Docs
