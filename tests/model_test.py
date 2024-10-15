@@ -1483,7 +1483,7 @@ def test_from_geojson_coordinates_simple_location():
     for story in bldg1.unique_stories:
         assert 3.0 == pytest.approx(story.floor_to_floor_height, abs=1e-10)
 
-    assert pytest.approx(bldg1.footprint_area, test_building.footprint_area, abs=1e-10)
+    assert bldg1.footprint_area == pytest.approx(test_building.footprint_area, abs=1e-5)
     vertices = bldg1.footprint()[0].vertices
     test_vertices = test_building.footprint()[0].vertices
     for point, test_point in zip(vertices, test_vertices):
