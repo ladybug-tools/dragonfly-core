@@ -1800,7 +1800,7 @@ class Model(_BaseGeometry):
                     r_2ds_found = False
                     if 'unique_stories' in b_dict and \
                             b_dict['unique_stories'] is not None:
-                        new_stories = []
+                        new_stories, new_roofs = [], []
                         for s_dict in b_dict['unique_stories']:
                             r_dicts = [r for r in s_dict['room_2ds']
                                        if r['identifier'] in room_ids]
@@ -1808,9 +1808,12 @@ class Model(_BaseGeometry):
                                 new_story = s_dict.copy()
                                 new_story['room_2ds'] = r_dicts
                                 new_stories.append(new_story)
+                            rf_dict = s_dict['roof'] if 'roof' in s_dict else None
+                            new_roofs.append([s_dict['identifier'], rf_dict])
                         if len(new_stories) != 0:
                             new_bldg = b_dict.copy()
                             new_bldg['unique_stories'] = new_stories
+                            new_bldg['_roofs'] = new_roofs
                             new_bldgs.append(new_bldg)
                             r_2ds_found = True
                     if r3_ids is not None:

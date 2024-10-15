@@ -303,10 +303,21 @@ class Building(_BaseGeometry):
                     invalid_dict_error(r_dict, e)
         # create the Building object
         building = cls(data['identifier'], stories, room_3ds, sort_stories=sort_stories)
+        # assign all other properties that are not a part of initializer
         if 'roof' in data and data['roof'] is not None and 'geometry' in data['roof'] \
                 and len(data['roof']['geometry']) > 0:
             roof = RoofSpecification.from_dict(data['roof'])
             building.add_roof_geometry(roof.geometry, tolerance)
+        if '_roofs' in data and data['_roofs'] is not None:  # secret for filtered roofs
+            bldg_roofs = []
+            for st_id, r_spec in data['_roofs']:
+                if r_spec is not None:
+                    roof = RoofSpecification.from_dict(r_spec)
+                    rf_height = (roof.max_height + roof.min_height) / 2
+                    bldg_roofs.append((st_id, rf_height, roof))
+                else:
+                    bldg_roofs.append((st_id, None, None))
+            building._roofs = bldg_roofs
         if 'display_name' in data and data['display_name'] is not None:
             building.display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -1451,7 +1462,7 @@ class Building(_BaseGeometry):
         """
         # compute the story heights once so they're not constantly recomputed
         reset_roofs = False
-        if self._roofs is not None:
+        if self._roofs is None:
             self._roofs = self._compute_roof_heights()
             reset_roofs = True
         # generate all of the Honeybee Rooms
@@ -1500,6 +1511,11 @@ class Building(_BaseGeometry):
         base['properties'] = self.properties.to_dict(abridged, included_prop)
         if self.user_data is not None:
             base['user_data'] = self.user_data
+        if self._roofs is not None:  # secret key used for filtered dictionaries
+            rf_dicts = []
+            for st_id, _, roof in self._roofs:
+                rf_dicts.append((st_id, roof.to_dict()))
+            base['_roofs'] = rf_dicts
         return base
 
     @property
