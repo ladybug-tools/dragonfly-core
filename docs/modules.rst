@@ -1,5 +1,5 @@
-dragonfly-core
-=================
+dragonfly
+=========
 
 .. toctree::
    :maxdepth: 4
