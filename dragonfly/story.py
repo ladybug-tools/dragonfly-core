@@ -1803,8 +1803,10 @@ using-multipliers-zone-and-or-window.html
             else:
                 if adj_geo is not None:
                     if nf.center.z < adj_geo.center.z:
+                        nf.remove_sub_faces()
                         nf.boundary_condition = room_2[0].boundary_condition
                     elif nf.center.z > adj_geo.center.z:
+                        nf.remove_sub_faces()
                         nf.boundary_condition = room_2[-1].boundary_condition
         for nf in new_faces2:
             for of in room_1.faces:
@@ -1820,8 +1822,10 @@ using-multipliers-zone-and-or-window.html
             else:
                 if adj_geo is not None:
                     if nf.center.z < adj_geo.center.z:
+                        nf.remove_sub_faces()
                         nf.boundary_condition = room_1[0].boundary_condition
                     elif nf.center.z > adj_geo.center.z:
+                        nf.remove_sub_faces()
                         nf.boundary_condition = room_1[-1].boundary_condition
 
     def __copy__(self):
