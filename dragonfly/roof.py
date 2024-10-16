@@ -483,7 +483,7 @@ class RoofSpecification(object):
         new_face_3d = Face3D(roof_verts, plane=roof_plane)
         self.update_geometry_3d(new_face_3d, polygon_index)
 
-    def snap_to_grid(self, grid_increment, tolerance=0.01):
+    def snap_to_grid(self, grid_increment, selected_indices=None, tolerance=0.01):
         """Snap naked roof vertices to the nearest grid node defined by an increment.
 
         This is useful for coordinating the Roof specification with the grid snapping
@@ -499,6 +499,9 @@ class RoofSpecification(object):
                 typically should be equal to the tolerance or larger but should
                 not be larger than the smallest detail of the Room2D that you
                 wish to resolve.
+            selected_indices: An optional list of indices for specific roof
+                geometries to be snapped to the grid. If None, all of the roof
+                geometry will be snapped. (Default: None).
             tolerance: The minimum distance between vertices below which they are
                 considered co-located. (Default: 0.01,
                 suitable for objects in meters).
@@ -509,16 +512,19 @@ class RoofSpecification(object):
 
         # loop through the polygons and snap the vertices
         new_polygons = []
-        for poly, poly_info in zip(polygons, poly_ridge_info):
-            new_poly = []
-            for pt, pt_info in zip(poly, poly_info):
-                if len(pt_info) == 0:  # not on a ridge line; move it anywhere
-                    new_x = grid_increment * round(pt.x / grid_increment)
-                    new_y = grid_increment * round(pt.y / grid_increment)
-                    new_poly.append(Point2D(new_x, new_y, pt.z))
-                else:  # on a ridge line; don't move that point!
-                    new_poly.append(pt)
-            new_polygons.append(new_poly)
+        for i, (poly, poly_info) in enumerate(zip(polygons, poly_ridge_info)):
+            if selected_indices is None or i in selected_indices:
+                new_poly = []
+                for pt, pt_info in zip(poly, poly_info):
+                    if len(pt_info) == 0:  # not on a ridge line; move it anywhere
+                        new_x = grid_increment * round(pt.x / grid_increment)
+                        new_y = grid_increment * round(pt.y / grid_increment)
+                        new_poly.append(Point2D(new_x, new_y))
+                    else:  # on a ridge line; don't move that point!
+                        new_poly.append(pt)
+                new_polygons.append(new_poly)
+            else:
+                new_polygons.append(poly)
 
         # project the points back onto the roof
         proj_dir = Vector3D(0, 0, 1)
