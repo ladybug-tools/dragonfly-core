@@ -680,6 +680,11 @@ def test_building_assigned_roof():
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
     assert len(hb_models) == 1
 
+    stories[0].roof.snap_to_grid(0.1)
+    stories[1].roof.snap_to_grid(0.1)
+    assert len(stories[0].roof) == 1
+    assert len(stories[1].roof) == 2
+
 
 def test_building_assigned_roofs_2():
     """Test another serialization of a model with roofs assigned to the building."""
