@@ -1699,8 +1699,8 @@ using-multipliers-zone-and-or-window.html
         if len(room_2ds) == 1:
             return True
         flr_hts = sorted([rm.floor_height for rm in room_2ds])
-        min_flr_to_ceil = min([rm.floor_to_ceiling_height for rm in room_2ds])
-        return True if flr_hts[-1] - flr_hts[0] < min_flr_to_ceil else False
+        avg_ftc = sum([rm.floor_to_ceiling_height for rm in room_2ds]) / len(room_2ds)
+        return True if flr_hts[-1] - flr_hts[0] < avg_ftc else False
 
     def _room_roofs(self, room_2d, tolerance):
         """Get a RoofSpecification to be used for a specific Room2D in the Story.
