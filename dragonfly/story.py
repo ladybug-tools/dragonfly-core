@@ -68,6 +68,7 @@ class Story(_BaseGeometry):
         * is_above_ground
         * min
         * max
+        * median_room2d_floor_height
         * user_data
     """
     __slots__ = ('_room_2ds', '_floor_to_floor_height', '_floor_height',
@@ -453,6 +454,14 @@ using-multipliers-zone-and-or-window.html
         to others.
         """
         return self._calculate_max(self._room_2ds)
+
+    @property
+    def median_room2d_floor_height(self):
+        """Get the median floor height of the Room2Ds of this Story."""
+        median_i = int(len(self._room_2ds) / 2)
+        flr_hgt = [room.floor_height for room in self._room_2ds]
+        flr_hgt.sort()
+        return flr_hgt[median_i]
 
     def floor_geometry(self, tolerance=0.01):
         """Get a ladybug_geometry Polyface3D object representing the floor plate.

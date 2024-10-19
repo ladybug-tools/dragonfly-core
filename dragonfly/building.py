@@ -743,6 +743,22 @@ class Building(_BaseGeometry):
             rooms.extend(story.room_2ds)
         return rooms
 
+    def room_2ds_by_display_name(self, room_name):
+        """Get all of the Room2Ds with a given display_name in the Building."""
+        rooms = []
+        for room in self.unique_room_2ds:
+            if room.display_name == room_name:
+                rooms.append(room)
+        return rooms
+
+    def room_3ds_by_display_name(self, room_name):
+        """Get all of the 3D Rooms with a given display_name in the Building."""
+        rooms = []
+        for room in self.room_3ds:
+            if room.display_name == room_name:
+                rooms.append(room)
+        return rooms
+
     def room_3ds_by_story(self, story_name):
         """Get all of the 3D Honeybee Room objects assigned to a particular story.
 
@@ -1359,6 +1375,55 @@ class Building(_BaseGeometry):
 
         # assign the is_ground_contact and is_top_exposed properties
         self._unique_stories[0].set_ground_contact()
+
+    def split_room_2d_vertically(self, room_id, tolerance=0.01):
+        """Split a Room2D in this Building vertically if it crosses multiple stories.
+
+        If the selected Room2D does not extend past the midpoint of any Stories
+        in the Building, it will be left as it is.
+
+        Args:
+            room_id: The identifier of a Room2D within this Building which will
+                be split vertically with the Stories above it.
+            tolerance: The tolerance to be used for determining whether the Room2D
+                should be split. Default: 0.01, suitable for objects in meters.
+        """
+        # loop through the stories of the model and find the Room2D
+        found_room, split_heights, split_stories = None, [], []
+        for story in self._unique_stories:
+            if found_room is not None:
+                flr_hgt = story.median_room2d_floor_height
+                if found_room.ceiling_height - tolerance > flr_hgt:
+                    split_heights.append(flr_hgt)
+                    split_stories.append(story)
+            else:
+                for rm in story.room_2ds:
+                    if rm.identifier == room_id:
+                        found_room = rm
+                        break
+        # check if the room was found and whether it should be split
+        if found_room is None:
+            msg = 'No Room2D with the identifier "{}" was found in the ' \
+                'Building.'.format(room_id)
+            raise ValueError(msg)
+        if len(split_heights) == 0:
+            return  # no splitting to be done
+        # split the room across the stories
+        for i, (split_hgt, add_story) in enumerate(zip(split_heights, split_stories)):
+            new_room = found_room.duplicate()
+            new_room.identifier = '{}_split{}'.format(new_room.identifier, i)
+            move_vec = Vector3D(0, 0, split_hgt - found_room.floor_height)
+            new_room.move(move_vec)  # move the room to the correct floor height
+            try:
+                new_ceil_hgt = split_heights[i + 1]
+            except IndexError:  # last story of the split list
+                new_ceil_hgt = found_room.ceiling_height
+            new_room.floor_to_ceiling_height = new_ceil_hgt - new_room.floor_height
+            new_room.is_ground_contact = False
+            add_story.add_room_2d(new_room)
+        # change the height of the original Room2D so that it doesn't overlap new rooms
+        found_room.floor_to_ceiling_height = split_heights[0] - found_room.floor_height
+        found_room.is_top_exposed = False
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
