@@ -39,6 +39,7 @@ class RoofSpecification(object):
     """
     __slots__ = ('_geometry', '_parent', '_is_resolved',
                  '_ridge_line_info', '_ridge_line_tolerance')
+    _ANG_TOL = 0.0174533  # angle tolerance in radians for determining X or Y alignment
 
     def __init__(self, geometry):
         """Initialize RoofSpecification."""
@@ -492,7 +493,9 @@ class RoofSpecification(object):
         Note that the planes of the input roof Face3Ds will be preserved. This way,
         the internal structure of the roof geometry will be conserved but the roof
         will be extended to cover Room2Ds that might have otherwise been snapped to
-        the a node where they have no Roof geometry above them.
+        the a node where they have no Roof geometry above them. This command will
+        preserve all roof ridge lines and vertices along them will only be moved
+        if the ridge line is oriented to the X or Y axis.
 
         Args:
             grid_increment: A positive number for dimension of each grid cell. This
@@ -519,6 +522,13 @@ class RoofSpecification(object):
                     if len(pt_info) == 0:  # not on a ridge line; move it anywhere
                         new_x = grid_increment * round(pt.x / grid_increment)
                         new_y = grid_increment * round(pt.y / grid_increment)
+                        new_poly.append(Point2D(new_x, new_y))
+                    elif len(pt_info) == 1 and self._is_vector_xy(pt_info[0].v):
+                        unit_vec = pt_info[0].v.normalize()
+                        new_x = grid_increment * round(pt.x / grid_increment) \
+                            if unit_vec.y < self._ANG_TOL else pt.x
+                        new_y = grid_increment * round(pt.y / grid_increment) \
+                            if unit_vec.x < self._ANG_TOL else pt.y
                         new_poly.append(Point2D(new_x, new_y))
                     else:  # on a ridge line; don't move that point!
                         new_poly.append(pt)
@@ -891,6 +901,11 @@ class RoofSpecification(object):
     def duplicate(self):
         """Get a copy of this object."""
         return self.__copy__()
+
+    def _is_vector_xy(self, vector2d):
+        """Check if a vector lies along the X or Y axis."""
+        unit_vec = vector2d.normalize()
+        return unit_vec.x < self._ANG_TOL or unit_vec.y < self._ANG_TOL
 
     def _compute_ridge_line_info(self, tolerance):
         """Get a matrix of values for the ridge lines associated with each vertex.
