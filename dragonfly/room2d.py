@@ -2483,6 +2483,55 @@ class Room2D(_BaseGeometry):
         # create the final Room2Ds
         return self._create_split_rooms(new_geos, tolerance)
 
+    def split_through_self_intersection(self, overlap_room=None, tolerance=0.01):
+        """Get a list of non-intersecting Room2Ds if this Room2D intersects itself.
+
+        If the Room2D does not intersect itself, a list with only the current
+        Room2D instance will be returned.
+
+        Args:
+            overlap_room: An optional Room2D, which will be used to ensure that the
+                output list includes only the split Room2D with the highest overlap
+                with this Room2D. This is useful when this method is being used
+                as a cleanup operation for another method that accidentally created
+                a self-intersecting shape (eg. remove_short_segments). If None,
+                the output will include all Room2Ds resulting from the splitting
+                of this shape through self-intersection. (Default: None).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D. Will be a
+            list with only the current Room2D instance if the Room2D does not
+            intersect itself
+        """
+        # first, check that the floor geometry intersects itself
+        if not self.floor_geometry.boundary_polygon2d.is_self_intersecting:
+            return [self]
+        # split the room's boundary polygon through its self intersection
+        rm_poly = self.floor_geometry.boundary_polygon2d
+        split_polys = rm_poly.split_through_self_intersection(tolerance)
+        if overlap_room is not None:
+            poly_1 = overlap_room.floor_geometry.boundary_polygon2d
+            ov_areas = []
+            for poly_2 in split_polys:
+                new_geos = poly_1.boolean_intersect(poly_2, tolerance)
+                if new_geos is None or len(new_geos) == 0:
+                    ov_areas.append(0)  # the Face3Ds did not overlap with one another
+                ov_areas.append(sum(f.area for f in new_geos))
+            sort_polys = [p for _, p in sorted(zip(ov_areas, split_polys),
+                                               key=lambda pair: pair[0])]
+            split_polys = [sort_polys[-1]]
+        # create Face3Ds from the split polygons
+        new_geos = []
+        z_val, flr_plane = self.floor_height, self.floor_geometry.plane
+        for poly in split_polys:
+            face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in poly], plane=flr_plane)
+            new_geos.append(face)
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
+
     def _create_split_rooms(self, face_3ds, tolerance):
         """Create Room2Ds from Face3Ds that were split from this Room2D."""
         # create the Room2Ds

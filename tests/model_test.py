@@ -610,6 +610,28 @@ def test_skylight_merge_to_bounding_rectangle():
     assert len(new_room.skylight_parameters) == 3
 
 
+def test_room2d_split_through_self_intersection():
+    """Test the splitting of a Room2D through self intersection."""
+    model_file = './tests/json/room_for_remove_short_segs.dfjson'
+    model = Model.from_file(model_file)
+    room = model.room_2ds[0]
+
+    assert room.check_self_intersecting(0.003, False, False) == ''
+    int_room = room.remove_short_segments(1.96)
+    assert int_room.check_self_intersecting(0.003, False, False) != ''
+
+    clean_rooms = int_room.split_through_self_intersection(room)
+    assert len(clean_rooms) == 1
+    assert clean_rooms[0].check_self_intersecting(0.003, False, False) == ''
+    assert clean_rooms[0].floor_area < room.floor_area
+
+    clean_rooms = int_room.split_through_self_intersection()
+    assert len(clean_rooms) == 2
+    for clr_rm in clean_rooms:
+        assert clr_rm.check_self_intersecting(0.003, False, False) == ''
+        assert clr_rm.floor_area < room.floor_area
+
+
 def test_snap_to_grid():
     """Test the snap_to_grid method on Room2Ds."""
     model_file = './tests/json/Level03.dfjson'
