@@ -2530,7 +2530,10 @@ class Room2D(_BaseGeometry):
             face = Face3D([Point3D(pt.x, pt.y, z_val) for pt in poly], plane=flr_plane)
             new_geos.append(face)
         # create the final Room2Ds
-        return self._create_split_rooms(new_geos, tolerance)
+        new_rooms = self._create_split_rooms(new_geos, tolerance)
+        if len(new_rooms) == 1:  # preserve the original room identifier
+            new_rooms[0].identifier = self.identifier
+        return new_rooms
 
     def _create_split_rooms(self, face_3ds, tolerance):
         """Create Room2Ds from Face3Ds that were split from this Room2D."""
