@@ -25,6 +25,7 @@ from .properties import BuildingProperties
 from .story import Story
 from .roof import RoofSpecification
 from .room2d import Room2D
+from .windowparameter import _AsymmetricBase
 import dragonfly.writer.building as writer
 
 
@@ -1379,9 +1380,6 @@ class Building(_BaseGeometry):
     def split_room_2d_vertically(self, room_id, tolerance=0.01):
         """Split a Room2D in this Building vertically if it crosses multiple stories.
 
-        If the selected Room2D does not extend past the midpoint of any Stories
-        in the Building, it will be left as it is.
-
         Args:
             room_id: The identifier of a Room2D within this Building which will
                 be split vertically with the Stories above it.
@@ -1401,6 +1399,7 @@ class Building(_BaseGeometry):
                     if rm.identifier == room_id:
                         found_room = rm
                         break
+
         # check if the room was found and whether it should be split
         if found_room is None:
             msg = 'No Room2D with the identifier "{}" was found in the ' \
@@ -1408,11 +1407,13 @@ class Building(_BaseGeometry):
             raise ValueError(msg)
         if len(split_heights) == 0:
             return  # no splitting to be done
+
         # split the room across the stories
         for i, (split_hgt, add_story) in enumerate(zip(split_heights, split_stories)):
             new_room = found_room.duplicate()
             new_room.identifier = '{}_split{}'.format(new_room.identifier, i)
-            move_vec = Vector3D(0, 0, split_hgt - found_room.floor_height)
+            shift_dist = split_hgt - found_room.floor_height
+            move_vec = Vector3D(0, 0, shift_dist)
             new_room.move(move_vec)  # move the room to the correct floor height
             try:
                 new_ceil_hgt = split_heights[i + 1]
@@ -1420,10 +1421,24 @@ class Building(_BaseGeometry):
                 new_ceil_hgt = found_room.ceiling_height
             new_room.floor_to_ceiling_height = new_ceil_hgt - new_room.floor_height
             new_room.is_ground_contact = False
+            new_w_par = []  # shift all of the window parameters for the room
+            for wp, seg in zip(found_room.window_parameters, found_room.floor_segments):
+                if isinstance(wp, _AsymmetricBase):
+                    wp = wp.shift_vertically(-shift_dist)
+                    wp.adjust_for_segment(seg, new_ceil_hgt, tolerance)
+                new_w_par.append(wp)
+            new_room.window_parameters = new_w_par
             add_story.add_room_2d(new_room)
+
         # change the height of the original Room2D so that it doesn't overlap new rooms
         found_room.floor_to_ceiling_height = split_heights[0] - found_room.floor_height
         found_room.is_top_exposed = False
+        new_w_par = []  # shift all of the window parameters for the room
+        for wp, seg in zip(found_room.window_parameters, found_room.floor_segments):
+            if isinstance(wp, _AsymmetricBase):
+                wp.adjust_for_segment(seg, found_room.floor_to_ceiling_height, tolerance)
+            new_w_par.append(wp)
+        new_room.window_parameters = new_w_par
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
