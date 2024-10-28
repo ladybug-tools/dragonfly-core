@@ -1028,6 +1028,52 @@ using-multipliers-zone-and-or-window.html
         self._room_2ds = tuple(new_room_2ds)
         return removed_rooms
 
+    def join_small_rooms(self, area_threshold, tolerance=0.01):
+        """Join small Room2Ds together within this Story.
+
+        This is particularly useful when operations like automatic core/perimeter
+        zoning creates several small Room2Ds from small segments in the outline
+        boundary around the Story.
+
+        Note that adjacencies should be solved across the Story for this method
+        to function correctly.
+
+        Args:
+            area_threshold: A number for the Room2D floor area below which it is
+                considered a small room to be joined into adjacent rooms.
+            tolerance: The minimum distance between vertices at which point they
+                are considered equivalent. (Default: 0.01, suitable
+                for objects in meters).
+        """
+        # first gather all of the small rooms in the model to be joined
+        all_rooms = list(self._room_2ds)
+        small_rooms = [rm for rm in all_rooms if rm.floor_area < area_threshold]
+        if len(small_rooms) == 0:
+            return
+
+        # join Room2Ds together that share adjacency
+        room_groups = Room2D.group_by_adjacency(small_rooms)
+        for r_group in room_groups:
+            if len(r_group) == 1:  # no rooms to be joined together
+                continue
+            joined_rooms = Room2D.join_room_2ds(r_group, tolerance=tolerance)
+            del_is = []
+            for n_rm in r_group:
+                for in_i, e_rm in enumerate(all_rooms):
+                    if e_rm.identifier == n_rm.identifier:
+                        del_is.append(in_i)
+                        break
+            del_is.sort()
+            for del_i in reversed(del_is):
+                all_rooms.pop(del_i)
+            for j_room in joined_rooms:
+                all_rooms.insert(del_is[0], j_room)
+
+        # set Room2Ds and re-solve adjacencies to make the result valid
+        self.room_2ds = all_rooms
+        self.reset_adjacency()
+        self.solve_room_2d_adjacency(tolerance=tolerance)
+
     def rebuild_detailed_windows(
             self, tolerance=0.01, match_adjacency=False, rebuild_skylights=True):
         """Rebuild all detailed windows such that they are bounded by their parent walls.
