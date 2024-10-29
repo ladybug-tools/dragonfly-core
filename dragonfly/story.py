@@ -262,33 +262,6 @@ class Story(_BaseGeometry):
                 'Expected dragonfly Room2D. Got {}'.format(type(room))
             room._parent = self
         self._room_2ds = value
-        if not self.room_2d_story_geometry_valid(value):
-            # prepare to give an exception message
-            msg1 = 'Story "{}" has Room floor elevations that are too different from ' \
-                'one another to be a part of the same Story.'.format(self.display_name)
-            msg2t = 'The following Rooms have an elevation {} the others:\n{}'
-            # determine if are more offending rooms above or below average floor height
-            flr_hts = [rm.floor_height for rm in self.room_2ds]
-            rm_ids = [rm.display_name for rm in self.room_2ds]
-            flr_hts, rm_ids = zip(*sorted(zip(flr_hts, rm_ids)))
-            min_flr_to_ceil = min([rm.floor_to_ceiling_height for rm in self.room_2ds])
-            rms_below = []
-            for flr_ht, rid in zip(flr_hts, rm_ids):
-                if flr_hts[-1] - flr_ht > min_flr_to_ceil:
-                    rms_below.append(rid)
-                else:
-                    break
-            rms_above = []
-            for flr_ht, rid in zip(reversed(flr_hts), reversed(rm_ids)):
-                if flr_ht - flr_hts[0] > min_flr_to_ceil:
-                    rms_above.append(rid)
-                else:
-                    break
-            msg2 = msg2t.format('below', '\n'.join(rms_below)) \
-                if len(rms_below) < len(rms_above) else \
-                msg2t.format('above', '\n'.join(rms_above))
-            msg = '{}\n{}'.format(msg1, msg2)
-            raise ValueError(msg)
 
     @property
     def floor_to_floor_height(self):
@@ -1383,6 +1356,85 @@ using-multipliers-zone-and-or-window.html
             self._roof.scale(factor, origin)
         self.properties.scale(factor, origin)
 
+    def check_room2d_floor_heights_valid(self, raise_exception=True, detailed=False):
+        """Check that all Room2Ds have floor elevations in range to be on the same Story.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if rooms with inappropriate floor elevations are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        if not self.room_2d_story_geometry_valid(self.room_2ds):
+            # determine if are more offending rooms above or below average floor height
+            flr_hts = [rm.floor_height for rm in self.room_2ds]
+            flr_hts, rooms = zip(*sorted(zip(flr_hts, self.room_2ds),
+                                         key=lambda pair: pair[0]))
+            sum_ftc = sum([rm.floor_to_ceiling_height for rm in self.room_2ds])
+            avg_ftc = sum_ftc / len(self.room_2ds)
+            rms_below = []
+            for flr_ht, room in zip(flr_hts, rooms):
+                f_dif = flr_hts[-1] - flr_ht
+                if f_dif >= avg_ftc:
+                    r_info = (room, round(f_dif, 3),
+                              round(flr_ht + (f_dif - avg_ftc), 3))
+                    rms_below.append(r_info)
+                else:
+                    break
+            rms_above = []
+            for flr_ht, room in zip(reversed(flr_hts), reversed(rooms)):
+                f_dif = flr_ht - flr_hts[0]
+                if f_dif >= avg_ftc:
+                    r_info = (room, round(f_dif, 3),
+                              round(flr_ht - (f_dif - avg_ftc), 3))
+                    rms_above.append(r_info)
+                else:
+                    break
+            # prepare to give an exception message
+            detailed = False if raise_exception else detailed
+            msg1 = 'Story "{}" has Room floor elevations that are too different from ' \
+                'one another to be a part of the same Story.'.format(self.display_name)
+            msg2t = '  The following Rooms have an elevation {} the others:\n{}'
+            msg3t = 'The Room "{}" has an elevation that is {} {} the others. ' \
+                'Changing the floor elevation to something {} {} would make it valid.'
+            # create the exception messages
+            msgs = []
+            if detailed:
+                if len(rms_below) < len(rms_above):
+                    for b_room in rms_below:
+                        msg = msg3t.format(b_room[0].display_name, b_room[1],
+                                           'below', 'above', b_room[2])
+                        msg = self._validation_message_child(
+                            msg, b_room[0], detailed, '100106',
+                            error_type='Invalid Room Floor Elevation')
+                        msgs.append(msg)
+                else:
+                    for a_room in rms_above:
+                        msg = msg3t.format(a_room[0].display_name, a_room[1],
+                                           'above', 'below', a_room[2])
+                        msg = self._validation_message_child(
+                            msg, a_room[0], detailed, '100106',
+                            error_type='Invalid Room Floor Elevation')
+                        msgs.append(msg)
+                return msgs
+            else:
+                rms_below = ['   {} - distance: -{}'.format(rm[0].display_name, rm[1])
+                             for rm in rms_below]
+                rms_above = ['   {} - distance: +{}'.format(rm[0].display_name, rm[1])
+                             for rm in rms_above]
+                msg2 = msg2t.format('below', '\n'.join(rms_below)) \
+                    if len(rms_below) < len(rms_above) else \
+                    msg2t.format('above', '\n'.join(rms_above))
+                msg = '{}\n{}'.format(msg1, msg2)
+                if raise_exception:
+                    raise ValueError(msg)
+                return msg
+        else:  # no error to report
+            return [] if detailed else ''
+
     def check_missing_adjacencies(self, raise_exception=True, detailed=False):
         """Check that all Room2Ds have adjacent objects that exist within this Story.
 
@@ -1554,11 +1606,11 @@ using-multipliers-zone-and-or-window.html
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
-        # find the number of overlaps in the Roof specification
+        # find the number of cases where the roof is below the story floor
         msgs = []
         if self.roof is not None:
             roof_max = self.roof.max_height
-            if roof_max < self.floor_height:
+            if roof_max < self.floor_height + tolerance:
                 msg = 'Roof geometry of story "{}" has a maximum height of {}, ' \
                     'which is lower than the story floor height at {}. ' \
                     'This may result in invalid room volumes.'.format(
@@ -1578,8 +1630,9 @@ using-multipliers-zone-and-or-window.html
             self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.
 
-        This is not required for the Story to be valid but it is sometimes
-        useful to check.
+        This is NOT required for the Story to be valid but it is sometimes
+        useful to check since it can indicate whether the roof can be cleaned
+        up into a clearer and more concise set of geometries.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
