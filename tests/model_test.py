@@ -755,6 +755,19 @@ def test_large_room_with_roof():
     assert rink_room.geometry.is_solid
 
 
+def test_complicated_roof_failure():
+    """Test the translation of a complicated roof."""
+    model_file = './tests/json/roof_failure.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False,
+                                  tolerance=0.003, enforce_solid=True)
+    room_1 = hb_models[0].rooms[0]
+    room_2 = hb_models[0].rooms[1]
+    assert len(room_1.roof_ceilings) > 1
+    assert len(room_2.roof_ceilings) > 1
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))

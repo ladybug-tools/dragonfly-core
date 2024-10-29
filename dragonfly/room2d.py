@@ -3900,6 +3900,109 @@ class Room2D(_BaseGeometry):
 
         return room_polyface, roof_face_i
 
+    def _roof_faces(self, all_room_poly, rel_rf_polys, rel_rf_planes, tolerance):
+        """Generate Face3D for the Room Roofs when there are multiple Roof Polygons.
+
+        Args:
+            all_room_poly: A list of Polygon2D where each polygon represents either
+                the boundary of the room or a hole.
+            rel_rf_polys: A list of Polygon2D for the Roof geometries that are
+                relevant to the Room2D.
+            rel_rf_planes: A list of Plane objects for each Roof geometry that
+                is relevant to the Room2D.
+            tolerance: The distance value for absolute tolerance.
+
+        Returns:
+            A list of Face3D for the Roofs of the Room. Will be None if computing
+            the roof geometry failed.
+        """
+        roof_faces = []
+        proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
+
+        # create a BooleanPolygon for the Room2D
+        room_polys = []
+        for rom_poly in all_room_poly:
+            try:
+                rom_poly = rom_poly.remove_colinear_vertices(tolerance)
+            except AssertionError:
+                continue  # degenerate polygon to ignore (usually degenerate hole)
+            room_polys.append((pb.BooleanPoint(pt.x, pt.y) for pt in rom_poly.vertices))
+        if len(room_polys) == 0:  # completely degenerate room
+            return None
+        b_room_poly = pb.BooleanPolygon(room_polys)
+        room_poly_area = all_room_poly[0].area - sum(h.area for h in all_room_poly[1:])
+
+        # find the boolean intersection with each roof polygon and project the result
+        int_tol = tolerance / 100  # intersection tolerance must be finer
+        roof_poly_area = 0
+        for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
+            # snap the polygons to one another to avoid tolerance issues
+            try:
+                rf_poly = rf_poly.remove_colinear_vertices(tolerance)
+            except AssertionError:
+                continue  # degenerate roof polygon to ignore
+            for rom_poly in all_room_poly:
+                rf_poly = rom_poly.snap_to_polygon(rf_poly, tolerance)
+            rf_pts = (pb.BooleanPoint(pt.x, pt.y) for pt in rf_poly.vertices)
+            b_rf_poly = pb.BooleanPolygon([rf_pts])
+            try:
+                int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
+            except Exception:  # intersection failed for some reason
+                return None
+            polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in new_poly))
+                     for new_poly in int_result.regions]
+            if self.floor_geometry.has_holes and len(polys) > 1:
+                # sort the polygons by area and check if any are inside the others
+                polys.sort(key=lambda x: x.area, reverse=True)
+                poly_groups = [[polys[0]]]
+                for sub_poly in polys[1:]:
+                    for i, pg in enumerate(poly_groups):
+                        if pg[0].is_polygon_inside(sub_poly):  # it's a hole
+                            poly_groups[i].append(sub_poly)
+                            break
+                    else:  # it's a separate Face3D
+                        poly_groups.append([sub_poly])
+                # convert all vertices to 3D and append the roof Face3D
+                for pg in poly_groups:
+                    roof_poly_area += pg[0].area - sum(h.area for h in pg[1:])
+                    pg_3d = []
+                    for shp in pg:
+                        pt3s = tuple(
+                            rf_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
+                            for pt2 in shp.vertices)
+                        pg_3d.append(pt3s)
+                    roof_faces.append(Face3D(pg_3d[0], rf_plane, holes=pg_3d[1:]))
+            else:  # no holes are possible in the result; project all polygons directly
+                for sub_poly in polys:
+                    roof_poly_area += sub_poly.area
+                    pt3s = tuple(
+                        rf_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
+                        for pt2 in sub_poly.vertices)
+                    roof_faces.append(Face3D(pt3s, rf_plane))
+
+        # if all of the polygons didn't cover the Room2D, add extra horizontal roof faces
+        min_len = sorted(seg.length for seg in all_room_poly[0].segments)[0]
+        min_len = tolerance if min_len < tolerance else min_len
+        tol_area = min_len * tolerance
+        if abs(room_poly_area - roof_poly_area) > tol_area:  # room not covered by roofs
+            rm_z = self.ceiling_height
+            subtract_geo = []
+            for rf_face in roof_faces:
+                proj_pts = [Point3D(pt.x, pt.y, rm_z) for pt in rf_face.boundary]
+                if rf_face.has_holes:
+                    hole_pts = [[Point3D(pt.x, pt.y, rm_z) for pt in hole]
+                                for hole in rf_face.holes]
+                    subtract_geo.append(Face3D(proj_pts, holes=hole_pts))
+                else:
+                    subtract_geo.append(Face3D(proj_pts))
+            ang_tol = math.radians(1)
+            ceil_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
+            ceil_geo = self.floor_geometry.move(ceil_vec)
+            cover_faces = ceil_geo.coplanar_difference(subtract_geo, tolerance, ang_tol)
+            roof_faces.extend(cover_faces)
+
+        return roof_faces
+
     def _wall_faces_with_roof(self, all_room_poly, all_segments,
                               rel_rf_polys, rel_rf_planes, tolerance):
         """Generate Face3D for the Room Walls when there are multiple Roof Polygons.
@@ -4019,107 +4122,6 @@ class Room2D(_BaseGeometry):
                 pt1 = pt2  # increment for next segment
 
         return wall_faces
-
-    def _roof_faces(self, all_room_poly, rel_rf_polys, rel_rf_planes, tolerance):
-        """Generate Face3D for the Room Roofs when there are multiple Roof Polygons.
-
-        Args:
-            all_room_poly: A list of Polygon2D where each polygon represents either
-                the boundary of the room or a hole.
-            rel_rf_polys: A list of Polygon2D for the Roof geometries that are
-                relevant to the Room2D.
-            rel_rf_planes: A list of Plane objects for each Roof geometry that
-                is relevant to the Room2D.
-            tolerance: The distance value for absolute tolerance.
-
-        Returns:
-            A list of Face3D for the Roofs of the Room. Will be None if computing
-            the roof geometry failed.
-        """
-        roof_faces = []
-        proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
-
-        # create a BooleanPolygon for the Room2D
-        room_polys = []
-        for rom_poly in all_room_poly:
-            try:
-                rom_poly = rom_poly.remove_colinear_vertices(tolerance)
-            except AssertionError:
-                continue  # degenerate polygon to ignore (usually degenerate hole)
-            room_polys.append((pb.BooleanPoint(pt.x, pt.y) for pt in rom_poly.vertices))
-        if len(room_polys) == 0:  # completely degenerate room
-            return None
-        b_room_poly = pb.BooleanPolygon(room_polys)
-        room_poly_area = all_room_poly[0].area - sum(h.area for h in all_room_poly[1:])
-
-        # find the boolean intersection with each roof polygon and project the result
-        int_tol = tolerance / 100  # intersection tolerance must be finer
-        roof_poly_area = 0
-        for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
-            # snap the polygons to one another to avoid tolerance issues
-            try:
-                rf_poly = rf_poly.remove_colinear_vertices(tolerance)
-            except AssertionError:
-                continue  # degenerate roof polygon to ignore
-            for rom_poly in all_room_poly:
-                rf_poly = rom_poly.snap_to_polygon(rf_poly, tolerance)
-            rf_pts = (pb.BooleanPoint(pt.x, pt.y) for pt in rf_poly.vertices)
-            b_rf_poly = pb.BooleanPolygon([rf_pts])
-            try:
-                int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
-            except Exception:  # intersection failed for some reason
-                return None
-            polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in new_poly))
-                     for new_poly in int_result.regions]
-            if self.floor_geometry.has_holes and len(polys) > 1:
-                # sort the polygons by area and check if any are inside the others
-                polys.sort(key=lambda x: x.area, reverse=True)
-                poly_groups = [[polys[0]]]
-                for sub_poly in polys[1:]:
-                    for i, pg in enumerate(poly_groups):
-                        if pg[0].is_polygon_inside(sub_poly):  # it's a hole
-                            poly_groups[i].append(sub_poly)
-                            break
-                    else:  # it's a separate Face3D
-                        poly_groups.append([sub_poly])
-                # convert all vertices to 3D and append the roof Face3D
-                for pg in poly_groups:
-                    roof_poly_area += pg[0].area - sum(h.area for h in pg[1:])
-                    pg_3d = []
-                    for shp in pg:
-                        pt3s = tuple(
-                            rf_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
-                            for pt2 in shp.vertices)
-                        pg_3d.append(pt3s)
-                    roof_faces.append(Face3D(pg_3d[0], rf_plane, holes=pg_3d[1:]))
-            else:  # no holes are possible in the result; project all polygons directly
-                for sub_poly in polys:
-                    roof_poly_area += sub_poly.area
-                    pt3s = tuple(
-                        rf_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
-                        for pt2 in sub_poly.vertices)
-                    roof_faces.append(Face3D(pt3s, rf_plane))
-
-        # if all of the polygons didn't cover the Room2D, add extra horizontal roof faces
-        tol_area = math.sqrt(all_room_poly[0].area) * tolerance
-        if abs(room_poly_area - roof_poly_area) > tol_area:  # room not covered by roofs
-            rm_z = self.ceiling_height
-            subtract_geo = []
-            for rf_face in roof_faces:
-                proj_pts = [Point3D(pt.x, pt.y, rm_z) for pt in rf_face.boundary]
-                if rf_face.has_holes:
-                    hole_pts = [[Point3D(pt.x, pt.y, rm_z) for pt in hole]
-                                for hole in rf_face.holes]
-                    subtract_geo.append(Face3D(proj_pts, holes=hole_pts))
-                else:
-                    subtract_geo.append(Face3D(proj_pts))
-            ang_tol = math.radians(1)
-            ceil_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
-            ceil_geo = self.floor_geometry.move(ceil_vec)
-            cover_faces = ceil_geo.coplanar_difference(subtract_geo, tolerance, ang_tol)
-            roof_faces.extend(cover_faces)
-
-        return roof_faces
 
     def _patch_vertical_gaps(self, room_polyface, roof_face_i, tolerance):
         """Patch any vertical gaps in a room_polyface.
