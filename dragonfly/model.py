@@ -15,11 +15,8 @@ try:  # check if we are in IronPython
 except ImportError:  # wea re in cPython
     import pickle
 
-from ladybug_geometry.geometry2d.pointvector import Point2D
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.pointvector import Vector3D, Point3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polyline2D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Plane, Face3D, Polyface3D
 from ladybug.futil import preparedir, unzip_file
 from ladybug.location import Location
 
@@ -1736,6 +1733,57 @@ class Model(_BaseGeometry):
         Use this method to access Writer class to write the model in other formats.
         """
         return writer
+
+    @staticmethod
+    def lines_from_pomf(pomf_file):
+        """Extract all line geometry objects from a POMF file.
+
+        This includes LineSegment2Ds, Polyline2Ds and Polygon2Ds.
+
+        Args:
+            pomf_file: Path to POMF file containing line geometry.
+        """
+        # extract the zip folder
+        folder_name = str(uuid.uuid4())[:6]
+        temp_dir = tempfile.gettempdir()
+        folder_path = os.path.join(temp_dir, folder_name)
+        os.mkdir(folder_path)
+        unzip_file(pomf_file, folder_path)
+        model_file = os.path.join(folder_path, 'model.json')
+        tldraw_file = os.path.join(folder_path, 'tldraw.json')
+        # load the JSON data
+        with io.open(model_file, encoding='utf-8') as inf:
+            inf.read(1)
+            second_char = inf.read(1)
+        with io.open(model_file, encoding='utf-8') as inf:
+            if second_char == '{':
+                inf.read(1)
+            model_data = json.load(inf)
+        tolerance = model_data['tolerance']
+        with io.open(tldraw_file, encoding='utf-8') as inf:
+            inf.read(1)
+            second_char = inf.read(1)
+        with io.open(tldraw_file, encoding='utf-8') as inf:
+            if second_char == '[':
+                inf.read(1)
+            data = json.load(inf)
+        # get the construction line objects within the data
+        scale_factor = 10  # converter between canvas and CAD
+        line_objs = []
+        for geo_item in data:
+            if 'type' in geo_item and geo_item['type'] == 'construction-line':
+                points = geo_item['props']['points']
+                # convert points from web canvas to CAD space
+                for i, pt in enumerate(points):
+                    points[i] = [pt[0] / scale_factor, -pt[1] / scale_factor]
+                if len(points) == 2:
+                    line_objs.append(LineSegment2D.from_array(points))
+                elif len(points) > 2:
+                    geo_obj = Polyline2D.from_array(points)
+                    if geo_obj.is_closed(tolerance):
+                        geo_obj = geo_obj.to_polygon(tolerance)
+                    line_objs.append(geo_obj)
+        return line_objs
 
     @staticmethod
     def model_dict_room_2d_subset(model_dict, room_2d_ids):
