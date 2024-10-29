@@ -991,8 +991,10 @@ class Model(_BaseGeometry):
         msgs.append(self.check_degenerate_room_2ds(tol, False, detailed))
         msgs.append(self.check_self_intersecting_room_2ds(tol, False, detailed))
         msgs.append(self.check_window_parameters_valid(tol, False, detailed))
-        msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
+        msgs.append(self.check_roofs_above_rooms(tol, False, detailed))
+        msgs.append(self.check_room2d_floor_heights_valid(False, detailed))
+        msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
         ext_msgs = self._properties._check_extension_attr()
@@ -1139,6 +1141,37 @@ class Model(_BaseGeometry):
         if raise_exception and len(msgs) != 0:
             raise ValueError(full_msg)
         return full_msg
+
+    def check_room2d_floor_heights_valid(self, raise_exception=True, detailed=False):
+        """Check that all Room2Ds have floor elevations in range to be on the same Story.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if rooms with inappropriate floor elevations are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        bldg_ids = []
+        for bldg in self._buildings:
+            for story in bldg._unique_stories:
+                ov_msg = story.check_room2d_floor_heights_valid(False, detailed)
+                if ov_msg:
+                    if detailed:
+                        bldg_ids.extend(ov_msg)
+                    else:
+                        bldg_ids.append('{}\n {}'.format(bldg.full_id, ov_msg))
+        if detailed:
+            return bldg_ids
+        if bldg_ids != []:
+            msg = 'The following Buildings have Stories with invalid floor elevations' \
+                ':\n{}'.format('\n'.join(bldg_ids))
+            if raise_exception:
+                raise ValueError(msg)
+            return msg
+        return ''
 
     def check_window_parameters_valid(
             self, tolerance=0.01, raise_exception=True, detailed=False):
