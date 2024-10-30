@@ -83,6 +83,8 @@ class Room2D(_BaseGeometry):
         * air_boundaries
         * is_ground_contact
         * is_top_exposed
+        * has_floor
+        * has_ceiling
         * skylight_parameters
         * parent
         * has_parent
@@ -106,7 +108,8 @@ class Room2D(_BaseGeometry):
     __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
                  '_boundary_conditions', '_window_parameters', '_shading_parameters',
                  '_air_boundaries', '_is_ground_contact', '_is_top_exposed',
-                 '_skylight_parameters', '_parent', '_abridged_properties')
+                 '_has_floor', '_has_ceiling', '_skylight_parameters',
+                 '_parent', '_abridged_properties')
 
     def __init__(self, identifier, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
@@ -164,6 +167,8 @@ class Room2D(_BaseGeometry):
         # process the top and bottom exposure properties
         self.is_ground_contact = is_ground_contact
         self.is_top_exposed = is_top_exposed
+        self._has_floor = True
+        self._has_ceiling = True
         self._skylight_parameters = None
 
         self._air_boundaries = None  # will be set if it's ever used
@@ -257,11 +262,15 @@ class Room2D(_BaseGeometry):
         # get the top and bottom exposure properties
         grnd = data['is_ground_contact'] if 'is_ground_contact' in data else False
         top = data['is_top_exposed'] if 'is_top_exposed' in data else False
+        flr = data['has_floor'] if 'has_floor' in data else True
+        ceil = data['has_ceiling'] if 'has_ceiling' in data else True
 
         # create the Room2D object
         room = Room2D(data['identifier'], floor_geometry,
                       data['floor_to_ceiling_height'],
                       b_conditions, glz_pars, shd_pars, grnd, top, tolerance)
+        room.has_floor = flr
+        room.has_ceiling = ceil
 
         # assign any skylight parameters if they are specified
         if 'skylight_parameters' in data and data['skylight_parameters'] is not None:
@@ -349,12 +358,18 @@ class Room2D(_BaseGeometry):
                                  for f in room.faces if isinstance(f.type, Floor)])
         is_top_exposed = all([isinstance(f.boundary_condition, Outdoors)
                               for f in room.faces if isinstance(f.type, RoofCeiling)])
+        has_floor = any([isinstance(f.type, AirBoundary)
+                         for f in room.faces if f.altitude < -89.0])
+        has_ceiling = any([isinstance(f.type, AirBoundary)
+                           for f in room.faces if f.altitude > 89.0])
 
         # create the Dragonfly Room2D
         room_2d = cls(
             room.identifier, flr_geo, floor_to_ceiling_height,
             boundary_conditions, window_parameters, None,
             is_ground_contact, is_top_exposed, tolerance)
+        room_2d.has_floor = has_floor
+        room_2d.has_ceiling = has_ceiling
 
         # check if there are any skylights to be added
         skylights, are_doors = [], []
@@ -597,6 +612,34 @@ class Room2D(_BaseGeometry):
     @is_top_exposed.setter
     def is_top_exposed(self, value):
         self._is_top_exposed = bool(value)
+
+    @property
+    def has_floor(self):
+        """Get or set a boolean for whether the room has a Floor or an AirBoundary.
+
+        If False (for AirBoundary), this property will only be meaningful if the
+        model is translated to Honeybee with ceiling adjacency solved and there
+        is a Room2D below this one with a has_ceiling property set to False.
+        """
+        return self._has_floor
+
+    @has_floor.setter
+    def has_floor(self, value):
+        self._has_floor = bool(value)
+
+    @property
+    def has_ceiling(self):
+        """Get or set a boolean for whether the room has a RoofCeiling or an AirBoundary.
+
+        If False (for AirBoundary), this property will only be meaningful if the
+        model is translated to Honeybee with ceiling adjacency solved and there
+        is a Room2D above this one with a has_floor property set to False.
+        """
+        return self._has_ceiling
+
+    @has_ceiling.setter
+    def has_ceiling(self, value):
+        self._has_ceiling = bool(value)
 
     @property
     def skylight_parameters(self):
@@ -2143,6 +2186,8 @@ class Room2D(_BaseGeometry):
                 is_top_exposed=self.is_top_exposed)
 
         # assign overall properties to the rebuilt room
+        rebuilt_room._has_floor = self._has_floor
+        rebuilt_room._has_ceiling = self._has_ceiling
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
@@ -2264,6 +2309,8 @@ class Room2D(_BaseGeometry):
             self.identifier, new_geo, self.floor_to_ceiling_height, new_bcs, new_win,
             new_shd, self.is_ground_contact, self.is_top_exposed)
         rebuilt_room._air_boundaries = new_abs
+        rebuilt_room._has_floor = self._has_floor
+        rebuilt_room._has_ceiling = self._has_ceiling
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
@@ -2321,6 +2368,8 @@ class Room2D(_BaseGeometry):
             self._match_and_transfer_wall_props(rebuilt_room, tolerance)
             if i == 0:
                 rebuilt_room._skylight_parameters = self._skylight_parameters
+            rebuilt_room._has_floor = self._has_floor
+            rebuilt_room._has_ceiling = self._has_ceiling
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
             rebuilt_room._parent = self._parent
@@ -2546,6 +2595,8 @@ class Room2D(_BaseGeometry):
                 is_ground_contact=self.is_ground_contact,
                 is_top_exposed=self.is_top_exposed)
             self._match_and_transfer_wall_props(rebuilt_room, tolerance)
+            rebuilt_room._has_floor = self._has_floor
+            rebuilt_room._has_ceiling = self._has_ceiling
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
             rebuilt_room._parent = self._parent
@@ -2782,6 +2833,8 @@ class Room2D(_BaseGeometry):
                 new_id, floor_geo, self.floor_to_ceiling_height, new_bcs, new_win,
                 new_shd, self.is_ground_contact, self.is_top_exposed, tol)
             new_room.air_boundaries = new_abs
+            new_room._has_floor = self._has_floor
+            new_room._has_ceiling = self._has_ceiling
             new_room.display_name = '{}_{}'.format(self.display_name, i)
             new_room._properties._duplicate_extension_attr(self._properties)
             new_rooms.append(new_room)
@@ -3024,6 +3077,10 @@ class Room2D(_BaseGeometry):
         base['floor_to_ceiling_height'] = self._floor_to_ceiling_height
         base['is_ground_contact'] = self._is_ground_contact
         base['is_top_exposed'] = self._is_top_exposed
+        if not self._has_floor:
+            base['has_floor'] = self._has_floor
+        if not self._has_ceiling:
+            base['has_ceiling'] = self._has_ceiling
 
         bc_dicts = []
         for bc in self._boundary_conditions:
@@ -3267,6 +3324,8 @@ class Room2D(_BaseGeometry):
                 room_2ds[i].identifier, new_geo, room_2ds[i].floor_to_ceiling_height,
                 is_ground_contact=room_2ds[i].is_ground_contact,
                 is_top_exposed=room_2ds[i].is_top_exposed)
+            rebuilt_room._has_floor = room_2ds[i]._has_floor
+            rebuilt_room._has_ceiling = room_2ds[i]._has_ceiling
             rebuilt_room._skylight_parameters = room_2ds[i].skylight_parameters
             rebuilt_room._display_name = room_2ds[i]._display_name
             rebuilt_room._user_data = None if room_2ds[i].user_data is None else \
@@ -3596,6 +3655,8 @@ class Room2D(_BaseGeometry):
         new_room = Room2D(
             identifier, new_geo, new_ftc, new_bcs, new_win, new_shd,
             primary_room.is_ground_contact, primary_room.is_top_exposed, tol)
+        new_room.has_floor = primary_room.has_floor
+        new_room.has_ceiling = primary_room.has_ceiling
         new_room.skylight_parameters = new_sky_light
         new_room.air_boundaries = new_abs
         new_room.display_name = display_name
@@ -4914,6 +4975,8 @@ class Room2D(_BaseGeometry):
             if self._air_boundaries is not None else None
         new_r._is_ground_contact = self._is_ground_contact
         new_r._is_top_exposed = self._is_top_exposed
+        new_r._has_floor = self._has_floor
+        new_r._has_ceiling = self._has_ceiling
         new_r._skylight_parameters = self._skylight_parameters.duplicate() \
             if self._skylight_parameters is not None else None
         new_r._abridged_properties = self._abridged_properties
