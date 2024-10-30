@@ -1237,6 +1237,8 @@ using-multipliers-zone-and-or-window.html
                     new_room._display_name = room._display_name
                     new_room._user_data = None if room.user_data is None \
                         else room.user_data.copy()
+                    new_room._has_floor = room._has_floor
+                    new_room._has_ceiling = room._has_ceiling
                     new_room._skylight_parameters = room._skylight_parameters
                     new_room._properties._duplicate_extension_attr(room._properties)
                     split_rooms.append(new_room)

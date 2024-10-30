@@ -25,7 +25,7 @@ from honeybee.checkdup import check_duplicate_identifiers
 from honeybee.units import conversion_factor_to_meters, parse_distance_string, \
     UNITS, UNITS_TOLERANCES
 from honeybee.config import folders
-from honeybee.facetype import Floor, RoofCeiling
+from honeybee.facetype import Floor, RoofCeiling, face_types
 from honeybee.boundarycondition import Outdoors, Surface, Ground, boundary_conditions
 from honeybee.shade import Shade as HBShade
 from honeybee.room import Room as HBRoom
@@ -1462,6 +1462,7 @@ class Model(_BaseGeometry):
             'Model tolerance must be non-zero to use Model.to_honeybee.'
 
         # create the model objects
+        opm = object_per_model.title()
         if len(self.buildings) == 0:  # model containing only context shade
             hb_shades, hb_shade_meshes = [], []
             for shd in self.context_shades:
@@ -1474,17 +1475,17 @@ class Model(_BaseGeometry):
                               shade_meshes=hb_shade_meshes)
             h_model.display_name = self.display_name
             models = [h_model]
-        elif object_per_model is None or object_per_model.title() == 'Building':
+        elif object_per_model is None or opm == 'Building':
             models = Building.buildings_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
                 use_multiplier, add_plenum, cap, tolerance=tolerance,
                 enforce_adj=enforce_adj, enforce_solid=enforce_solid)
-        elif object_per_model.title() == 'Story':
+        elif opm == 'Story':
             models = Building.stories_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
                 use_multiplier, add_plenum, cap, tolerance=tolerance,
                 enforce_adj=enforce_adj, enforce_solid=enforce_solid)
-        elif object_per_model.title() == 'District':
+        elif opm == 'District':
             models = [Building.district_to_honeybee(
                 self._buildings, use_multiplier, add_plenum, tolerance=tolerance,
                 enforce_adj=enforce_adj, enforce_solid=enforce_solid)]
@@ -1500,10 +1501,15 @@ class Model(_BaseGeometry):
                              '{}'.format(object_per_model))
 
         # solve ceiling adjacencies if requested
-        if solve_ceiling_adjacencies and \
-                object_per_model.title() in ('Building', 'District'):
+        if solve_ceiling_adjacencies and len(self.buildings) != 0 and \
+                opm in ('Building', 'District'):
             story_rel_types = {}
+            has_flr_ceil = [] if opm == 'Building' else [[]]
             for bldg in self.buildings:
+                if opm == 'Building':
+                    has_flr_ceil.append(bldg.has_floors_ceilings(use_multiplier))
+                else:
+                    has_flr_ceil[0].extend(bldg.has_floors_ceilings(use_multiplier))
                 stories = bldg.unique_stories if use_multiplier else bldg.all_stories()
                 for i, story in enumerate(stories):
                     rel_types = []
@@ -1512,8 +1518,8 @@ class Model(_BaseGeometry):
                     if story.multiplier == 1:
                         rel_types.append(RoofCeiling)
                     story_rel_types[story.display_name] = tuple(rel_types)
-            for model in models:
-                self._solve_ceil_adj(model.rooms, story_rel_types,
+            for model, flr_ceil in zip(models, has_flr_ceil):
+                self._solve_ceil_adj(model.rooms, story_rel_types, flr_ceil,
                                      tolerance, self.angle_tolerance)
 
         # change the tolerance and units systems to match the dragonfly model
@@ -1939,25 +1945,39 @@ class Model(_BaseGeometry):
         return filtered_model
 
     @staticmethod
-    def _solve_ceil_adj(rooms, story_rel_types, tolerance=0.01, angle_tolerance=1):
+    def _solve_ceil_adj(rooms, story_rel_types, has_floor_ceil,
+                        tolerance=0.01, angle_tolerance=1):
         """Solve Floor/Ceiling adjacencies between a list of rooms."""
         # intersect the Rooms with one another for matching adjacencies
         HBRoom.intersect_adjacency(rooms, tolerance, angle_tolerance)
         # solve all adjacencies between rooms
         relevant_types = (Floor, RoofCeiling)
-        for i, room_1 in enumerate(rooms):
+        for i, (room_1, fc_1) in enumerate(zip(rooms, has_floor_ceil)):
             try:
-                for room_2 in rooms[i + 1:]:
+                for room_2, fc_2 in zip(rooms[i + 1:], has_floor_ceil[i + 1:]):
                     if not Polyface3D.overlapping_bounding_boxes(
                             room_1.geometry, room_2.geometry, tolerance):
                         continue  # no overlap in bounding box; adjacency impossible
                     for face_1 in room_1._faces:
-                        for face_2 in room_2._faces:
-                            if isinstance(face_2.type, relevant_types):
-                                if face_1.geometry.is_centered_adjacent(
-                                        face_2.geometry, tolerance):
-                                    face_1.set_adjacency(face_2)
-                                    break
+                        if isinstance(face_1.type, relevant_types):
+                            for face_2 in room_2._faces:
+                                if isinstance(face_2.type, relevant_types):
+                                    if face_1.geometry.is_centered_adjacent(
+                                            face_2.geometry, tolerance):
+                                        face_1.set_adjacency(face_2)
+                                        hf_1, hc_1 = fc_1
+                                        hf_2, hc_2 = fc_2
+                                        if not hc_1 and not hf_2:
+                                            if isinstance(face_1.type, RoofCeiling) and \
+                                                    isinstance(face_2.type, Floor):
+                                                face_1.type = face_types.air_boundary
+                                                face_2.type = face_types.air_boundary
+                                        if not hf_1 and not hc_2:
+                                            if isinstance(face_2.type, RoofCeiling) and \
+                                                    isinstance(face_1.type, Floor):
+                                                face_1.type = face_types.air_boundary
+                                                face_2.type = face_types.air_boundary
+                                        break
             except IndexError:
                 pass  # we have reached the end of the list of zones
         # change any remaining Floor/Roof boundary conditions to be outdoors

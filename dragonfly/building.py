@@ -1385,6 +1385,11 @@ class Building(_BaseGeometry):
                 be split vertically with the Stories above it.
             tolerance: The tolerance to be used for determining whether the Room2D
                 should be split. Default: 0.01, suitable for objects in meters.
+
+        Returns:
+            A list of all the new rooms created by running the method. This
+            can be used to post-process the rooms for attributes like adjacency
+            within the Story they are placed.
         """
         # loop through the stories of the model and find the Room2D
         found_room, split_heights, split_stories = None, [], []
@@ -1406,9 +1411,10 @@ class Building(_BaseGeometry):
                 'Building.'.format(room_id)
             raise ValueError(msg)
         if len(split_heights) == 0:
-            return  # no splitting to be done
+            return []  # no splitting to be done
 
         # split the room across the stories
+        new_rooms = []
         for i, (split_hgt, add_story) in enumerate(zip(split_heights, split_stories)):
             new_room = found_room.duplicate()
             new_room.identifier = '{}_split{}'.format(new_room.identifier, i)
@@ -1417,10 +1423,13 @@ class Building(_BaseGeometry):
             new_room.move(move_vec)  # move the room to the correct floor height
             try:
                 new_ceil_hgt = split_heights[i + 1]
+                new_room.is_top_exposed = False
+                new_room.has_ceiling = False
             except IndexError:  # last story of the split list
                 new_ceil_hgt = found_room.ceiling_height
             new_room.floor_to_ceiling_height = new_ceil_hgt - new_room.floor_height
             new_room.is_ground_contact = False
+            new_room.has_floor = False
             new_w_par = []  # shift all of the window parameters for the room
             for wp, seg in zip(found_room.window_parameters, found_room.floor_segments):
                 if isinstance(wp, _AsymmetricBase):
@@ -1429,16 +1438,20 @@ class Building(_BaseGeometry):
                 new_w_par.append(wp)
             new_room.window_parameters = new_w_par
             add_story.add_room_2d(new_room)
+            new_rooms.append(new_room)
 
         # change the height of the original Room2D so that it doesn't overlap new rooms
         found_room.floor_to_ceiling_height = split_heights[0] - found_room.floor_height
         found_room.is_top_exposed = False
+        found_room.has_ceiling = False
         new_w_par = []  # shift all of the window parameters for the room
         for wp, seg in zip(found_room.window_parameters, found_room.floor_segments):
             if isinstance(wp, _AsymmetricBase):
                 wp.adjust_for_segment(seg, found_room.floor_to_ceiling_height, tolerance)
             new_w_par.append(wp)
-        new_room.window_parameters = new_w_par
+        found_room.window_parameters = new_w_par
+
+        return new_rooms
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
@@ -1507,6 +1520,26 @@ class Building(_BaseGeometry):
         for room in self._room_3ds:
             room.scale(factor, origin)
         self.properties.scale(factor, origin)
+
+    def has_floors_ceilings(self, use_multiplier=True):
+        """Get a list of tuples for each Room noting whether it has a floor/ceiling.
+
+        Args:
+            use_multiplier: Boolean to note whether the returned list should be
+                assume that the Rooms use multipliers or not. The list will typically
+                be longer when use_multiplier is False. (Default: True).
+        """
+        has_flr_ceil = []
+        for story in self._unique_stories:
+            story_list = []
+            for room in story.room_2ds:
+                story_list.append((room.has_floor, room.has_ceiling))
+            if use_multiplier:
+                has_flr_ceil.extend(story_list)
+            else:
+                for _ in range(story.multiplier):
+                    has_flr_ceil.extend(story_list)
+        return has_flr_ceil
 
     def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
                     enforce_adj=True, enforce_solid=True):

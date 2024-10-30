@@ -768,6 +768,20 @@ def test_complicated_roof_failure():
     assert len(room_2.roof_ceilings) > 1
 
 
+def test_has_floor_ceilings():
+    """Test the translation of a model without floors or ceilings."""
+    model_file = './tests/json/has_floor_ceiling_model.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee(
+        'District', None, False, solve_ceiling_adjacencies=True,
+        tolerance=0.003, enforce_solid=True)
+    room_1 = hb_models[0].rooms[0]
+    room_2 = hb_models[0].rooms[1]
+    assert len(room_1.air_boundaries) == 1
+    assert len(room_2.air_boundaries) == 1
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
