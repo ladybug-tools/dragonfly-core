@@ -3939,23 +3939,35 @@ class Room2D(_BaseGeometry):
             room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
 
         # try to patch any vertical gaps between roofs with new walls
-        if not room_polyface.is_solid:
+        if len(room_polyface.naked_edges) != 0:
             room_polyface, roof_face_i = \
                 self._patch_vertical_gaps(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
 
         # remove disconnected roof geometries from the Polyface (eg. dormers)
-        if not room_polyface.is_solid:
+        if len(room_polyface.naked_edges) != 0:
             room_polyface, roof_face_i, _ = \
                 self._separate_disconnected_faces(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
 
         # lastly, try to patch any remaining planar holes by capping them
-        if not room_polyface.is_solid:
+        if len(room_polyface.naked_edges) != 0:
             room_polyface, roof_face_i = \
                 self._cap_planar_holes(room_polyface, roof_face_i, tolerance)
+            if not room_polyface.is_solid:
+                room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
+
+        # if we still have non-manifold edges, just remove the degenerate faces
+        if len(room_polyface.non_manifold_edges) != 0:
+            valid_faces = []
+            for face in room_polyface.faces:
+                try:
+                    valid_faces.append(face.remove_colinear_vertices(tolerance))
+                except AssertionError:  # degenerate face found!
+                    pass
+            room_polyface = Polyface3D.from_faces(valid_faces, tolerance)
             if not room_polyface.is_solid:
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
 
@@ -4045,6 +4057,7 @@ class Room2D(_BaseGeometry):
         min_len = sorted(seg.length for seg in all_room_poly[0].segments)[0]
         min_len = tolerance if min_len < tolerance else min_len
         tol_area = min_len * tolerance
+        area_diff = abs(room_poly_area - roof_poly_area)
         if abs(room_poly_area - roof_poly_area) > tol_area:  # room not covered by roofs
             rm_z = self.ceiling_height
             subtract_geo = []
@@ -4060,7 +4073,9 @@ class Room2D(_BaseGeometry):
             ceil_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
             ceil_geo = self.floor_geometry.move(ceil_vec)
             cover_faces = ceil_geo.coplanar_difference(subtract_geo, tolerance, ang_tol)
-            roof_faces.extend(cover_faces)
+            for f in cover_faces:
+                if f.area <= area_diff + tol_area:
+                    roof_faces.append(f)
 
         return roof_faces
 
