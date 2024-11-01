@@ -4156,6 +4156,14 @@ class Room2D(_BaseGeometry):
                     pts_pls = [(i_pt[0], i_pl) for i_pt, i_pl in zip(int_pts, int_pls)]
                     sort_obj = sorted(zip(pt_dists, pts_pls), key=lambda pair: pair[0])
                     sort_pts_pls = [x for _, x in sort_obj]
+                    # remove any point/plane combinations that are perfect duplicates
+                    i_to_remove = []
+                    for i, (pt, pln) in enumerate(sort_pts_pls[1:]):
+                        if pt.distance_to_point(sort_pts_pls[i][0]) < tolerance:
+                            if pln == sort_pts_pls[i][1]:
+                                i_to_remove.append(i)
+                    for del_i in reversed(i_to_remove):
+                        sort_pts_pls.pop(del_i)
                     # if two points are equivalent, reorder with the previous point plane
                     ord_pts = [x[0] for x in sort_pts_pls]
                     ord_pls = [x[1] for x in sort_pts_pls]
