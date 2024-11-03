@@ -1704,11 +1704,12 @@ using-multipliers-zone-and-or-window.html
         # if this story has any overlaps, resolve them before translation
         original_roof = None
         if self.roof is not None:
-            original_roof = self.roof
-            res_roof_geo = self.roof.resolved_geometry(tolerance)
-            res_roof = RoofSpecification(res_roof_geo)
-            res_roof._is_resolved = True
-            self.roof = res_roof
+            if any(room.is_top_exposed for room in self._room_2ds):
+                original_roof = self.roof
+                res_roof_geo = self.roof.resolved_geometry(tolerance)
+                res_roof = RoofSpecification(res_roof_geo)
+                res_roof._is_resolved = True
+                self.roof = res_roof
 
         # convert all of the Room2Ds to honeybee Rooms
         hb_rooms = []

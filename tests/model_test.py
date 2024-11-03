@@ -790,7 +790,7 @@ def test_roof_party_failure():
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
     room_1 = hb_models[0].rooms[0]
-    print(len(room_1.roof_ceilings))
+    assert len(room_1.roof_ceilings) > 1
 
 
 def test_check_duplicate_identifiers():

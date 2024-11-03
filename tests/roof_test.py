@@ -1,6 +1,7 @@
 # coding=utf-8
 import pytest
 import math
+import json
 
 from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, Plane, Face3D, LineSegment3D
@@ -336,3 +337,12 @@ def test_split_with_line():
     assert len(roof.geometry) == 1
     roof.split_with_lines([split_line])
     assert len(roof.geometry) == 2
+
+
+def test_endless_loop_resolved_geometry():
+    """Test the resolved_geometry method with a roof causing an endless loop."""
+    test_json = './tests/json/endless_roof.json'
+    with open(test_json) as json_file:
+        data = json.load(json_file)
+    roof = RoofSpecification.from_dict(data)
+    assert len(roof.resolved_geometry(0.003)) >= 5
