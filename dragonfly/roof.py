@@ -282,7 +282,9 @@ class RoofSpecification(object):
             for j in gei[i + 1:]:
                 poly_2 = geo_2d[j]
                 pln_2 = planes[j]
-                poly_relationship = poly_1.polygon_relationship(poly_2, tolerance)
+                poly_relationship = poly_1.polygon_relationship(poly_2, tolerance) \
+                    if poly_2.area < poly_1.area else \
+                    poly_2.polygon_relationship(poly_1, tolerance)
                 tol = tolerance  # temporary tolerance value that may be adjusted
                 if poly_relationship == 0:
                     # resolve the overlap between the polygons
@@ -306,51 +308,13 @@ class RoofSpecification(object):
                         o_face_1 = Face3D(o_face_1, plane=pln_1)
                         o_face_2 = Face3D(o_face_2, plane=pln_2)
                         if o_face_1.center.z > o_face_2.center.z:
-                            try:  # remove the overlap from the first polygon
-                                np = poly_1.boolean_difference(o_poly, tol)
-                                if len(np) == 0:  # eliminated the polygon
-                                    remove_i.append(i)
-                                else:  # part-removed
-                                    try:
-                                        poly_1 = np[0].remove_colinear_vertices(tol)
-                                        geo_2d[i] = poly_1
-                                    except AssertionError:  # degenerate result
-                                        remove_i.append(i)
-                                    if len(np) > 1:  # split the polygon to multiple
-                                        for ply in np[1:]:
-                                            try:
-                                                cp = ply.remove_colinear_vertices(tol)
-                                                geo_2d.append(cp)
-                                                planes.append(pln_1)
-                                                gei.append(len(gei))
-                                            except AssertionError:  # degenerate result
-                                                pass
-                            except Exception as e:  # tolerance is likely not correct
-                                print('Failed to get boolean difference.\n{}'.format(e))
-                                pass
+                            poly_1 = self._process_polygon_overlap(
+                                poly_1, pln_1, i, o_poly,
+                                remove_i, geo_2d, planes, gei, tol)
                         else:  # remove the overlap from the second polygon
-                            try:
-                                np = poly_2.boolean_difference(o_poly, tol)
-                                if len(np) == 0:  # eliminated the polygon
-                                    remove_i.append(j)
-                                else:  # part-removed
-                                    try:
-                                        poly_2 = np[0].remove_colinear_vertices(tol)
-                                        geo_2d[j] = poly_2
-                                    except AssertionError:  # degenerate result
-                                        remove_i.append(j)
-                                    if len(np) > 1:  # split the polygon to multiple
-                                        for ply in np[1:]:
-                                            try:
-                                                cp = ply.remove_colinear_vertices(tol)
-                                                geo_2d.append(cp)
-                                                planes.append(pln_2)
-                                                gei.append(len(gei))
-                                            except AssertionError:  # degenerate result
-                                                pass
-                            except Exception as e:  # tolerance is likely not correct
-                                print('Failed to get boolean difference.\n{}'.format(e))
-                                pass
+                            poly_2 = self._process_polygon_overlap(
+                                poly_2, pln_2, j, o_poly,
+                                remove_i, geo_2d, planes, gei, tol)
                 elif poly_relationship == 1:
                     # polygon is completely inside the other; remove it
                     remove_i.append(j)
@@ -367,6 +331,34 @@ class RoofSpecification(object):
                     resolved_geo.append(Face3D(r_face, plane=r_pln))
             return resolved_geo
         return self._geometry  # no overlaps in the geometry; just return as is
+
+    @staticmethod
+    def _process_polygon_overlap(eval_poly, eval_pln, eval_i, o_poly,
+                                 remove_i, geo_2d, planes, gei, tol):
+        """Process the overlap in two roof polygons during roof resolution."""
+        try:  # remove the overlap from the first polygon
+            np = eval_poly.boolean_difference(o_poly, tol)
+            if len(np) == 0:  # eliminated the polygon
+                remove_i.append(eval_i)
+            else:  # part-removed
+                try:
+                    eval_poly = np[0].remove_colinear_vertices(tol)
+                    geo_2d[eval_i] = eval_poly
+                except AssertionError:  # degenerate result
+                    remove_i.append(eval_i)
+                if len(np) > 1:  # split the polygon to multiple
+                    for ply in np[1:]:
+                        try:
+                            cp = ply.remove_colinear_vertices(tol)
+                            geo_2d.append(cp)
+                            planes.append(eval_pln)
+                            gei.append(len(gei))
+                        except AssertionError:  # degenerate result
+                            pass
+        except Exception as e:  # tolerance is likely not correct
+            print('Failed to get boolean difference.\n{}'.format(e))
+            pass
+        return eval_poly
 
     def overlap_count(self, tolerance=0.01):
         """Get the number of times that the Roof geometries overlap with one another.

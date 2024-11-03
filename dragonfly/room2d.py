@@ -4159,6 +4159,8 @@ class Room2D(_BaseGeometry):
                     # remove any point/plane combinations that are perfect duplicates
                     i_to_remove = []
                     for i, (pt, pln) in enumerate(sort_pts_pls[1:]):
+                        if i == 0:  # first vertex is always correct so keep it
+                            continue
                         if pt.distance_to_point(sort_pts_pls[i][0]) < tolerance:
                             if pln == sort_pts_pls[i][1]:
                                 i_to_remove.append(i)
