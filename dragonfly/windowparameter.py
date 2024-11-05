@@ -2324,11 +2324,14 @@ class DetailedWindows(_AsymmetricBase):
                 clean_are_doors.append(is_dr)
                 kept_i.append(i)
             else:  # check that the polygon wasn't 100% glazing
-                cent = p_gon.center
-                if 0 < cent.x < max_width and 0 < cent.y < max_height:
-                    clean_polygons.append(new_verts)
-                    clean_are_doors.append(is_dr)
-                    kept_i.append(i)
+                tol2 = 2 * tolerance
+                if max_height > tol2 and max_width > tol2:
+                    min_pt, max_pt = p_gon.min, p_gon.max
+                    if not (max_pt.x < tolerance or max_pt.y < tolerance or
+                            min_pt.x > max_width or min_pt.y > max_width):
+                        clean_polygons.append(new_verts)
+                        clean_are_doors.append(is_dr)
+                        kept_i.append(i)
 
         # update user_data lists if some windows were not added
         clean_u = self.user_data
