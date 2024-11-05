@@ -4153,28 +4153,39 @@ class Room2D(_BaseGeometry):
                     # sort the intersections points along the segment
                     pt_dists = [(ipt[1], seg_2d.p1.distance_to_point(ipt[0]))
                                 for ipt in int_pts]
-                    pts_pls = [(i_pt[0], i_pl) for i_pt, i_pl in zip(int_pts, int_pls)]
+                    pts_pls = [
+                        (
+                            i_pt[0],
+                            i_pl,
+                            i_pl.project_point(Point3D.from_point2d(i_pt[0]), proj_dir)
+                        )
+                        for i_pt, i_pl in zip(int_pts, int_pls)]
                     sort_obj = sorted(zip(pt_dists, pts_pls), key=lambda pair: pair[0])
                     sort_pts_pls = [x for _, x in sort_obj]
-                    # remove any point/plane combinations that are perfect duplicates
+                    # remove any point/plane combinations that are duplicates
                     i_to_remove = []
-                    for i, (pt, pln) in enumerate(sort_pts_pls[1:]):
+                    for i, (pt, pln, pt3) in enumerate(sort_pts_pls[1:]):
                         if i == 0:  # first vertex is always correct so keep it
                             continue
-                        if pt.distance_to_point(sort_pts_pls[i][0]) < tolerance:
-                            if pln == sort_pts_pls[i][1]:
-                                i_to_remove.append(i)
+                        if pt3.distance_to_point(sort_pts_pls[i][2]) < tolerance:
+                            i_to_remove.append(i)
                     for del_i in reversed(i_to_remove):
                         sort_pts_pls.pop(del_i)
                     # if two points are equivalent, reorder with the previous point plane
                     ord_pts = [x[0] for x in sort_pts_pls]
                     ord_pls = [x[1] for x in sort_pts_pls]
-                    for i, (pt, pln) in enumerate(sort_pts_pls[1:]):
+                    ord_pts3 = [x[2] for x in sort_pts_pls]
+                    for i, (pt, pln, pt3) in enumerate(sort_pts_pls[1:]):
+                        if i == 0:
+                            continue
                         if pt.distance_to_point(ord_pts[i]) < tolerance:
                             prev_pl = ord_pls[i - 1]
-                            if pln == prev_pl and ord_pls[i] != prev_pl:  # reorder
+                            if prev_pl.distance_to_point(pt3) < \
+                                    prev_pl.distance_to_point(sort_pts_pls[i][2]):
+                                # reorder the points
                                 ord_pts[i], ord_pts[i + 1] = ord_pts[i + 1], ord_pts[i]
                                 ord_pls[i], ord_pls[i + 1] = ord_pls[i + 1], ord_pls[i]
+                                ord_pts3[i], ord_pts3[i + 1] = ord_pts3[i + 1], ord_pts3[i]
                     # project the points onto the planes
                     rf_pts = [ipl.project_point(Point3D.from_point2d(ipt), proj_dir)
                               for ipt, ipl in zip(ord_pts, ord_pls)]
