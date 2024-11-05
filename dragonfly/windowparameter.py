@@ -2319,10 +2319,16 @@ class DetailedWindows(_AsymmetricBase):
                     y_val, v_moved = max_height, True
                 new_verts.append(Point2D(x_val, y_val))
                 verts_moved.append(v_moved)
-            if not all(verts_moved):
+            if not all(verts_moved):  # original polygon was definitely in the face
                 clean_polygons.append(new_verts)
                 clean_are_doors.append(is_dr)
                 kept_i.append(i)
+            else:  # check that the polygon wasn't 100% glazing
+                cent = p_gon.center
+                if 0 < cent.x < max_width and 0 < cent.y < max_height:
+                    clean_polygons.append(new_verts)
+                    clean_are_doors.append(is_dr)
+                    kept_i.append(i)
 
         # update user_data lists if some windows were not added
         clean_u = self.user_data
