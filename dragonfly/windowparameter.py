@@ -2328,7 +2328,7 @@ class DetailedWindows(_AsymmetricBase):
                 if max_height > tol2 and max_width > tol2:
                     min_pt, max_pt = p_gon.min, p_gon.max
                     if not (max_pt.x < tolerance or max_pt.y < tolerance or
-                            min_pt.x > max_width or min_pt.y > max_width):
+                            min_pt.x > max_width or min_pt.y > max_height):
                         clean_polygons.append(new_verts)
                         clean_are_doors.append(is_dr)
                         kept_i.append(i)
