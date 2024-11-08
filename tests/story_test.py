@@ -9,11 +9,9 @@ from dragonfly.shadingparameter import Overhang
 from honeybee.room import Room
 from honeybee.boundarycondition import Outdoors, Surface
 
-from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
-from ladybug_geometry.geometry3d.line import LineSegment3D
-from ladybug_geometry.geometry3d.plane import Plane
-from ladybug_geometry.geometry3d.face import Face3D
-from ladybug_geometry.geometry3d.polyface import Polyface3D
+from ladybug_geometry.geometry2d import Point2D, LineSegment2D
+from ladybug_geometry.geometry3d import Point3D, Vector3D, LineSegment3D, \
+    Plane, Face3D, Polyface3D
 
 
 def test_story_init():
@@ -94,6 +92,36 @@ def test_story_add_rooms():
     story.add_room_2ds([room2d_3, room2d_4])
     assert story.floor_area == 400
     assert isinstance(story.room_by_identifier('Office3'), Room2D)
+
+
+def test_story_set_adjacent_air_boundary():
+    """Test the set_adjacent_air_boundary method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+
+    story.set_adjacent_air_boundary(room_ids=['Office1', 'Office2'])
+    assert room2d_1.air_boundaries == (True, False, False, False)
+    assert room2d_2.air_boundaries == (False, False, True, False)
+    assert room2d_3.air_boundaries == (False, False, False, False)
+    assert room2d_4.air_boundaries == (False, False, False, False)
+
+    story.reset_adjacency()
+    story.solve_room_2d_adjacency(0.01)
+
+    guide_seg = LineSegment2D.from_end_points(Point2D(10, 0), Point2D(10, 20))
+    story.set_adjacent_air_boundary(guide_lines=[guide_seg])
+    assert room2d_1.air_boundaries == (True, False, False, False)
+    assert room2d_2.air_boundaries == (False, False, True, False)
+    assert room2d_3.air_boundaries == (True, False, False, False)
+    assert room2d_4.air_boundaries == (False, False, True, False)
 
 
 def test_story_set_outdoor_window_shading_parameters():
