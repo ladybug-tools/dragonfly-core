@@ -386,6 +386,52 @@ class RoofSpecification(object):
                 pass  # we have reached the end of the list
         return overlap_count
 
+    def find_gaps(self, gap_distance=0.1, tolerance=0.01):
+        """Identify gaps between the geometries that are smaller than a gap_distance.
+
+        This is useful for identifying cases where gaps can result in messy
+        room volumes when translating to Honeybee.
+
+        Args:
+            gap_distance: The maximum distance between two Room2Ds that is considered
+                an adjacency gap. Differences between Room2Ds that are higher than
+                this distance are considered meaningful gaps to be preserved.
+                This value should be higher than the tolerance to be
+                meaningful. (Default: 0.1, suitable for objects in meters).
+            selected_indices: An optional list of indices for specific roof
+                geometries to be snapped to the grid. If None, all of the roof
+                geometry will be snapped. (Default: None).
+            tolerance: The minimum difference between the coordinate values at
+                which point they are considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of Point2Ds that note the location of any gaps between the input
+            room_2ds, which are larger than the tolerance but less than the
+            gap_distance.
+        """
+        roof_polys = self.boundary_geometry_2d
+        gap_points = []
+        for i, poly_1 in enumerate(roof_polys):
+            try:
+                for poly_2 in roof_polys[i + 1:]:
+                    if not Polygon2D.overlapping_bounding_rect(
+                            poly_1, poly_2, gap_distance):
+                        continue  # no overlap in bounding rect; gap impossible
+                    # check the first polygon against the second
+                    for pt_1 in poly_1:
+                        pt_dist = poly_2.distance_from_edge_to_point(pt_1)
+                        if tolerance < pt_dist <= gap_distance:
+                            gap_points.append(pt_1)
+                    # check the second polygon against the first
+                    for pt_2 in poly_2:
+                        pt_dist = poly_1.distance_from_edge_to_point(pt_2)
+                        if tolerance < pt_dist <= gap_distance:
+                            gap_points.append(pt_2)
+            except IndexError:
+                pass  # we have reached the end of the list of rooms
+        return gap_points
+
     def move(self, moving_vec):
         """Move this RoofSpecification along a vector.
 
@@ -846,11 +892,6 @@ class RoofSpecification(object):
             tolerance: The maximum difference between point values for them to be
                 considered distinct from one another. (Default: 0.01; suitable
                 for objects in Meters).
-
-        Returns:
-            A list of Room2D for the result of splitting this Room2D with the
-            input line. Will be a list with only the current Room2D if the line
-            does not split it into two or more pieces.
         """
         # check the inputs
         for line in lines:
