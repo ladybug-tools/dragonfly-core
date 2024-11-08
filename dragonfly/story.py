@@ -1136,6 +1136,40 @@ using-multipliers-zone-and-or-window.html
             self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
         Room2D.solve_adjacency(self._room_2ds, tolerance, resolve_window_conflicts)
 
+    def set_adjacent_air_boundary(self, room_ids=None, guide_lines=None, tolerance=0.01):
+        """Set adjacencies between Room2Ds in this Story to use air boundaries.
+
+        Args:
+            room_ids: An optional list of Room2D identifiers to specify a subset
+                of rooms within the Story that will have air boundaries set
+                between them. If None, all Room2Ds in the story will have
+                air boundaries set if they are adjacent to another. (Default: None).
+            guide_lines: An optional list of LineSegment2Ds to specify a subset
+                of rooms within the Story that will have air boundaries set
+                between them. If None, all Room2Ds in the story will have
+                air boundaries set if they are adjacent to another. (Default: None).
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # gather all of the Room2Ds which will have air boundaries assigned
+        rooms = self._room_2ds if room_ids is None \
+            else self.rooms_by_identifier(room_ids)
+        # find the adjacencies along which air boundaries will be set
+        if guide_lines is None or len(guide_lines) == 0:
+            adj_info = Room2D.find_adjacency(rooms, tolerance)
+        else:
+            adj_info = Room2D.find_adjacency_by_guide_lines(
+                rooms, guide_lines, tolerance)
+        # assign air boundaries to all of the pairs that were found
+        for room_pair in adj_info:
+            for room_adj in room_pair:
+                room, wall_i = room_adj
+                try:
+                    room.set_air_boundary(wall_i)
+                except AssertionError:  # segment with windows or non-adjacent BC
+                    pass  # ignore this particular segment
+
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters.
 

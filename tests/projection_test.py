@@ -71,4 +71,3 @@ def test_lon_lat_to_polygon():
     for point, test_point in zip(polygon, test_polygon):
         assert test_point[0] == pytest.approx(point[0], abs=1e-5)
         assert test_point[1] == pytest.approx(point[1], abs=1e-5)
-

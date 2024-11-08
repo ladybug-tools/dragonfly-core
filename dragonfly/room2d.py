@@ -816,6 +816,24 @@ class Room2D(_BaseGeometry):
         normals = (Vector2D(sg.v.y, -sg.v.x) for sg in self.floor_segments)
         return [math.degrees(north_vector.angle_clockwise(norm)) for norm in normals]
 
+    def segment_indices_by_guide_lines(self, lines, tolerance=0.01):
+        """Get the indices of segments in this Room2D that lie along given guide lines.
+
+        The resulting indices can be used to set boundary conditions, windows,
+        adjacencies, etc. for segments on this Room2D.
+
+        Args:
+            lines: A list of LineSegment2D objects to note which segment indices
+                should be returned.
+            tolerance: The minimum difference in coordinate values for them
+                to be considered touching. (Default: 0.01).
+        """
+        seg_indices = []
+        for i, seg in enumerate(self.floor_segments_2d):
+            if self._seg_on_guide_lines(seg, lines, tolerance):
+                seg_indices.append(i)
+        return seg_indices
+
     def overlap_area(self, other_room2d, tolerance=0.01):
         """Get the area of this Room2D that overlaps with another Room2D.
 
@@ -3253,6 +3271,47 @@ class Room2D(_BaseGeometry):
         return adj_info
 
     @staticmethod
+    def find_adjacency_by_guide_lines(room_2ds, lines, tolerance=0.01):
+        """Get adjacent pairs of Room2Ds segments that lie along specified guide lines.
+
+        Note that this method does not change any boundary conditions of the input
+        Room2Ds or mutate them in any way. It's purely a geometric analysis of the
+        segments between Room2Ds and the input lines.
+
+        Args:
+            room_2ds: A list of Room2Ds for which adjacencies will be solved.
+            lines: A list of LineSegment2D objects to note which adjacencies
+                along all of the room_2ds should be returned.
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of tuples for each discovered adjacency that lies along the
+            input lines. Each tuple contains 2 sub-tuples with two elements.
+            The first element is the Room2D and the second is the index of the
+            wall segment that is adjacent.
+        """
+        adj_info = []  # lists of adjacencies to track
+        for i, room_1 in enumerate(room_2ds):
+            try:
+                for room_2 in room_2ds[i + 1:]:
+                    if not Polygon2D.overlapping_bounding_rect(
+                            room_1._floor_geometry.boundary_polygon2d,
+                            room_2._floor_geometry.boundary_polygon2d, tolerance):
+                        continue  # no overlap in bounding rect; adjacency impossible
+                    for j, seg_1 in enumerate(room_1.floor_segments_2d):
+                        for k, seg_2 in enumerate(room_2.floor_segments_2d):
+                            if seg_1.distance_to_point(seg_2.p1) <= tolerance and \
+                                    seg_1.distance_to_point(seg_2.p2) <= tolerance:
+                                if Room2D._seg_on_guide_lines(seg_1, lines, tolerance):
+                                    adj_info.append(((room_1, j), (room_2, k)))
+                                break
+            except IndexError:
+                pass  # we have reached the end of the list of rooms
+        return adj_info
+
+    @staticmethod
     def intersect_adjacency(room_2ds, tolerance=0.01, preserve_wall_props=True):
         """Intersect the line segments of an array of Room2Ds to ensure matching walls.
 
@@ -4973,6 +5032,24 @@ class Room2D(_BaseGeometry):
         new_win.append(None)
         new_shd.append(None)
         new_abs.append(False)
+
+    @staticmethod
+    def _seg_on_guide_lines(segment, guide_lines, tolerance=0.01):
+        """Evaluate whether a segment lies along a sed of guide lines.
+
+        Args:
+            segment: A LineSegment2D to be evaluated.
+            guide_lines: A list of LineSegment2D objects for guide segments.
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered toughing. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        pt1, pt2 = segment.p1, segment.p2
+        for g_line in guide_lines:
+            if g_line.distance_to_point(pt1) <= tolerance and \
+                    g_line.distance_to_point(pt2) <= tolerance:
+                return True
+        return False
 
     @staticmethod
     def _intersect_line2d_infinite(line_ray_a, line_ray_b):
