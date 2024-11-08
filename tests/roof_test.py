@@ -64,6 +64,24 @@ def test_resolved_geometry():
     assert res_geo[2].center.z == pytest.approx(0.0, abs=1e-3)
 
 
+def test_roof_find_gaps():
+    """Test the RoofSpecification.find_gaps method."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 5, 5), Point3D(0, 5, 5))
+    pts_2 = (Point3D(0, 5, 5), Point3D(10, 5, 5), Point3D(10, 10, 0), Point3D(0, 10, 0))
+    pts_3 = (Point3D(0, 0, 0), Point3D(10, -0, 0), Point3D(10, -5, 0), Point3D(0, -5, 0))
+    pts_4 = (Point3D(0, -0.05, 0), Point3D(10, 0, 0), Point3D(10, -5, 0), Point3D(0, -5, 0))
+    pts_5 = (Point3D(0, -0.05, 0), Point3D(10, -0.05, 0), Point3D(10, -5, 0), Point3D(0, -5, 0))
+
+    roof1 = RoofSpecification([Face3D(pts_1), Face3D(pts_2), Face3D(pts_3)])
+    assert len(roof1.find_gaps(0.1)) == 0
+
+    roof2 = RoofSpecification([Face3D(pts_1), Face3D(pts_2), Face3D(pts_4)])
+    assert len(roof2.find_gaps(0.1)) == 2
+
+    roof3 = RoofSpecification([Face3D(pts_1), Face3D(pts_2), Face3D(pts_5)])
+    assert len(roof3.find_gaps(0.1)) == 4
+
+
 def test_move():
     """Test the RoofSpecification move method."""
     pts_1 = (Point3D(0, 2, 0), Point3D(2, 2, 0), Point3D(2, 0, 0), Point3D(0, 0, 0))
