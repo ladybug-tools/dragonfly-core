@@ -1739,6 +1739,38 @@ class RectangularWindows(_AsymmetricBase):
             new_w._user_data = None if self.user_data is None else self.user_data.copy()
             return new_w
 
+    def offset(self, offset_distance, tolerance=0.01):
+        """Offset the edges of all windows by a certain distance.
+
+        This is useful for translating between interfaces that expect the window
+        frame to be included within or excluded from the geometry.
+
+        Note that this operation can often create windows that collide with
+        one another or extend past the parent Face. So it may be desirable
+        to convert these parameters to_detailed_windows and run the union_overlaps
+        method after using this one.
+
+        Args:
+            offset_distance: Distance with which the edges of each window will
+                be offset from the original geometry. Positive values will
+                offset the geometry outwards and negative values will offset the
+                geometries inwards.
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+        """
+        new_origins = []
+        new_widths = []
+        new_heights = []
+        zip_obj = zip(self.origins, self.widths, self.heights)
+        for o, width, height in zip_obj:
+            new_origins.append(Point2D(o.x - offset_distance, o.y - offset_distance))
+            new_widths.append(width + (2 * offset_distance))
+            new_heights.append(height + (2 * offset_distance))
+        self._origins = tuple(new_origins)
+        self._widths = tuple(new_widths)
+        self._heights = tuple(new_heights)
+
     def split(self, segments, tolerance=0.01):
         """Split RectangularWindows parameters across a list of ordered segments.
 
@@ -2401,6 +2433,40 @@ class DetailedWindows(_AsymmetricBase):
         new_w = DetailedWindows(new_polygons, self.are_doors)
         new_w._user_data = None if self.user_data is None else self.user_data.copy()
         return new_w
+
+    def offset(self, offset_distance, tolerance=0.01):
+        """Offset the edges of all polygons by a certain distance.
+
+        This is useful for translating between interfaces that expect the window
+        frame to be included within or excluded from the geometry.
+
+        Note that this operation can often create polygons that collide with
+        one another or extend past the parent Face. So it may be desirable
+        to run the union_overlaps method after using this one.
+
+        Args:
+            offset_distance: Distance with which the edges of each polygon will
+                be offset from the original geometry. Positive values will
+                offset the geometry outwards and negative values will offset the
+                geometries inwards.
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+        """
+        offset_polys, offset_are_doors = [], []
+        for polygon, isd in zip(self.polygons, self.are_doors):
+            try:
+                poly = polygon.remove_colinear_vertices(tolerance)
+                off_poly = poly.offset(-offset_distance, True)
+                if off_poly is not None:
+                    offset_polys.append(off_poly)
+                else:  # polygon became self-intersecting after offset
+                    offset_polys.append(poly)
+                offset_are_doors.append(isd)
+            except AssertionError:  # degenerate window to ignore
+                pass
+        self._polygons = tuple(offset_polys)
+        self._are_doors = tuple(offset_are_doors)
 
     def union_overlaps(self, tolerance=0.01):
         """Union any window polygons that overlap with one another.

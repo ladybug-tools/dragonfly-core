@@ -393,9 +393,9 @@ class RoofSpecification(object):
         room volumes when translating to Honeybee.
 
         Args:
-            gap_distance: The maximum distance between two Room2Ds that is considered
-                an adjacency gap. Differences between Room2Ds that are higher than
-                this distance are considered meaningful gaps to be preserved.
+            gap_distance: The maximum distance between two roof geometries that is
+                considered an unwanted gap. Differences between roofs that are
+                higher than this distance are considered meaningful gaps to be preserved.
                 This value should be higher than the tolerance to be
                 meaningful. (Default: 0.1, suitable for objects in meters).
             selected_indices: An optional list of indices for specific roof

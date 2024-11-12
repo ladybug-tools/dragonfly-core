@@ -734,7 +734,7 @@ class Room2D(_BaseGeometry):
         return sum(wall_areas)
 
     @property
-    def exterior_aperture_area(self):
+    def exterior_window_area(self):
         """Get a the total aperture area of the Room with an Outdoors boundary condition.
         """
         glz_areas = []
@@ -744,6 +744,20 @@ class Room2D(_BaseGeometry):
                 area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
                 glz_areas.append(area)
         return sum(glz_areas)
+
+    @property
+    def skylight_area(self):
+        """Get a the total aperture area of the Room with an Outdoors boundary condition.
+        """
+        if self.is_top_exposed and self.skylight_parameters is not None:
+            return self.skylight_parameters.area_from_face(self.floor_geometry)
+        return 0
+
+    @property
+    def exterior_aperture_area(self):
+        """Get a the total aperture area of the Room with an Outdoors boundary condition.
+        """
+        return self.exterior_window_area + self.skylight_area
 
     @property
     def is_core(self):
@@ -1068,6 +1082,24 @@ class Room2D(_BaseGeometry):
         for wp in self._window_parameters:
             if isinstance(wp, _AsymmetricBase):
                 wp.offset(offset_distance, tolerance)
+
+    def offset_skylights(self, offset_distance, tolerance=0.01):
+        """Offset detailed skylights by a certain distance.
+
+        This is useful for translating between interfaces that expect the window
+        frame to be included within or excluded from the geometry.
+
+        Args:
+            offset_distance: Distance with which the edges of each window will
+                be offset from the original geometry. Positive values will
+                offset the geometry outwards and negative values will offset the
+                geometries inwards.
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+        """
+        if isinstance(self._skylight_parameters, DetailedSkylights):
+            self._skylight_parameters.offset(offset_distance, tolerance)
 
     def offset_skylights_from_edges(self, offset_distance=0.05, tolerance=0.01):
         """Offset detailed skylights so all vertices lie inside the Room2D boundary.
