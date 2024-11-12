@@ -1092,7 +1092,7 @@ using-multipliers-zone-and-or-window.html
                 new_w_pars.append(new_w_par)
             room._window_parameters = new_w_pars
             if rebuild_skylights:
-                room.offset_skylight_parameters(tolerance * 2, tolerance)
+                room.offset_skylights_from_edges(tolerance * 2, tolerance)
 
     def reset_adjacency(self):
         """Set all Surface boundary conditions on the Story to be Outdoors."""

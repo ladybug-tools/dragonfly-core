@@ -642,6 +642,40 @@ class DetailedSkylights(_SkylightParameterBase):
             new_sky_par.append(new_sky)
         return new_sky_par
 
+    def offset(self, offset_distance, tolerance=0.01):
+        """Offset the edges of all skylight polygons by a certain distance.
+
+        This is useful for translating between interfaces that expect the window
+        frame to be included within or excluded from the geometry.
+
+        Note that this operation can often create polygons that collide with
+        one another or extend past the parent Face. So it may be desirable
+        to run the union_overlaps method after using this one.
+
+        Args:
+            offset_distance: Distance with which the edges of each polygon will
+                be offset from the original geometry. Positive values will
+                offset the geometry outwards and negative values will offset the
+                geometries inwards.
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+        """
+        offset_polys, offset_are_doors = [], []
+        for polygon, isd in zip(self.polygons, self.are_doors):
+            try:
+                poly = polygon.remove_colinear_vertices(tolerance)
+                off_poly = poly.offset(-offset_distance, True)
+                if off_poly is not None:
+                    offset_polys.append(off_poly)
+                else:  # polygon became self-intersecting after offset
+                    offset_polys.append(poly)
+                offset_are_doors.append(isd)
+            except AssertionError:  # degenerate window to ignore
+                pass
+        self._polygons = tuple(offset_polys)
+        self._are_doors = tuple(offset_are_doors)
+
     def offset_polygons_for_face(self, face_3d, offset_distance=0.05, tolerance=0.01):
         """Offset the polygons until all vertices are inside the boundaries of a Face3D.
 

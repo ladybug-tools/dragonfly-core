@@ -16,7 +16,8 @@ from dragonfly.room2d import Room2D
 from dragonfly.story import Story
 from dragonfly.building import Building
 from dragonfly.model import Model
-from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow, DetailedWindows
+from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow, \
+    RepeatingWindowRatio, DetailedWindows
 from dragonfly.skylightparameter import DetailedSkylights
 from dragonfly.shadingparameter import Overhang
 
@@ -340,8 +341,33 @@ def test_room2d_check_window_parameters_valid():
     assert room2d.check_window_parameters_valid(raise_exception=False) != ''
 
 
-def test_room2d_offset_skylight_parameters():
-    """Test the Room2D offset_skylight_parameters method."""
+def test_room2d_offset_windows():
+    """Test the initialization of Room2D objects with windows."""
+    pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    ashrae_base = RepeatingWindowRatio(0.4, 2.0, 0.8, 3.0)
+    boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
+    window = (ashrae_base, None, ashrae_base, None)
+    room2d = Room2D('SquareShoebox', Face3D(pts), 3, boundarycs, window)
+    room2d.to_detailed_windows()
+
+    sky_pts = (Point2D(2.5, 2.5), Point2D(7.5, 2.5), Point2D(7.5, 7.5), Point2D(2.5, 7.5))
+    sky_par = DetailedSkylights([Polygon2D(sky_pts)])
+    room2d.skylight_parameters = sky_par
+    room2d.is_top_exposed = True
+
+    assert room2d.exterior_window_area / room2d.exterior_wall_area == \
+        pytest.approx(0.4, rel=1e-3)
+    room2d.offset_windows(0.2, 0.01)
+    assert room2d.exterior_window_area / room2d.exterior_wall_area > 0.4
+
+    assert room2d.skylight_area / room2d.floor_area == \
+        pytest.approx(0.25, rel=1e-3)
+    room2d.offset_skylights(0.25, 0.01)
+    assert room2d.skylight_area / room2d.floor_area > 0.25
+
+
+def test_room2d_offset_skylights_from_edges():
+    """Test the Room2D offset_skylights_from_edges method."""
     pts = (Point3D(0, 0, 3), Point3D(5, 0, 3), Point3D(5, 10, 3), Point3D(0, 10, 3))
     room2d = Room2D('SquareShoebox', Face3D(pts), 3)
     sky_pts = (Point2D(-2.5, 5), Point2D(2.5, 5), Point2D(2.5, 12), Point2D(-2.5, 12))
@@ -349,13 +375,13 @@ def test_room2d_offset_skylight_parameters():
     room2d.skylight_parameters = sky_par
     assert room2d.check_window_parameters_valid(raise_exception=False) != ''
 
-    room2d.offset_skylight_parameters(0.05, 0.01)
+    room2d.offset_skylights_from_edges(0.05, 0.01)
     assert room2d.check_window_parameters_valid(raise_exception=False) == ''
     for pt in room2d.skylight_parameters[0].vertices:
         if pt.x == pytest.approx(0.05, rel=1e-2) and pt.y == pytest.approx(9.95, rel=1e-2):
             break
     else:
-        raise ValueError('offset_skylight_parameters failed.')
+        raise ValueError('offset_skylights_from_edges failed.')
 
 
 def test_room2d_remove_duplicate_vertices():
