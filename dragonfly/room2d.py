@@ -1050,8 +1050,27 @@ class Room2D(_BaseGeometry):
                 'condition.'.format(self._boundary_conditions[seg_index])
         self._window_parameters[seg_index] = window_parameter
 
-    def offset_skylight_parameters(self, offset_distance=0.05, tolerance=0.01):
-        """Offset detailed skylights so all vertices are inside the Room2D.
+    def offset_windows(self, offset_distance, tolerance=0.01):
+        """Offset detailed windows by a certain distance.
+
+        This is useful for translating between interfaces that expect the window
+        frame to be included within or excluded from the geometry.
+
+        Args:
+            offset_distance: Distance with which the edges of each window will
+                be offset from the original geometry. Positive values will
+                offset the geometry outwards and negative values will offset the
+                geometries inwards.
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+        """
+        for wp in self._window_parameters:
+            if isinstance(wp, _AsymmetricBase):
+                wp.offset(offset_distance, tolerance)
+
+    def offset_skylights_from_edges(self, offset_distance=0.05, tolerance=0.01):
+        """Offset detailed skylights so all vertices lie inside the Room2D boundary.
 
         Args:
             offset_distance: Distance from the edge of the room that
@@ -4772,7 +4791,8 @@ class Room2D(_BaseGeometry):
                             if p2.is_equivalent(v2, tolerance):
                                 return face
 
-    def _match_and_transfer_wall_props(self, new_room, tolerance):
+    def _match_and_transfer_wall_props(self, new_room, tolerance,
+                                       transfer_air_bounds=False):
         """Transfer wall properties of matching segments between this room and a new one.
 
         All wall properties are transferred exactly as they are when segments
@@ -4789,6 +4809,9 @@ class Room2D(_BaseGeometry):
 
         Args:
             new_room: An new Room2D to which wall properties will be transferred.
+            tolerance: The minimum distance at which points are considered distinct.
+            transfer_air_bounds: Boolean for whether the air boundary properties
+                should be transferred. (Default: False).
         """
         # get the relevant original segments by copying the lists on this Room2D
         rel_segs = self.floor_segments
@@ -4847,7 +4870,8 @@ class Room2D(_BaseGeometry):
         new_room.boundary_conditions = final_bcs
         new_room.window_parameters = final_win
         new_room.shading_parameters = final_shd
-        new_room.air_boundaries = final_abs
+        if transfer_air_bounds:
+            new_room.air_boundaries = final_abs
 
     @staticmethod
     def _remove_colinear_props(
