@@ -1166,8 +1166,9 @@ using-multipliers-zone-and-or-window.html
             for room_adj in room_pair:
                 room, wall_i = room_adj
                 try:
+                    room.set_window_parameter(wall_i)  # remove windows along air bound
                     room.set_air_boundary(wall_i)
-                except AssertionError:  # segment with windows or non-adjacent BC
+                except AssertionError:  # segment with non-adjacent BC
                     pass  # ignore this particular segment
 
     def set_outdoor_window_parameters(self, window_parameter):
