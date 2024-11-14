@@ -665,8 +665,8 @@ class DetailedSkylights(_SkylightParameterBase):
         for polygon, isd in zip(self.polygons, self.are_doors):
             try:
                 poly = polygon.remove_colinear_vertices(tolerance)
-                off_poly = poly.offset(-offset_distance, True)
-                if off_poly is not None:
+                off_poly = poly.offset(-offset_distance, False)
+                if not off_poly.is_self_intersecting:
                     offset_polys.append(off_poly)
                 else:  # polygon became self-intersecting after offset
                     offset_polys.append(poly)
