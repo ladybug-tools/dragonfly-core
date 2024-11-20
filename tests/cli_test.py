@@ -2,11 +2,11 @@
 from click.testing import CliRunner
 
 from dragonfly.cli import viz
-from dragonfly.cli.create import from_honeybee
+from dragonfly.cli.create import from_honeybee_cli, from_geojson_cli
 from dragonfly.cli.edit import convert_units, solve_adjacency, reset_room_boundaries, \
     align_room_2ds, remove_short_segments, windows_by_ratio
-from dragonfly.cli.translate import model_to_honeybee, model_from_geojson, \
-    merge_models_to_honeybee
+from dragonfly.cli.translate import model_to_honeybee_cli, \
+    merge_models_to_honeybee_cli
 from dragonfly.cli.validate import validate_model
 
 from dragonfly.model import Model
@@ -29,7 +29,7 @@ def test_from_honeybee():
     input_model = './tests/json/revit_sample_model.hbjson'
     runner = CliRunner()
     result = runner.invoke(
-        from_honeybee, [input_model, '--conversion-method', 'ExtrudedOnly'])
+        from_honeybee_cli, [input_model, '--conversion-method', 'ExtrudedOnly'])
     assert result.exit_code == 0
 
     model_dict = json.loads(result.output)
@@ -124,7 +124,7 @@ def test_windows_by_ratio():
 def test_model_to_honeybee():
     input_model = './tests/json/sample_revit_model.dfjson'
     runner = CliRunner()
-    result = runner.invoke(model_to_honeybee, [input_model])
+    result = runner.invoke(model_to_honeybee_cli, [input_model])
     assert result.exit_code == 0
 
     for model_info in json.loads(result.output):
@@ -134,7 +134,7 @@ def test_model_to_honeybee():
 def test_model_from_geojson():
     input_model = './tests/geojson/TestGeoJSON.geojson'
     runner = CliRunner()
-    result = runner.invoke(model_from_geojson, [input_model, '-wr', '0.4'])
+    result = runner.invoke(from_geojson_cli, [input_model, '-wr', '0.4'])
     assert result.exit_code == 0
 
     model_dict = json.loads(result.output)
@@ -183,7 +183,7 @@ def test_merge_models_to_honeybee():
     runner = CliRunner()
     in_args = [input_df_model, '--dragonfly-model', extra_df_model,
                '--honeybee-model', input_hb_model, '--output-file', output_hb_model]
-    result = runner.invoke(merge_models_to_honeybee, in_args)
+    result = runner.invoke(merge_models_to_honeybee_cli, in_args)
     assert result.exit_code == 0
 
     assert os.path.isfile(output_hb_model)
