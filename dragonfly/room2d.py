@@ -4132,8 +4132,7 @@ class Room2D(_BaseGeometry):
                 int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
             except Exception:  # intersection failed for some reason
                 return None
-            polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in new_poly))
-                     for new_poly in int_result.regions]
+            polys = Polygon2D._from_bool_poly(int_result, tolerance)
             if self.floor_geometry.has_holes and len(polys) > 1:
                 # sort the polygons by area and check if any are inside the others
                 polys.sort(key=lambda x: x.area, reverse=True)
