@@ -2289,7 +2289,7 @@ class DetailedWindows(_AsymmetricBase):
         # create the new window polygons
         new_polygons = []
         for poly in self.polygons:
-            new_poly = Polygon2D(tuple(Point2D(p.x, p.y + shift_distance)) for p in poly)
+            new_poly = Polygon2D(Point2D(p.x, p.y + shift_distance) for p in poly)
             new_polygons.append(new_poly)
         new_w = DetailedWindows(new_polygons, self.are_doors)
         new_w._user_data = None if self.user_data is None else self.user_data.copy()

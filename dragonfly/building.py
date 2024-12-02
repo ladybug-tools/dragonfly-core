@@ -1451,6 +1451,27 @@ class Building(_BaseGeometry):
             new_w_par.append(wp)
         found_room.window_parameters = new_w_par
 
+        # move any roofs if need be
+        if found_room.parent.roof is not None:
+            kept_roofs, moved_roofs = [], []
+            roof = found_room.parent.roof
+            for r_geo, r_poly in zip(roof.geometry, roof.boundary_geometry_2d):
+                room_poly = found_room.floor_geometry.boundary_polygon2d
+                if room_poly.polygon_relationship(r_poly, tolerance) >= 0:
+                    moved_roofs.append(r_geo)
+                else:
+                    kept_roofs.append(r_geo)
+            if len(moved_roofs) != 0:
+                if len(kept_roofs) != 0:
+                    found_room.parent.roof = RoofSpecification(kept_roofs)
+                else:
+                    found_room.parent.roof = None
+                if new_rooms[-1].parent.roof is None:
+                    new_rooms[-1].parent.roof = RoofSpecification(moved_roofs)
+                else:
+                    new_geo = new_rooms[-1].parent.roof.geometry + tuple(moved_roofs)
+                    new_rooms[-1].parent.roof = RoofSpecification(new_geo)
+
         return new_rooms
 
     def set_outdoor_window_parameters(self, window_parameter):

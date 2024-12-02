@@ -879,6 +879,30 @@ class Room2D(_BaseGeometry):
             return 0  # the Face3Ds did not overlap with one another
         return sum(f.area for f in new_geos)
 
+    def relevant_roof_geometry(self, tolerance=0.01):
+        """Get a list of Face3D for roof geometries that are relevant for this Room2D.
+
+        This will be an empty list if the room has not parent Story, the parent
+        Story has no roof or the roof of the parent story has no geometries that
+        lie above the Room2D.
+
+        Args:
+            tolerance: The minimum difference in coordinate values that the
+                room vertices must have for them to be considered
+                overlapping. (Default: 0.01).
+        """
+        # first check that there's a parent roof
+        rel_roofs = []
+        if not self.has_parent or self.parent.roof is None:
+            return rel_roofs
+        # loop through the roof geometries and grab all that overlap
+        roof = self.parent.roof
+        for r_geo, r_poly in zip(roof.geometry, roof.boundary_geometry_2d):
+            self_poly = self.floor_geometry.boundary_polygon2d
+            if self_poly.polygon_relationship(r_poly, tolerance) >= 0:
+                rel_roofs.append(r_geo)
+        return rel_roofs
+
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
         assert isinstance(window_parameter, _WindowParameterBase), \
