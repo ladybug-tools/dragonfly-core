@@ -4722,6 +4722,12 @@ class Room2D(_BaseGeometry):
                 plenums, which will determine the default boundary condition of
                 any split wall segments. (Default: False).
         """
+        # get the boundary condition to be used for adiabatic cases
+        try:
+            ad_bc = bcs.adiabatic
+        except AttributeError:
+            ad_bc = bcs.outdoors  # honeybee_energy is not loaded; no adiabatic BC
+        # loop through the walls and split adjacent ones
         new_faces = [hb_room[0]]
         for i, bc in enumerate(self._boundary_conditions):
             face = hb_room[i + 1]
@@ -4756,16 +4762,16 @@ class Room2D(_BaseGeometry):
                     self._reassign_split_windows(mid_face, i, tolerance)
                     below_face = Face('{}_Below'.format(face.identifier), below)
                     above_face = Face('{}_Above'.format(face.identifier), above)
-                    try:
-                        below_face.boundary_condition = bcs.ground \
-                            if self.is_ground_contact and not plenums else bcs.adiabatic
-                    except AttributeError:
-                        pass  # honeybee_energy is not loaded; no adiabatic BC
-                    try:
-                        below_face.boundary_condition = bcs.outdoors \
-                            if adj_rm.is_top_exposed and not plenums else bcs.adiabatic
-                    except AttributeError:
-                        pass  # honeybee_energy is not loaded; no adiabatic BC
+                    below_face.boundary_condition = ad_bc
+                    above_face.boundary_condition = ad_bc
+                    if not plenums:
+                        if self.is_ground_contact:
+                            below_face.boundary_condition = bcs.ground
+                        if adj_rm.is_top_exposed:
+                            above_face.boundary_condition = bcs.outdoors
+                            self._reassign_above_windows(
+                                above_face, i, tolerance,
+                                self.floor_to_ceiling_height - ciel_diff)
                     new_faces.extend([below_face, mid_face, above_face])
                 elif flr_diff > tolerance:
                     # split the face into to 2 smaller faces along its height
@@ -4780,11 +4786,10 @@ class Room2D(_BaseGeometry):
                     mid_face._geometry = mid
                     self._reassign_split_windows(mid_face, i, tolerance)
                     below_face = Face('{}_Below'.format(face.identifier), below)
-                    try:
-                        below_face.boundary_condition = bcs.ground \
-                            if self.is_ground_contact and not plenums else bcs.adiabatic
-                    except AttributeError:
-                        pass  # honeybee_energy is not loaded; no adiabatic BC
+                    below_face.boundary_condition = ad_bc
+                    if not plenums:
+                        if self.is_ground_contact:
+                            below_face.boundary_condition = bcs.ground
                     new_faces.extend([below_face, mid_face])
                 elif ciel_diff > tolerance:
                     # split the face into to 2 smaller faces along its height
@@ -4799,17 +4804,19 @@ class Room2D(_BaseGeometry):
                     mid_face._geometry = mid
                     self._reassign_split_windows(mid_face, i, tolerance)
                     above_face = Face('{}_Above'.format(face.identifier), above)
-                    try:
-                        above_face.boundary_condition = bcs.outdoors \
-                            if adj_rm.is_top_exposed and not plenums else bcs.adiabatic
-                    except AttributeError:
-                        pass  # honeybee_energy is not loaded; no adiabatic BC
+                    above_face.boundary_condition = ad_bc
+                    if not plenums:
+                        if adj_rm.is_top_exposed:
+                            above_face.boundary_condition = bcs.outdoors
+                            self._reassign_above_windows(
+                                above_face, i, tolerance,
+                                self.floor_to_ceiling_height - ciel_diff)
                     new_faces.extend([mid_face, above_face])
         new_faces.append(hb_room[-1])
         return new_faces
 
     def _reassign_split_windows(self, face, i, tolerance):
-        """Re-assign WindowParameters to any base surface that has been split.
+        """Re-assign WindowParameters to a middle base surface that has been split.
 
         Args:
             face: Honeybee Face to which windows will be re-assigned.
@@ -4819,6 +4826,23 @@ class Room2D(_BaseGeometry):
         glz_par = self._window_parameters[i]
         if glz_par is not None:
             face.remove_sub_faces()
+            glz_par.add_window_to_face(face, tolerance)
+
+    def _reassign_above_windows(self, face, i, tolerance, shift_dist):
+        """Re-assign WindowParameters to an above surface that has been split.
+
+        Args:
+            face: Honeybee Face to which windows will be re-assigned.
+            i: The index of the window_parameters that correspond to the face
+            tolerance: The tolerance, which will be used to re-assign windows.
+            shift_dist: Optional distance to be used to vertically shift detailed
+                window parameters as they are applied
+        """
+        glz_par = self._window_parameters[i]
+        if isinstance(glz_par, _AsymmetricBase):
+            face.remove_sub_faces()
+            if shift_dist != 0:
+                glz_par = glz_par.shift_vertically(-shift_dist)
             glz_par.add_window_to_face(face, tolerance)
 
     @staticmethod
