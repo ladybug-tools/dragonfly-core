@@ -464,8 +464,11 @@ class DetailedSkylights(_SkylightParameterBase):
         self_int_i = []
         for i, polygon in enumerate(self.polygons):
             if polygon.is_self_intersecting:
-                new_geo = polygon.remove_colinear_vertices(tolerance)
-                if new_geo.is_self_intersecting:
+                try:
+                    new_geo = polygon.remove_colinear_vertices(tolerance)
+                    if new_geo.is_self_intersecting:
+                        self_int_i.append(str(i))
+                except AssertionError:
                     self_int_i.append(str(i))
         if len(self_int_i) != 0:
             return 'Skylight polygons with the following indices are ' \
@@ -725,7 +728,35 @@ class DetailedSkylights(_SkylightParameterBase):
             else:
                 new_polygons.append(polygon)
                 new_are_doors.append(isd)
-        # assign the offset polygons to this face
+        # assign the offset polygons to this object
+        self._polygons = tuple(new_polygons)
+        self._are_doors = tuple(new_are_doors)
+
+    def remove_self_intersecting(self, tolerance=0.01):
+        """Remove any skylight polygons that are self intersecting.
+
+        Args:
+            tolerance: The minimum distance between a vertex coordinates where
+                they are considered equivalent. (Default: 0.01, suitable
+                for objects in meters).
+
+        Returns:
+            A string with the message. Will be an empty string if valid.
+        """
+        new_polygons, new_are_doors = [], []
+        for polygon, isd in zip(self.polygons, self.are_doors):
+            if not polygon.is_self_intersecting:
+                new_polygons.append(polygon)
+                new_are_doors.append(isd)
+            else:
+                try:
+                    new_geo = polygon.remove_colinear_vertices(tolerance)
+                    if not new_geo.is_self_intersecting:
+                        new_polygons.append(new_geo)
+                        new_are_doors.append(isd)
+                except AssertionError:
+                    pass
+        # assign the clean polygons to this object
         self._polygons = tuple(new_polygons)
         self._are_doors = tuple(new_are_doors)
 
