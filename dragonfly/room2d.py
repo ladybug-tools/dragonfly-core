@@ -3055,13 +3055,13 @@ class Room2D(_BaseGeometry):
                     hb_room[i + 1].remove_sub_faces()
                     glz_par.add_window_to_face(hb_face, tolerance)
                 if has_roof and isinstance(glz_par, _AsymmetricBase):
-                    valid_ap = []
-                    for ap in hb_face._apertures:
-                        if hb_face.geometry._is_sub_face(ap.geometry):
-                            valid_ap.append(ap)
-                    if len(hb_face._apertures) != len(valid_ap):
-                        hb_face.remove_apertures()
-                        hb_face.add_apertures(valid_ap)
+                    valid_sf = []
+                    for sf in hb_face.sub_faces:
+                        if hb_face.geometry._is_sub_face(sf.geometry):
+                            valid_sf.append(sf)
+                    if len(hb_face.sub_faces) != len(valid_sf):
+                        hb_face.remove_sub_faces()
+                        hb_face.add_sub_faces(valid_sf)
         for i, shd_par in enumerate(self._shading_parameters):
             if shd_par is not None:
                 shd_par.add_shading_to_face(hb_room[i + 1], tolerance)
@@ -3096,7 +3096,7 @@ class Room2D(_BaseGeometry):
             hb_room[0].boundary_condition = bcs.adiabatic
             for rf in roof_faces:
                 rf.boundary_condition = bcs.adiabatic
-        except AttributeError:
+        except (AttributeError, AssertionError):
             pass  # honeybee_energy is not loaded and Adiabatic type doesn't exist
         if self._is_ground_contact:
             hb_room[0].boundary_condition = bcs.ground
