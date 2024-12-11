@@ -6,6 +6,7 @@ import logging
 import json
 
 from ladybug.futil import preparedir
+from ladybug.commandutil import process_content_to_output
 from honeybee.units import parse_distance_string
 from honeybee.config import folders as hb_folders
 from honeybee.model import Model as HBModel
@@ -298,9 +299,8 @@ def model_to_honeybee_file(
         add_plenum=plenum, solve_ceiling_adjacencies=ceil_adjacency,
         enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
     # write the new model out to the file or stdout
-    if output_file is None:
-        return json.dumps(hb_model.to_dict())
-    output_file.write(json.dumps(hb_model.to_dict()))
+    model_str = json.dumps(hb_model.to_dict())
+    return process_content_to_output(model_str, output_file)
 
 
 @translate.command('merge-models-to-honeybee')
@@ -463,6 +463,5 @@ def merge_models_to_honeybee(
         hb_model.solve_adjacency(intersect=True)
 
     # write the new model out to the file or stdout
-    if output_file is None:
-        return json.dumps(hb_model.to_dict())
-    output_file.write(json.dumps(hb_model.to_dict()))
+    model_str = json.dumps(hb_model.to_dict())
+    return process_content_to_output(model_str, output_file)
