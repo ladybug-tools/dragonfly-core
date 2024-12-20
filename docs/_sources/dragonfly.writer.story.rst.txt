@@ -1,0 +1,7 @@
+dragonfly.writer.story module
+=============================
+
+.. automodule:: dragonfly.writer.story
+   :members:
+   :undoc-members:
+   :show-inheritance:
