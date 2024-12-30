@@ -97,7 +97,13 @@ class Room2D(_BaseGeometry):
         * volume
         * floor_area
         * exterior_wall_area
+        * interior_wall_area
+        * exterior_window_area
+        * skylight_area
         * exterior_aperture_area
+        * wall_sub_face_area
+        * roof_sub_face_area
+        * sub_face_area
         * is_core
         * is_perimeter
         * min
@@ -715,7 +721,7 @@ class Room2D(_BaseGeometry):
 
     @property
     def exterior_wall_area(self):
-        """Get a the total wall area of the Room with an Outdoors boundary condition.
+        """Get the total area of the Room walls with an Outdoors boundary condition.
         """
         wall_areas = []
         for seg, bc in zip(self.floor_segments, self._boundary_conditions):
@@ -725,7 +731,7 @@ class Room2D(_BaseGeometry):
 
     @property
     def interior_wall_area(self):
-        """Get a the total wall area of the Room without an Outdoors or Ground BC.
+        """Get the total area of the Room walls without an Outdoors or Ground BC.
         """
         wall_areas = []
         for seg, bc in zip(self.floor_segments, self._boundary_conditions):
@@ -735,29 +741,73 @@ class Room2D(_BaseGeometry):
 
     @property
     def exterior_window_area(self):
-        """Get a the total aperture area of the Room with an Outdoors boundary condition.
+        """Get the total area of the Room Apertures in walls with an Outdoors BC.
+
+        This only refers to Apertures and excludes Doors.
         """
         glz_areas = []
         for seg, bc, glz in zip(self.floor_segments, self._boundary_conditions,
                                 self._window_parameters):
             if isinstance(bc, Outdoors) and glz is not None:
-                area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
+                if isinstance(glz, _AsymmetricBase):
+                    area = glz.aperture_area_from_segment(
+                        seg, self.floor_to_ceiling_height)
+                else:
+                    area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
                 glz_areas.append(area)
         return sum(glz_areas)
 
     @property
     def skylight_area(self):
-        """Get a the total aperture area of the Room with an Outdoors boundary condition.
+        """Get the total aperture area of Room's skylights.
+
+        This only refers to Apertures and excludes overhead Doors.
         """
         if self.is_top_exposed and self.skylight_parameters is not None:
-            return self.skylight_parameters.area_from_face(self.floor_geometry)
+            sky_par = self.skylight_parameters
+            return sky_par.area_from_face(self.floor_geometry) \
+                if not isinstance(sky_par, DetailedSkylights) else \
+                sky_par.aperture_area_from_face(self.floor_geometry)
         return 0
 
     @property
     def exterior_aperture_area(self):
-        """Get a the total aperture area of the Room with an Outdoors boundary condition.
+        """Get the total Aperture area of the Room with an Outdoors boundary condition.
         """
         return self.exterior_window_area + self.skylight_area
+
+    @property
+    def wall_sub_face_area(self):
+        """Get a the total sub-face area of the Room's walls.
+
+        This includes both Apertures and Doors in both interior and exterior walls.
+        """
+        glz_areas = []
+        for seg, glz in zip(self.floor_segments, self._window_parameters):
+            if glz is not None:
+                area = glz.area_from_segment(seg, self.floor_to_ceiling_height)
+                glz_areas.append(area)
+        return sum(glz_areas)
+
+    @property
+    def roof_sub_face_area(self):
+        """Get a the total sub-face area of the Room's roofs.
+
+        This includes both Apertures and overhead Doors.
+        """
+        if self.is_top_exposed and self.skylight_parameters is not None:
+            sky_par = self.skylight_parameters
+            return sky_par.area_from_face(self.floor_geometry)
+        return 0
+
+    @property
+    def sub_face_area(self):
+        """Get a the total sub-face area of the Room.
+
+        This includes both Apertures and Doors in both walls and roofs for all
+        accepted boundary conditions.
+        """
+        return self.wall_sub_face_area + self.roof_sub_face_area
 
     @property
     def is_core(self):
