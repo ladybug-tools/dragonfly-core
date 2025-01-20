@@ -1063,8 +1063,11 @@ class Building(_BaseGeometry):
                             rm_poly = rm_poly.remove_colinear_vertices(tolerance)
                         except AssertionError:  # degenerate room to ignore
                             continue
-                        overlap_polys = rf_poly.boolean_intersect(rm_poly, tolerance) \
-                            if poly_rel == 0 else [rm_poly]
+                        try:
+                            overlap_polys = rf_poly.boolean_intersect(rm_poly, tolerance) \
+                                if poly_rel == 0 else [rm_poly]
+                        except Exception:
+                            continue  # not considered a significant overlap
                         if sum(ply.area for ply in overlap_polys) < rm_poly.area * ot:
                             continue  # not considered a significant overlap
                         plane_ints = []
