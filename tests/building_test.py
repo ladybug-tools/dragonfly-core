@@ -4,6 +4,7 @@ import pytest
 from dragonfly.building import Building
 from dragonfly.story import Story
 from dragonfly.room2d import Room2D
+from dragonfly.roof import RoofSpecification
 from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
 
@@ -288,6 +289,48 @@ def test_building_footprint_disconnect():
     assert len(footprint[0].holes[0]) == 4
     assert isinstance(footprint[1], Face3D)
     assert len(footprint[1].boundary) == 4
+
+
+def test_building_separate_room_2d_plenums():
+    """Test the Building separate_room_2d_plenums method."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
+    pts_2 = (Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(20, 10, 0), Point3D(20, 0, 0))
+    pts_3 = (Point3D(0, 10, 0), Point3D(0, 20, 0), Point3D(10, 20, 0), Point3D(10, 10, 0))
+    pts_4 = (Point3D(10, 10, 0), Point3D(10, 20, 0), Point3D(20, 20, 0), Point3D(20, 10, 0))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3.5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3.5)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3.5)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3.5)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office_Building_1234', [story])
+    building = Building('Office_Building_1234', building.all_stories())
+    r_pts_1 = (Point3D(0, 0, 15), Point3D(0, 20, 15), Point3D(10, 20, 20), Point3D(10, 0, 20))
+    r_pts_2 = (Point3D(10, 0, 20), Point3D(10, 20, 20), Point3D(20, 20, 15), Point3D(20, 0, 15))
+    building.unique_stories[-1].roof = \
+        RoofSpecification([Face3D(r_pts_1), Face3D(r_pts_2)])
+    for room in building.unique_stories[0]:
+        room.is_ground_contact = True
+    for room in building.unique_stories[-1]:
+        room.is_top_exposed = True
+    assert len(building.unique_room_2ds) == 16
+    assert len(building.unique_stories) == 4
+
+    building_dup = building.duplicate()
+    room_ids = [room.identifier for room in building_dup.unique_room_2ds]
+    plenums = building_dup.separate_room_2d_plenums(room_ids, 3.0)
+    assert len(plenums) == 16
+    assert len(building_dup.unique_room_2ds) == 32
+    assert len(building_dup.unique_stories) == 8
+
+    building_dup = building.duplicate()
+    room_ids = [room.identifier for room in building_dup.unique_room_2ds]
+    plenums = building_dup.separate_room_2d_plenums(room_ids, 3.0, True)
+    assert len(plenums) == 16
+    assert len(building_dup.unique_room_2ds) == 32
+    assert len(building_dup.unique_stories) == 8
 
 
 def test_building_shade_representation():

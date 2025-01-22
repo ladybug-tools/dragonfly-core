@@ -2756,6 +2756,98 @@ class Room2D(_BaseGeometry):
 
         return new_rooms
 
+    def separate_plenum(self, target_floor_to_ceiling, floor_plenum=False,
+                        tolerance=0.01):
+        """Separate a section of this Room2D into a ceiling (or floor) plenum.
+
+        Args:
+            target_floor_to_ceiling: A number in model units for the desired
+                floor-to-ceiling height of the final room (assuming that this
+                Room2D's current floor-to-ceiling height is actually the
+                floor-to-floor height). If the current Room2D's floor-to-ceiling
+                height is less than the input value, the floor-to-ceiling height
+                of this Room2D will be reduced and a new ceiling or floor plenum
+                Rooms2D will be returned from this method.
+            floor_plenum: A boolean to note whether the plenum to be separated is
+                a floor plenum for this current Room2D (in which case it is
+                subtracted from the bottom) or it is a ceiling plenum (in which
+                case it is subtracted from the top). (Default: False).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A new Room2D for the plenum. Will be None if the target_floor_to_ceiling
+            is greater than the current Room2D's floor_to_ceiling_height.
+        """
+        # first make sure that the target_floor_to_ceiling is acceptable
+        if target_floor_to_ceiling + tolerance >= self.floor_to_ceiling_height:
+            return None
+        # determine the boundary conditions for the new plenum
+        new_bcs = []
+        for bc in self.boundary_conditions:
+            if isinstance(bc, Surface):
+                new_bcs.append(bcs.outdoors)
+            else:
+                new_bcs.append(bc)
+        # split off the floor or ceiling plenum Room2D
+        plenum_ftc = self.floor_to_ceiling_height - target_floor_to_ceiling
+        if floor_plenum:  # split off a floor plenum
+            pln_typ = 'Floor'
+            plenum_id = '{}_{}_Plenum'.format(self.identifier, pln_typ)
+            new_room = Room2D(
+                plenum_id, self.floor_geometry, plenum_ftc, boundary_conditions=new_bcs,
+                shading_parameters=self.shading_parameters,
+                is_ground_contact=self.is_ground_contact, is_top_exposed=False)
+            exist_w_par, new_w_par = [], []  # shift all of the window parameters
+            for wp, seg in zip(self.window_parameters, self.floor_segments):
+                if isinstance(wp, _AsymmetricBase):
+                    ewp = wp.shift_vertically(-plenum_ftc)
+                    ewp.adjust_for_segment(seg, target_floor_to_ceiling, tolerance)
+                    wp.adjust_for_segment(seg, plenum_ftc, tolerance)
+                else:
+                    ewp = wp if wp is None else wp.duplicate()
+                exist_w_par.append(ewp)
+                new_w_par.append(wp)
+            self.window_parameters = exist_w_par
+            new_room.window_parameters = new_w_par
+            self._floor_geometry = self._floor_geometry.move(
+                Vector3D(0, 0, plenum_ftc))
+        else:  # split off a ceiling plenum
+            pln_typ = 'Ceiling'
+            plenum_id = '{}_{}_Plenum'.format(self.identifier, pln_typ)
+            plenum_geo = self._floor_geometry.move(
+                Vector3D(0, 0, target_floor_to_ceiling))
+            new_room = Room2D(
+                plenum_id, plenum_geo, plenum_ftc, boundary_conditions=new_bcs,
+                shading_parameters=self.shading_parameters,
+                is_ground_contact=False, is_top_exposed=self.is_top_exposed)
+            exist_w_par, new_w_par = [], []  # shift all of the window parameters
+            for wp, seg in zip(self.window_parameters, self.floor_segments):
+                if isinstance(wp, _AsymmetricBase):
+                    nwp = wp.shift_vertically(-target_floor_to_ceiling)
+                    nwp.adjust_for_segment(seg, plenum_ftc, tolerance)
+                    wp.adjust_for_segment(seg, target_floor_to_ceiling, tolerance)
+                else:
+                    nwp = wp if wp is None else wp.duplicate()
+                exist_w_par.append(wp)
+                new_w_par.append(nwp)
+            self.window_parameters = exist_w_par
+            new_room.window_parameters = new_w_par
+            new_room.skylight_parameters = self.skylight_parameters
+            self.skylight_parameters = None
+        # adjust the height of the current Room
+        self.floor_to_ceiling_height = target_floor_to_ceiling
+        # assign all of the other attributes to the new room
+        if self._display_name is not None:
+            new_room._display_name = '{} {} Plenum'.format(self._display_name, pln_typ)
+        new_room._user_data = None if self.user_data is None else self.user_data.copy()
+        new_room._air_boundaries = self._air_boundaries[:] \
+            if self._air_boundaries is not None else None
+        new_room._abridged_properties = self._abridged_properties
+        new_room._properties._duplicate_extension_attr(self._properties)
+        return new_room
+
     def check_horizontal(self, tolerance=0.01, raise_exception=True):
         """Check whether the Room2D's floor geometry is horizontal within a tolerance.
 
@@ -3137,6 +3229,8 @@ class Room2D(_BaseGeometry):
         # set the story, multiplier, display_name, and user_data
         if self.has_parent:
             hb_room.story = self.parent.display_name
+            if self.parent.is_plenum:
+                hb_room.exclude_floor_area = True
         hb_room.multiplier = multiplier
         hb_room._display_name = self._display_name
         hb_room._user_data = self._user_data

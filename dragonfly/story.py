@@ -49,6 +49,10 @@ class Story(_BaseGeometry):
             affect the child Room2Ds that have a True is_top_exposed property
             and it will only be utilized in translation to Honeybee when the Story
             multiplier is 1. If None, all Room2D ceilings will be flat. (Default: None).
+        is_plenum: A boolean to note whether the Room2Ds of the Story represent
+            plenums that serve the other stories above or below. If True, all
+            Room2Ds in the Story are translated to 3D with a True exclude_floor_area
+            property. (Default: False)
 
     Properties:
         * identifier
@@ -58,6 +62,7 @@ class Story(_BaseGeometry):
         * floor_to_floor_height
         * multiplier
         * roof
+        * is_plenum
         * parent
         * has_parent
         * floor_height
@@ -72,10 +77,10 @@ class Story(_BaseGeometry):
         * user_data
     """
     __slots__ = ('_room_2ds', '_floor_to_floor_height', '_floor_height',
-                 '_multiplier', '_roof', '_parent')
+                 '_multiplier', '_roof', '_is_plenum', '_parent')
 
     def __init__(self, identifier, room_2ds, floor_to_floor_height=None,
-                 floor_height=None, multiplier=1, roof=None):
+                 floor_height=None, multiplier=1, roof=None, is_plenum=False):
         """A Story of a building defined by an extruded Floor2Ds."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
 
@@ -87,6 +92,7 @@ class Story(_BaseGeometry):
         self.floor_to_floor_height = floor_to_floor_height
         self.multiplier = multiplier
         self.roof = roof
+        self.is_plenum = is_plenum
 
         self._parent = None  # _parent will be set when Story is added to a Building
         self._properties = StoryProperties(self)  # properties for extensions
@@ -145,13 +151,14 @@ class Story(_BaseGeometry):
         fh = data['floor_height'] if 'floor_height' in data \
             and data['floor_height'] != autocalculate.to_dict() else None
         mult = data['multiplier'] if 'multiplier' in data else 1
+        is_plenum = data['is_plenum'] if 'is_plenum' in data else False
 
         # process the roof specification if it exists
         roof = RoofSpecification.from_dict(data['roof']) if 'roof' in data \
             and data['roof'] is not None else None
 
         # create the story object
-        story = Story(data['identifier'], rooms, f2fh, fh, mult, roof)
+        story = Story(data['identifier'], rooms, f2fh, fh, mult, roof, is_plenum)
         if 'display_name' in data and data['display_name'] is not None:
             story._display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -176,19 +183,19 @@ class Story(_BaseGeometry):
         # create the Room2Ds from the Honeybee Rooms
         room_2ds = []
         for hb_room in rooms:
-            if not hb_room.exclude_floor_area:
-                try:
-                    room_2ds.append(Room2D.from_honeybee(hb_room, tolerance))
-                except Exception:  # invalid Honeybee Room that is not a closed solid
-                    msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
-                        'a Room2D.\nTry using the "ExtrudedOnly" option to convert ' \
-                        'the Honeybee Model to Dragonfly'.format(hb_room.display_name)
-                    raise ValueError(msg)
+            try:
+                room_2ds.append(Room2D.from_honeybee(hb_room, tolerance))
+            except Exception:  # invalid Honeybee Room that is not a closed solid
+                msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
+                    'a Room2D.\nTry using the "ExtrudedOnly" option to convert ' \
+                    'the Honeybee Model to Dragonfly'.format(hb_room.display_name)
+                raise ValueError(msg)
+        is_plenum = all(hb_room.exclude_floor_area for hb_room in rooms)
 
         room_2ds = [room for room in room_2ds if room is not None]
         # re-set the adjacencies in relation to the Room2D segments
         room_2ds = cls._reset_adjacencies_from_honeybee(room_2ds, tolerance)
-        return cls(identifier, room_2ds)
+        return cls(identifier, room_2ds, is_plenum=is_plenum)
 
     @staticmethod
     def _reset_adjacencies_from_honeybee(room_2ds, tolerance):
@@ -328,6 +335,19 @@ using-multipliers-zone-and-or-window.html
                 'Expected dragonfly RoofSpecification. Got {}'.format(type(value))
             value._parent = self
         self._roof = value
+
+    @property
+    def is_plenum(self):
+        """Get or set a boolean for  whether the Room2Ds of the Story represent plenums.
+
+        If True, all Room2Ds in the Story are translated to 3D with a True
+        exclude_floor_area property.
+        """
+        return self._is_plenum
+
+    @is_plenum.setter
+    def is_plenum(self, value):
+        self._is_plenum = bool(value)
 
     @property
     def parent(self):
@@ -1813,6 +1833,7 @@ using-multipliers-zone-and-or-window.html
         base['floor_to_floor_height'] = self.floor_to_floor_height
         base['floor_height'] = self.floor_height
         base['multiplier'] = self.multiplier
+        base['is_plenum'] = self.is_plenum
         if self.roof is not None:
             base['roof'] = self.roof.to_dict()
         if self.user_data is not None:
@@ -1981,7 +2002,8 @@ using-multipliers-zone-and-or-window.html
     def __copy__(self):
         new_s = Story(
             self.identifier, tuple(room.duplicate() for room in self._room_2ds),
-            self._floor_to_floor_height, self._floor_height, self._multiplier)
+            self._floor_to_floor_height, self._floor_height, self._multiplier,
+            None, self._is_plenum)
         new_s._roof = None if self._roof is None else self._roof.duplicate()
         new_s._display_name = self._display_name
         new_s._user_data = None if self.user_data is None else self.user_data.copy()
