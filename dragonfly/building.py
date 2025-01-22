@@ -638,10 +638,11 @@ class Building(_BaseGeometry):
         """Get a number for the total floor area in the Building.
 
         This property uses both the 2D Story multipliers and the 3D Room multipliers
-        to determine the total floor area.
+        to determine the total floor area. It will exclude 3D Rooms with a True
+        exclude_floor_area and Stories with a True is_plenum.
         """
         fa_r2 = sum([story.floor_area * story.multiplier
-                     for story in self._unique_stories])
+                     for story in self._unique_stories if not story.is_plenum])
         fa_r3 = sum([room.floor_area * room.multiplier for room in self._room_3ds
                      if not room.exclude_floor_area])
         return fa_r2 + fa_r3
@@ -825,15 +826,17 @@ class Building(_BaseGeometry):
         context_shades = []
         if exclude_index is None:
             for story in self.unique_stories:
-                context_shades.extend(story.shade_representation(cap, tolerance))
+                if not story.is_plenum:
+                    context_shades.extend(story.shade_representation(cap, tolerance))
         else:
             for i, story in enumerate(self.unique_stories):
-                if i != exclude_index:
-                    context_shades.extend(story.shade_representation(cap, tolerance))
-                else:
-                    mult_shd = story.shade_representation_multiplier(
-                        cap=cap, tolerance=tolerance)
-                    context_shades.extend(mult_shd)
+                if not story.is_plenum:
+                    if i != exclude_index:
+                        context_shades.extend(story.shade_representation(cap, tolerance))
+                    else:
+                        mult_shd = story.shade_representation_multiplier(
+                            cap=cap, tolerance=tolerance)
+                        context_shades.extend(mult_shd)
         if include_room3ds and self.has_room_3ds:
             for room in self.room_3ds:
                 for face in room.faces:
@@ -1482,6 +1485,100 @@ class Building(_BaseGeometry):
 
         return new_rooms
 
+    def separate_room_2d_plenums(
+            self, room_ids, target_floor_to_ceiling, floor_plenum=False,
+            tolerance=0.01):
+        """Separate a part of Room2D into ceiling (or floor) plenums.
+
+        This method assumes that the Room2Ds' floor-to-ceiling-height is actually
+        set to the floor-to-floor height. So this method reduces the floor-to-ceiling
+        height of these rooms to what it is actually supposed to be and then
+        adds a new ceiling (or floor) plenum Story to the Building with the
+        plenums modeled as explicit Room2Ds. If an existing Story with a True
+        is_plenum property is found above (or below) the Room2D for which a plenum
+        was split off, the new Room2D will get added to that existing Story
+        instead of a new Story being created.
+
+        Args:
+            room_ids: A list of identifiers of Room2Ds within this Building, which
+                will be split vertically to create a new plenum above (or below)
+                the rooms.
+            target_floor_to_ceiling: A number in model units for the desired
+                floor-to-ceiling height of the final Room2Ds (assuming that this
+                Room2D's current floor-to-ceiling height is actually the
+                floor-to-floor height). If the current Room2D's floor-to-ceiling
+                height is less than the input value, the floor-to-ceiling height
+                will be reduced and a new ceiling or floor plenum created.
+            floor_plenum: A boolean to note whether the plenum to be separated is
+                a floor plenum for this current Room2D (in which case it is
+                subtracted from the bottom) or it is a ceiling plenum (in which
+                case it is subtracted from the top). (Default: False).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of all the new rooms created by running the method. This
+            can be used to post-process the rooms for attributes like adjacency
+            within the Story they are placed.
+        """
+        # loop through the Room2Ds and split the plenum if they're selected
+        room_ids = set(room_ids)
+        new_rooms, new_stories, new_story_i = [], [], []
+        resolve_roofs = False
+        for i, story in enumerate(self._unique_stories):
+            if story.is_plenum:
+                continue  # don't create plenums of plenums
+            for rm in story.room_2ds:
+                if rm.identifier in room_ids:
+                    plenum_room = rm.separate_plenum(
+                        target_floor_to_ceiling, floor_plenum, tolerance)
+                    if plenum_room is not None:
+                        # add the room to the list of new rooms
+                        new_rooms.append(plenum_room)
+                        # figure out on which Story the plenum belongs
+                        pln_story = None
+                        pln_st_i = i - 1 if floor_plenum else i + 1
+                        if pln_st_i == -1 or pln_st_i == len(self._unique_stories) \
+                                or not self._unique_stories[pln_st_i].is_plenum:
+                            if pln_st_i in new_story_i:
+                                for st, sti in zip(new_stories, new_story_i):
+                                    if pln_st_i == sti:
+                                        pln_story = st
+                        else:  # there is already a relevant plenum story
+                            pln_story = self._unique_stories[pln_st_i]
+                        if pln_story is None:  # we must create a new story
+                            pln_id = '{}_Plenum'.format(story.identifier)
+                            pln_story = Story(pln_id, [plenum_room], is_plenum=True)
+                            pln_story.floor_to_floor_height = story.floor_to_floor_height
+                            pln_story.floor_height = story.floor_height
+                            pln_story.multiplier = story.multiplier
+                            if story._display_name is not None:
+                                pln_story.display_name = \
+                                    '{} Plenum'.format(story.display_name)
+                            if story.roof is not None:
+                                pln_story.roof = story.roof.duplicate()
+                                resolve_roofs = True
+                            new_stories.append(pln_story)
+                            new_story_i.append(pln_st_i)
+                        else:
+                            pln_story.add_room_2d(plenum_room)
+        # insert any newly-created stories into the Building
+        new_stories = [st for _, st in sorted(zip(new_story_i, new_stories),
+                                              key=lambda pair: pair[0])]
+        new_story_i.sort()
+        new_stories.reverse()  # reverse so that we insert from top to bottom
+        new_story_i.reverse()  # reverse so that we insert from top to bottom
+        all_stories = list(self._unique_stories)
+        for st, sti in zip(new_stories, new_story_i):
+            in_i = sti + 1 if floor_plenum else sti
+            all_stories.insert(in_i, st)
+        self._unique_stories = tuple(all_stories)
+        # resolve the roofs if they were copied
+        if resolve_roofs:
+            self.remove_duplicate_roofs(tolerance)
+        return new_rooms
+
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
         for story in self._unique_stories:
@@ -1960,15 +2057,16 @@ class Building(_BaseGeometry):
                     models.append(model)  # append to the final list of Models
             else:
                 self_shds = [story.shade_representation(cap, tolerance)
-                             for story in bldg.unique_stories]
+                             for story in bldg.unique_stories if not story.is_plenum]
                 full_shades = []
                 for j, story in enumerate(bldg.unique_stories):
-                    for k in range(story.multiplier):
-                        mult_shd = story.shade_representation_multiplier(
-                            k, cap=cap, tolerance=tolerance)
-                        mult_shd.extend([s for s_ar in self_shds[:j] for s in s_ar])
-                        mult_shd.extend([s for s_ar in self_shds[j + 1:] for s in s_ar])
-                        full_shades.append(mult_shd)
+                    if not story.is_plenum:
+                        for k in range(story.multiplier):
+                            mult_shd = story.shade_representation_multiplier(
+                                k, cap=cap, tolerance=tolerance)
+                            mult_shd.extend([s for s_ar in self_shds[:j] for s in s_ar])
+                            mult_shd.extend([s for s_ar in self_shds[j + 1:] for s in s_ar])
+                            full_shades.append(mult_shd)
                 for story, shades in zip(bldg.all_stories(), full_shades):
                     hb_rooms = story.to_honeybee(
                         True, add_plenum, tolerance=tolerance,
