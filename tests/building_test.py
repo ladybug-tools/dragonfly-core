@@ -380,6 +380,7 @@ def test_honeybee_ceiling_plenum():
     assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
 
     # check the ceiling condition with plenum
+    assert room2d_plenum.check_plenum_depths(0.01, False) == ''
     plenum_model = building.to_honeybee(tolerance=0.01)
     plenum_rooms = plenum_model.rooms
     assert len(plenum_rooms) == 3
@@ -407,6 +408,7 @@ def test_honeybee_ceiling_plenum():
 
     # check that no plenum is produced when room does not have_ceiling
     room2d_plenum.has_ceiling = False
+    assert room2d_plenum.check_plenum_depths(0.01, False) != ''
     no_plenum_model = building.to_honeybee(tolerance=0.01)
     no_plenum_rooms = no_plenum_model.rooms
     assert len(no_plenum_rooms) == 2
@@ -420,7 +422,7 @@ def test_honeybee_floor_plenum():
     pts1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(0, 10, 0))
     pts2 = (Point3D(10, 0, 0), Point3D(20, 0, 0), Point3D(20, 10, 0), Point3D(10, 10, 0))
 
-    # Two rooms with different floor heights
+    # Two rooms with different plenum depths
     room2d_full = Room2D(
         'R1-full', floor_geometry=Face3D(pts1), floor_to_ceiling_height=4,
         is_ground_contact=True, is_top_exposed=True)
@@ -443,6 +445,7 @@ def test_honeybee_floor_plenum():
     assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
 
     # check the floor condition with plenum
+    assert room2d_plenum.check_plenum_depths(0.01, False) == ''
     plenum_model = building.to_honeybee(tolerance=0.01)
     plenum_rooms = plenum_model.rooms
     assert len(plenum_rooms) == 3
@@ -470,6 +473,7 @@ def test_honeybee_floor_plenum():
 
     # check that no plenum is produced when room does not have_floor
     room2d_plenum.has_floor = False
+    assert room2d_plenum.check_plenum_depths(0.01, False) != ''
     no_plenum_model = building.to_honeybee(tolerance=0.01)
     no_plenum_rooms = no_plenum_model.rooms
     assert len(no_plenum_rooms) == 2

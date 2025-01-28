@@ -96,6 +96,7 @@ class Room2D(_BaseGeometry):
         * segment_normals
         * floor_height
         * ceiling_height
+        * highest_plenum_floor_height
         * volume
         * floor_area
         * exterior_wall_area
@@ -750,6 +751,21 @@ class Room2D(_BaseGeometry):
     def ceiling_height(self):
         """Get a number for the height of the ceiling above the ground."""
         return self.floor_height + self.floor_to_ceiling_height
+
+    @property
+    def highest_plenum_floor_height(self):
+        """Get a number for the highest floor height in the Room2D including plenums.
+
+        When the Room2D has a ceiling plenum, this will be the floor height of
+        the plenum. Otherwise, it is the floor height of the base room. This
+        property is useful for checking that roof geometries do not collide with
+        a room floor.
+        """
+        if self.ceiling_plenum_depth != 0:
+            return self.ceiling_height - self.ceiling_plenum_depth
+        elif self.floor_plenum_depth != 0:
+            return self.floor_height + self.floor_plenum_depth
+        return self.floor_height
 
     @property
     def volume(self):
@@ -2999,6 +3015,49 @@ class Room2D(_BaseGeometry):
                 raise ValueError(full_msg)
             return full_msg
         return [] if detailed else ''
+
+    def check_plenum_depths(self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check plenum depths do not exceed floor-to-ceiling or contradict has_floor.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: If True, a ValueError will be raised if invalid plenum
+                depths are discovered. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        detailed = False if raise_exception else detailed
+        ftc = self.floor_to_ceiling_height
+        cpd, fpd = self.ceiling_plenum_depth, self.floor_plenum_depth
+        msgs = []
+        if cpd + fpd >= ftc - tolerance:
+            msg = 'Combined plenum depths ({}) exceed the room floor-to-ceiling '\
+                'height ({}).'.format(cpd + fpd, ftc)
+            msgs.append(msg)
+        if not self.has_ceiling and cpd != 0:
+            msg = 'Room has a ceiling plenum depth assigned ({}) but also ' \
+                'does not have a ceiling.'.format(cpd)
+            msgs.append(msg)
+        if not self.has_floor and fpd != 0:
+            msg = 'Room has a floor plenum depth assigned ({}) but also ' \
+                'does not have a floor.'.format(fpd)
+            msgs.append(msg)
+        if len(msgs) == 0:
+            return [] if detailed else ''
+        full_msg = 'Room2D "{}" contains invalid plenum depths.' \
+            '\n  {}'.format(self.display_name, '\n  '.join(msgs))
+        full_msg = self._validation_message_child(
+            full_msg, self, detailed, '100107', error_type='Invalid Room Plenum Depths')
+        if detailed:
+            return [full_msg]
+        if raise_exception:
+            raise ValueError(full_msg)
+        return full_msg
 
     def check_window_parameters_valid(
             self, tolerance=0.01, raise_exception=True, detailed=False):

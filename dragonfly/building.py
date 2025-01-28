@@ -1653,10 +1653,12 @@ class Building(_BaseGeometry):
                 ftc = ftc - cpd
                 ceiling_rm_ids.append(room.identifier)
                 ceiling_targets.append(ftc)
+                room.ceiling_plenum_depth = 0  # set to zero now that plenum is explicit
             if fpd != 0:
                 ftc = ftc - fpd
                 floor_rm_ids.append(room.identifier)
                 floor_targets.append(ftc)
+                room.floor_plenum_depth = 0  # set to zero now that plenum is explicit
         # create the ceiling plenums
         ceil_plenums, floor_plenums = [], []
         if len(ceiling_rm_ids) != 0:
