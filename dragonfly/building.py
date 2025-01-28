@@ -15,7 +15,7 @@ from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 from honeybee.model import Model
 from honeybee.room import Room
 from honeybee.shade import Shade
-from honeybee.boundarycondition import Outdoors
+from honeybee.boundarycondition import Outdoors, Surface
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string, invalid_dict_error
 from honeybee.units import parse_distance_string
@@ -76,6 +76,7 @@ class Building(_BaseGeometry):
         * room_3d_shades
         * has_room_2ds
         * has_room_3ds
+        * has_room_2d_plenums
         * room_2d_story_names
         * room_3d_story_names
         * story_count
@@ -511,6 +512,15 @@ class Building(_BaseGeometry):
         """Get a boolean noting whether this Building has 3D Honeybee Rooms.
         """
         return len(self._room_3ds) != 0
+
+    @property
+    def has_room_2d_plenums(self):
+        """Get a boolean for whether this Building's Room2Ds have plenum depths assigned.
+        """
+        for story in self._unique_stories:
+            if story.has_plenums:
+                return True
+        return False
 
     @property
     def room_2d_story_names(self):
@@ -1508,7 +1518,9 @@ class Building(_BaseGeometry):
                 Room2D's current floor-to-ceiling height is actually the
                 floor-to-floor height). If the current Room2D's floor-to-ceiling
                 height is less than the input value, the floor-to-ceiling height
-                will be reduced and a new ceiling or floor plenum created.
+                will be reduced and a new ceiling or floor plenum created. This
+                can also be a list of target_floor_to_ceiling heights that align
+                with the input room_ids.
             floor_plenum: A boolean to note whether the plenum to be separated is
                 a floor plenum for this current Room2D (in which case it is
                 subtracted from the bottom) or it is a ceiling plenum (in which
@@ -1518,24 +1530,31 @@ class Building(_BaseGeometry):
                 for objects in Meters).
 
         Returns:
-            A list of all the new rooms created by running the method. This
-            can be used to post-process the rooms for attributes like adjacency
-            within the Story they are placed.
+            A list of all the new Room2Ds created by running the method. This
+            can be used to post-process the rooms for attributes like
+            floor/ceiling adjacency.
         """
-        # loop through the Room2Ds and split the plenum if they're selected
-        room_ids = set(room_ids)
+        # handle the case of multiple target_floor_to_ceiling values
+        t_ftc_i = 0
+        if isinstance(target_floor_to_ceiling, (float, int)):
+            target_floor_to_ceiling = [target_floor_to_ceiling] * len(room_ids)
+        # set up variables to help manage the plenums
+        room_ids, plenum_rm_ids = set(room_ids), set()
         new_rooms, new_stories, new_story_i = [], [], []
         resolve_roofs = False
         for i, story in enumerate(self._unique_stories):
             if story.is_plenum:
                 continue  # don't create plenums of plenums
+            # loop through the Room2Ds and split the plenum if they're selected
             for rm in story.room_2ds:
                 if rm.identifier in room_ids:
                     plenum_room = rm.separate_plenum(
-                        target_floor_to_ceiling, floor_plenum, tolerance)
+                        target_floor_to_ceiling[t_ftc_i], floor_plenum, tolerance)
+                    t_ftc_i += 1
                     if plenum_room is not None:
                         # add the room to the list of new rooms
                         new_rooms.append(plenum_room)
+                        plenum_rm_ids.add(plenum_room.identifier)
                         # figure out on which Story the plenum belongs
                         pln_story = None
                         pln_st_i = i - 1 if floor_plenum else i + 1
@@ -1563,6 +1582,22 @@ class Building(_BaseGeometry):
                             new_story_i.append(pln_st_i)
                         else:
                             pln_story.add_room_2d(plenum_room)
+        # set up any adjacencies across the plenums
+        try:  # get the boundary condition to be used for adiabatic cases
+            ad_bc = bcs.adiabatic
+        except AttributeError:
+            ad_bc = bcs.outdoors  # honeybee_energy is not loaded; no adiabatic BC
+        for new_room in new_rooms:
+            new_bcs = []
+            for bc in new_room.boundary_conditions:
+                if isinstance(bc, Surface):
+                    clean_bc = bc if bc.boundary_condition_objects[-1] in plenum_rm_ids \
+                        else ad_bc
+                    new_bcs.append(clean_bc)
+                else:
+                    new_bcs.append(bc)
+            new_room.boundary_conditions = new_bcs
+
         # insert any newly-created stories into the Building
         new_stories = [st for _, st in sorted(zip(new_story_i, new_stories),
                                               key=lambda pair: pair[0])]
@@ -1578,6 +1613,59 @@ class Building(_BaseGeometry):
         if resolve_roofs:
             self.remove_duplicate_roofs(tolerance)
         return new_rooms
+
+    def convert_plenum_depths_to_room_2ds(self, tolerance=0.01):
+        """Convert all of the Room2D ceiling/floor plenum depths to explicit Room2Ds.
+
+        This method is used under the hood of the translation from Dragonfly to
+        Honeybee in order to convert Room2D ceiling_plenum_depth and 
+        floor_plenum_depth properties into explicit 3D plenum Rooms.
+
+        However, it may be useful to call it explicitly (outside of
+        the translation) in order to edit the plenum Room2Ds. For example, multiple
+        plenum Room2Ds above several rooms can be joined together into a single
+        continuous plenum if this is how the plenum exists on the real building.
+
+        Args:
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of all the new Room2Ds created by running the method.
+        """
+        # gather all of the Room2D IDs with ceilings and floors to be split
+        ceiling_rm_ids, ceiling_targets = [], []
+        floor_rm_ids, floor_targets = [], []
+        for room in self.unique_room_2ds:
+            ftc = room.floor_to_ceiling_height
+            cpd = room.ceiling_plenum_depth
+            fpd = room.floor_plenum_depth
+            if cpd == 0 and fpd == 0:
+                continue  # no plenums to be generated
+            elif cpd + fpd >= ftc - tolerance:
+                continue  # invalid plenum depths that are too high
+            elif not room.has_ceiling and cpd != 0:
+                continue  # invalid plenum assigned to air boundary ceiling
+            elif not room.has_floor and fpd != 0:
+                continue  # invalid plenum assigned to air boundary floor
+            if cpd != 0:
+                ftc = ftc - cpd
+                ceiling_rm_ids.append(room.identifier)
+                ceiling_targets.append(ftc)
+            if fpd != 0:
+                ftc = ftc - fpd
+                floor_rm_ids.append(room.identifier)
+                floor_targets.append(ftc)
+        # create the ceiling plenums
+        ceil_plenums, floor_plenums = [], []
+        if len(ceiling_rm_ids) != 0:
+            ceil_plenums = self.separate_room_2d_plenums(
+                ceiling_rm_ids, ceiling_targets, False, tolerance)
+        if len(floor_rm_ids) != 0:
+            floor_plenums = self.separate_room_2d_plenums(
+                floor_rm_ids, floor_targets, True, tolerance)
+        return ceil_plenums + floor_plenums
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
@@ -1667,7 +1755,7 @@ class Building(_BaseGeometry):
                     has_flr_ceil.extend(story_list)
         return has_flr_ceil
 
-    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
+    def to_honeybee(self, use_multiplier=True, exclude_plenums=False, tolerance=0.01,
                     enforce_adj=True, enforce_solid=True):
         """Convert Dragonfly Building to a Honeybee Model.
 
@@ -1678,8 +1766,11 @@ class Building(_BaseGeometry):
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
                 multipliers and all resulting multipliers will be 1. (Default: True).
-            add_plenum: Boolean to indicate whether ceiling/floor plenums should
-                be auto-generated for the Rooms. (Default: False).
+            exclude_plenums: Boolean to indicate whether ceiling/floor plenum depths
+                assigned to Room2Ds should be ignored during translation. This
+                results in each Room2D translating to a single Honeybee Room at
+                the full floor_to_ceiling_height instead of a base Room with (a)
+                plenum Room(s). (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
@@ -1699,6 +1790,10 @@ class Building(_BaseGeometry):
         Returns:
             A honeybee Model that represent the Building.
         """
+        # separate the plenums unless they are excluded
+        if not exclude_plenums and self.has_room_2d_plenums:
+            self = self.duplicate()  # avoid mutating this Building instance
+            self.convert_plenum_depths_to_room_2ds(tolerance)
         # compute the story heights once so they're not constantly recomputed
         reset_roofs = False
         if self._roofs is None:
@@ -1708,14 +1803,18 @@ class Building(_BaseGeometry):
         hb_rooms = []
         if use_multiplier:
             for story in self._unique_stories:
-                hb_rooms.extend(story.to_honeybee(
-                    True, add_plenum=add_plenum, tolerance=tolerance,
-                    enforce_adj=enforce_adj, enforce_solid=enforce_solid))
+                hb_rooms.extend(
+                    story.to_honeybee(True, tolerance=tolerance,
+                                      enforce_adj=enforce_adj,
+                                      enforce_solid=enforce_solid)
+                )
         else:
             for story in self.all_stories():
-                hb_rooms.extend(story.to_honeybee(
-                    False, add_plenum=add_plenum, tolerance=tolerance,
-                    enforce_adj=enforce_adj, enforce_solid=enforce_solid))
+                hb_rooms.extend(
+                    story.to_honeybee(False, tolerance=tolerance,
+                                      enforce_adj=enforce_adj,
+                                      enforce_solid=enforce_solid)
+                )
         for room in self.room_3ds:
             hb_rooms.append(room)
         hb_mod = Model(self.identifier, hb_rooms)
@@ -1859,7 +1958,7 @@ class Building(_BaseGeometry):
 
     @staticmethod
     def district_to_honeybee(
-            buildings, use_multiplier=True, add_plenum=False, tolerance=0.01,
+            buildings, use_multiplier=True, exclude_plenums=False, tolerance=0.01,
             enforce_adj=True, enforce_solid=True):
         """Convert an array of Building objects into a single district honeybee Model.
 
@@ -1872,8 +1971,11 @@ class Building(_BaseGeometry):
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
                 multipliers and all resulting multipliers will be 1. (Default: True).
-            add_plenum: Boolean to indicate whether ceiling/floor plenums should
-                be auto-generated for the Rooms. (Default: False).
+            exclude_plenums: Boolean to indicate whether ceiling/floor plenum depths
+                assigned to Room2Ds should be ignored during translation. This
+                results in each Room2D translating to a single Honeybee Room at
+                the full floor_to_ceiling_height instead of a base Room with (a)
+                plenum Room(s). (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 Default: 0.01, suitable for objects in meters.
@@ -1895,19 +1997,21 @@ class Building(_BaseGeometry):
         """
         # create a base model to which everything will be added
         base_model = buildings[0].to_honeybee(
-            use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
+            use_multiplier, exclude_plenums=exclude_plenums, tolerance=tolerance,
             enforce_adj=enforce_adj, enforce_solid=enforce_solid)
         # loop through each Building, create a model, and add it to the base one
         for bldg in buildings[1:]:
-            base_model.add_model(bldg.to_honeybee(
-                use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
-                enforce_adj=enforce_adj, enforce_solid=enforce_solid))
+            base_model.add_model(
+                bldg.to_honeybee(use_multiplier, exclude_plenums=exclude_plenums,
+                                 tolerance=tolerance, enforce_adj=enforce_adj,
+                                 enforce_solid=enforce_solid)
+            )
         return base_model
 
     @staticmethod
     def buildings_to_honeybee(
             buildings, context_shades=None, shade_distance=None,
-            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01,
+            use_multiplier=True, exclude_plenums=False, cap=False, tolerance=0.01,
             enforce_adj=True, enforce_solid=True):
         """Convert an array of Buildings into several honeybee Models with self-shading.
 
@@ -1935,8 +2039,11 @@ class Building(_BaseGeometry):
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
                 multipliers and all room multipliers will be 1. (Default: True).
-            add_plenum: Boolean to indicate whether ceiling/floor plenums should
-                be auto-generated for the Rooms. (Default: False).
+            exclude_plenums: Boolean to indicate whether ceiling/floor plenum depths
+                assigned to Room2Ds should be ignored during translation. This
+                results in each Room2D translating to a single Honeybee Room at
+                the full floor_to_ceiling_height instead of a base Room with (a)
+                plenum Room(s). (Default: False).
             cap: Boolean to note whether building shade representations should be capped
                 with a top face. Usually, this is not necessary to account for
                 blocked sun and is only needed when it's important to account for
@@ -1968,7 +2075,7 @@ class Building(_BaseGeometry):
         num_bldg = len(buildings)
         for i, bldg in enumerate(buildings):
             model = bldg.to_honeybee(
-                use_multiplier, add_plenum=add_plenum, tolerance=tolerance,
+                use_multiplier, exclude_plenums=exclude_plenums, tolerance=tolerance,
                 enforce_adj=enforce_adj, enforce_solid=enforce_solid)
             Building._add_context_to_honeybee(model, bldg_shades, bldg_pts, con_shades,
                                               con_pts, shade_distance, num_bldg, i)
@@ -1978,7 +2085,7 @@ class Building(_BaseGeometry):
     @staticmethod
     def stories_to_honeybee(
             buildings, context_shades=None, shade_distance=None,
-            use_multiplier=True, add_plenum=False, cap=False, tolerance=0.01,
+            use_multiplier=True, exclude_plenums=False, cap=False, tolerance=0.01,
             enforce_adj=True, enforce_solid=True):
         """Convert an array of Buildings into one honeybee Model per story.
 
@@ -2007,8 +2114,11 @@ class Building(_BaseGeometry):
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
                 multipliers and all room multipliers will be 1. (Default: True).
-            add_plenum: Boolean to indicate whether ceiling/floor plenums should
-                be auto-generated for the Rooms. (Default: False).
+            exclude_plenums: Boolean to indicate whether ceiling/floor plenum depths
+                assigned to Room2Ds should be ignored during translation. This
+                results in each Room2D translating to a single Honeybee Room at
+                the full floor_to_ceiling_height instead of a base Room with (a)
+                plenum Room(s). (Default: False).
             cap: Boolean to note whether building shade representations should be capped
                 with a top face. Usually, this is not necessary to account for
                 blocked sun and is only needed when it's important to account for
@@ -2046,9 +2156,15 @@ class Building(_BaseGeometry):
             bldg_con = list(dummy_model.orphaned_shades)
             if use_multiplier:
                 for j, story in enumerate(bldg.unique_stories):
-                    hb_rooms = story.to_honeybee(
-                        True, add_plenum, tolerance=tolerance,
-                        enforce_adj=enforce_adj, enforce_solid=enforce_solid)
+                    if not exclude_plenums and story.has_plenums:
+                        plenum_bldg = Building(story.identifier, [story.duplicate()])
+                        hb_rooms = plenum_bldg.to_honeybee(
+                            True, False, tolerance=tolerance,
+                            enforce_adj=enforce_adj, enforce_solid=enforce_solid)
+                    else:
+                        hb_rooms = story.to_honeybee(
+                            True, tolerance=tolerance,
+                            enforce_adj=enforce_adj, enforce_solid=enforce_solid)
                     if bldg.has_room_3ds:
                         hb_rooms.extend(bldg.room_3ds_by_story(story.display_name))
                     shds = bldg_con + bldg.shade_representation(j, cap, False, tolerance)
@@ -2068,9 +2184,15 @@ class Building(_BaseGeometry):
                             mult_shd.extend([s for s_ar in self_shds[j + 1:] for s in s_ar])
                             full_shades.append(mult_shd)
                 for story, shades in zip(bldg.all_stories(), full_shades):
-                    hb_rooms = story.to_honeybee(
-                        True, add_plenum, tolerance=tolerance,
-                        enforce_adj=enforce_adj, enforce_solid=enforce_solid)
+                    if not exclude_plenums and story.has_plenums:
+                        plenum_bldg = Building(story.identifier, [story.duplicate()])
+                        hb_rooms = plenum_bldg.to_honeybee(
+                            True, False, tolerance=tolerance,
+                            enforce_adj=enforce_adj, enforce_solid=enforce_solid)
+                    else:
+                        hb_rooms = story.to_honeybee(
+                            True, tolerance=tolerance,
+                            enforce_adj=enforce_adj, enforce_solid=enforce_solid)
                     if bldg.has_room_3ds:
                         hb_rooms.extend(bldg.room_3ds_by_story(story.display_name))
                     shds = bldg_con + shades

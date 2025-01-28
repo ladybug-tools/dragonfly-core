@@ -14,7 +14,6 @@ from honeybee.facetype import AirBoundary
 from honeybee.facetype import face_types as ftyp
 from honeybee.altnumber import autocalculate
 from honeybee.shade import Shade
-from honeybee.room import Room
 
 from ._base import _BaseGeometry
 from .room2d import Room2D
@@ -63,6 +62,7 @@ class Story(_BaseGeometry):
         * multiplier
         * roof
         * is_plenum
+        * has_plenums
         * parent
         * has_parent
         * floor_height
@@ -338,7 +338,7 @@ using-multipliers-zone-and-or-window.html
 
     @property
     def is_plenum(self):
-        """Get or set a boolean for  whether the Room2Ds of the Story represent plenums.
+        """Get or set a boolean for whether the Room2Ds of the Story represent plenums.
 
         If True, all Room2Ds in the Story are translated to 3D with a True
         exclude_floor_area property.
@@ -348,6 +348,15 @@ using-multipliers-zone-and-or-window.html
     @is_plenum.setter
     def is_plenum(self, value):
         self._is_plenum = bool(value)
+
+    @property
+    def has_plenums(self):
+        """Get a boolean for whether Room2Ds on this Story have assigned plenum depths.
+        """
+        for room in self._room_2ds:
+            if room.ceiling_plenum_depth != 0 or room.floor_plenum_depth != 0:
+                return True
+        return False
 
     @property
     def parent(self):
@@ -1294,6 +1303,8 @@ using-multipliers-zone-and-or-window.html
                         else room.user_data.copy()
                     new_room._has_floor = room._has_floor
                     new_room._has_ceiling = room._has_ceiling
+                    new_room._ceiling_plenum_depth = room._ceiling_plenum_depth
+                    new_room._floor_plenum_depth = room._floor_plenum_depth
                     new_room._skylight_parameters = room._skylight_parameters
                     new_room._properties._duplicate_extension_attr(room._properties)
                     split_rooms.append(new_room)
@@ -1721,7 +1732,7 @@ using-multipliers-zone-and-or-window.html
             raise ValueError(full_msg)
         return full_msg
 
-    def to_honeybee(self, use_multiplier=True, add_plenum=False, tolerance=0.01,
+    def to_honeybee(self, use_multiplier=True, tolerance=0.01,
                     enforce_adj=True, enforce_solid=True):
         """Convert Dragonfly Story to a list of Honeybee Rooms.
 
@@ -1731,8 +1742,6 @@ using-multipliers-zone-and-or-window.html
                 will be run once for the Story and then results will be multiplied.
                 You will want to set this to False when exporting each Story as
                 full geometry.
-            add_plenum: Boolean to indicate whether ceiling/floor plenums should
-                be auto-generated for the Rooms. (Default: False).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 If None, no splitting will occur. (Default: 0.01, suitable for
@@ -1770,13 +1779,10 @@ using-multipliers-zone-and-or-window.html
         hb_rooms = []
         adjacencies = []
         for room in self._room_2ds:
-            hb_room, adj = room.to_honeybee(
-                mult, add_plenum=add_plenum, tolerance=tolerance,
-                enforce_bc=enforce_adj, enforce_solid=enforce_solid)
-            if isinstance(hb_room, Room):
-                hb_rooms.append(hb_room)
-            else:  # list of rooms with plenums
-                hb_rooms.extend(hb_room)
+            hb_room, adj = room.to_honeybee(mult, tolerance=tolerance,
+                                            enforce_bc=enforce_adj,
+                                            enforce_solid=enforce_solid)
+            hb_rooms.append(hb_room)
             adjacencies.extend(adj)
 
         # assign adjacent boundary conditions that could not be set on the room level

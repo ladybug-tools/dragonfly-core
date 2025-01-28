@@ -85,6 +85,8 @@ class Room2D(_BaseGeometry):
         * is_top_exposed
         * has_floor
         * has_ceiling
+        * ceiling_plenum_depth
+        * floor_plenum_depth
         * skylight_parameters
         * parent
         * has_parent
@@ -111,11 +113,13 @@ class Room2D(_BaseGeometry):
         * center
         * user_data
     """
-    __slots__ = ('_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
-                 '_boundary_conditions', '_window_parameters', '_shading_parameters',
-                 '_air_boundaries', '_is_ground_contact', '_is_top_exposed',
-                 '_has_floor', '_has_ceiling', '_skylight_parameters',
-                 '_parent', '_abridged_properties')
+    __slots__ = (
+        '_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
+        '_boundary_conditions', '_window_parameters', '_shading_parameters',
+        '_air_boundaries', '_is_ground_contact', '_is_top_exposed', '_has_floor',
+        '_has_ceiling', '_ceiling_plenum_depth', '_floor_plenum_depth',
+        '_skylight_parameters', '_parent', '_abridged_properties'
+    )
 
     def __init__(self, identifier, floor_geometry, floor_to_ceiling_height,
                  boundary_conditions=None, window_parameters=None,
@@ -175,6 +179,8 @@ class Room2D(_BaseGeometry):
         self.is_top_exposed = is_top_exposed
         self._has_floor = True
         self._has_ceiling = True
+        self._ceiling_plenum_depth = 0
+        self._floor_plenum_depth = 0
         self._skylight_parameters = None
 
         self._air_boundaries = None  # will be set if it's ever used
@@ -270,6 +276,8 @@ class Room2D(_BaseGeometry):
         top = data['is_top_exposed'] if 'is_top_exposed' in data else False
         flr = data['has_floor'] if 'has_floor' in data else True
         ceil = data['has_ceiling'] if 'has_ceiling' in data else True
+        flr_pln = data['floor_plenum_depth'] if 'floor_plenum_depth' in data else 0
+        ceil_pln = data['ceiling_plenum_depth'] if 'ceiling_plenum_depth' in data else 0
 
         # create the Room2D object
         room = Room2D(data['identifier'], floor_geometry,
@@ -277,6 +285,8 @@ class Room2D(_BaseGeometry):
                       b_conditions, glz_pars, shd_pars, grnd, top, tolerance)
         room.has_floor = flr
         room.has_ceiling = ceil
+        room.ceiling_plenum_depth = ceil_pln
+        room.floor_plenum_depth = flr_pln
 
         # assign any skylight parameters if they are specified
         if 'skylight_parameters' in data and data['skylight_parameters'] is not None:
@@ -646,6 +656,38 @@ class Room2D(_BaseGeometry):
     @has_ceiling.setter
     def has_ceiling(self, value):
         self._has_ceiling = bool(value)
+
+    @property
+    def ceiling_plenum_depth(self):
+        """Get or set a number for the depth that a ceiling plenum extends into the room.
+
+        Setting this to a positive value will result in a separate plenum room being
+        split off of the Room2D volume during translation from Dragonfly to Honeybee.
+        The bottom of this ceiling plenum will always be at this Room2D's ceiling_height
+        minus the ceiling_plenum_depth specified here. Setting this to zero indicates
+        that the room has no ceiling plenum.
+        """
+        return self._ceiling_plenum_depth
+
+    @ceiling_plenum_depth.setter
+    def ceiling_plenum_depth(self, value):
+        self._ceiling_plenum_depth = float_positive(value, 'ceiling plenum depth')
+
+    @property
+    def floor_plenum_depth(self):
+        """Get or set a number for the depth that a floor plenum extends into the room.
+
+        Setting this to a positive value will result in a separate plenum room being
+        split off of the Room2D volume during translation from Dragonfly to Honeybee.
+        The top of this floor plenum will always be at this Room2D's floor_height
+        plus the floor_plenum_depth specified here. Setting this to zero indicates
+        that the room has no floor plenum.
+        """
+        return self._floor_plenum_depth
+
+    @floor_plenum_depth.setter
+    def floor_plenum_depth(self, value):
+        self._floor_plenum_depth = float_positive(value, 'floor plenum depth')
 
     @property
     def skylight_parameters(self):
@@ -1256,6 +1298,8 @@ class Room2D(_BaseGeometry):
         # scale the Room2D geometry
         self._floor_geometry = self._floor_geometry.scale(factor, origin)
         self._floor_to_ceiling_height = self._floor_to_ceiling_height * factor
+        self._ceiling_plenum_depth = self._ceiling_plenum_depth * factor
+        self._floor_plenum_depth = self._floor_plenum_depth * factor
 
         # scale the window parameters
         for i, win_par in enumerate(self._window_parameters):
@@ -2331,6 +2375,8 @@ class Room2D(_BaseGeometry):
         # assign overall properties to the rebuilt room
         rebuilt_room._has_floor = self._has_floor
         rebuilt_room._has_ceiling = self._has_ceiling
+        rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
+        rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
@@ -2454,6 +2500,8 @@ class Room2D(_BaseGeometry):
         rebuilt_room._air_boundaries = new_abs
         rebuilt_room._has_floor = self._has_floor
         rebuilt_room._has_ceiling = self._has_ceiling
+        rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
+        rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
@@ -2513,6 +2561,8 @@ class Room2D(_BaseGeometry):
                 rebuilt_room._skylight_parameters = self._skylight_parameters
             rebuilt_room._has_floor = self._has_floor
             rebuilt_room._has_ceiling = self._has_ceiling
+            rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
+            rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
             rebuilt_room._parent = self._parent
@@ -2740,6 +2790,8 @@ class Room2D(_BaseGeometry):
             self._match_and_transfer_wall_props(rebuilt_room, tolerance)
             rebuilt_room._has_floor = self._has_floor
             rebuilt_room._has_ceiling = self._has_ceiling
+            rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
+            rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
             rebuilt_room._parent = self._parent
@@ -2759,6 +2811,11 @@ class Room2D(_BaseGeometry):
     def separate_plenum(self, target_floor_to_ceiling, floor_plenum=False,
                         tolerance=0.01):
         """Separate a section of this Room2D into a ceiling (or floor) plenum.
+
+        Note that this method is completely distinct from the Room2D properties
+        for ceiling_plenum_depth and floor_plenum_depth and is intended for
+        the case of working with plenums as explicit Room2Ds rather than as
+        numerical properties of base Room2Ds.
 
         Args:
             target_floor_to_ceiling: A number in model units for the desired
@@ -2784,16 +2841,19 @@ class Room2D(_BaseGeometry):
         if target_floor_to_ceiling + tolerance >= self.floor_to_ceiling_height:
             return None
         # determine the boundary conditions for the new plenum
+        pln_typ = 'Floor' if floor_plenum else 'Ceiling'
         new_bcs = []
         for bc in self.boundary_conditions:
             if isinstance(bc, Surface):
-                new_bcs.append(bcs.outdoors)
+                new_bc_objs = []
+                for bc_obj in bc.boundary_condition_objects:
+                    new_bc_objs.append('{}_{}_Plenum'.format(bc_obj, pln_typ))
+                new_bcs.append(Surface(new_bc_objs))
             else:
                 new_bcs.append(bc)
         # split off the floor or ceiling plenum Room2D
         plenum_ftc = self.floor_to_ceiling_height - target_floor_to_ceiling
         if floor_plenum:  # split off a floor plenum
-            pln_typ = 'Floor'
             plenum_id = '{}_{}_Plenum'.format(self.identifier, pln_typ)
             new_room = Room2D(
                 plenum_id, self.floor_geometry, plenum_ftc, boundary_conditions=new_bcs,
@@ -2814,7 +2874,6 @@ class Room2D(_BaseGeometry):
             self._floor_geometry = self._floor_geometry.move(
                 Vector3D(0, 0, plenum_ftc))
         else:  # split off a ceiling plenum
-            pln_typ = 'Ceiling'
             plenum_id = '{}_{}_Plenum'.format(self.identifier, pln_typ)
             plenum_geo = self._floor_geometry.move(
                 Vector3D(0, 0, target_floor_to_ceiling))
@@ -3070,6 +3129,8 @@ class Room2D(_BaseGeometry):
             new_room.air_boundaries = new_abs
             new_room._has_floor = self._has_floor
             new_room._has_ceiling = self._has_ceiling
+            new_room._ceiling_plenum_depth = self._ceiling_plenum_depth
+            new_room._floor_plenum_depth = self._floor_plenum_depth
             new_room.display_name = '{}_{}'.format(self.display_name, i)
             new_room._properties._duplicate_extension_attr(self._properties)
             new_rooms.append(new_room)
@@ -3091,9 +3152,8 @@ class Room2D(_BaseGeometry):
                     room.set_air_boundary(wall_i)
         return new_rooms
 
-    def to_honeybee(
-            self, multiplier=1, add_plenum=False, tolerance=0.01,
-            enforce_bc=True, enforce_solid=True):
+    def to_honeybee(self, multiplier=1, tolerance=0.01, enforce_bc=True,
+                    enforce_solid=True):
         """Convert Dragonfly Room2D to a Honeybee Room.
 
         Args:
@@ -3101,14 +3161,7 @@ class Room2D(_BaseGeometry):
                 the room is repeated. You may want to set this differently depending
                 on whether you are exporting each room as its own geometry (in which
                 case, this should be 1) or you only want to simulate the "unique" room
-                once and have the results multiplied. Default: 1.
-            add_plenum: Boolean to indicate whether ceiling/floor plenums should
-                be auto-generated for the Room in which case this output will
-                be a list instead of a single Room. The height of the ceiling plenum
-                will be autocalculated as the difference between the Room2D
-                ceiling height and Story ceiling height. The height of the floor
-                plenum will be autocalculated as the difference between the Room2D
-                floor height and Story floor height. (Default: False).
+                once and have the results multiplied. (Default: 1).
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows, and to check if the
@@ -3128,19 +3181,7 @@ class Room2D(_BaseGeometry):
         Returns:
             A tuple with the two items below.
 
-            * hb_room -- If add_plenum is False, this will be honeybee-core Room
-                representing the dragonfly Room2D. If the add_plenum argument is True,
-                this item will be a list of honeybee-core Rooms, with the hb_room as
-                the first item, and up to two additional items:
-
-                * ceil_plenum -- A honeybee-core Room representing the ceiling
-                    plenum. If there isn't enough space between the Story
-                    floor_to_floor_height and the Room2D floor_to_ceiling height,
-                    this item will be None.
-
-                * floor_plenum -- A honeybee-core Room representing the floor plenum.
-                    If there isn't enough space between the Story floor_height and
-                    the Room2D floor_height, this item will be None.
+            * hb_room -- A honeybee-core Room representing the dragonfly Room2D.
 
             * adjacencies -- A list of tuples that record any adjacencies that
                 should be set on the level of the Story to which the Room2D belongs.
@@ -3214,7 +3255,7 @@ class Room2D(_BaseGeometry):
 
         # ensure matching adjacent Faces across the Story
         if self._parent is not None and not has_roof:
-            new_faces = self._split_walls_along_height(hb_room, tolerance, add_plenum)
+            new_faces = self._split_walls_along_height(hb_room, tolerance)
             if len(new_faces) != len(hb_room):
                 # rebuild the room with split surfaces
                 hb_room = Room(self.identifier, new_faces, tolerance, 0.1)
@@ -3225,15 +3266,6 @@ class Room2D(_BaseGeometry):
                         if face.identifier == face_id:
                             adjacencies[i] = (face, adj[1])
                             break
-
-        # set the story, multiplier, display_name, and user_data
-        if self.has_parent:
-            hb_room.story = self.parent.display_name
-            if self.parent.is_plenum:
-                hb_room.exclude_floor_area = True
-        hb_room.multiplier = multiplier
-        hb_room._display_name = self._display_name
-        hb_room._user_data = self._user_data
 
         # assign boundary conditions for the roof and floor
         try:
@@ -3247,45 +3279,23 @@ class Room2D(_BaseGeometry):
         if self._is_top_exposed:
             for rf in roof_faces:
                 rf.boundary_condition = bcs.outdoors
+            # set the skylights if top is exposed
+            if self._skylight_parameters is not None:
+                for rf in roof_faces:
+                    self._skylight_parameters.add_skylight_to_face(rf, tolerance)
+
+        # set the story, multiplier, display_name, and user_data
+        if self.has_parent:
+            hb_room.story = self.parent.display_name
+            if self.parent.is_plenum:
+                hb_room.exclude_floor_area = True
+        hb_room.multiplier = multiplier
+        hb_room._display_name = self._display_name
+        hb_room._user_data = self._user_data
 
         # transfer any extension properties assigned to the Room2D and return result
         hb_room._properties = self.properties.to_honeybee(hb_room)
-        if not add_plenum or has_roof:
-            if self._skylight_parameters is not None:
-                if self._is_top_exposed:
-                    for rf in roof_faces:
-                        self._skylight_parameters.add_skylight_to_face(rf, tolerance)
-            return hb_room, adjacencies
-
-        # add plenums if requested and return results
-        hb_plenums = self._honeybee_plenums(hb_room, tolerance=tolerance)
-        for hb_plenum in hb_plenums:  # transfer the parent's construction set
-            hb_plenum._properties = self.properties.to_honeybee(hb_plenum)
-            hb_plenum.exclude_floor_area = True
-            if self.has_parent:
-                hb_plenum.story = self.parent.display_name
-            try:  # set the program to unconditioned plenum and assign infiltration
-                hb_plenum.properties.energy.program_type = None
-                hb_plenum.properties.energy.hvac = None
-                hb_plenum.properties.energy._shw = None
-                hb_plenum.properties.energy.infiltration = \
-                    hb_room.properties.energy.infiltration
-            except AttributeError:
-                pass  # honeybee-energy is not loaded; ignore all these energy properties
-
-        # set the skylights if top is exposed and there's no ceiling plenum
-        if self._skylight_parameters is not None:
-            if self._is_top_exposed:
-                if len(hb_plenums) == 0:
-                    self._skylight_parameters.add_skylight_to_face(
-                        hb_room[-1], tolerance)
-                elif len(hb_plenums) == 1 and \
-                        hb_plenums[0].identifier.endswith('floor_plenum'):
-                    self._skylight_parameters.add_skylight_to_face(
-                        hb_room[-1], tolerance)
-
-        # return the rooms and the adjacency information
-        return [hb_room] + hb_plenums, adjacencies
+        return hb_room, adjacencies
 
     def to_dict(self, abridged=False, included_prop=None):
         """Return Room2D as a dictionary.
@@ -3318,6 +3328,10 @@ class Room2D(_BaseGeometry):
             base['has_floor'] = self._has_floor
         if not self._has_ceiling:
             base['has_ceiling'] = self._has_ceiling
+        if self.ceiling_plenum_depth != 0:
+            base['ceiling_plenum_depth'] = self.ceiling_plenum_depth
+        if self.floor_plenum_depth != 0:
+            base['floor_plenum_depth'] = self.floor_plenum_depth
 
         bc_dicts = []
         for bc in self._boundary_conditions:
@@ -3604,6 +3618,8 @@ class Room2D(_BaseGeometry):
                 is_top_exposed=room_2ds[i].is_top_exposed)
             rebuilt_room._has_floor = room_2ds[i]._has_floor
             rebuilt_room._has_ceiling = room_2ds[i]._has_ceiling
+            rebuilt_room._ceiling_plenum_depth = room_2ds[i]._ceiling_plenum_depth
+            rebuilt_room._floor_plenum_depth = room_2ds[i]._floor_plenum_depth
             rebuilt_room._skylight_parameters = room_2ds[i].skylight_parameters
             rebuilt_room._display_name = room_2ds[i]._display_name
             rebuilt_room._user_data = None if room_2ds[i].user_data is None else \
@@ -3935,6 +3951,8 @@ class Room2D(_BaseGeometry):
             primary_room.is_ground_contact, primary_room.is_top_exposed, tol)
         new_room.has_floor = primary_room.has_floor
         new_room.has_ceiling = primary_room.has_ceiling
+        new_room.ceiling_plenum_depth = primary_room.ceiling_plenum_depth
+        new_room.floor_plenum_depth = primary_room.floor_plenum_depth
         new_room.skylight_parameters = new_sky_light
         new_room.air_boundaries = new_abs
         new_room.display_name = display_name
@@ -4693,123 +4711,6 @@ class Room2D(_BaseGeometry):
             room_polyface = Polyface3D.from_faces(p_faces, tolerance)
         return room_polyface, roof_face_i, disconnect_geometry
 
-    def _honeybee_plenums(self, hb_room, tolerance=0.01):
-        """Get ceiling and/or floor plenums for the Room2D as a Honeybee Room.
-
-        This method will check if there is a gap between the Room2D's ceiling and
-        floor, and the top and bottom of it's corresponding Story, respectively.
-        If there is a gap along the z axis larger then the specified tolerance,
-        it will compute the necessary ceiling and/or floor plenum to fill the gap.
-
-        Args:
-            hb_room: A honeybee Room representing the dragonfly Room2D.
-            tolerance: The minimum distance in z values to check if the Room ceiling
-                and floor is adjacent to the upper and lower floor of the Story,
-                respectively. If not adjacent, the corresponding ceiling or floor
-                plenum is generated. Default: 0.01, suitable for objects in meters.
-
-        Returns:
-            A list of Honeybee Rooms with two items:
-
-                * ceil_plenum -- A honeybee-core Room representing the ceiling
-                    plenum. If there isn't enough space between the Story
-                    floor_to_floor_height and the Room2D floor_to_ceiling height,
-                    this item will be None.
-
-                * floor_plenum -- A honeybee-core Room representing the floor plenum.
-                    If there isn't enough space between the Story floor_height and
-                    the Room2D floor_height, this item will be None.
-        """
-        # check to be sure that the room2d has a parent story
-        hb_rooms = []
-        if not self.has_parent:
-            raise AttributeError(
-                'Cannot add plenums to the "{}" Room because the parent Story has '
-                'not been set. This is required to derive the plenum '
-                'height.'.format(self.identifier))
-
-        parent = self.parent
-        parent_ceiling = parent.floor_height + parent.floor_to_floor_height
-        ceil_plenum_height = parent_ceiling - self.ceiling_height
-        floor_plenum_height = self.floor_height - parent.floor_height
-
-        if ceil_plenum_height > tolerance:
-            ceil_plenum = self._honeybee_plenum(
-                ceil_plenum_height, plenum_type="ceiling")
-            # Set the plenum and the rooms to be adjacent to one another
-            hb_room[-1].set_adjacency(ceil_plenum[0], tolerance)
-            hb_rooms.append(ceil_plenum)
-
-        if floor_plenum_height > tolerance:
-            floor_plenum = self._honeybee_plenum(
-                floor_plenum_height, plenum_type="floor")
-            # Set the plenum and the rooms to be adjacent to one another
-            hb_room[0].set_adjacency(floor_plenum[-1], tolerance)
-            try:
-                hb_room[0].boundary_condition = bcs.adiabatic
-            except AttributeError:
-                pass
-            hb_rooms.append(floor_plenum)
-
-        return hb_rooms
-
-    def _honeybee_plenum(self, plenum_height, plenum_type='ceiling'):
-        """Get a ceiling or floor plenum for the Room2D as a Honeybee Room.
-
-        The boundary condition for all plenum faces is adiabatic except for the
-        ceiling and floor surfaces between the room, and any outdoor walls.
-
-        Args:
-            hb_room: A honeybee Room representing the dragonfly Room2D.
-            plenum_height: The height of the plenum Room.
-            plenum_type: Text for the type of plenum to be constructed.
-                Choose from the following:
-
-                * ceiling
-                * floor
-
-        Returns:
-            A honeybee Room representing a plenum zone.
-        """
-        plenum_id = self.identifier + '_{}_plenum'.format(plenum_type)
-
-        # create reference 2d geometry for plenums
-        ref_face3d = self.floor_geometry.duplicate()
-        if plenum_type == 'ceiling':
-            ref_face3d = ref_face3d.move(Vector3D(0, 0, self.floor_to_ceiling_height))
-        else:
-            ref_face3d = ref_face3d.move(Vector3D(0, 0, -plenum_height))
-
-        # create the honeybee Room
-        plenum_hb_room = Room.from_polyface3d(
-            plenum_id, Polyface3D.from_offset_face(ref_face3d, plenum_height))
-
-        # get the boundary condition that will be used for interior surfaces
-        try:
-            interior_bc = bcs.adiabatic
-        except AttributeError:  # honeybee_energy is not loaded; no Adiabatic BC
-            interior_bc = bcs.outdoors
-
-        # assign wall BCs based on self
-        for i, bc in enumerate(self._boundary_conditions):
-            if not isinstance(bc, Surface):
-                plenum_hb_room[i + 1].boundary_condition = bc
-            else:  # assign boundary conditions for the roof and floor
-                plenum_hb_room[i + 1].boundary_condition = interior_bc
-
-        if plenum_type == 'ceiling':  # assign ceiling BCs
-            if self._is_top_exposed:
-                plenum_hb_room[-1].boundary_condition = bcs.outdoors
-            else:
-                plenum_hb_room[-1].boundary_condition = interior_bc
-        else:  # assign floor BCss
-            if self._is_ground_contact:
-                plenum_hb_room[0].boundary_condition = bcs.ground
-            else:
-                plenum_hb_room[0].boundary_condition = interior_bc
-
-        return plenum_hb_room
-
     def _check_wall_assigned_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""
         try:
@@ -4855,16 +4756,13 @@ class Room2D(_BaseGeometry):
         # return the flipped lists
         return new_bcs, new_win_pars, new_shd_pars
 
-    def _split_walls_along_height(self, hb_room, tolerance, plenums=False):
+    def _split_walls_along_height(self, hb_room, tolerance):
         """Split adjacent walls to ensure matching surface areas in to_honeybee workflow.
 
         Args:
             hb_room: A non-split Honeybee Room representation of this Room2D.
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
-            plenums: A boolean to note whether the resulting model has auto-generated
-                plenums, which will determine the default boundary condition of
-                any split wall segments. (Default: False).
         """
         # get the boundary condition to be used for adiabatic cases
         try:
@@ -4908,14 +4806,13 @@ class Room2D(_BaseGeometry):
                     above_face = Face('{}_Above'.format(face.identifier), above)
                     below_face.boundary_condition = ad_bc
                     above_face.boundary_condition = ad_bc
-                    if not plenums:
-                        if self.is_ground_contact:
-                            below_face.boundary_condition = bcs.ground
-                        if adj_rm.is_top_exposed:
-                            above_face.boundary_condition = bcs.outdoors
-                            self._reassign_above_windows(
-                                above_face, i, tolerance,
-                                self.floor_to_ceiling_height - ciel_diff)
+                    if self.is_ground_contact:
+                        below_face.boundary_condition = bcs.ground
+                    if adj_rm.is_top_exposed:
+                        above_face.boundary_condition = bcs.outdoors
+                        self._reassign_above_windows(
+                            above_face, i, tolerance,
+                            self.floor_to_ceiling_height - ciel_diff)
                     new_faces.extend([below_face, mid_face, above_face])
                 elif flr_diff > tolerance:
                     # split the face into to 2 smaller faces along its height
@@ -4931,9 +4828,8 @@ class Room2D(_BaseGeometry):
                     self._reassign_split_windows(mid_face, i, tolerance)
                     below_face = Face('{}_Below'.format(face.identifier), below)
                     below_face.boundary_condition = ad_bc
-                    if not plenums:
-                        if self.is_ground_contact:
-                            below_face.boundary_condition = bcs.ground
+                    if self.is_ground_contact:
+                        below_face.boundary_condition = bcs.ground
                     new_faces.extend([below_face, mid_face])
                 elif ciel_diff > tolerance:
                     # split the face into to 2 smaller faces along its height
@@ -4949,12 +4845,11 @@ class Room2D(_BaseGeometry):
                     self._reassign_split_windows(mid_face, i, tolerance)
                     above_face = Face('{}_Above'.format(face.identifier), above)
                     above_face.boundary_condition = ad_bc
-                    if not plenums:
-                        if adj_rm.is_top_exposed:
-                            above_face.boundary_condition = bcs.outdoors
-                            self._reassign_above_windows(
-                                above_face, i, tolerance,
-                                self.floor_to_ceiling_height - ciel_diff)
+                    if adj_rm.is_top_exposed:
+                        above_face.boundary_condition = bcs.outdoors
+                        self._reassign_above_windows(
+                            above_face, i, tolerance,
+                            self.floor_to_ceiling_height - ciel_diff)
                     new_faces.extend([mid_face, above_face])
         new_faces.append(hb_room[-1])
         return new_faces
@@ -5337,6 +5232,8 @@ class Room2D(_BaseGeometry):
         new_r._is_top_exposed = self._is_top_exposed
         new_r._has_floor = self._has_floor
         new_r._has_ceiling = self._has_ceiling
+        new_r._ceiling_plenum_depth = self._ceiling_plenum_depth
+        new_r._floor_plenum_depth = self._floor_plenum_depth
         new_r._skylight_parameters = self._skylight_parameters.duplicate() \
             if self._skylight_parameters is not None else None
         new_r._abridged_properties = self._abridged_properties
