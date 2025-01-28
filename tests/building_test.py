@@ -392,7 +392,7 @@ def test_honeybee_ceiling_plenum():
     assert len(plenum[:]) == 6
     for face in plenum.faces:
         if face.identifier == 'R2-plenum_Ceiling_Plenum..Face0':
-            assert _is_interior(face.boundary_condition)
+            assert isinstance(face.boundary_condition, Surface)
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face1':
             assert isinstance(face.boundary_condition, Outdoors)
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face2':
@@ -467,7 +467,7 @@ def test_honeybee_floor_plenum():
         elif face.identifier == 'R2-plenum_Floor_Plenum..Face4':
             assert _is_interior(face.boundary_condition)
         elif face.identifier == 'R2-plenum_Floor_Plenum..Face5':
-            assert _is_interior(face.boundary_condition)
+            assert isinstance(face.boundary_condition, Surface)
         else:
             assert False
 
@@ -533,7 +533,7 @@ def test_honeybee_ceiling_and_floor_plenum():
         elif face.identifier == 'R2-plenum_Floor_Plenum..Face4':
             assert _is_interior(face.boundary_condition)
         elif face.identifier == 'R2-plenum_Floor_Plenum..Face5':
-            assert _is_interior(face.boundary_condition)
+            assert isinstance(face.boundary_condition, Surface)
         else:
             assert False
 
@@ -541,7 +541,7 @@ def test_honeybee_ceiling_and_floor_plenum():
     assert len(plenum[:]) == 6
     for face in plenum.faces:
         if face.identifier == 'R2-plenum_Ceiling_Plenum..Face0':
-            assert _is_interior(face.boundary_condition)
+            assert isinstance(face.boundary_condition, Surface)
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face1':
             assert isinstance(face.boundary_condition, Outdoors)
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face2':

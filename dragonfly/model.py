@@ -1996,25 +1996,29 @@ class Model(_BaseGeometry):
                             room_1.geometry, room_2.geometry, tolerance):
                         continue  # no overlap in bounding box; adjacency impossible
                     for face_1 in room_1._faces:
-                        if isinstance(face_1.type, relevant_types):
-                            for face_2 in room_2._faces:
-                                if isinstance(face_2.type, relevant_types):
-                                    if face_1.geometry.is_centered_adjacent(
-                                            face_2.geometry, tolerance):
-                                        face_1.set_adjacency(face_2)
-                                        hf_1, hc_1 = fc_1
-                                        hf_2, hc_2 = fc_2
-                                        if not hc_1 and not hf_2:
-                                            if isinstance(face_1.type, RoofCeiling) and \
-                                                    isinstance(face_2.type, Floor):
-                                                face_1.type = face_types.air_boundary
-                                                face_2.type = face_types.air_boundary
-                                        if not hf_1 and not hc_2:
-                                            if isinstance(face_2.type, RoofCeiling) and \
-                                                    isinstance(face_1.type, Floor):
-                                                face_1.type = face_types.air_boundary
-                                                face_2.type = face_types.air_boundary
-                                        break
+                        if isinstance(face_1.boundary_condition, Surface) or \
+                                not isinstance(face_1.type, relevant_types):
+                            continue  # face is not the right type for ceiling adj
+                        for face_2 in room_2._faces:
+                            if isinstance(face_2.boundary_condition, Surface) or \
+                                    not isinstance(face_2.type, relevant_types):
+                                continue  # face is not the right type for ceiling adj
+                            if face_1.geometry.is_centered_adjacent(
+                                    face_2.geometry, tolerance):
+                                face_1.set_adjacency(face_2)
+                                hf_1, hc_1 = fc_1
+                                hf_2, hc_2 = fc_2
+                                if not hc_1 and not hf_2:
+                                    if isinstance(face_1.type, RoofCeiling) and \
+                                            isinstance(face_2.type, Floor):
+                                        face_1.type = face_types.air_boundary
+                                        face_2.type = face_types.air_boundary
+                                if not hf_1 and not hc_2:
+                                    if isinstance(face_2.type, RoofCeiling) and \
+                                            isinstance(face_1.type, Floor):
+                                        face_1.type = face_types.air_boundary
+                                        face_2.type = face_types.air_boundary
+                                break
             except IndexError:
                 pass  # we have reached the end of the list of zones
         # change any remaining Floor/Roof boundary conditions to be outdoors
