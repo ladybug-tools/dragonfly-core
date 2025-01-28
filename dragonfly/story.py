@@ -369,6 +369,15 @@ using-multipliers-zone-and-or-window.html
         return self._parent is not None
 
     @property
+    def highest_plenum_floor_height(self):
+        """Get a number for the highest floor height in the Story including plenums.
+
+        This property is useful for checking that roof geometries do not
+        collide with a floor.
+        """
+        return max(room.highest_plenum_floor_height for room in self._room_2ds)
+
+    @property
     def floor_area(self):
         """Get a number for the total floor area in the Story.
 
@@ -1672,20 +1681,18 @@ using-multipliers-zone-and-or-window.html
                 dicts with error info or a string with a message. (Default: False).
 
         Returns:
-            A string with the message or a list with a dictionary if detailed is True.
+            A string with the message or a list with dictionaries if detailed is True.
         """
         # find the number of cases where the roof is below the story floor
         msgs = []
-        if self.roof is not None:
-            roof_max = self.roof.max_height
-            if roof_max < self.floor_height + tolerance:
-                msg = 'Roof geometry of story "{}" has a maximum height of {}, ' \
-                    'which is lower than the story floor height at {}. ' \
-                    'This may result in invalid room volumes.'.format(
-                        self.display_name, roof_max, self.floor_height)
-                msg = self._validation_message_child(
-                    msg, self.roof, detailed, '100105', error_type='Invalid Roof')
-                msgs.append(msg)
+        if self.multiplier == 1 and self.roof is not None:
+            if self.roof.min_height < self.highest_plenum_floor_height:
+                messages, bad_rooms = self.roof.check_roof_above_rooms(
+                    self.room_2ds, tolerance)
+                for msg, bad_rm in zip(messages, bad_rooms):
+                    msg = self._validation_message_child(
+                        msg, bad_rm, detailed, '100105', error_type='Invalid Roof')
+                    msgs.append(msg)
         # report any errors
         if detailed:
             return msgs
@@ -1700,7 +1707,7 @@ using-multipliers-zone-and-or-window.html
 
         This is NOT required for the Story to be valid but it is sometimes
         useful to check since it can indicate whether the roof can be cleaned
-        up into a clearer and more concise set of geometries.
+        up into a more concise set of geometries.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap

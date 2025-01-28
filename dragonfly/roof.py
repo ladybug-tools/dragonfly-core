@@ -925,6 +925,96 @@ class RoofSpecification(object):
         # update the geometry
         self.geometry = split_geometries
 
+    def check_roof_above_rooms(self, room_2ds, tolerance=0.01):
+        """Check that all geometries of this roof lie above a given set of Room2Ds.
+
+        Args:
+            room_2ds: A list of Room2Ds that will be be checked for whether they
+                lie completely below this roof.
+            tolerance: The minimum distance between coordinate values that is
+                considered a meaningful difference. (Default: 0.01, suitable
+                for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised if
+                roof geometries are found below the Room2D geometries. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A tuple with two elements.
+
+            -   messages: A list of text strings for messages about Room2Ds that
+                have floors colliding with this roof.
+
+            -   bad_rooms: A list of Room2Ds that aligns with each of the messages
+                for the room that collides with the roof.
+        """
+        # get the roof polygons and set up the message template
+        roof_polys = self.boundary_geometry_2d
+        roof_planes = self.planes
+        msg_temp = 'Room2D "{}" has a floor height (including plenums) at {} ' \
+            'and this intersects the roof geometry above the room, which extends ' \
+            'down to {}. Change the room plenum depth, lower the room floor height, ' \
+            'or delete the roofs.'
+
+        # loop through the rooms and test for collisions
+        messages, bad_rooms = [], []
+        for room in room_2ds:
+            if not room.is_top_exposed:
+                continue  # impossible for the roof to mess the room up
+            room_pts2d = [Point2D(pt.x, pt.y) for pt in room.floor_geometry.boundary]
+            room_poly = Polygon2D(room_pts2d)
+
+            # gather all of the relevant roof polygons for the Room2D
+            rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
+            for rf_py, rf_pl in zip(roof_polys, roof_planes):
+                poly_rel = rf_py.polygon_relationship(room_poly, tolerance)
+                if poly_rel >= 0:
+                    rel_rf_polys.append(rf_py)
+                    rel_rf_planes.append(rf_pl)
+                if poly_rel == 1:  # simple solution of one roof
+                    is_full_bound = True
+                    rel_rf_polys = [rel_rf_polys[-1]]
+                    rel_rf_planes = [rel_rf_planes[-1]]
+                    break
+            if len(rel_rf_polys) == 0:
+                continue  # no roofs that could mess the room volume generation up
+
+            # create the roof faces
+            hp_flr_hgt = room.highest_plenum_floor_height
+            proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
+            # when fully bounded, simply project the segments onto the single Roof face
+            if is_full_bound:
+                roof_plane = rel_rf_planes[0]
+                roof_verts = [roof_plane.project_point(pt, proj_dir)
+                              for pt in room.floor_geometry.vertices]
+                roof_min = Face3D(roof_verts).min.z
+                if roof_min < hp_flr_hgt:
+                    msg = msg_temp.format(room.display_name, hp_flr_hgt, roof_min)
+                    messages.append(msg)
+                    bad_rooms.append(room)
+                continue
+
+            # when multiple roofs, each segment must be intersected with the roof polygons
+            # gather polygons that account for all of the Room2D holes
+            all_room_poly = [room_poly]
+            if room.floor_geometry.has_holes:
+                v_count = len(room_poly)
+                for hole in room.floor_geometry.holes:
+                    hole_poly = Polygon2D([Point2D(pt.x, pt.y) for pt in hole])
+                    all_room_poly.append(hole_poly)
+                    v_count += len(hole)
+            # get the roof faces using polygon boolean operations
+            roof_faces = room._roof_faces(
+                all_room_poly, rel_rf_polys, rel_rf_planes, tolerance)
+            if roof_faces is None:  # invalid roof geometry
+                continue
+            roof_min = min(f.min.z for f in roof_faces)
+            if roof_min < hp_flr_hgt:
+                msg = msg_temp.format(room.display_name, hp_flr_hgt, roof_min)
+                messages.append(msg)
+                bad_rooms.append(room)
+        return messages, bad_rooms
+
     def to_dict(self):
         """Return RoofSpecification as a dictionary."""
         base = {'type': 'RoofSpecification'}

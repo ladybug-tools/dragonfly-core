@@ -990,6 +990,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_duplicate_building_identifiers(False, detailed))
         msgs.append(self.check_degenerate_room_2ds(tol, False, detailed))
         msgs.append(self.check_self_intersecting_room_2ds(tol, False, detailed))
+        msgs.append(self.check_plenum_depths(tol, False, detailed))
         msgs.append(self.check_window_parameters_valid(tol, False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
         msgs.append(self.check_roofs_above_rooms(tol, False, detailed))
@@ -1172,6 +1173,39 @@ class Model(_BaseGeometry):
                 raise ValueError(msg)
             return msg
         return ''
+
+    def check_plenum_depths(self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check that all Room2Ds have valid plenum depths.
+
+        Valid plenum depths do not exceed the Room2D.floor_to_ceiling_height and
+        do not contradict the Room2D.has_floor or has_ceiling properties.
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                vertices at which they can be considered equivalent. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError will be raised
+                if invalid plenum depths are discovered. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        detailed = False if raise_exception else detailed
+        msgs = []
+        for room in self.room_2ds:
+            msg = room.check_plenum_depths(tolerance, False, detailed)
+            if detailed:
+                msgs.extend(msg)
+            elif msg != '':
+                msgs.append(msg)
+        if detailed:
+            return msgs
+        full_msg = '\n'.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
 
     def check_window_parameters_valid(
             self, tolerance=0.01, raise_exception=True, detailed=False):
