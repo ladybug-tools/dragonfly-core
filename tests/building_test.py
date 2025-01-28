@@ -10,7 +10,8 @@ from dragonfly.shadingparameter import Overhang
 
 from honeybee.model import Model
 from honeybee.room import Room
-from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.boundarycondition import Outdoors, Surface, Ground
+from honeybee.boundarycondition import boundary_conditions as bcs
 
 from ladybug_geometry.geometry3d.pointvector import Point3D, Vector3D
 from ladybug_geometry.geometry3d.plane import Plane
@@ -322,8 +323,25 @@ def test_building_separate_room_2d_plenums():
     room_ids = [room.identifier for room in building_dup.unique_room_2ds]
     plenums = building_dup.separate_room_2d_plenums(room_ids, 3.0)
     assert len(plenums) == 16
+    srf_bcs = [bc for room in plenums for bc in room.boundary_conditions
+               if isinstance(bc, Surface)]
+    assert len(srf_bcs) == 32
     assert len(building_dup.unique_room_2ds) == 32
     assert len(building_dup.unique_stories) == 8
+    for story in building_dup.unique_stories:
+        story.check_missing_adjacencies(False) == ''
+
+    building_dup = building.duplicate()
+    room_ids = room_ids[:2]
+    plenums = building_dup.separate_room_2d_plenums(room_ids, 3.0)
+    assert len(plenums) == 2
+    srf_bcs = [bc for room in plenums for bc in room.boundary_conditions
+               if isinstance(bc, Surface)]
+    assert len(srf_bcs) == 2
+    assert len(building_dup.unique_room_2ds) == 18
+    assert len(building_dup.unique_stories) == 5
+    for story in building_dup.unique_stories:
+        story.check_missing_adjacencies(False) == ''
 
     building_dup = building.duplicate()
     room_ids = [room.identifier for room in building_dup.unique_room_2ds]
@@ -331,6 +349,216 @@ def test_building_separate_room_2d_plenums():
     assert len(plenums) == 16
     assert len(building_dup.unique_room_2ds) == 32
     assert len(building_dup.unique_stories) == 8
+
+
+def test_honeybee_ceiling_plenum():
+    """Test the Room2D.ceiling_plenum_depth translation to honeybee."""
+    # simple 10 x 10 rooms
+    pts1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(0, 10, 0))
+    pts2 = (Point3D(10, 0, 0), Point3D(20, 0, 0), Point3D(20, 10, 0), Point3D(10, 10, 0))
+
+    # two rooms with different plenum depths
+    room2d_full = Room2D(
+        'R1-full', floor_geometry=Face3D(pts1), floor_to_ceiling_height=4,
+        is_ground_contact=True, is_top_exposed=True)
+    room2d_plenum = Room2D(
+        'R2-plenum', floor_geometry=Face3D(pts2), floor_to_ceiling_height=4,
+        is_ground_contact=True, is_top_exposed=True)
+    room2d_plenum.ceiling_plenum_depth = 1
+
+    story = Story('S1', [room2d_full, room2d_plenum])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office_Building_1234', [story])
+
+    # check the ceiling condition w/o plenum
+    no_plenum_model = building.to_honeybee(tolerance=0.01, exclude_plenums=True)
+    no_plenum_rooms = no_plenum_model.rooms
+    assert len(no_plenum_rooms) == 2
+    assert no_plenum_rooms[0].volume == pytest.approx(400, rel=1e-3)
+    assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
+
+    # check the ceiling condition with plenum
+    plenum_model = building.to_honeybee(tolerance=0.01)
+    plenum_rooms = plenum_model.rooms
+    assert len(plenum_rooms) == 3
+    assert plenum_rooms[0].volume == pytest.approx(400, rel=1e-3)
+    assert plenum_rooms[1].volume == pytest.approx(300, rel=1e-3)
+    assert plenum_rooms[2].volume == pytest.approx(100, rel=1e-3)
+
+    plenum = plenum_rooms[-1]
+    assert len(plenum[:]) == 6
+    for face in plenum.faces:
+        if face.identifier == 'R2-plenum_Ceiling_Plenum..Face0':
+            assert _is_interior(face.boundary_condition)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face1':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face2':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face3':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face4':
+            assert _is_interior(face.boundary_condition)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face5':
+            assert isinstance(face.boundary_condition, Outdoors)  # Roof exposed outdoors
+        else:
+            assert False
+
+    # check that no plenum is produced when room does not have_ceiling
+    room2d_plenum.has_ceiling = False
+    no_plenum_model = building.to_honeybee(tolerance=0.01)
+    no_plenum_rooms = no_plenum_model.rooms
+    assert len(no_plenum_rooms) == 2
+    assert no_plenum_rooms[0].volume == pytest.approx(400, rel=1e-3)
+    assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
+
+
+def test_honeybee_floor_plenum():
+    """Test the Room2D.floor_plenum_depth translation to honeybee."""
+    # simple 10 x 10 rooms
+    pts1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(0, 10, 0))
+    pts2 = (Point3D(10, 0, 0), Point3D(20, 0, 0), Point3D(20, 10, 0), Point3D(10, 10, 0))
+
+    # Two rooms with different floor heights
+    room2d_full = Room2D(
+        'R1-full', floor_geometry=Face3D(pts1), floor_to_ceiling_height=4,
+        is_ground_contact=True, is_top_exposed=True)
+    room2d_plenum = Room2D(
+        'R2-plenum', floor_geometry=Face3D(pts2), floor_to_ceiling_height=4,
+        is_ground_contact=True, is_top_exposed=True)
+    room2d_plenum.floor_plenum_depth = 1
+
+    story = Story('S1', [room2d_full, room2d_plenum])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office_Building_1234', [story])
+
+    # check the floor condition w/o plenum
+    no_plenum_model = building.to_honeybee(tolerance=0.01, exclude_plenums=True)
+    no_plenum_rooms = no_plenum_model.rooms
+    assert len(no_plenum_rooms) == 2
+    assert no_plenum_rooms[0].volume == pytest.approx(400, rel=1e-3)
+    assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
+
+    # check the floor condition with plenum
+    plenum_model = building.to_honeybee(tolerance=0.01)
+    plenum_rooms = plenum_model.rooms
+    assert len(plenum_rooms) == 3
+    assert plenum_rooms[0].volume == pytest.approx(100, rel=1e-3)
+    assert plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
+    assert plenum_rooms[2].volume == pytest.approx(300, rel=1e-3)
+
+    plenum = plenum_rooms[0]
+    assert len(plenum[:]) == 6
+    for face in plenum.faces:
+        if face.identifier == 'R2-plenum_Floor_Plenum..Face0':
+            assert isinstance(face.boundary_condition, Ground)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face1':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face2':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face3':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face4':
+            assert _is_interior(face.boundary_condition)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face5':
+            assert _is_interior(face.boundary_condition)
+        else:
+            assert False
+
+    # check that no plenum is produced when room does not have_floor
+    room2d_plenum.has_floor = False
+    no_plenum_model = building.to_honeybee(tolerance=0.01)
+    no_plenum_rooms = no_plenum_model.rooms
+    assert len(no_plenum_rooms) == 2
+    assert no_plenum_rooms[0].volume == pytest.approx(400, rel=1e-3)
+    assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
+
+
+def test_honeybee_ceiling_and_floor_plenum():
+    """Test the the translation of both plenum depths to honeybee."""
+    # simple 10 x 10 rooms
+    pts1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(0, 10, 0))
+    pts2 = (Point3D(10, 0, 0), Point3D(20, 0, 0), Point3D(20, 10, 0), Point3D(10, 10, 0))
+
+    # Two rooms with different floor heights
+    room2d_full = Room2D(
+        'R1-full', floor_geometry=Face3D(pts1), floor_to_ceiling_height=4,
+        is_ground_contact=True, is_top_exposed=True)
+    room2d_plenum = Room2D(
+        'R2-plenum', floor_geometry=Face3D(pts2), floor_to_ceiling_height=4,
+        is_ground_contact=True, is_top_exposed=True)
+    room2d_plenum.ceiling_plenum_depth = 0.5
+    room2d_plenum.floor_plenum_depth = 0.5
+
+    story = Story('S1', [room2d_full, room2d_plenum])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office_Building_1234', [story])
+
+    # check the floor condition w/o plenum
+    no_plenum_model = building.to_honeybee(tolerance=0.01, exclude_plenums=True)
+    no_plenum_rooms = no_plenum_model.rooms
+    assert len(no_plenum_rooms) == 2
+    assert no_plenum_rooms[0].volume == pytest.approx(400, rel=1e-3)
+    assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
+
+    # check the floor condition with plenum
+    plenum_model = building.to_honeybee(tolerance=0.01)
+    plenum_rooms = plenum_model.rooms
+    assert len(plenum_rooms) == 4
+    assert plenum_rooms[0].volume == pytest.approx(50, rel=1e-3)
+    assert plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
+    assert plenum_rooms[2].volume == pytest.approx(300, rel=1e-3)
+    assert plenum_rooms[3].volume == pytest.approx(50, rel=1e-3)
+
+    plenum = plenum_rooms[0]
+    assert len(plenum[:]) == 6
+    for face in plenum.faces:
+        if face.identifier == 'R2-plenum_Floor_Plenum..Face0':
+            assert isinstance(face.boundary_condition, Ground)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face1':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face2':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face3':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face4':
+            assert _is_interior(face.boundary_condition)
+        elif face.identifier == 'R2-plenum_Floor_Plenum..Face5':
+            assert _is_interior(face.boundary_condition)
+        else:
+            assert False
+
+    plenum = plenum_rooms[-1]
+    assert len(plenum[:]) == 6
+    for face in plenum.faces:
+        if face.identifier == 'R2-plenum_Ceiling_Plenum..Face0':
+            assert _is_interior(face.boundary_condition)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face1':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face2':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face3':
+            assert isinstance(face.boundary_condition, Outdoors)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face4':
+            assert _is_interior(face.boundary_condition)
+        elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face5':
+            assert isinstance(face.boundary_condition, Outdoors)  # Roof exposed outdoors
+        else:
+            assert False
+
+    # check that no plenum is produced when room does not have_floor
+    room2d_plenum.has_floor = False
+    room2d_plenum.has_ceiling = False
+    no_plenum_model = building.to_honeybee(tolerance=0.01)
+    no_plenum_rooms = no_plenum_model.rooms
+    assert len(no_plenum_rooms) == 2
+    assert no_plenum_rooms[0].volume == pytest.approx(400, rel=1e-3)
+    assert no_plenum_rooms[1].volume == pytest.approx(400, rel=1e-3)
 
 
 def test_building_shade_representation():
@@ -703,3 +931,15 @@ def test_writer():
     writers = [mod for mod in dir(bldg.to) if not mod.startswith('_')]
     for writer in writers:
         assert callable(getattr(bldg.to, writer))
+
+
+def _is_interior(bc):
+    """Test if adiabatic instance, or if honeybee-energy not installed,
+    if using default Outdoors.
+    """
+    if isinstance(bc, Surface):
+        return True
+    try:
+        return isinstance(bc, type(bcs.adiabatic))
+    except AttributeError:
+        return isinstance(bc, Outdoors)

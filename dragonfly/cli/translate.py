@@ -31,9 +31,9 @@ def translate():
               'multipliers on each Building story should be passed along to the '
               'generated Honeybee Room objects or if full geometry objects should be '
               'written for each story in the building.', default=True, show_default=True)
-@click.option('--no-plenum/--plenum', ' /-p', help='Flag to indicate whether '
-              'ceiling/floor plenums should be auto-generated for the Rooms.',
-              default=True, show_default=True)
+@click.option('--plenum/--no-plenum', '-p/-np', help='Flag to indicate whether '
+              'ceiling/floor plenum depths assigned to Room2Ds should generate '
+              'distinct 3D Rooms in the translation.', default=True, show_default=True)
 @click.option('--no-cap/--cap', ' /-c', help='Flag to indicate whether context shade '
               'buildings should be capped with a top face.',
               default=True, show_default=True)
@@ -75,7 +75,7 @@ def translate():
               'including their file paths. By default the list will be printed out to '
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee_cli(
-        model_file, obj_per_model, multiplier, no_plenum, no_cap,
+        model_file, obj_per_model, multiplier, plenum, no_cap,
         no_ceil_adjacency, shade_dist, enforce_adj_check, enforce_solid,
         folder, log_file):
     """Translate a Dragonfly Model file into one or more Honeybee Models.
@@ -86,13 +86,13 @@ def model_to_honeybee_cli(
     """
     try:
         full_geometry = not multiplier
-        plenum = not no_plenum
+        no_plenum = not plenum
         cap = not no_cap
         ceil_adjacency = not no_ceil_adjacency
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
         model_to_honeybee(
-            model_file, obj_per_model, full_geometry, plenum, cap, ceil_adjacency,
+            model_file, obj_per_model, full_geometry, no_plenum, cap, ceil_adjacency,
             shade_dist, bypass_adj_check, permit_non_solid, folder, log_file)
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
@@ -102,11 +102,11 @@ def model_to_honeybee_cli(
 
 
 def model_to_honeybee(
-        model_file, obj_per_model='Building', full_geometry=False, plenum=False,
+        model_file, obj_per_model='Building', full_geometry=False, no_plenum=False,
         cap=False, ceil_adjacency=False, shade_dist=None,
         bypass_adj_check=False, permit_non_solid=False,
         folder=None, log_file=None,
-        multiplier=True, no_plenum=True, no_cap=True, no_ceil_adjacency=True,
+        multiplier=True, plenum=True, no_cap=True, no_ceil_adjacency=True,
         enforce_adj_check=True, enforce_solid=True):
     """Translate a Dragonfly Model file into one or more Honeybee Models.
 
@@ -116,8 +116,9 @@ def model_to_honeybee(
             be passed along to the generated Honeybee Room objects or if full
             geometry objects should be written for each story in the
             building. (Default: False).
-        plenum: Boolean to indicate whether ceiling/floor plenums should
-            be auto-generated for the Rooms. (Default: False).
+        no_plenum: Boolean to indicate whether ceiling/floor plenum depths
+            assigned to Room2Ds should generate distinct 3D Rooms in the
+            translation. (Default: False).
         cap: Boolean to indicate whether context shade buildings should be
             capped with a top face. (Default: False).
         ceil_adjacency: Boolean to indicate whether adjacencies should be solved
@@ -168,7 +169,7 @@ def model_to_honeybee(
     enforce_adj_check = not bypass_adj_check
     enforce_solid = not permit_non_solid
     hb_models = model.to_honeybee(
-        obj_per_model, shade_dist, multiplier, plenum, cap, ceil_adjacency,
+        obj_per_model, shade_dist, multiplier, no_plenum, cap, ceil_adjacency,
         enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)
 
     # write out the honeybee JSONs and collect the info about them
@@ -199,9 +200,9 @@ def model_to_honeybee(
     'generated Honeybee Room objects or if full geometry objects should be '
     'written for each story in the building.', default=True, show_default=True)
 @click.option(
-    '--no-plenum/--plenum', ' /-p', help='Flag to indicate whether '
-    'ceiling/floor plenums should be auto-generated for the Rooms.',
-    default=True, show_default=True)
+    '--plenum/--no-plenum', '-p/-np', help='Flag to indicate whether '
+    'ceiling/floor plenum depths assigned to Room2Ds should generate '
+    'distinct 3D Rooms in the translation.', default=True, show_default=True)
 @click.option(
     '--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
     'whether adjacencies should be solved between interior stories when '
@@ -229,7 +230,7 @@ def model_to_honeybee(
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def model_to_honeybee_file_cli(
-        model_file, multiplier, no_plenum, no_ceil_adjacency,
+        model_file, multiplier, plenum, no_ceil_adjacency,
         enforce_adj_check, enforce_solid, output_file):
     """Translate a Dragonfly Model into a single Honeybee Model.
 
@@ -239,12 +240,12 @@ def model_to_honeybee_file_cli(
     """
     try:
         full_geometry = not multiplier
-        plenum = not no_plenum
+        no_plenum = not plenum
         ceil_adjacency = not no_ceil_adjacency
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
         model_to_honeybee_file(
-            model_file, full_geometry, plenum, ceil_adjacency,
+            model_file, full_geometry, no_plenum, ceil_adjacency,
             bypass_adj_check, permit_non_solid, output_file)
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
@@ -254,9 +255,9 @@ def model_to_honeybee_file_cli(
 
 
 def model_to_honeybee_file(
-        model_file, full_geometry=False, plenum=False, ceil_adjacency=False,
+        model_file, full_geometry=False, no_plenum=False, ceil_adjacency=False,
         bypass_adj_check=False, permit_non_solid=False, output_file=None,
-        multiplier=True, no_plenum=True, no_ceil_adjacency=True,
+        multiplier=True, plenum=True, no_ceil_adjacency=True,
         enforce_adj_check=True, enforce_solid=True):
     """Translate a Dragonfly Model into a single Honeybee Model.
 
@@ -266,8 +267,9 @@ def model_to_honeybee_file(
             be passed along to the generated Honeybee Room objects or if full
             geometry objects should be written for each story in the
             building. (Default: False).
-        plenum: Boolean to indicate whether ceiling/floor plenums should
-            be auto-generated for the Rooms. (Default: False).
+        no_plenum: Boolean to indicate whether ceiling/floor plenum depths
+            assigned to Room2Ds should generate distinct 3D Rooms in the
+            translation. (Default: False).
         ceil_adjacency: Boolean to indicate whether adjacencies should be solved
             between interior stories when Room2D floor and ceiling geometries
             are coplanar. This ensures that Surface boundary conditions are used
@@ -296,7 +298,7 @@ def model_to_honeybee_file(
     enforce_solid = not permit_non_solid
     hb_model = parsed_model.to_honeybee(
         object_per_model='District', use_multiplier=multiplier,
-        add_plenum=plenum, solve_ceiling_adjacencies=ceil_adjacency,
+        exclude_plenums=no_plenum, solve_ceiling_adjacencies=ceil_adjacency,
         enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
     # write the new model out to the file or stdout
     model_str = json.dumps(hb_model.to_dict())
@@ -322,9 +324,9 @@ def model_to_honeybee_file(
     'generated Honeybee Room objects or if full geometry objects should be '
     'written for each story in the building.', default=True, show_default=True)
 @click.option(
-    '--no-plenum/--plenum', ' /-p', help='Flag to indicate whether '
-    'ceiling/floor plenums should be auto-generated for the Rooms.',
-    default=True, show_default=True)
+    '--plenum/--no-plenum', '-p/-np', help='Flag to indicate whether '
+    'ceiling/floor plenum depths assigned to Room2Ds should generate '
+    'distinct 3D Rooms in the translation.', default=True, show_default=True)
 @click.option(
     '--default-adjacency/--solve-adjacency', ' /-sa', help='Flag to indicate '
     'whether all boundary conditions of the original models should be left as they '
@@ -354,7 +356,7 @@ def model_to_honeybee_file(
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def merge_models_to_honeybee_cli(
-        base_model, dragonfly_model, honeybee_model, multiplier, no_plenum,
+        base_model, dragonfly_model, honeybee_model, multiplier, plenum,
         default_adjacency, enforce_adj_check, enforce_solid, output_file):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
@@ -365,13 +367,13 @@ def merge_models_to_honeybee_cli(
     """
     try:
         full_geometry = not multiplier
-        plenum = not no_plenum
+        no_plenum = not plenum
         solve_adjacency = not default_adjacency
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
         merge_models_to_honeybee(
             base_model, dragonfly_model, honeybee_model,
-            full_geometry, plenum, solve_adjacency,
+            full_geometry, no_plenum, solve_adjacency,
             bypass_adj_check, permit_non_solid, output_file)
     except Exception as e:
         _logger.exception('Model merging failed.\n{}'.format(e))
@@ -382,9 +384,9 @@ def merge_models_to_honeybee_cli(
 
 def merge_models_to_honeybee(
         base_model, dragonfly_model=(), honeybee_model=(),
-        full_geometry=False, plenum=False, solve_adjacency=False,
+        full_geometry=False, no_plenum=False, solve_adjacency=False,
         bypass_adj_check=False, permit_non_solid=False, output_file=None,
-        multiplier=True, no_plenum=True, default_adjacency=True,
+        multiplier=True, plenum=True, default_adjacency=True,
         enforce_adj_check=True, enforce_solid=True):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
@@ -399,8 +401,9 @@ def merge_models_to_honeybee(
             be passed along to the generated Honeybee Room objects or if full
             geometry objects should be written for each story in the
             building. (Default: False).
-        plenum: Boolean to indicate whether ceiling/floor plenums should
-            be auto-generated for the Rooms. (Default: False).
+        no_plenum: Boolean to indicate whether ceiling/floor plenum depths
+            assigned to Room2Ds should generate distinct 3D Rooms in the
+            translation. (Default: False).
         solve_adjacency: Boolean to indicate whether all boundary conditions of
             the original models should be left as they are or whether adjacencies
             should be solved across the final model when everything is merged
@@ -447,7 +450,7 @@ def merge_models_to_honeybee(
     # convert the dragonfly Model to Honeybee
     hb_model = parsed_model.to_honeybee(
         object_per_model='District', use_multiplier=multiplier,
-        add_plenum=plenum, solve_ceiling_adjacencies=solve_adjacency,
+        exclude_plenums=no_plenum, solve_ceiling_adjacencies=solve_adjacency,
         enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
 
     # merge the honeybee models

@@ -1389,7 +1389,7 @@ class Model(_BaseGeometry):
         return [] if detailed else ''
 
     def to_honeybee(self, object_per_model='Building', shade_distance=None,
-                    use_multiplier=True, add_plenum=False, cap=False,
+                    use_multiplier=True, exclude_plenums=False, cap=False,
                     solve_ceiling_adjacencies=False, tolerance=None,
                     enforce_adj=True, enforce_solid=True):
         """Convert Dragonfly Model to an array of Honeybee Models.
@@ -1424,8 +1424,11 @@ class Model(_BaseGeometry):
                 will be multiplied. If False, full geometry objects will be written
                 for each and every floor in the building that are represented through
                 multipliers and all resulting multipliers will be 1. (Default: True).
-            add_plenum: Boolean to indicate whether ceiling/floor plenums should
-                be auto-generated for the Rooms. (Default: False).
+            exclude_plenums: Boolean to indicate whether ceiling/floor plenum depths
+                assigned to Room2Ds should be ignored during translation. This
+                results in each Room2D translating to a single Honeybee Room at
+                the full floor_to_ceiling_height instead of a base Room with (a)
+                plenum Room(s). (Default: False).
             cap: Boolean to note whether building shade representations should be capped
                 with a top face. Usually, this is not necessary to account for
                 blocked sun and is only needed when it's important to account for
@@ -1478,16 +1481,16 @@ class Model(_BaseGeometry):
         elif object_per_model is None or opm == 'Building':
             models = Building.buildings_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
-                use_multiplier, add_plenum, cap, tolerance=tolerance,
+                use_multiplier, exclude_plenums, cap, tolerance=tolerance,
                 enforce_adj=enforce_adj, enforce_solid=enforce_solid)
         elif opm == 'Story':
             models = Building.stories_to_honeybee(
                 self._buildings, self._context_shades, shade_distance,
-                use_multiplier, add_plenum, cap, tolerance=tolerance,
+                use_multiplier, exclude_plenums, cap, tolerance=tolerance,
                 enforce_adj=enforce_adj, enforce_solid=enforce_solid)
         elif opm == 'District':
             models = [Building.district_to_honeybee(
-                self._buildings, use_multiplier, add_plenum, tolerance=tolerance,
+                self._buildings, use_multiplier, exclude_plenums, tolerance=tolerance,
                 enforce_adj=enforce_adj, enforce_solid=enforce_solid)]
             for shd_group in self._context_shades:
                 for shd in shd_group.to_honeybee():
