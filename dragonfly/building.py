@@ -1632,7 +1632,13 @@ class Building(_BaseGeometry):
                 for objects in Meters).
 
         Returns:
-            A list of all the new Room2Ds created by running the method.
+            A tuple with two elements.
+
+            -   ceil_plenums: A list of Room2Ds for newly-created ceiling plenums
+                from the ceiling_plenum_depths.
+
+            -   floor_plenums: A list of Room2Ds for newly-created floor plenums
+                from the floor_plenum_depths.
         """
         # gather all of the Room2D IDs with ceilings and floors to be split
         ceiling_rm_ids, ceiling_targets = [], []
@@ -1667,7 +1673,7 @@ class Building(_BaseGeometry):
         if len(floor_rm_ids) != 0:
             floor_plenums = self.separate_room_2d_plenums(
                 floor_rm_ids, floor_targets, True, tolerance)
-        return ceil_plenums + floor_plenums
+        return ceil_plenums, floor_plenums
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
@@ -1793,14 +1799,18 @@ class Building(_BaseGeometry):
             A honeybee Model that represent the Building.
         """
         # separate the plenums unless they are excluded
+        ceil_plenums, floor_plenums = [], []
         if not exclude_plenums and self.has_room_2d_plenums:
             self = self.duplicate()  # avoid mutating this Building instance
-            self.convert_plenum_depths_to_room_2ds(tolerance)
+            ceil_plenums, floor_plenums = \
+                self.convert_plenum_depths_to_room_2ds(tolerance)
+
         # compute the story heights once so they're not constantly recomputed
         reset_roofs = False
         if self._roofs is None:
             self._roofs = self._compute_roof_heights()
             reset_roofs = True
+
         # generate all of the Honeybee Rooms
         hb_rooms = []
         if use_multiplier:
@@ -1822,6 +1832,38 @@ class Building(_BaseGeometry):
         hb_mod = Model(self.identifier, hb_rooms)
         hb_mod._display_name = self._display_name
         hb_mod._user_data = self._user_data
+
+        # set adjacency between plenums and base rooms
+        if len(ceil_plenums) != 0 or len(floor_plenums) != 0:
+            # build up a map between rooms and identifiers
+            room_map = {rm.identifier: rm for rm in hb_rooms}
+            # use the map to set adjacencies for ceiling plenums
+            adj_ceil_pairs = []
+            for ceil_pln in ceil_plenums:
+                pln_id = ceil_pln.identifier
+                base_id = pln_id[:-15]
+                adj_ceil_pairs.append((base_id, pln_id))
+                if not use_multiplier:
+                    for i in range(ceil_pln.parent.multiplier - 1):
+                        pln_id = 'Flr{}_{}'.format(i + 1, pln_id)
+                        base_id = 'Flr{}_{}'.format(i + 1, base_id)
+                        adj_ceil_pairs.append((base_id, pln_id))
+            for base_id, pln_id in adj_ceil_pairs:
+                room_map[base_id][-1].set_adjacency(room_map[pln_id][0])
+            # use the map to set adjacencies for floor plenums
+            adj_floor_pairs = []
+            for floor_pln in floor_plenums:
+                pln_id = floor_pln.identifier
+                base_id = pln_id[:-13]
+                adj_floor_pairs.append((base_id, pln_id))
+                if not use_multiplier:
+                    for i in range(floor_pln.parent.multiplier - 1):
+                        pln_id = 'Flr{}_{}'.format(i + 1, pln_id)
+                        base_id = 'Flr{}_{}'.format(i + 1, base_id)
+                        adj_floor_pairs.append((base_id, pln_id))
+            for base_id, pln_id in adj_floor_pairs:
+                room_map[base_id][0].set_adjacency(room_map[pln_id][-1])
+
         # put back the old roofs if they were not set originally
         if reset_roofs:
             self._roofs = None
