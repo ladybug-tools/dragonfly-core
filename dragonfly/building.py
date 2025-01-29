@@ -1504,8 +1504,8 @@ class Building(_BaseGeometry):
         set to the floor-to-floor height. So this method reduces the floor-to-ceiling
         height of these rooms to what it is actually supposed to be and then
         adds a new ceiling (or floor) plenum Story to the Building with the
-        plenums modeled as explicit Room2Ds. If an existing Story with a True
-        is_plenum property is found above (or below) the Room2D for which a plenum
+        plenums modeled as explicit Room2Ds. If an existing plenum Story of the
+        correct type is found above (or below) the Room2D for which a plenum
         was split off, the new Room2D will get added to that existing Story
         instead of a new Story being created.
 
@@ -1542,6 +1542,7 @@ class Building(_BaseGeometry):
         room_ids, plenum_rm_ids = set(room_ids), set()
         new_rooms, new_stories, new_story_i = [], [], []
         resolve_roofs = False
+        st_type = 'FloorPlenum' if floor_plenum else 'CeilingPlenum'
 
         # loop through the Room2Ds and split the plenum if they're selected
         for i, story in enumerate(self._unique_stories):
@@ -1560,7 +1561,7 @@ class Building(_BaseGeometry):
                         pln_story = None
                         pln_st_i = i - 1 if floor_plenum else i + 1
                         if pln_st_i == -1 or pln_st_i == len(self._unique_stories) \
-                                or not self._unique_stories[pln_st_i].is_plenum:
+                                or not self._unique_stories[pln_st_i].type == st_type:
                             if pln_st_i in new_story_i:
                                 for st, sti in zip(new_stories, new_story_i):
                                     if pln_st_i == sti:
@@ -1569,7 +1570,7 @@ class Building(_BaseGeometry):
                             pln_story = self._unique_stories[pln_st_i]
                         if pln_story is None:  # we must create a new story
                             pln_id = '{}_Plenum'.format(story.identifier)
-                            pln_story = Story(pln_id, [plenum_room], is_plenum=True)
+                            pln_story = Story(pln_id, [plenum_room], type=st_type)
                             pln_story.floor_to_floor_height = story.floor_to_floor_height
                             pln_story.floor_height = story.floor_height
                             pln_story.multiplier = story.multiplier
@@ -2224,9 +2225,10 @@ class Building(_BaseGeometry):
                 for j, story in enumerate(bldg.unique_stories):
                     if not exclude_plenums and story.has_plenums:
                         plenum_bldg = Building(story.identifier, [story.duplicate()])
-                        hb_rooms = plenum_bldg.to_honeybee(
+                        dummy_model = plenum_bldg.to_honeybee(
                             True, False, tolerance=tolerance,
                             enforce_adj=enforce_adj, enforce_solid=enforce_solid)
+                        hb_rooms = dummy_model.rooms
                     else:
                         hb_rooms = story.to_honeybee(
                             True, tolerance=tolerance,
@@ -2252,9 +2254,10 @@ class Building(_BaseGeometry):
                 for story, shades in zip(bldg.all_stories(), full_shades):
                     if not exclude_plenums and story.has_plenums:
                         plenum_bldg = Building(story.identifier, [story.duplicate()])
-                        hb_rooms = plenum_bldg.to_honeybee(
+                        dummy_model = plenum_bldg.to_honeybee(
                             True, False, tolerance=tolerance,
                             enforce_adj=enforce_adj, enforce_solid=enforce_solid)
+                        hb_rooms = dummy_model.rooms
                     else:
                         hb_rooms = story.to_honeybee(
                             True, tolerance=tolerance,
