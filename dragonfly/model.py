@@ -1543,6 +1543,9 @@ class Model(_BaseGeometry):
             story_rel_types = {}
             has_flr_ceil = [] if opm == 'Building' else [[]]
             for bldg in self.buildings:
+                if not exclude_plenums and bldg.has_room_2d_plenums:
+                    bldg = bldg.duplicate()  # avoid mutating the Building instance
+                    bldg.convert_plenum_depths_to_room_2ds(tolerance)
                 if opm == 'Building':
                     has_flr_ceil.append(bldg.has_floors_ceilings(use_multiplier))
                 else:

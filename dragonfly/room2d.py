@@ -2861,9 +2861,11 @@ class Room2D(_BaseGeometry):
         new_bcs = []
         for bc in self.boundary_conditions:
             if isinstance(bc, Surface):
-                new_bc_objs = []
-                for bc_obj in bc.boundary_condition_objects:
-                    new_bc_objs.append('{}_{}_Plenum'.format(bc_obj, pln_typ))
+                adj_rm = bc.boundary_condition_objects[-1]
+                adj_face_i = bc.boundary_condition_objects[0].split('..Face')[-1]
+                adj_pln_rm = '{}_{}_Plenum'.format(adj_rm, pln_typ)
+                adj_pln_face = '{}..Face{}'.format(adj_pln_rm, adj_face_i)
+                new_bc_objs = [adj_pln_face, adj_pln_rm]
                 new_bcs.append(Surface(new_bc_objs))
             else:
                 new_bcs.append(bc)
