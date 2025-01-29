@@ -1542,10 +1542,11 @@ class Building(_BaseGeometry):
         room_ids, plenum_rm_ids = set(room_ids), set()
         new_rooms, new_stories, new_story_i = [], [], []
         resolve_roofs = False
+
+        # loop through the Room2Ds and split the plenum if they're selected
         for i, story in enumerate(self._unique_stories):
             if story.is_plenum:
                 continue  # don't create plenums of plenums
-            # loop through the Room2Ds and split the plenum if they're selected
             for rm in story.room_2ds:
                 if rm.identifier in room_ids:
                     plenum_room = rm.separate_plenum(
@@ -1582,6 +1583,7 @@ class Building(_BaseGeometry):
                             new_story_i.append(pln_st_i)
                         else:
                             pln_story.add_room_2d(plenum_room)
+
         # set up any adjacencies across the plenums
         try:  # get the boundary condition to be used for adiabatic cases
             ad_bc = bcs.adiabatic
@@ -1599,6 +1601,8 @@ class Building(_BaseGeometry):
             new_room.boundary_conditions = new_bcs
 
         # insert any newly-created stories into the Building
+        for n_st in new_stories:
+            n_st._parent = self
         new_stories = [st for _, st in sorted(zip(new_story_i, new_stories),
                                               key=lambda pair: pair[0])]
         new_story_i.sort()
@@ -1609,9 +1613,15 @@ class Building(_BaseGeometry):
             in_i = sti + 1 if floor_plenum else sti
             all_stories.insert(in_i, st)
         self._unique_stories = tuple(all_stories)
+
         # resolve the roofs if they were copied
         if resolve_roofs:
             self.remove_duplicate_roofs(tolerance)
+
+        # set the extension properties of the plenums
+        new_room_ids = [rm.identifier for rm in new_rooms]
+        self.properties.make_plenums(new_room_ids)
+
         return new_rooms
 
     def convert_plenum_depths_to_room_2ds(self, tolerance=0.01):
@@ -1838,31 +1848,43 @@ class Building(_BaseGeometry):
             # build up a map between rooms and identifiers
             room_map = {rm.identifier: rm for rm in hb_rooms}
             # use the map to set adjacencies for ceiling plenums
-            adj_ceil_pairs = []
-            for ceil_pln in ceil_plenums:
-                pln_id = ceil_pln.identifier
-                base_id = pln_id[:-15]
-                adj_ceil_pairs.append((base_id, pln_id))
-                if not use_multiplier:
-                    for i in range(ceil_pln.parent.multiplier - 1):
-                        pln_id = 'Flr{}_{}'.format(i + 1, pln_id)
-                        base_id = 'Flr{}_{}'.format(i + 1, base_id)
-                        adj_ceil_pairs.append((base_id, pln_id))
-            for base_id, pln_id in adj_ceil_pairs:
-                room_map[base_id][-1].set_adjacency(room_map[pln_id][0])
+            if len(ceil_plenums) != 0:
+                adj_ceil_pairs = []
+                for ceil_pln in ceil_plenums:
+                    pln_id = ceil_pln.identifier
+                    base_id = pln_id[:-15]
+                    adj_ceil_pairs.append((base_id, pln_id))
+                    if not use_multiplier:
+                        for i in range(ceil_pln.parent.multiplier - 1):
+                            pln_id_i = 'Flr{}_{}'.format(i + 1, pln_id)
+                            base_id_i = 'Flr{}_{}'.format(i + 1, base_id)
+                            adj_ceil_pairs.append((base_id_i, pln_id_i))
+                rm_faces, pln_faces = [], []
+                for base_id, pln_id in adj_ceil_pairs:
+                    room_face, plenum_face = room_map[base_id][-1], room_map[pln_id][0]
+                    room_face.set_adjacency(plenum_face)
+                    rm_faces.append(room_face)
+                    pln_faces.append(plenum_face)
+                self.properties.apply_ceiling_plenum_face_properties(rm_faces, pln_faces)
             # use the map to set adjacencies for floor plenums
-            adj_floor_pairs = []
-            for floor_pln in floor_plenums:
-                pln_id = floor_pln.identifier
-                base_id = pln_id[:-13]
-                adj_floor_pairs.append((base_id, pln_id))
-                if not use_multiplier:
-                    for i in range(floor_pln.parent.multiplier - 1):
-                        pln_id = 'Flr{}_{}'.format(i + 1, pln_id)
-                        base_id = 'Flr{}_{}'.format(i + 1, base_id)
-                        adj_floor_pairs.append((base_id, pln_id))
-            for base_id, pln_id in adj_floor_pairs:
-                room_map[base_id][0].set_adjacency(room_map[pln_id][-1])
+            if len(floor_plenums) != 0:
+                adj_floor_pairs = []
+                for floor_pln in floor_plenums:
+                    pln_id = floor_pln.identifier
+                    base_id = pln_id[:-13]
+                    adj_floor_pairs.append((base_id, pln_id))
+                    if not use_multiplier:
+                        for i in range(floor_pln.parent.multiplier - 1):
+                            pln_id_i = 'Flr{}_{}'.format(i + 1, pln_id)
+                            base_id_i = 'Flr{}_{}'.format(i + 1, base_id)
+                            adj_floor_pairs.append((base_id_i, pln_id_i))
+                rm_faces, pln_faces = [], []
+                for base_id, pln_id in adj_floor_pairs:
+                    room_face, plenum_face = room_map[base_id][0], room_map[pln_id][-1]
+                    room_face.set_adjacency(plenum_face)
+                    rm_faces.append(room_face)
+                    pln_faces.append(plenum_face)
+                self.properties.apply_floor_plenum_face_properties(rm_faces, pln_faces)
 
         # put back the old roofs if they were not set originally
         if reset_roofs:

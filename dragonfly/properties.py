@@ -500,6 +500,70 @@ class BuildingProperties(_Properties):
         """
         self._add_prefix_extension_attr(prefix)
 
+    def make_plenums(self, room_ids):
+        """Set extension attributes for Room2Ds on this host Building that are plenums.
+
+        Args:
+            room_ids: A list of identifiers for Room2Ds on this Building to be
+                converted into plenums.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'make_plenums'):
+                continue
+            try:
+                var.make_plenums(room_ids)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception(
+                    'Failed to set plenum {} properties for the '
+                    'Building: {}'.format(atr, e))
+
+    def apply_ceiling_plenum_face_properties(self, room_faces, plenum_faces):
+        """Set extension attributes for Honeybee Faces of ceiling plenums.
+
+        Args:
+            room_faces: A list of Honeybee Faces for the occupied Rooms that
+                interface with ceiling plenums.
+            plenum_faces: A list of Honeybee Faces for the ceiling plenum Rooms
+                that interface with the occupied Rooms.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'apply_ceiling_plenum_face_properties'):
+                continue
+            try:
+                var.apply_ceiling_plenum_face_properties(room_faces, plenum_faces)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception(
+                    'Failed to set ceiling plenum  face {} properties for the '
+                    'Building: {}'.format(atr, e))
+
+    def apply_floor_plenum_face_properties(self, room_faces, plenum_faces):
+        """Set extension attributes for Honeybee Faces of floor plenums.
+
+        Args:
+            room_faces: A list of Honeybee Faces for the occupied Rooms that
+                interface with floor plenums.
+            plenum_faces: A list of Honeybee Faces for the floor plenum Rooms
+                that interface with the occupied Rooms.
+        """
+        for atr in self._extension_attributes:
+            var = getattr(self, atr)
+            if not hasattr(var, 'apply_floor_plenum_face_properties'):
+                continue
+            try:
+                var.apply_floor_plenum_face_properties(room_faces, plenum_faces)
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                raise Exception(
+                    'Failed to set floor plenum  face {} properties for the '
+                    'Building: {}'.format(atr, e))
+
     def __repr__(self):
         """Properties representation."""
         return 'BuildingProperties'
