@@ -1629,13 +1629,13 @@ class Building(_BaseGeometry):
         """Convert all of the Room2D ceiling/floor plenum depths to explicit Room2Ds.
 
         This method is used under the hood of the translation from Dragonfly to
-        Honeybee in order to convert Room2D ceiling_plenum_depth and 
+        Honeybee in order to convert Room2D ceiling_plenum_depth and
         floor_plenum_depth properties into explicit 3D plenum Rooms.
 
-        However, it may be useful to call it explicitly (outside of
-        the translation) in order to edit the plenum Room2Ds. For example, multiple
-        plenum Room2Ds above several rooms can be joined together into a single
-        continuous plenum if this is how the plenum exists on the real building.
+        However, it may be useful to call it explicitly (outside of the translation)
+        in order to edit the plenum Room2Ds. For example, multiple plenum Room2Ds
+        above several rooms can be joined together into a single continuous
+        plenum if this is how the plenum exists on the real building.
 
         Args:
             tolerance: The maximum difference between point values for them to be
