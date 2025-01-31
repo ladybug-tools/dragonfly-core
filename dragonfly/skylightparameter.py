@@ -736,6 +736,7 @@ class DetailedSkylights(_SkylightParameterBase):
                                 pt = pt.move(move_vec)
                         new_pts_2d.append(Point2D(pt.x, pt.y))
                     new_polygons.append(Polygon2D(new_pts_2d))
+                    new_are_doors.append(isd)
             else:
                 new_polygons.append(polygon)
                 new_are_doors.append(isd)
