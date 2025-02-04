@@ -991,7 +991,7 @@ using-multipliers-zone-and-or-window.html
                 try:
                     new_r = room.remove_colinear_vertices(tolerance, preserve_wall_props)
                     new_room_2ds.append(new_r)
-                except ValueError:  # degenerate room found!
+                except (ValueError, IndexError):  # degenerate room found!
                     removed_rooms.append(room)
             assert len(new_room_2ds) > 0, 'All Room2Ds of Story "{}" are '\
                 'degenerate.'.format(self.display_name)
