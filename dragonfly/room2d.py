@@ -4079,9 +4079,24 @@ class Room2D(_BaseGeometry):
         if len(clean_floor_geos) == 0:
             return []  # no Room boundary to be found
 
+        # merge any rooms together that overlap with one another
+        room_groups = Face3D.group_by_coplanar_overlap(clean_floor_geos, tolerance)
+        clean_geos = []
+        for r_group in room_groups:
+            if len(r_group) == 1:
+                clean_geos.extend(r_group)
+            else:
+                print(r_group)
+                union_faces = Face3D.coplanar_union_all(
+                    r_group, tolerance, math.radians(1))
+                if union_faces is not None:
+                    clean_geos.extend(union_faces)
+                else:
+                    clean_geos.extend(r_group)
+
         # convert the floor Face3Ds into counterclockwise Polygon2Ds
         floor_polys, z_vals = [], []
-        for flr_geo in clean_floor_geos:
+        for flr_geo in clean_geos:
             z_vals.append(flr_geo.min.z)
             b_poly = Polygon2D([Point2D(pt.x, pt.y) for pt in flr_geo.boundary])
             floor_polys.append(b_poly)
