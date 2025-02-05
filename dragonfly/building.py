@@ -1569,7 +1569,7 @@ class Building(_BaseGeometry):
                         else:  # there is already a relevant plenum story
                             pln_story = self._unique_stories[pln_st_i]
                         if pln_story is None:  # we must create a new story
-                            pln_id = '{}_Plenum'.format(story.identifier)
+                            pln_id = '{}_{}'.format(story.identifier, st_type)
                             pln_story = Story(pln_id, [plenum_room], type=st_type)
                             pln_story.floor_to_floor_height = story.floor_to_floor_height
                             pln_story.floor_height = story.floor_height
