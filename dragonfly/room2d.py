@@ -4086,7 +4086,6 @@ class Room2D(_BaseGeometry):
             if len(r_group) == 1:
                 clean_geos.extend(r_group)
             else:
-                print(r_group)
                 union_faces = Face3D.coplanar_union_all(
                     r_group, tolerance, math.radians(1))
                 if union_faces is not None:
