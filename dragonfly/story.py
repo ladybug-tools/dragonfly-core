@@ -7,7 +7,7 @@ from ladybug_geometry.geometry2d import Vector2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Ray3D, Polyline3D, Face3D, Polyface3D
 
 from honeybee.typing import float_positive, int_in_range, clean_string, \
-    valid_string, invalid_dict_error
+    clean_and_id_string, valid_string, invalid_dict_error
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import Outdoors, Surface
 from honeybee.facetype import AirBoundary
@@ -1110,6 +1110,95 @@ using-multipliers-zone-and-or-window.html
         self.room_2ds = all_rooms
         self.reset_adjacency()
         self.solve_room_2d_adjacency(tolerance=tolerance)
+
+    def fill_holes(self, base_name='Room', area_threshold=0, tolerance=0.01):
+        """Fill any holes in this Story's floor plate with new Room2Ds.
+
+        Args:
+            base_name: Text to set the display_name of the generated Room2Ds and
+                will be incorporated into a unique Room2D identifier. (Default: "Room").
+            area_threshold: An optional positive number that the minimum area of
+                a hole for it to be filled with a Room2D. This can be used to
+                ensure very small holes aren't unintentionally filled with holes.
+                Setting this value to zero will result in all holes filled with
+                Room2Ds. (Default: 0).
+            tolerance: The minimum distance between vertices at which point they
+                are considered equivalent. (Default: 0.01, suitable
+                for objects in meters).
+
+        Returns:
+            A list of new Rom2Ds that were added to the Story.
+        """
+        # compute the horizontal boundary around the rooms
+        median_i = int(len(self.room_2ds) / 2)
+        ftcs = [room.floor_to_ceiling_height for room in self.room_2ds]
+        ftcs.sort()
+        median_height = ftcs[median_i]
+        h_bounds = Room2D.grouped_horizontal_boundary(self.room_2ds, tolerance, tolerance)
+
+        # convert holes in the resulting boundary to rooms
+        new_rooms, room_count = [], 0
+        for h_bound in h_bounds:
+            if h_bound.has_holes:
+                for hole in h_bound.holes:
+                    hole_face = Face3D(hole)
+                    if hole_face.area > area_threshold:
+                        # create the Room2D object
+                        room_name = base_name if room_count == 0 else \
+                            '{}{}'.format(base_name, room_count)
+                        room_id = clean_and_id_string(room_name)
+                        new_room = Room2D(room_id, hole_face, median_height,
+                                          tolerance=tolerance)
+                        new_room.display_name = room_name
+
+                        # assign is_top_exposed and is_ground_contact with neighbor rooms
+                        neighbor_top_ex, neighbor_grd_con = [], []
+                        for adj_room in self.room_2ds:
+                            adj_poly = adj_room.floor_geometry.polygon2d
+                            for pt in new_room.floor_geometry.polygon2d:
+                                if adj_poly.distance_to_point(pt) < tolerance:
+                                    neighbor_top_ex.append(adj_room.is_top_exposed)
+                                    neighbor_grd_con.append(adj_room.is_ground_contact)
+                                    break
+                        new_room.is_top_exposed = all(neighbor_top_ex)
+                        new_room.is_ground_contact = all(neighbor_grd_con)
+
+                        # add the new rooms and the corresponding stories to the output
+                        new_rooms.append(new_room)
+                        room_count += 1
+
+        # add the new rooms to this story
+        self.add_room_2ds(new_rooms)
+        return new_rooms
+
+    def join_room_2ds(self, room_ids, tolerance=0.01):
+        """Join Room2Ds together on this Story.
+
+        The largest Room2D that is identified within each connected group will
+        determine the extension properties of the resulting Room2D. Skylights
+        will be merged across rooms if they are of the same type or if they are None.
+
+        Args:
+            room_ids: A list of Room2Ds identifiers for rooms on this Story to
+                be joined together where they touch one another.
+            tolerance: The minimum distance between a vertex and the polygon
+                boundary at which point the vertex is considered to lie on the
+                polygon. (Default: 0.01, suitable for objects in meters).
+
+        Returns:
+            A list of Room2Ds for the new rooms created through joining.
+        """
+        remove_ids = set(room_ids)
+        final_rooms, merge_rooms = [], []
+        for room in self.room_2ds:
+            if room.identifier not in remove_ids:
+                final_rooms.append(room)
+            else:
+                merge_rooms.append(room)
+        new_rooms = Room2D.join_room_2ds(merge_rooms, tolerance=tolerance)
+        final_rooms.extend(new_rooms)
+        self.room_2ds = final_rooms
+        return new_rooms
 
     def rebuild_detailed_windows(
             self, tolerance=0.01, match_adjacency=False, rebuild_skylights=True):
