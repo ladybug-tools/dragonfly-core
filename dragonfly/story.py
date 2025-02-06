@@ -1065,35 +1065,44 @@ using-multipliers-zone-and-or-window.html
         self._room_2ds = tuple(new_room_2ds)
         return removed_rooms
 
-    def join_small_rooms(self, area_threshold, tolerance=0.01):
+    def join_small_room_2ds(self, area_threshold, join_into_large=False,
+                            tolerance=0.01):
         """Join small Room2Ds together within this Story.
 
         This is particularly useful when operations like automatic core/perimeter
         zoning creates several small Room2Ds from small segments in the outline
         boundary around the Story.
 
-        Note that adjacencies should be solved across the Story for this method
-        to function correctly.
-
         Args:
             area_threshold: A number for the Room2D floor area below which it is
                 considered a small room to be joined into adjacent rooms.
+            join_into_large: A boolean to note whether the small Room2Ds should
+                be joined into neighboring large Room2Ds as opposed to simply
+                joining the small rooms to one another. (Default: False).
             tolerance: The minimum distance between vertices at which point they
                 are considered equivalent. (Default: 0.01, suitable
                 for objects in meters).
         """
         # first gather all of the small rooms in the model to be joined
         all_rooms = list(self._room_2ds)
-        small_rooms = [rm for rm in all_rooms if rm.floor_area < area_threshold]
+        small_rooms, large_rooms = [], []
+        for rm in all_rooms:
+            if rm.floor_area < area_threshold:
+                small_rooms.append(rm)
+            else:
+                large_rooms.append(rm)
         if len(small_rooms) == 0:
             return
 
         # join Room2Ds together that share adjacency
+        joined_small_rooms = []
         room_groups = Room2D.group_by_adjacency(small_rooms)
         for r_group in room_groups:
             if len(r_group) == 1:  # no rooms to be joined together
+                joined_small_rooms.extend(r_group)
                 continue
             joined_rooms = Room2D.join_room_2ds(r_group, tolerance=tolerance)
+            joined_small_rooms.extend(joined_rooms)
             del_is = []
             for n_rm in r_group:
                 for in_i, e_rm in enumerate(all_rooms):
@@ -1106,10 +1115,13 @@ using-multipliers-zone-and-or-window.html
             for j_room in joined_rooms:
                 all_rooms.insert(del_is[0], j_room)
 
+        # if join_into_neighbor is selected, join the small rooms into the neighbors
+        if join_into_large:
+            all_rooms = Room2D.join_to_neighbor(
+                large_rooms, joined_small_rooms, tolerance=tolerance)
+
         # set Room2Ds and re-solve adjacencies to make the result valid
         self.room_2ds = all_rooms
-        self.reset_adjacency()
-        self.solve_room_2d_adjacency(tolerance=tolerance)
 
     def fill_holes(self, base_name='Room', area_threshold=0, tolerance=0.01):
         """Fill any holes in this Story's floor plate with new Room2Ds.
