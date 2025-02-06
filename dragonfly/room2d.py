@@ -12,6 +12,7 @@ from ladybug_geometry.intersection2d import closest_point2d_between_line2d, \
     closest_point2d_on_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
+from ladybug_geometry.bounding import bounding_box
 import ladybug_geometry.boolean as pb
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
@@ -1011,6 +1012,103 @@ class Room2D(_BaseGeometry):
                 rel_roofs.append(r_geo)
         return rel_roofs
 
+    def unconforming_vertex_map(self, plane, angle_tolerance=1.0, min_length=0):
+        """Analyze this Room2D's vertices for conformity with a plane's XY axes.
+
+        Vertices of this Room2D that do not conform to the plane will be
+        highted in the result.
+
+        Args:
+            plane: A ladybug-geometry Plane that will be used to evaluate whether
+                each Room2D vertex conforms to the plane or not.
+            angle_tolerance: A number for the maximum difference in degrees that the
+                Room2D segments can differ from the XY axes of the plane for it
+                to be considered non-conforming. (Default: 1.0).
+            min_length: A number for the minimum length that a Room2D segment must
+                be for it to be considered for non-conformity. Setting this to
+                zero will evaluate all Room2D segments. (Default: 0).
+
+        Returns:
+            A list of lists where each sub-list represents a loop of the Room2D
+            floor_geometry. The first sub-list represents the boundary and subsequent
+            sub-lists represent holes. Each item in each sub-list represents a
+            vertex. If a given vertex is conforming to the plane, it will show
+            up as None in the sub-list. Otherwise, the Point3D for the non-conforming
+            vertex will appear in the sub-list.
+        """
+        # define variables to be used throughout the evaluation
+        min_ang = math.radians(angle_tolerance)
+        max_ang = math.pi - min_ang
+        x_axis, y_axis = plane.x, plane.y
+        seg_loops = [self._floor_geometry.boundary_segments]
+        if self._floor_geometry.has_holes:
+            seg_loops.extend(self._floor_geometry.hole_segments)
+
+        # loop through the segments and evaluate their non-conformity
+        conform = []
+        for seg_loop in seg_loops:
+            loop_conform = []
+            for seg in seg_loop:
+                if seg.length < min_length:
+                    loop_conform.append(True)
+                    continue
+                ang = seg.v.angle(x_axis)
+                if ang < min_ang or ang > max_ang:
+                    loop_conform.append(True)
+                    continue
+                ang = seg.v.angle(y_axis)
+                if ang < min_ang or ang > max_ang:
+                    loop_conform.append(True)
+                    continue
+                loop_conform.append(False)
+            conform.append(loop_conform)
+
+        # evaluate vertices in relation to surrounding segments
+        points_to_keep = []
+        for seg_loop, conformity in zip(seg_loops, conform):
+            loop_points = []
+            for i, (seg, con) in enumerate(zip(seg_loop, conformity)):
+                if con or conformity[i - 1]:
+                    loop_points.append(None)
+                else:
+                    loop_points.append(seg.p)
+            points_to_keep.append(loop_points)
+        return points_to_keep
+
+    def apply_vertex_map(self, vertex_map):
+        """Apply a vertex map to this Room2D's vertices.
+
+        Vertex maps are helpful for restoring vertices in Room2D geometry after
+        performing a series of complex operations. For example, when performing
+        a series of operations that edit the geometry in relation to a plane, a
+        Room2D.unconforming_vertex_map() can be generated to put back the vertices
+        that did not relate to the plane of the grid.
+
+        Args:
+            vertex_map: A list of lists where each sub-list represents a loop of
+                the Room2D floor_geometry. The first sub-list represents the boundary
+                and subsequent sub-lists represent holes. Each item in each sub-list
+                represents a vertex. If a given vertex on this Room2D is to be left
+                as it is, it should be represented as None in the sub-list.
+                Otherwise, the Point3D to replace the vertex on this Room2D should
+                appear in the sub-list.
+        """
+        if all(pt is None for pt in vertex_map):
+            return
+        final_boundary, final_holes = [], None
+        for new_pt, old_pt in zip(self.floor_geometry.boundary, vertex_map[0]):
+            final_pt = new_pt if old_pt is None else old_pt
+            final_boundary.append(final_pt)
+        if self.floor_geometry.has_holes:
+            final_holes = []
+            for new_hole, old_hole in zip(self.floor_geometry.holes, vertex_map[1:]):
+                final_hole = []
+                for new_pt, old_pt in zip(new_hole, old_hole):
+                    final_pt = new_pt if old_pt is None else old_pt
+                    final_hole.append(final_pt)
+                final_holes.append(final_hole)
+        self._floor_geometry = Face3D(final_boundary, self._floor_geometry.plane, final_holes)
+
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
         assert isinstance(window_parameter, _WindowParameterBase), \
@@ -1335,7 +1433,7 @@ class Room2D(_BaseGeometry):
 
         self.properties.scale(factor, origin)
 
-    def snap_to_grid(self, grid_increment):
+    def snap_to_grid(self, grid_increment, base_plane=None):
         """Snap this Room2D's vertices to the nearest grid node defined by an increment.
 
         All properties assigned to the Room2D will be preserved and the number of
@@ -1348,22 +1446,49 @@ class Room2D(_BaseGeometry):
                 typically should be equal to the tolerance or larger but should
                 not be larger than the smallest detail of the Room2D that you
                 wish to resolve.
+            base_plane: An optional ladybug-geometry Plane object to set the coordinate
+                system of the grid in which this Room will be snapped. If None, the
+                World XY coordinate system will be used. (Default: None).
         """
+        # check the input base plane and make sure it is horizontal
+        if base_plane is not None:
+            if base_plane.n.z == 0:  # vertical planes do not make sense
+                base_plane = None
+            elif base_plane.n.z not in (1, -1):  # tilted plane to be corrected
+                x_axis = Vector3D(base_plane.x.x, base_plane.x.y, 0)
+                normal = Vector3D(0, 0, 1) if base_plane.n.z > 0 else Vector3D(0, 0, -1)
+                base_plane = Plane(normal, base_plane.o, x_axis)
+
+        # if the base plane is specified, convert to the plane's coordinate system
+        boundary, holes = self._floor_geometry.boundary, self._floor_geometry.holes
+        z_val = boundary[0].z
+        if base_plane is not None:
+            boundary = [base_plane.xyz_to_xy(pt) for pt in boundary]
+            if holes is not None:
+                holes = [[base_plane.xyz_to_xy(pt) for pt in hole] for hole in holes]
+
         # loop through the vertices and snap them
         new_boundary, new_holes = [], None
-        for pt in self._floor_geometry.boundary:
+        for pt in boundary:
             new_x = grid_increment * round(pt.x / grid_increment)
             new_y = grid_increment * round(pt.y / grid_increment)
-            new_boundary.append(Point3D(new_x, new_y, pt.z))
-        if self._floor_geometry.holes is not None:
+            new_boundary.append(Point3D(new_x, new_y, z_val))
+        if holes is not None:
             new_holes = []
-            for hole in self._floor_geometry.holes:
+            for hole in holes:
                 new_hole = []
                 for pt in hole:
                     new_x = grid_increment * round(pt.x / grid_increment)
                     new_y = grid_increment * round(pt.y / grid_increment)
-                    new_hole.append(Point3D(new_x, new_y, pt.z))
+                    new_hole.append(Point3D(new_x, new_y, z_val))
                 new_holes.append(new_hole)
+
+        # if the base plane is specified, convert back to the world coordinate system
+        if base_plane is not None:
+            new_boundary = [base_plane.xy_to_xyz(pt) for pt in new_boundary]
+            if new_holes is not None:
+                new_holes = [[base_plane.xy_to_xyz(pt) for pt in hole]
+                             for hole in new_holes]
 
         # rebuild the new floor geometry and assign it to the Room2D
         self._floor_geometry = Face3D(
@@ -4132,6 +4257,58 @@ class Room2D(_BaseGeometry):
                 pts3d = tuple(Point3D(pt.x, pt.y, z_min) for pt in poly)
                 bound_faces.append(Face3D(pts3d))
             return Face3D.merge_faces_to_holes(bound_faces, tolerance)
+
+    @staticmethod
+    def room_orientation_plane(room_2ds, angle_tolerance=1.0):
+        """Get a Plane from the most frequently-occuring right angle across Room2Ds.
+
+        Args:
+            room_2ds: A list of Room2Ds which will have their right-angles analyzed
+                to determine an orientation plane from the most common right angle.
+            angle_tolerance: A number in degrees for the maximum difference that
+                a pair of Room2D segments can differ from a true right angle for
+                it to be counted towards the computation of the orientation
+                plane. (Default: 1 degree).
+
+        Returns:
+            A ladybug-geometry Plane object derived from the input Room2Ds. If there
+            were not enough right angles among the input Room2Ds to determine a
+            plane, the Wolrd XY will be returned.
+        """
+        # define variables to be used throughout the evaluation
+        ang_tol = math.radians(angle_tolerance)
+        min_ang = (math.pi / 2) - ang_tol
+        max_ang = (math.pi / 2) + ang_tol
+
+        # loop through the room_2ds and determine the possible y axes
+        plane_x_axes = []  # list to hold all of the potential y axes
+        for room in room_2ds:
+            segments = room.floor_segments_2d
+            for i, seg in enumerate(segments):
+                if min_ang < seg.v.angle(segments[i - 1].v) < max_ang:  # right angle!
+                    if seg.v.x > 0 and seg.v.y >= 0:
+                        x_vec = seg.v
+                    elif seg.v.x < 0 and seg.v.y <= 0:
+                        x_vec = seg.v.reverse()
+                    elif segments[i - 1].v.x > 0 and segments[i - 1].v.y >= 0:
+                        x_vec = segments[i - 1].v
+                    else:
+                        x_vec = segments[i - 1].v.reverse()
+                    plane_x_axes.append(x_vec.normalize())
+
+        # determine the plane X-axis from the median values
+        if len(plane_x_axes) == 0:
+            return Plane()
+        median_i = int(len(plane_x_axes) / 2)
+        x_vals = [vec.x for vec in plane_x_axes]
+        y_vals = [vec.y for vec in plane_x_axes]
+        x_vals.sort()
+        y_vals.sort()
+        median_x_axis = Vector3D(x_vals[median_i], y_vals[median_i])
+
+        # determine a suitable plane origin
+        min_pt, _ = bounding_box([r.floor_geometry for r in room_2ds])
+        return Plane(o=min_pt, x=median_x_axis)
 
     @staticmethod
     def generate_alignment_axes(room_2ds, distance, direction=Vector2D(0, 1),
