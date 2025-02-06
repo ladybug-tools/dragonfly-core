@@ -1246,6 +1246,47 @@ class Room2D(_BaseGeometry):
                                 self.identifier, other_room_2d.identifier)
                         raise AssertionError(msg)
 
+    def reset_adjacency(self):
+        """Set all Surface boundary conditions of this Room2D to be Outdoors."""
+        for i, bc in enumerate(self._boundary_conditions):
+            if isinstance(bc, Surface):
+                self._boundary_conditions[i] = bcs.outdoors
+
+    def find_segment_adjacency(self, room_2ds, tolerance=0.01):
+        """Evaluate each of the segment of this Room2D for adjacency with other Room2Ds.
+
+        This is purely a geometric analysis and is separate from any boundary
+        conditions that may or may not be assigned to the Room2Ds.
+
+        Args:
+            room_2ds: A list of Room2Ds for which adjacencies with this Room2D will
+                be evaluated.
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list with one item for each of this Room2D's floor_segments. If a
+            given segment isn't adjacent to anything, the corresponding item in
+            this list will be None. Otherwise, it will be a tuple with two items.
+            The first is the adjacent Room2D to the segment and the second is
+            the index of the wall segment that is adjacent.
+        """
+        self_floor_segs = self.floor_segments_2d
+        adj_info = [None] * len(self_floor_segs)  # lists of adjacencies to track
+        for room_2 in room_2ds:
+            if not Polygon2D.overlapping_bounding_rect(
+                    self._floor_geometry.boundary_polygon2d,
+                    room_2._floor_geometry.boundary_polygon2d, tolerance):
+                continue  # no overlap in bounding rect; adjacency impossible
+            for j, seg_1 in enumerate(self_floor_segs):
+                for k, seg_2 in enumerate(room_2.floor_segments_2d):
+                    if seg_1.distance_to_point(seg_2.p1) <= tolerance and \
+                            seg_1.distance_to_point(seg_2.p2) <= tolerance:
+                        adj_info[j] = (room_2, k)
+                        break
+        return adj_info
+
     def set_boundary_condition(self, seg_index, boundary_condition):
         """Set a single segment of this Room2D to have a certain boundary condition.
 
@@ -1344,12 +1385,6 @@ class Room2D(_BaseGeometry):
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters.offset_polygons_for_face(
                 self.floor_geometry, offset_distance, tolerance)
-
-    def reset_adjacency(self):
-        """Set all Surface boundary conditions of this Room2D to be Outdoors."""
-        for i, bc in enumerate(self._boundary_conditions):
-            if isinstance(bc, Surface):
-                self._boundary_conditions[i] = bcs.outdoors
 
     def move(self, moving_vec):
         """Move this Room2D along a vector.
@@ -3661,7 +3696,7 @@ class Room2D(_BaseGeometry):
         segments between Room2Ds.
 
         Args:
-            room_2ds: A list of Room2Ds for which adjacencies will be solved.
+            room_2ds: A list of Room2Ds for which adjacencies will be evaluated.
             tolerance: The minimum difference between the coordinate values of two
                 faces at which they can be considered adjacent. (Default: 0.01,
                 suitable for objects in meters).
@@ -3856,7 +3891,7 @@ class Room2D(_BaseGeometry):
             rooms, Room2D._find_adjacent_air_boundary_rooms)
 
     @staticmethod
-    def join_room_2ds(room_2ds, min_separation=0, tolerance=0.01):
+    def join_room_2ds(room_2ds, min_separation=0, tolerance=0.01, identifier=None):
         """Join Room2Ds together that are touching one another within a min_separation.
 
         When the min_separation is less than or equal to the tolerance, all
@@ -3894,6 +3929,12 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum distance between a vertex and the polygon
                 boundary at which point the vertex is considered to lie on the
                 polygon. (Default: 0.01, suitable for objects in meters).
+            identifier: An optional text string for the identifier of the new
+                joined Room2D. If this matches an existing Room2D inside of the
+                polygon, the existing Room2D will be used to set the extension
+                properties of the output Room2D. If None, the identifier
+                and extension properties of the output Room2D will be those of
+                the largest Room2D found inside of the polygon. (Default: None).
         """
         # get the horizontal boundaries around the input Room2Ds
         h_bnds = Room2D.grouped_horizontal_boundary(room_2ds, min_separation, tolerance)
@@ -3946,7 +3987,7 @@ class Room2D(_BaseGeometry):
             room_2ds = inter_rooms
 
         # join the Room2Ds according to the horizontal boundaries that were found
-        joined_rooms = []
+        joined_rooms, used_identifier = [], False
         for h_bnd in h_bnds:
             bnd_p_gon = Polygon2D([Point2D(pt.x, pt.y) for pt in h_bnd.boundary])
             h_p = None
@@ -3954,9 +3995,12 @@ class Room2D(_BaseGeometry):
                 h_p = []
                 for hole in h_bnd.holes:
                     h_p.append(Polygon2D([Point2D(pt.x, pt.y) for pt in hole]))
+            rm_id = None if used_identifier else identifier
             new_room = Room2D.join_by_boundary(
-                room_2ds, bnd_p_gon, h_p, tolerance=tolerance)
+                room_2ds, bnd_p_gon, h_p, identifier=rm_id, tolerance=tolerance)
             joined_rooms.append(new_room)
+            if new_room.identifier == identifier:
+                used_identifier = True
         return joined_rooms
 
     @staticmethod
@@ -4156,6 +4200,75 @@ class Room2D(_BaseGeometry):
             new_room._window_parameters = new_w_pars
 
         return new_room
+
+    @staticmethod
+    def join_to_neighbor(base_room_2ds, merge_room_2ds, tolerance=0.01):
+        """Merge a set of Room2Ds into base Room2Ds that are adjacent to them.
+
+        The merge_rooms will always be merged into the base_room with which they
+        share the longest total perimeter length.
+
+        This is a useful way of eliminating small rooms in a Story without compromising
+        the overall adjacency across Story. It can be also used in conjunction with
+        the Story.fill_holes method to fill holes in a manner that expands existing
+        rooms to fill the holes rather than adding new rooms.
+
+        Args:
+            base_room_2ds: A list of Room2Ds into which other Room2Ds will be merged.
+            merge_room_2ds: A list of Room2Ds to be merged into the base_rooms.
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of Room2Ds with the merge_rooms incorporated into the base_rooms
+            where possible.
+        """
+        # intersect adjacency to ensure matching segments
+        merge_ids = set(rm.identifier for rm in merge_room_2ds)
+        all_rooms = base_room_2ds + merge_room_2ds
+        all_rooms = Room2D.intersect_adjacency(all_rooms, tolerance=tolerance)
+        base_rooms, merge_rooms = [], []
+        for rm in all_rooms:
+            if rm.identifier in merge_ids:
+                merge_rooms.append(rm)
+            else:
+                base_rooms.append(rm)
+
+        # determine pairs of rooms to be merged together
+        merge_pairs, lone_merge_rooms = [], []
+        for m_room in merge_rooms:
+            perim_dict = {}  # dict to track the total shared perimeter
+            adj_info = m_room.find_segment_adjacency(base_rooms, tolerance)
+            for seg, a_inf in zip(m_room.floor_segments, adj_info):
+                if a_inf is not None:
+                    a_room, _ = a_inf
+                    try:
+                        perim_dict[a_room.identifier] += seg.length
+                    except KeyError:  # first time we are encountering the room
+                        perim_dict[a_room.identifier] = seg.length
+            if len(perim_dict) == 0:  # no neighboring rooms to merge into
+                lone_merge_rooms.append(m_room)
+                continue
+            perim_len, adj_rm_ids = [], []
+            for rm_id, p_len in perim_dict.items():
+                perim_len.append(p_len)
+                adj_rm_ids.append(rm_id)
+            sort_rm_ids = [r_id for _, r_id in sorted(zip(perim_len, adj_rm_ids),
+                           key=lambda pair: pair[0])]
+            adj_rm_id = sort_rm_ids[-1]
+            merge_pairs.append((m_room, adj_rm_id))
+
+        # create the final set of merged rooms
+        final_rooms = {rm.identifier: rm for rm in base_room_2ds}
+        for m_pair in merge_pairs:
+            m_room, adj_rm_id = m_pair
+            pair_rooms = [final_rooms[adj_rm_id], m_room]
+            final_rooms[adj_rm_id] = Room2D.join_room_2ds(
+                pair_rooms, identifier=adj_rm_id, tolerance=tolerance)[0]
+        all_rooms = list(final_rooms.values())
+        all_rooms.extend(lone_merge_rooms)
+        return all_rooms
 
     @staticmethod
     def grouped_horizontal_boundary(room_2ds, min_separation=0, tolerance=0.01):
