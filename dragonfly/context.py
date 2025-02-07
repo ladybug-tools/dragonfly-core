@@ -4,7 +4,7 @@ from __future__ import division
 import math
 
 from ladybug_geometry.geometry2d import Vector2D
-from ladybug_geometry.geometry3d import Point3D, Face3D, Mesh3D
+from ladybug_geometry.geometry3d import Point3D, Plane, Face3D, Mesh3D
 
 from honeybee.shade import Shade
 from honeybee.shademesh import ShadeMesh
@@ -222,7 +222,7 @@ class ContextShade(_BaseGeometry):
         """
         # if the base plane is specified, convert to the plane's coordinate system
         pl_ang = None
-        if base_plane is not None and base_plane.n.z != 0:
+        if isinstance(base_plane, Plane) and base_plane.n.z != 0:
             origin = base_plane.o
             x_axis = Vector2D(base_plane.x.x, base_plane.x.y)
             pl_ang = x_axis.angle_counterclockwise(Vector2D(1, 0))

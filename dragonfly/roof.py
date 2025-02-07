@@ -37,8 +37,7 @@ class RoofSpecification(object):
         * altitudes
         * tilts
     """
-    __slots__ = ('_geometry', '_parent', '_is_resolved',
-                 '_ridge_line_info', '_ridge_line_tolerance')
+    __slots__ = ('_geometry', '_parent', '_is_resolved')
     _ANG_TOL = 0.0174533  # angle tolerance in radians for determining X or Y alignment
 
     def __init__(self, geometry):
@@ -75,8 +74,6 @@ class RoofSpecification(object):
             assert isinstance(geo, Face3D), \
                 'Expected Face3D for RoofSpecification. Got {}'.format(type(geo))
         self._geometry = value
-        self._ridge_line_info = None
-        self._ridge_line_tolerance = None
 
     @property
     def boundary_geometry_2d(self):
@@ -235,8 +232,6 @@ class RoofSpecification(object):
         # assign the new unioned geometry to this object
         if len(clean_geo) != 0:
             self._geometry = tuple(clean_geo)
-            self._ridge_line_info = None
-            self._ridge_line_tolerance = None
 
     def resolved_geometry(self, tolerance=0.01):
         """Get a version of this object's geometry with all overlaps in plan resolved.
@@ -489,8 +484,6 @@ class RoofSpecification(object):
         geo_list = list(self._geometry)
         geo_list[face_index] = new_face_3d
         self._geometry = tuple(geo_list)
-        self._ridge_line_info = None
-        self._ridge_line_tolerance = None
 
     def update_geometry_2d(self, new_polygon_2d, polygon_index):
         """Change one of the Face3D in this roof by supplying a 2D Polygon.
@@ -547,41 +540,43 @@ class RoofSpecification(object):
                 considered co-located. (Default: 0.01,
                 suitable for objects in meters).
         """
-        # get the polygons and intersect them for matching segments
-        polygons, planes = self.boundary_geometry_2d, self.planes
+        # get the ridge lines of the roof to determine if snapping is possible
         poly_ridge_info = self._compute_ridge_line_info(tolerance)
 
-        # loop through the polygons and snap the vertices
-        new_polygons = []
-        for i, (poly, poly_info) in enumerate(zip(polygons, poly_ridge_info)):
+        # loop through the roof faces and evaluate whether they can be moved
+        new_geo = []
+        for i, (face, poly_info) in enumerate(zip(self.geometry, poly_ridge_info)):
             if selected_indices is None or i in selected_indices:
-                new_poly = []
-                for pt, pt_info in zip(poly, poly_info):
-                    if len(pt_info) == 0:  # not on a ridge line; move it anywhere
+                snap_method = 'standard'
+                for pt_info in poly_info:
+                    if len(pt_info) == 0:  # not on a ridge line
+                        continue
+                    elif len(pt_info) == 1 and self._is_vector_xy(pt_info[0].v):
+                        snap_method = 'move'
+                        pt = pt_info[0].p
                         new_x = grid_increment * round(pt.x / grid_increment)
                         new_y = grid_increment * round(pt.y / grid_increment)
-                        new_poly.append(Point2D(new_x, new_y))
-                    elif len(pt_info) == 1 and self._is_vector_xy(pt_info[0].v):
-                        unit_vec = pt_info[0].v.normalize()
-                        new_x = grid_increment * round(pt.x / grid_increment) \
-                            if unit_vec.y < self._ANG_TOL else pt.x
-                        new_y = grid_increment * round(pt.y / grid_increment) \
-                            if unit_vec.x < self._ANG_TOL else pt.y
-                        new_poly.append(Point2D(new_x, new_y))
-                    else:  # on a ridge line; don't move that point!
-                        new_poly.append(pt)
-                new_polygons.append(new_poly)
+                        move_vec = Vector3D(new_x - pt.x, new_y - pt.y)
+                    else:
+                        snap_method = 'nothing'
+                        break
+                # if they can be snapped, then do so
+                if snap_method == 'move':
+                    face = face.move(move_vec)
+                    snap_method = 'standard'
+                if snap_method == 'standard':
+                    proj_dir = Vector3D(0, 0, 1)
+                    new_pts = []
+                    for pt in face.boundary:
+                        new_x = grid_increment * round(pt.x / grid_increment)
+                        new_y = grid_increment * round(pt.y / grid_increment)
+                        n_pt = face.plane.project_point(Point3D(new_x, new_y), proj_dir)
+                        new_pts.append(n_pt)
+                    new_geo.append(Face3D(new_pts, plane=face.plane))
+                else:
+                    new_geo.append(face)
             else:
-                new_polygons.append(poly)
-
-        # project the points back onto the roof
-        proj_dir = Vector3D(0, 0, 1)
-        new_geo = []
-        for poly, r_pl in zip(new_polygons, planes):
-            new_pts3d = []
-            for pt2 in poly:
-                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
-            new_geo.append(Face3D(new_pts3d, plane=r_pl))
+                new_geo.append(face)
         self.geometry = new_geo
 
     def align(self, line_ray, distance, tolerance=0.01):
@@ -1036,8 +1031,8 @@ class RoofSpecification(object):
         Ridge lines are defined as lines shared between two roof geometries.
 
         The matrix will have one sub-list for each polygon in the boundary_geometry_2d
-        and each sub-list will contain a sub-sub-list for each vertex. This sub-sub-list
-        with contain LineSegment2Ds for each ridge line that the vertex is a part of.
+        and each sub-list contains a sub-sub-list for each vertex. This sub-sub-list
+        contains LineSegment2Ds for each ridge line that the vertex is a part of.
         Vertices that belong to only one roof geometry will get an empty list in
         the matrix, indicating that the vertex can be moved in any direction without
         changing the roof structure. Vertices belonging to two roof geometries will
@@ -1046,38 +1041,31 @@ class RoofSpecification(object):
         Vertices belonging to more than one roof geometry will get multiple
         LineSegment2Ds in the list, which usually means that moving the vertex in
         any direction will change the Roof structure.
-
-        This method is hidden because it caches the results, meaning that it does
-        not need to be recomputed for multiple alignment lines when the roof geometry
-        or the tolerance does not change.
         """
-        if self._ridge_line_info is None or self._ridge_line_tolerance != tolerance:
-            # turn the polygons into Face3D in the XY plane
-            proj_faces = []
-            for poly in self.boundary_geometry_2d:
-                proj_face = Face3D(tuple(Point3D(pt.x, pt.y) for pt in poly))
-                proj_faces.append(proj_face)
-            # join the projected Face3D into a Polyface3D and get all naked edges
-            roof_p_face = Polyface3D.from_faces(proj_faces, tolerance)
-            roof_p_face = roof_p_face.merge_overlapping_edges(
-                tolerance, math.radians(1))
-            internal_ed = roof_p_face.internal_edges
-            # check whether each Face3D vertex lies on an internal edge
-            ridge_info = []
-            for proj_face in proj_faces:
-                face_info = []
-                for pt in proj_face.boundary:
-                    pt_rid = []
-                    for ed in internal_ed:
-                        if ed.distance_to_point(pt) <= tolerance:
-                            ln_2 = LineSegment2D(
-                                Point2D(ed.p.x, ed.p.y), Vector2D(ed.v.x, ed.v.y))
-                            pt_rid.append(ln_2)
-                    face_info.append(pt_rid)
-                ridge_info.append(face_info)
-            self._ridge_line_info = ridge_info
-            self._ridge_line_tolerance = tolerance
-        return self._ridge_line_info
+        # turn the polygons into Face3D in the XY plane
+        proj_faces = []
+        for poly in self.boundary_geometry_2d:
+            proj_face = Face3D(tuple(Point3D(pt.x, pt.y) for pt in poly))
+            proj_faces.append(proj_face)
+        # join the projected Face3D into a Polyface3D and get all naked edges
+        roof_p_face = Polyface3D.from_faces(proj_faces, tolerance)
+        roof_p_face = roof_p_face.merge_overlapping_edges(
+            tolerance, math.radians(1))
+        internal_ed = roof_p_face.internal_edges
+        # check whether each Face3D vertex lies on an internal edge
+        ridge_info = []
+        for proj_face in proj_faces:
+            face_info = []
+            for pt in proj_face.boundary:
+                pt_rid = []
+                for ed in internal_ed:
+                    if ed.distance_to_point(pt) <= tolerance:
+                        ln_2 = LineSegment2D(
+                            Point2D(ed.p.x, ed.p.y), Vector2D(ed.v.x, ed.v.y))
+                        pt_rid.append(ln_2)
+                face_info.append(pt_rid)
+            ridge_info.append(face_info)
+        return ridge_info
 
     @staticmethod
     def _constrain_edges(original_polygon, new_polygon, pull_segments, tolerance):
