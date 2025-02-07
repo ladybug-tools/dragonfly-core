@@ -1631,6 +1631,26 @@ class RectangularWindows(_AsymmetricBase):
         new_w._user_data = None if self.user_data is None else self.user_data.copy()
         return new_w
 
+    def shift_horizontally(self, shift_distance):
+        """Shift these WindowParameters left or right in the wall plane.
+
+        This is useful when the length of the segment that the windows are assigned
+        to has changed a lot from the original value such that the windows should
+        be re-centered.
+
+        Args:
+            shift_distance: A number for the distance that the window parameters
+                will be shifted. Positive values will shift the windows to the
+                right in the wall plane and negative values will shift the windows
+                to the left.
+        """
+        # create the new window origins
+        new_origins = tuple(Point2D(pt.x + shift_distance, pt.y) for pt in self.origins)
+        new_w = RectangularWindows(
+            new_origins, self.widths, self.heights, self.are_doors)
+        new_w._user_data = None if self.user_data is None else self.user_data.copy()
+        return new_w
+
     def to_rectangular_windows(self, segment, floor_to_ceiling_height):
         """Returns the class instance. Provided here for consistency with other classes.
 
@@ -2324,6 +2344,28 @@ class DetailedWindows(_AsymmetricBase):
         new_polygons = []
         for poly in self.polygons:
             new_poly = Polygon2D(Point2D(p.x, p.y + shift_distance) for p in poly)
+            new_polygons.append(new_poly)
+        new_w = DetailedWindows(new_polygons, self.are_doors)
+        new_w._user_data = None if self.user_data is None else self.user_data.copy()
+        return new_w
+
+    def shift_horizontally(self, shift_distance):
+        """Shift these WindowParameters left or right in the wall plane.
+
+        This is useful when the length of the segment that the windows are assigned
+        to has changed a lot from the original value such that the windows should
+        be re-centered.
+
+        Args:
+            shift_distance: A number for the distance that the window parameters
+                will be shifted. Positive values will shift the windows to the
+                right in the wall plane and negative values will shift the windows
+                to the left.
+        """
+        # create the new window polygons
+        new_polygons = []
+        for poly in self.polygons:
+            new_poly = Polygon2D(Point2D(p.x + shift_distance, p.y) for p in poly)
             new_polygons.append(new_poly)
         new_w = DetailedWindows(new_polygons, self.are_doors)
         new_w._user_data = None if self.user_data is None else self.user_data.copy()
