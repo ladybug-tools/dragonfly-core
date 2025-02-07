@@ -257,6 +257,7 @@ class ContextShade(_BaseGeometry):
                         new_holes = [[pt.rotate_xy(-pl_ang, origin) for pt in hole]
                                      for hole in new_holes]
                 n_geo = Face3D(new_boundary, geo.plane, new_holes)
+                new_geometry.append(n_geo)
             elif isinstance(geo, Mesh3D):
                 vertices = geo.vertices
                 if pl_ang is not None:
