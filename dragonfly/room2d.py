@@ -1486,6 +1486,7 @@ class Room2D(_BaseGeometry):
                 World XY coordinate system will be used. (Default: None).
         """
         # if the base plane is specified, convert to the plane's coordinate system
+        original_segs = self.floor_segments
         boundary, holes = self._floor_geometry.boundary, self._floor_geometry.holes
         z_val, pl_ang = boundary[0].z, None
         if base_plane is not None and base_plane.n.z != 0:
@@ -1523,6 +1524,9 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
+        # if the dimension of segments has changed substantially, re-center windows
+        self._re_center_windows(original_segs)
+
     def snap_to_points(self, points, distance):
         """Snap this Room2D's vertices to a list of points.
 
@@ -1550,6 +1554,7 @@ class Room2D(_BaseGeometry):
                 raise TypeError(msg)
 
         # get lists of vertices for the Room2D.floor_geometry to be edited
+        original_segs = self.floor_segments
         edit_boundary = self._floor_geometry.boundary
         edit_holes = self._floor_geometry.holes \
             if self._floor_geometry.has_holes else None
@@ -1580,6 +1585,9 @@ class Room2D(_BaseGeometry):
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
 
+        # if the dimension of segments has changed substantially, re-center windows
+        self._re_center_windows(original_segs)
+
     def snap_to_line_end_points(self, line, distance):
         """Snap this Room2D's vertices to the endpoints of a line segment.
 
@@ -1606,6 +1614,7 @@ class Room2D(_BaseGeometry):
             raise TypeError(msg)
 
         # get lists of vertices for the Room2D.floor_geometry to be edited
+        original_segs = self.floor_segments
         edit_boundary = self._floor_geometry.boundary
         edit_holes = self._floor_geometry.holes \
             if self._floor_geometry.has_holes else None
@@ -1636,6 +1645,9 @@ class Room2D(_BaseGeometry):
         # rebuild the new floor geometry and assign it to the Room2D
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
+
+        # if the dimension of segments has changed substantially, re-center windows
+        self._re_center_windows(original_segs)
 
     def align(self, line_ray, distance):
         """Move any Room2D vertices within a given distance of a line to be on that line.
@@ -1675,6 +1687,7 @@ class Room2D(_BaseGeometry):
             raise TypeError(msg)
 
         # loop through the vertices and align them
+        original_segs = self.floor_segments
         new_boundary, new_holes = [], None
         for pt in self._floor_geometry.boundary:
             close_pt = closest_func(pt, line_ray_3d)
@@ -1697,6 +1710,9 @@ class Room2D(_BaseGeometry):
         # rebuild the new floor geometry and assign it to the Room2D
         self._floor_geometry = Face3D(
             new_boundary, self._floor_geometry.plane, new_holes)
+
+        # if the dimension of segments has changed substantially, re-center windows
+        self._re_center_windows(original_segs)
 
     def pull_to_segments(self, line_segments, distance, snap_vertices=True,
                          constrain_edges=False, tolerance=0.01):
@@ -1752,6 +1768,7 @@ class Room2D(_BaseGeometry):
             return
 
         # get lists of vertices for the Room2D.floor_geometry to be edited
+        original_segs = self.floor_segments
         edit_boundary = self._floor_geometry.boundary
         edit_holes = self._floor_geometry.holes \
             if self._floor_geometry.has_holes else None
@@ -1823,6 +1840,9 @@ class Room2D(_BaseGeometry):
         # if constrain_edges is true, move the end points of each stretch
         if constrain_edges:
             self._constrain_edges(f_geo, line_segments, tolerance)
+
+        # if the dimension of segments has changed substantially, re-center windows
+        self._re_center_windows(original_segs, tolerance)
 
     def pull_to_polyline(self, polyline, distance, snap_vertices=True,
                          constrain_edges=False, tolerance=0.01):
@@ -2008,6 +2028,7 @@ class Room2D(_BaseGeometry):
         if len(line_segments) == 0:
             return
         # get lists of vertices for the Room2D.floor_geometry to be edited
+        original_segs = self.floor_segments
         edit_boundary = self._floor_geometry.boundary
         edit_holes = self._floor_geometry.holes \
             if self._floor_geometry.has_holes else None
@@ -2078,6 +2099,9 @@ class Room2D(_BaseGeometry):
             segs_2d = [LineSegment2D.from_array(((s.p1.x, s.p1.y), (s.p2.x, s.p2.y)))
                        for s in line_segments]
             self._constrain_edges(f_geo, segs_2d, tolerance)
+
+        # if the dimension of segments has changed substantially, re-center windows
+        self._re_center_windows(original_segs, tolerance)
 
     def _constrain_edges(self, original_floor_geo, pull_segments, tolerance):
         """Move vertices of this Room2D to preserve original edges."""
@@ -2154,6 +2178,22 @@ class Room2D(_BaseGeometry):
         # rebuild the floor_geometry of this room and add back any holes
         self._floor_geometry = Face3D(
             edit_boundary, self._floor_geometry.plane, self._floor_geometry.holes)
+
+    def _re_center_windows(self, original_segs, tolerance=0.01):
+        """Re-center window parameters when segment lengths have changed substantially.
+        """
+        new_segs = self.floor_segments
+        new_wp = []
+        for o_seg, n_seg, wp in zip(original_segs, new_segs, self.window_parameters):
+            if not isinstance(wp, _AsymmetricBase):
+                new_wp.append(wp)
+                continue
+            delta_len = n_seg.length - o_seg.length
+            if abs(delta_len) > tolerance:
+                new_wp.append(wp.shift_horizontally(delta_len / 2))
+            else:
+                new_wp.append(wp)
+        self.window_parameters = new_wp
 
     def coordinate_room_2d_vertices(self, room_2d, distance, tolerance=0.01):
         """Insert vertices to this Room2D to coordinate this Room2D with another Room2D.
