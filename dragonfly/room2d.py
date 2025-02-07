@@ -5356,15 +5356,19 @@ class Room2D(_BaseGeometry):
         """Remove colinear vertices across a boundary while merging window properties."""
         new_vertices, new_bcs, new_w_par = [], [], []
         skip = 0  # track the number of vertices being skipped/removed
+        first_skip, is_first, = 0, True  # track the number skipped from first vertex
         m_segs, m_bcs, m_w_par = [], [], []
         # loop through vertices and remove all cases of colinear verts
         for i, _v in enumerate(pts_2d):
             m_segs.append(segs_2d[i - 2])
             m_bcs.append(bound_cds[i - 2])
             m_w_par.append(win_pars[i - 2])
-            _a = pts_2d[i - 2 - skip].determinant(pts_2d[i - 1]) + \
-                pts_2d[i - 1].determinant(_v) + _v.determinant(pts_2d[i - 2 - skip])
-            if abs(_a) >= tolerance:  # vertex is not colinear; add vertex and merge
+            _v2, _v1 = pts_2d[i - 2 - skip], pts_2d[i - 1]
+            _a = _v2.determinant(_v1) + _v1.determinant(_v) + _v.determinant(_v2)
+            b_dist = _v.distance_to_point(_v2)
+            b_dist = tolerance if b_dist < tolerance else b_dist
+            tri_tol = (b_dist * tolerance) / 2  # area of triangle with tolerance height
+            if abs(_a) >= tri_tol:  # vertex is not colinear; add vertex and merge
                 new_vertices.append(pts_3d[i - 1])
                 if all(not isinstance(bc, Ground) for bc in m_bcs):
                     new_bcs.append(bcs.outdoors)
@@ -5379,21 +5383,34 @@ class Room2D(_BaseGeometry):
                     new_bcs.append(bcs.ground)
                     new_w_par.append(None)
                 skip = 0
+                if is_first:
+                    is_first = False
+                    first_skip = i - 1
                 m_bcs, m_w_par, m_segs = [], [], []
             else:  # vertex is colinear; continue
                 skip += 1
-        # catch case of last two vertices being equal but distinct from first point
-        if skip != 0 and pts_3d[-2].is_equivalent(pts_3d[-1], tolerance):
-            _a = pts_2d[-3].determinant(pts_2d[-1]) + \
-                pts_2d[-1].determinant(pts_2d[0]) + pts_2d[0].determinant(pts_2d[-3])
-            if abs(_a) >= tolerance:
+        # catch case of last few vertices being equal but distinct from first point
+        if skip != 0 and first_skip != -1:
+            _v2, _v1, _v = pts_2d[-2 - skip], pts_2d[-1], pts_2d[first_skip]
+            _a = _v2.determinant(_v1) + _v1.determinant(_v) + _v.determinant(_v2)
+            b_dist = _v.distance_to_point(_v2)
+            b_dist = tolerance if b_dist < tolerance else b_dist
+            tri_tol = (b_dist * tolerance) / 2  # area of triangle with tolerance height
+            if not isinstance(bound_cds[-2 - skip], Ground):
+                new_bc = bcs.outdoors
+                m_w_par = win_pars[-2 - skip:] + win_pars[:first_skip]
+                m_segs = segs_2d[-2 - skip:] + segs_2d[:first_skip]
+                new_wp = DetailedWindows.merge(m_w_par, m_segs, ftc_height)
+                new_wp = new_wp
+            else:
+                new_bc = bcs.ground
+                new_wp = None
+            if abs(_a) >= tri_tol:
                 new_vertices.append(pts_3d[-1])
-                if not isinstance(bound_cds[-2], Ground):
-                    new_bcs.append(bcs.outdoors)
-                    new_w_par.append(win_pars[-2])
-                else:
-                    new_bcs.append(bcs.ground)
-                    new_w_par.append(None)
+                new_bcs.append(new_bc)
+                new_w_par.append(new_wp)
+            else:
+                new_w_par[0] = new_wp
         elif skip != 0:
             w_par_for_merge = m_w_par + [new_w_par[0]]
             if not all(wp is None for wp in w_par_for_merge):
