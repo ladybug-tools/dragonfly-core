@@ -108,11 +108,11 @@ def test_snap_to_grid():
     plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
     face = Face3D(pts1, plane)
     pts2 = (Point3D(0, 0, 2), Point3D(0, 2.1, 2), Point3D(2.1, 2.1, 2),
-           Point3D(2.1, 0, 2), Point3D(4.1, 0, 2))
+            Point3D(2.1, 0, 2), Point3D(4.1, 0, 2))
     mesh = Mesh3D(pts2, [(0, 1, 2, 3), (2, 3, 4)])
     awning_canopy = ContextShade('Awning_Canopy', [face, mesh])
 
-    awning_canopy.snap_to_grid(1.0, 0.01)
+    awning_canopy.snap_to_grid(1.0, None)
     assert awning_canopy[0].vertices != pts1
     assert awning_canopy[1].vertices != pts2
 

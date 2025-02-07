@@ -6,7 +6,7 @@ import math
 from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
     Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
-    Face3D, Polyface3D
+    Plane, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
 import ladybug_geometry.boolean as pb
@@ -515,7 +515,8 @@ class RoofSpecification(object):
         new_face_3d = Face3D(roof_verts, plane=roof_plane)
         self.update_geometry_3d(new_face_3d, polygon_index)
 
-    def snap_to_grid(self, grid_increment, selected_indices=None, tolerance=0.01):
+    def snap_to_grid(self, grid_increment, selected_indices=None, base_plane=None,
+                     tolerance=0.01):
         """Snap naked roof vertices to the nearest grid node defined by an increment.
 
         This is useful for coordinating the Roof specification with the grid snapping
@@ -540,6 +541,14 @@ class RoofSpecification(object):
                 considered co-located. (Default: 0.01,
                 suitable for objects in meters).
         """
+        # if the base plane is specified, convert to the plane's coordinate system
+        pl_ang = None
+        if isinstance(base_plane, Plane) and base_plane.n.z != 0:
+            origin = base_plane.o
+            x_axis = Vector2D(base_plane.x.x, base_plane.x.y)
+            pl_ang = x_axis.angle_counterclockwise(Vector2D(1, 0))
+            self.geometry = [f.rotate_xy(pl_ang, origin) for f in self.geometry]
+
         # get the ridge lines of the roof to determine if snapping is possible
         poly_ridge_info = self._compute_ridge_line_info(tolerance)
 
@@ -577,6 +586,10 @@ class RoofSpecification(object):
                     new_geo.append(face)
             else:
                 new_geo.append(face)
+
+        # rotate the geometry back to normal if a base plane was used
+        if pl_ang is not None:
+            new_geo = [f.rotate_xy(-pl_ang, origin) for f in new_geo]
         self.geometry = new_geo
 
     def align(self, line_ray, distance, tolerance=0.01):
