@@ -3,6 +3,7 @@
 from __future__ import division
 import math
 
+from ladybug_geometry.geometry2d import Vector2D
 from ladybug_geometry.geometry3d import Point3D, Face3D, Mesh3D
 
 from honeybee.shade import Shade
@@ -200,7 +201,7 @@ class ContextShade(_BaseGeometry):
                                for shd_geo in self._geometry)
         self.properties.scale(factor, origin)
 
-    def snap_to_grid(self, grid_increment, tolerance=0.01):
+    def snap_to_grid(self, grid_increment, base_plane=None):
         """Snap this object to the nearest XY grid node defined by an increment.
 
         Note that, even though ContextShade geometry is defined using 3D vertices,
@@ -215,42 +216,58 @@ class ContextShade(_BaseGeometry):
                 typically should be equal to the tolerance or larger but should
                 not be larger than the smallest detail of the ContextShade that you
                 wish to resolve.
-            tolerance: The minimum difference between the coordinate values at
-                which they are considered co-located. (Default: 0.01,
-                suitable for objects in meters).
+            base_plane: An optional ladybug-geometry Plane object to set the coordinate
+                system of the grid in which this Room will be snapped. If None, the
+                World XY coordinate system will be used. (Default: None).
         """
-        # define a list to hold all of the new geometry
-        new_geometry = []
+        # if the base plane is specified, convert to the plane's coordinate system
+        pl_ang = None
+        if base_plane is not None and base_plane.n.z != 0:
+            origin = base_plane.o
+            x_axis = Vector2D(base_plane.x.x, base_plane.x.y)
+            pl_ang = x_axis.angle_counterclockwise(Vector2D(1, 0))
 
         # loop through the current geometry and snap the vertices
+        new_geometry = []
         for geo in self._geometry:
             if isinstance(geo, Face3D):
+                boundary, holes = geo.boundary, geo.holes
+                if pl_ang is not None:
+                    boundary = [pt.rotate_xy(pl_ang, origin) for pt in boundary]
+                    if holes is not None:
+                        holes = [[pt.rotate_xy(pl_ang, origin) for pt in hole]
+                                 for hole in holes]
                 new_boundary, new_holes = [], None
-                for pt in geo.boundary:
+                for pt in boundary:
                     new_x = grid_increment * round(pt.x / grid_increment)
                     new_y = grid_increment * round(pt.y / grid_increment)
                     new_boundary.append(Point3D(new_x, new_y, pt.z))
                 if geo.holes is not None:
                     new_holes = []
-                    for hole in geo.holes:
+                    for hole in holes:
                         new_hole = []
                         for pt in hole:
                             new_x = grid_increment * round(pt.x / grid_increment)
                             new_y = grid_increment * round(pt.y / grid_increment)
                             new_hole.append(Point3D(new_x, new_y, pt.z))
                         new_holes.append(new_hole)
+                if pl_ang is not None:
+                    new_boundary = [pt.rotate_xy(-pl_ang, origin) for pt in new_boundary]
+                    if new_holes is not None:
+                        new_holes = [[pt.rotate_xy(-pl_ang, origin) for pt in hole]
+                                     for hole in new_holes]
                 n_geo = Face3D(new_boundary, geo.plane, new_holes)
-                try:  # catch all degeneracy in the process
-                    n_geo = n_geo.remove_duplicate_vertices(tolerance)
-                    new_geometry.append(n_geo)
-                except AssertionError:  # degenerate geometry
-                    pass
             elif isinstance(geo, Mesh3D):
+                vertices = geo.vertices
+                if pl_ang is not None:
+                    vertices = [pt.rotate_xy(pl_ang, origin) for pt in vertices]
                 new_vertices = []
-                for pt in geo.vertices:
+                for pt in vertices:
                     new_x = grid_increment * round(pt.x / grid_increment)
                     new_y = grid_increment * round(pt.y / grid_increment)
                     new_vertices.append(Point3D(new_x, new_y, pt.z))
+                if pl_ang is not None:
+                    new_vertices = [pt.rotate_xy(-pl_ang, origin) for pt in new_vertices]
                 n_geo = Mesh3D(new_vertices, geo.faces)
                 new_geometry.append(n_geo)
 

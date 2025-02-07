@@ -1485,22 +1485,16 @@ class Room2D(_BaseGeometry):
                 system of the grid in which this Room will be snapped. If None, the
                 World XY coordinate system will be used. (Default: None).
         """
-        # check the input base plane and make sure it is horizontal
-        if base_plane is not None:
-            if base_plane.n.z == 0:  # vertical planes do not make sense
-                base_plane = None
-            elif base_plane.n.z not in (1, -1):  # tilted plane to be corrected
-                x_axis = Vector3D(base_plane.x.x, base_plane.x.y, 0)
-                normal = Vector3D(0, 0, 1) if base_plane.n.z > 0 else Vector3D(0, 0, -1)
-                base_plane = Plane(normal, base_plane.o, x_axis)
-
         # if the base plane is specified, convert to the plane's coordinate system
         boundary, holes = self._floor_geometry.boundary, self._floor_geometry.holes
-        z_val = boundary[0].z
-        if base_plane is not None:
-            boundary = [base_plane.xyz_to_xy(pt) for pt in boundary]
+        z_val, pl_ang = boundary[0].z, None
+        if base_plane is not None and base_plane.n.z != 0:
+            origin = base_plane.o
+            x_axis = Vector2D(base_plane.x.x, base_plane.x.y)
+            pl_ang = x_axis.angle_counterclockwise(Vector2D(1, 0))
+            boundary = [pt.rotate_xy(pl_ang, origin) for pt in boundary]
             if holes is not None:
-                holes = [[base_plane.xyz_to_xy(pt) for pt in hole] for hole in holes]
+                holes = [[pt.rotate_xy(pl_ang, origin) for pt in hole] for hole in holes]
 
         # loop through the vertices and snap them
         new_boundary, new_holes = [], None
@@ -1519,10 +1513,10 @@ class Room2D(_BaseGeometry):
                 new_holes.append(new_hole)
 
         # if the base plane is specified, convert back to the world coordinate system
-        if base_plane is not None:
-            new_boundary = [base_plane.xy_to_xyz(pt) for pt in new_boundary]
+        if pl_ang is not None:
+            new_boundary = [pt.rotate_xy(-pl_ang, origin) for pt in new_boundary]
             if new_holes is not None:
-                new_holes = [[base_plane.xy_to_xyz(pt) for pt in hole]
+                new_holes = [[pt.rotate_xy(-pl_ang, origin) for pt in hole]
                              for hole in new_holes]
 
         # rebuild the new floor geometry and assign it to the Room2D
