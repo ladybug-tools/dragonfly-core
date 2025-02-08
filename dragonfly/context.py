@@ -201,6 +201,140 @@ class ContextShade(_BaseGeometry):
                                for shd_geo in self._geometry)
         self.properties.scale(factor, origin)
 
+    def unconforming_vertex_map(self, plane, angle_tolerance=1.0, min_length=0.01):
+        """Analyze this object's vertices for conformity with a plane's XY axes.
+
+        Vertices of this object that do not conform to the plane will be
+        highted in the result.
+
+        Args:
+            plane: A ladybug-geometry Plane that will be used to evaluate whether
+                each geometry vertex conforms to the plane or not.
+            angle_tolerance: A number for the maximum difference in degrees that the
+                geometry segments can differ from the XY axes of the plane for it
+                to be considered non-conforming. (Default: 1.0).
+            min_length: A number for the minimum length that a Room2D segment must
+                be for it to be considered for non-conformity. Setting this to
+                zero will evaluate all Room2D segments. (Default: 0.01; suitable
+                for objects in meters).
+
+        Returns:
+            A list of lists where each sub-list represents a Face3D or Mesh3D
+            in this object. Each Face3D is represented with a list of lists where
+            each sub-list is a loop of the Face3D. The first sub-list represents
+            the boundary and subsequent sub-lists represent holes. Each item in
+            each sub-list represents a vertex. If a given vertex is conforming
+            to the plane, it will show up as None in the sub-list. Otherwise,
+            the Point3D for the non-conforming vertex will appear in the sub-list.
+        """
+        # define variables to be used throughout the evaluation
+        min_ang = math.radians(angle_tolerance)
+        max_ang = math.pi - min_ang
+        x_axis, y_axis = plane.x, plane.y
+        vertex_map = []
+
+        # loop through the geometries and build up a vertex map
+        for geo in self.geometry:
+            if isinstance(geo, Face3D):
+                seg_loops = [geo.boundary_segments]
+                if geo.has_holes:
+                    seg_loops.extend(geo.hole_segments)
+                # loop through the segments and evaluate their non-conformity
+                conform = []
+                for seg_loop in seg_loops:
+                    loop_conform, correct_first = [], False
+                    for seg in seg_loop:
+                        if seg.length < min_length:
+                            loop_conform.append(True)
+                            continue
+                        try:
+                            ang = seg.v.angle(x_axis)
+                        except ZeroDivisionError:  # vertical segment
+                            try:
+                                loop_conform.append(loop_conform[-1])
+                            except IndexError:
+                                correct_first = True
+                                ang = 0
+                        if ang < min_ang or ang > max_ang:
+                            loop_conform.append(True)
+                            continue
+                        try:
+                            ang = seg.v.angle(y_axis)
+                        except ZeroDivisionError:  # vertical segment
+                            try:
+                                loop_conform.append(loop_conform[-1])
+                            except IndexError:
+                                correct_first = True
+                                ang = 0
+                        if ang < min_ang or ang > max_ang:
+                            loop_conform.append(True)
+                            continue
+                        loop_conform.append(False)
+                    if correct_first:
+                        loop_conform[0] = loop_conform[1]
+                    conform.append(loop_conform)
+                # evaluate vertices in relation to surrounding segments
+                points_to_keep = []
+                for seg_loop, conformity in zip(seg_loops, conform):
+                    loop_points = []
+                    for i, (seg, con) in enumerate(zip(seg_loop, conformity)):
+                        if con or conformity[i - 1]:
+                            loop_points.append(None)
+                        else:
+                            loop_points.append(seg.p)
+                    points_to_keep.append(loop_points)
+                vertex_map.append(points_to_keep)
+            else:  # meshes are always considered conforming
+                mesh_map = [None] * len(geo.vertices)
+                vertex_map(mesh_map)
+
+        return vertex_map
+
+    def apply_vertex_map(self, vertex_map):
+        """Apply a vertex map to this object's vertices.
+
+        Vertex maps are helpful for restoring vertices in geometry after performing
+        a series of complex operations. For example, when performing a series of
+        operations that edit the geometry in relation to a plane, a
+        ContextShade.unconforming_vertex_map() can be generated to put back the
+        vertices that did not relate to the plane of the grid.
+
+        Args:
+            vertex_map: A list of lists where each sub-list represents a Face3D or Mesh3D
+            in this object. Each Face3D is represented with a list of lists where
+            each sub-list is a loop of the Face3D. The first sub-list represents
+            the boundary and subsequent sub-lists represent holes. Each item in
+            each sub-list represents a vertex. If a given vertex on this object
+            is to be left as it is, it should be represented as None in the sub-list.
+            Otherwise, the Point3D to replace the vertex on this object should
+            appear in the sub-list.
+        """
+        if all(pt is None for sub_l in vertex_map for pt in sub_l):
+            return
+        new_geometry = []
+        for geo, v_map in zip(self.geometry, vertex_map):
+            if isinstance(geo, Face3D):
+                if all(pt is None for sub_l in v_map for pt in sub_l):
+                    new_geometry.append(geo)
+                    continue
+                final_boundary, final_holes = [], None
+                for new_pt, old_pt in zip(geo.boundary, v_map[0]):
+                    final_pt = new_pt if old_pt is None else old_pt
+                    final_boundary.append(final_pt)
+                if geo.has_holes:
+                    final_holes = []
+                    for new_hole, old_hole in zip(geo.holes, v_map[1:]):
+                        final_hole = []
+                        for new_pt, old_pt in zip(new_hole, old_hole):
+                            final_pt = new_pt if old_pt is None else old_pt
+                            final_hole.append(final_pt)
+                        final_holes.append(final_hole)
+                f_pl = geo.plane
+                new_geometry.append(Face3D(final_boundary, f_pl, final_holes))
+            else:
+                new_geometry.append(geo)
+        self._geometry = tuple(new_geometry)
+
     def snap_to_grid(self, grid_increment, base_plane=None):
         """Snap this object to the nearest XY grid node defined by an increment.
 
