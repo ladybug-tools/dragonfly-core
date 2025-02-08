@@ -1052,7 +1052,10 @@ class Room2D(_BaseGeometry):
                 if seg.length < min_length:
                     loop_conform.append(True)
                     continue
-                ang = seg.v.angle(x_axis)
+                try:
+                    ang = seg.v.angle(x_axis)
+                except ZeroDivisionError:  # duplicate vertex
+                    ang = 0
                 if ang < min_ang or ang > max_ang:
                     loop_conform.append(True)
                     continue
@@ -1093,7 +1096,7 @@ class Room2D(_BaseGeometry):
                 Otherwise, the Point3D to replace the vertex on this Room2D should
                 appear in the sub-list.
         """
-        if all(pt is None for pt in vertex_map):
+        if all(pt is None for sub_l in vertex_map for pt in sub_l):
             return
         final_boundary, final_holes = [], None
         for new_pt, old_pt in zip(self.floor_geometry.boundary, vertex_map[0]):
@@ -1107,7 +1110,8 @@ class Room2D(_BaseGeometry):
                     final_pt = new_pt if old_pt is None else old_pt
                     final_hole.append(final_pt)
                 final_holes.append(final_hole)
-        self._floor_geometry = Face3D(final_boundary, self._floor_geometry.plane, final_holes)
+        f_pl = self._floor_geometry.plane
+        self._floor_geometry = Face3D(final_boundary, f_pl, final_holes)
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
