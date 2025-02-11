@@ -12,7 +12,7 @@ from ladybug_geometry.intersection2d import closest_point2d_between_line2d, \
     closest_point2d_on_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
-from ladybug_geometry.bounding import bounding_box
+from ladybug_geometry.bounding import bounding_box, overlapping_bounding_boxes
 import ladybug_geometry.boolean as pb
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
@@ -948,7 +948,7 @@ class Room2D(_BaseGeometry):
         Args:
             lines: A list of LineSegment2D objects to note which segment indices
                 should be returned.
-            tolerance: The minimum difference in coordinate values for them
+            tolerance: The maximum difference in coordinate values for them
                 to be considered touching. (Default: 0.01).
         """
         seg_indices = []
@@ -970,7 +970,7 @@ class Room2D(_BaseGeometry):
         Args:
             other_room_2d: Another Room2D object to be checked for overlap with
                 this one.
-            tolerance: The minimum difference in coordinate values that the
+            tolerance: The maximum difference in coordinate values that the
                 room vertices must have for them to be considered
                 overlapping. (Default: 0.01).
         """
@@ -996,7 +996,7 @@ class Room2D(_BaseGeometry):
         lie above the Room2D.
 
         Args:
-            tolerance: The minimum difference in coordinate values that the
+            tolerance: The maximum difference in coordinate values that the
                 room vertices must have for them to be considered
                 overlapping. (Default: 0.01).
         """
@@ -1151,6 +1151,95 @@ class Room2D(_BaseGeometry):
                 glz = glz.to_detailed_windows()
             glz_ps.append(glz)
         self._window_parameters = glz_ps
+
+    def assign_sub_faces(self, sub_faces, projection_distance=0, tolerance=0.01,
+                         angle_tolerance=1.0):
+        """Assign a list of orphaned SubFaces (Apertures and Doors) to this Room2D.
+
+        The geometry of the SubFaces will automatically be converted to
+        WindowParameters in the plane of each wall segment and appropriate is_door
+        properties will be used to denote whether the projected SubFace is an
+        Aperture vs. a Door.
+
+        Args:
+            sub_faces: A list of orphaned Honeybee Apertures and/or Doors to be
+                assigned to this Room2D as WindowParameters and/or SkylightParameters.
+                Large lists of all Apertures/Doors in a building can be plugged
+                in here since fast bounding box checks are used to rule out any
+                un-applicable geometries.
+            projection_distance: An optional number to be used to project the
+                Aperture/Door geometry onto parent wall segments. If specified,
+                then SubFaces within this distance of the parent wall will be
+                projected and added. Otherwise, Apertures/Doors will only be
+                added if they are coplanar with the parent wall segment.
+            tolerance: The minimum difference in coordinate values for them
+                to be considered distinct from one another. (Default: 0.01,
+                suitable for objects in meters).
+            angle_tolerance: The max angle difference in degrees that wall segments
+                and sub-faces can differ from one another in order for the sub-face
+                to be projected onto the geometry. (Default: 1).
+        """
+        # process the angle tolerance into radians
+        a_tol_min = math.radians(angle_tolerance)
+        a_tol_max = math.pi - a_tol_min
+        perp = math.pi / 2
+        perp_min, perp_max = perp - a_tol_min, perp + a_tol_min
+        floor_segments, ftc = self.floor_segments, self.floor_to_ceiling_height
+
+        # search all of the sub-faces that could be relevant
+        r_min_pt, max_pt = self.floor_geometry.min, self.floor_geometry.max
+        r_max_pt = Point3D(max_pt.x, max_pt.y, max_pt.z + ftc)
+        bb_diagonal = LineSegment3D.from_end_points(r_min_pt, r_max_pt)
+        dist = projection_distance if projection_distance > tolerance else tolerance
+        sf_to_add = []
+        for sf in sub_faces:
+            if overlapping_bounding_boxes(bb_diagonal, sf.geometry, dist):
+                sf_to_add.append(sf)
+
+        # add the apertures to the room if any were found
+        skylight_sfs = []
+        wps = [[] for _ in floor_segments]
+        if len(sf_to_add) != 0:
+            ext_vec = Vector3D(0, 0, ftc)
+            walls = [Face3D.from_extrusion(seg, ext_vec) for seg in floor_segments]
+            for sf in sf_to_add:
+                # first check if the sub-face might be a skylight
+                v_ang = sf.normal.angle(ext_vec)
+                if v_ang < perp_min or v_ang > perp_max:
+                    skylight_sfs.append(sf)
+                else:  # check if the sub-face belongs in any of the walls
+                    for i, face in enumerate(walls):
+                        if overlapping_bounding_boxes(sf.geometry, face, dist):
+                            ang = sf.normal.angle(face.normal)
+                            if ang < a_tol_min or ang > a_tol_max:
+                                clean_pts = [face.plane.project_point(pt)
+                                             for pt in sf.geometry.boundary]
+                                proj_geometry = Face3D(clean_pts)
+                                isd = True if isinstance(sf, Door) else False
+                                wps[i].append((proj_geometry, isd))
+
+        # convert any projected Face3Ds to DetailedWindows and assign them
+        new_win_pars = []
+        for wp, seg in zip(wps, floor_segments):
+            if len(wp) == 0:
+                new_win_pars.append(None)
+            else:
+                win_to_add, are_doors = zip(*wp)
+                det_win = DetailedWindows.from_face3ds(win_to_add, seg, are_doors)
+                det_win = det_win.adjust_for_segment(seg, ftc, tolerance)
+                new_win_pars.append(det_win)
+        self.window_parameters = new_win_pars
+
+        # search the remaining un-assigned sub-faces to see if they should be a skylight
+        if len(skylight_sfs) != 0:
+            sky_poly, are_doors = [], []
+            for sf in skylight_sfs:
+                bnd_pts = sf.geometry.boundary
+                sky_poly.append(Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in bnd_pts)))
+                isd = True if isinstance(sf, Door) else False
+                are_doors.append(isd)
+            self.skylight_parameters = DetailedSkylights(sky_poly, are_doors)
+            self.offset_skylights_from_edges(5 * tolerance, tolerance)
 
     def add_prefix(self, prefix):
         """Change the identifier of this object by inserting a prefix.
@@ -1389,6 +1478,8 @@ class Room2D(_BaseGeometry):
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters.offset_polygons_for_face(
                 self.floor_geometry, offset_distance, tolerance)
+            if len(self._skylight_parameters.polygons) == 0:
+                self._skylight_parameters = None
 
     def move(self, moving_vec):
         """Move this Room2D along a vector.
