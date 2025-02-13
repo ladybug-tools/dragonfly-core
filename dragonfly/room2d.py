@@ -4554,7 +4554,7 @@ class Room2D(_BaseGeometry):
 
     @staticmethod
     def generate_alignment_axes(room_2ds, distance, direction=Vector2D(0, 1),
-                                angle_tolerance=1.0):
+                                angle_tolerance=1.0, filter_tolerance=0):
         """Get suggested LineSegment2Ds for the Room2D.align method.
 
         This method will return the most common axes across the input Room2D
@@ -4578,6 +4578,11 @@ class Room2D(_BaseGeometry):
             angle_tolerance: The max angle difference in degrees that the Room2D
                 segment direction can differ from the input direction before the
                 segments are not factored into this calculation of common axes.
+            filter_tolerance: A number that can be used to filter out axes in the
+                result, which are already perfectly aligned with the input polygon
+                segments. Setting this to zero wil guarantee that no axes are
+                filtered out no matter how close they are to the existing polygon
+                segments. (Default: 0).
 
             Returns:
                 A tuple with two elements.
@@ -4601,7 +4606,7 @@ class Room2D(_BaseGeometry):
                     polygons.append(hole)
         # return the common axes and values
         return Polygon2D.common_axes(
-            polygons, direction, min_distance, merge_distance, ang_tol)
+            polygons, direction, min_distance, merge_distance, ang_tol, filter_tolerance)
 
     @staticmethod
     def floor_segment_by_index(geometry, segment_index):
