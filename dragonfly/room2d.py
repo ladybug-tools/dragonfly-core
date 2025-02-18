@@ -2780,6 +2780,7 @@ class Room2D(_BaseGeometry):
                         post_del = False
                 if post_del:
                     new_points.pop(0)  # put back the last property
+                    del_prop_i[-1] = 0
                 if len(new_points) != 0:
                     final_pts.append(new_points)
             else:  # no short segments to remove on this hole or boundary
