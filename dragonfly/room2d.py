@@ -3546,6 +3546,8 @@ class Room2D(_BaseGeometry):
             roof_spec = self._parent._room_roofs(self, tolerance)
             # generate the room volume from the slanted roof
             if roof_spec is not None:
+                # remove duplicate vertices as they are absent from volume with roof
+                self.remove_duplicate_vertices(tolerance)
                 room_polyface, roof_face_i = \
                     self._room_volume_with_roof(roof_spec, tolerance)
                 if room_polyface is None:  # complete failure to interpret roof
