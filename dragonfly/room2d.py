@@ -3547,7 +3547,10 @@ class Room2D(_BaseGeometry):
             # generate the room volume from the slanted roof
             if roof_spec is not None:
                 # remove duplicate vertices as they are absent from volume with roof
-                self.remove_duplicate_vertices(tolerance)
+                try:
+                    self.remove_duplicate_vertices(tolerance)
+                except ValueError:  # degenerate room; just let it pass
+                    pass
                 room_polyface, roof_face_i = \
                     self._room_volume_with_roof(roof_spec, tolerance)
                 if room_polyface is None:  # complete failure to interpret roof
@@ -3797,6 +3800,13 @@ class Room2D(_BaseGeometry):
             interior windows, assigning air boundaries, or custom boundary
             conditions).
         """
+        # first, remove any duplicate vertices that might not be translated to HB
+        for room in room_2ds:
+            try:
+                room.remove_duplicate_vertices(tolerance)
+            except ValueError:  # degenerate room; just leave it
+                pass
+        # set the adjacencies between all matching segments
         rwc = resolve_window_conflicts
         adj_info = []
         for i, room_1 in enumerate(room_2ds):
