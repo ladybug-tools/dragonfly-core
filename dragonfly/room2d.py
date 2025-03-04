@@ -4609,7 +4609,7 @@ class Room2D(_BaseGeometry):
                 commonly aligned across the Room2Ds.
         """
         # process the inputs
-        min_distance, merge_distance = distance / 3, distance
+        min_distance, merge_distance = distance / 4, distance
         ang_tol = math.radians(angle_tolerance)
         polygons = []
         for room in room_2ds:
