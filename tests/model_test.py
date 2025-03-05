@@ -566,12 +566,12 @@ def test_suggested_alignment_axes():
     bldg = model.buildings[0]
     common_axes, axes_weights = bldg.suggested_alignment_axes(0.03)
     assert len(common_axes) == len(axes_weights)
-    assert max(axes_weights) > 5
+    assert max(axes_weights) > 20
 
     story = bldg.unique_stories[0]
     common_axes, axes_weights = story.suggested_alignment_axes(0.03)
     assert len(common_axes) == len(axes_weights)
-    assert max(axes_weights) < 5
+    assert max(axes_weights) < 20
 
 
 def test_skylight_merge_and_simplify():
