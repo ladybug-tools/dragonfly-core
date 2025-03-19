@@ -1869,44 +1869,32 @@ class Room2D(_BaseGeometry):
             if self._floor_geometry.has_holes else None
 
         # loop through the Room2D vertices and align them to the segments
-        new_boundary, prev_i = [], -1
+        new_boundary = []
         for pt in edit_boundary:
-            dists, c_pts, l_i = [], [], []
-            for i, line_ray_3d in enumerate(lines_3d):
+            dists, c_pts = [], []
+            for line_ray_3d in lines_3d:
                 close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
-                dists.append(pt.distance_to_point(close_pt))
                 c_pts.append(close_pt)
-                l_i.append(i)
-            sort_pt = sorted(zip(dists, c_pts, l_i), key=lambda pair: pair[0])
+                dists.append(pt.distance_to_point(close_pt))
+            sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
             if sort_pt[0][0] <= distance:
-                if len(l_i) > 1 and sort_pt[1][2] == prev_i and \
-                        sort_pt[1][0] <= distance * 1.02:
-                    new_boundary.append(sort_pt[1][1])
-                else:
-                    new_boundary.append(sort_pt[0][1])
-                    prev_i = sort_pt[0][2]
+                new_boundary.append(sort_pt[0][1])
             else:
                 new_boundary.append(pt)
         edit_boundary = new_boundary
         if edit_holes is not None:
             new_holes = []
             for hole in edit_holes:
-                new_hole, prev_i = [], -1
+                new_hole = []
                 for pt in hole:
-                    dists, c_pts, l_i = [], [], []
-                    for i, line_ray_3d in enumerate(lines_3d):
+                    dists, c_pts = [], []
+                    for line_ray_3d in lines_3d:
                         close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
-                        dists.append(pt.distance_to_point(close_pt))
                         c_pts.append(close_pt)
-                        l_i.append(i)
-                    sort_pt = sorted(zip(dists, c_pts, l_i), key=lambda pair: pair[0])
+                        dists.append(pt.distance_to_point(close_pt))
+                    sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
                     if sort_pt[0][0] <= distance:
-                        if len(l_i) > 1 and sort_pt[1][2] == prev_i and \
-                                sort_pt[1][0] <= distance * 1.02:
-                            new_hole.append(sort_pt[1][1])
-                        else:
-                            new_hole.append(sort_pt[0][1])
-                            prev_i = sort_pt[0][2]
+                        new_hole.append(sort_pt[0][1])
                     else:
                         new_hole.append(pt)
                 new_holes.append(new_hole)
