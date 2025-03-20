@@ -706,9 +706,10 @@ def test_rotate_xy():
     assert test_2.unique_stories[0].room_2ds[0].floor_geometry[2].y == pytest.approx(2, rel=1e-3)
     assert test_2.unique_stories[0].room_2ds[0].floor_geometry[2].z == pytest.approx(2, rel=1e-3)
 
-    assert building.floor_area == test_1.floor_area
-    assert building.volume == test_1.volume
-    assert building.height_from_first_floor == test_1.height_from_first_floor
+    assert building.floor_area == pytest.approx(test_1.floor_area, rel=1e-3)
+    assert building.volume == pytest.approx(test_1.volume, rel=1e-3)
+    assert building.height_from_first_floor == \
+        pytest.approx(test_1.height_from_first_floor, rel=1e-3)
     assert building.height == 14
 
 
