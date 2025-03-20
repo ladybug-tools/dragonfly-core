@@ -1488,7 +1488,9 @@ class Room2D(_BaseGeometry):
             moving_vec: A ladybug_geometry Vector3D with the direction and distance
                 to move the room.
         """
-        self._floor_geometry = self._floor_geometry.move(moving_vec)
+        moved_floor = self._floor_geometry.move(moving_vec)
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
+        self._floor_geometry = Face3D(moved_floor.boundary, o_pl, moved_floor.holes)
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters = self._skylight_parameters.move(moving_vec)
         self.properties.move(moving_vec)
@@ -1501,8 +1503,9 @@ class Room2D(_BaseGeometry):
             origin: A ladybug_geometry Point3D for the origin around which the
                 object will be rotated.
         """
-        self._floor_geometry = self._floor_geometry.rotate_xy(
-            math.radians(angle), origin)
+        rotated_floor = self._floor_geometry.rotate_xy(math.radians(angle), origin)
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
+        self._floor_geometry = Face3D(rotated_floor.boundary, o_pl, rotated_floor.holes)
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters = self._skylight_parameters.rotate(angle, origin)
         self.properties.rotate_xy(angle, origin)
@@ -1524,6 +1527,9 @@ class Room2D(_BaseGeometry):
             self._window_parameters = new_win_pars
             self._shading_parameters = new_shd_pars
             self._floor_geometry = self._floor_geometry.flip()
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
+        self._floor_geometry = Face3D(self._floor_geometry.boundary, o_pl,
+                                      self._floor_geometry.holes)
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters = self._skylight_parameters.reflect(plane)
         self.properties.reflect(plane)
@@ -1540,7 +1546,9 @@ class Room2D(_BaseGeometry):
                 to scale. If None, it will be scaled from the World origin (0, 0, 0).
         """
         # scale the Room2D geometry
-        self._floor_geometry = self._floor_geometry.scale(factor, origin)
+        scaled_floor = self._floor_geometry.scale(factor, origin)
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
+        self._floor_geometry = Face3D(scaled_floor.boundary, o_pl, scaled_floor.holes)
         self._floor_to_ceiling_height = self._floor_to_ceiling_height * factor
         self._ceiling_plenum_depth = self._ceiling_plenum_depth * factor
         self._floor_plenum_depth = self._floor_plenum_depth * factor
