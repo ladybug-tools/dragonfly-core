@@ -1489,7 +1489,7 @@ class Room2D(_BaseGeometry):
                 to move the room.
         """
         moved_floor = self._floor_geometry.move(moving_vec)
-        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, moved_floor.plane.o.z))
         self._floor_geometry = Face3D(moved_floor.boundary, o_pl, moved_floor.holes)
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters = self._skylight_parameters.move(moving_vec)
@@ -1504,7 +1504,7 @@ class Room2D(_BaseGeometry):
                 object will be rotated.
         """
         rotated_floor = self._floor_geometry.rotate_xy(math.radians(angle), origin)
-        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, rotated_floor.plane.o.z))
         self._floor_geometry = Face3D(rotated_floor.boundary, o_pl, rotated_floor.holes)
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters = self._skylight_parameters.rotate(angle, origin)
@@ -1547,7 +1547,7 @@ class Room2D(_BaseGeometry):
         """
         # scale the Room2D geometry
         scaled_floor = self._floor_geometry.scale(factor, origin)
-        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, scaled_floor.plane.o.z))
         self._floor_geometry = Face3D(scaled_floor.boundary, o_pl, scaled_floor.holes)
         self._floor_to_ceiling_height = self._floor_to_ceiling_height * factor
         self._ceiling_plenum_depth = self._ceiling_plenum_depth * factor
