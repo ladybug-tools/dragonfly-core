@@ -1592,10 +1592,14 @@ class Building(_BaseGeometry):
             ad_bc = bcs.outdoors  # honeybee_energy is not loaded; no adiabatic BC
         for new_room in new_rooms:
             new_bcs = []
-            for bc in new_room.boundary_conditions:
+            for i, bc in enumerate(new_room.boundary_conditions):
                 if isinstance(bc, Surface):
-                    clean_bc = bc if bc.boundary_condition_objects[-1] in plenum_rm_ids \
-                        else ad_bc
+                    if bc.boundary_condition_objects[-1] in plenum_rm_ids:
+                        clean_bc = bc
+                    else:
+                        clean_bc = ad_bc
+                        if not isinstance(ad_bc, Outdoors):
+                            self._window_parameters[i] = None
                     new_bcs.append(clean_bc)
                 else:
                     new_bcs.append(bc)
