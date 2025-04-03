@@ -1599,7 +1599,7 @@ class Building(_BaseGeometry):
                     else:
                         clean_bc = ad_bc
                         if not isinstance(ad_bc, Outdoors):
-                            self._window_parameters[i] = None
+                            new_room._window_parameters[i] = None
                     new_bcs.append(clean_bc)
                 else:
                     new_bcs.append(bc)
