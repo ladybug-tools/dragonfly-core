@@ -1,0 +1,6 @@
+translate
+=========
+
+.. click:: dragonfly.cli.translate:translate
+   :prog: dragonfly translate
+   :show-nested:
