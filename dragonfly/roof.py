@@ -908,7 +908,6 @@ class RoofSpecification(object):
                 raise TypeError(msg)
 
         # split the geometries with the lines
-        rt = self._rounding_tolerance(tolerance)
         proj_dir = Vector3D(0, 0, 1)
         split_geometries = []
         for i, geo in enumerate(self.geometry):
@@ -918,8 +917,6 @@ class RoofSpecification(object):
                 for seg in lines:
                     pt1 = geo.plane.project_point(Point3D.from_point2d(seg.p1), proj_dir)
                     pt2 = geo.plane.project_point(Point3D.from_point2d(seg.p2), proj_dir)
-                    pt1 = Point3D(round(pt1.x, rt), round(pt1.y, rt), round(pt1.z, rt))
-                    pt2 = Point3D(round(pt2.x, rt), round(pt2.y, rt), round(pt2.z, rt))
                     lines_3d.append(LineSegment3D.from_end_points(pt1, pt2))
                 # split the roof geometry with the lines
                 new_geos = geo.split_with_lines(lines_3d, tolerance)
@@ -1185,25 +1182,6 @@ class RoofSpecification(object):
             if r_geo.max.y > max_pt[1]:
                 max_pt[1] = r_geo.max.y
         return Point2D(max_pt[0], max_pt[1])
-
-    @staticmethod
-    def _rounding_tolerance(tolerance):
-        """Get the number of integers to round to based on tolerance.
-
-        This is used to resolve issues when projecting points into the planes
-        of roof geometries.
-        """
-        try:  # get the relative tolerance using a log function
-            rtol = int(math.log10(tolerance)) * -1
-        except ValueError:
-            rtol = 0  # the tol is equal to 1 (out of range for log)
-        # account for the fact that the tolerance may not be base 10
-        base = int(tolerance * 10 ** (rtol + 1))
-        if base == 10 or base == 0:  # tolerance is base 10 (eg. 0.001)
-            base = 1
-        else:  # tolerance is not base 10 (eg. 0.003)
-            rtol += 1
-        return rtol
 
     def __copy__(self):
         return RoofSpecification(self._geometry)
