@@ -79,6 +79,8 @@ class Building(_BaseGeometry):
         * has_room_2d_plenums
         * room_2d_story_names
         * room_3d_story_names
+        * has_zones
+        * zone_dict
         * story_count
         * story_count_above_ground
         * unique_stories_above_ground
@@ -531,6 +533,25 @@ class Building(_BaseGeometry):
     def room_3d_story_names(self):
         """Get a tuple of all story display_names that have 3D Honeybee Rooms on them."""
         return tuple(set(rm.story for rm in self._room_3ds))
+
+    @property
+    def has_zones(self):
+        """Get a boolean for whether any Rooms in the Building have zones assigned."""
+        return any(room._zone is not None for room in self.unique_room_2ds)
+
+    @property
+    def zone_dict(self):
+        """Get dictionary of Rooms with zone identifiers as the keys.
+
+        This is useful for grouping rooms by their Zone for export.
+        """
+        zones = {}
+        for room in self.unique_room_2ds:
+            try:
+                zones[room.zone].append(room)
+            except KeyError:  # first room to be found in the zone
+                zones[room.zone] = [room]
+        return zones
 
     @property
     def story_count(self):
@@ -1292,6 +1313,30 @@ class Building(_BaseGeometry):
             story.add_prefix(prefix)
         for room in self.room_3ds:
             room.add_prefix(prefix)
+
+    def automatically_zone(self, orient_count=None, north_vector=Vector2D(0, 1),
+                           attr_name=None):
+        """Automatically group the rooms of this Building into zones.
+
+        Relevant properties that are used to group Room2Ds into zones include story,
+        orientation, and additional attributes (like programs).
+
+        Args:
+            orient_count: An optional positive integer to set the number of orientation
+                groups to use for zoning. For example, setting this to 4 will result
+                in zones being established based on the four orientations (North,
+                East, South, West). If None, the maximum number of unique groups
+                will be used.
+            north_vector: A ladybug_geometry Vector2D for the north direction.
+                Default is the Y-axis (0, 1).
+            attr_name: A string of an attribute that the input Room2Ds should have.
+                This can have '.' that separate the nested attributes from one another.
+                For example, 'properties.energy.program_type'.
+        """
+        for story in self.unique_stories:
+            story.automatically_zone(orient_count, north_vector, attr_name)
+        if len(self.room_3ds) != 0:
+            Room.automatically_zone(self.room_3ds, orient_count, north_vector, attr_name)
 
     def sort_stories(self):
         """Sort the stories assigned to this Building by their floor heights"""

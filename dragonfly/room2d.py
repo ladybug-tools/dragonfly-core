@@ -18,6 +18,7 @@ from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
 from honeybee.typing import float_positive, clean_string, clean_and_id_string
 from honeybee.orientation import angles_from_num_orient, orient_index
+from honeybee.search import get_attr_nested
 import honeybee.boundarycondition as hbc
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Ground
@@ -989,7 +990,7 @@ class Room2D(_BaseGeometry):
             if isinstance(bc, Outdoors):
                 norm = Vector2D(seg.v.y, -seg.v.x)
                 orient = math.degrees(north_vector.angle_clockwise(norm))
-                orientations += orient * seg.area
+                orientations += orient * seg.length
                 seg_lengths += seg.length
         return orientations / seg_lengths if seg_lengths != 0 else None
 
@@ -4105,6 +4106,39 @@ class Room2D(_BaseGeometry):
             rooms, Room2D._find_adjacent_air_boundary_rooms)
 
     @staticmethod
+    def group_by_attribute(rooms, attr_name):
+        """Group rooms with the same value for a given attribute.
+
+        Args:
+            attr_name: A string of an attribute that the input rooms should have.
+                This can have '.' that separate the nested attributes from one another.
+                For example, 'properties.energy.program_type'.
+
+        Returns:
+            A tuple with two items.
+
+            -   grouped_rooms - A list of lists of honeybee rooms with each sub-list
+                representing a different value for the attribute.
+
+            -   values - A list of text strings for the value associated with each
+                sub-list of the output grouped_rooms.
+        """
+        # loop through each of the rooms and get the orientation
+        attr_dict = {}
+        for room in rooms:
+            val = get_attr_nested(room, attr_name)
+            try:
+                attr_dict[val].append(room)
+            except KeyError:
+                attr_dict[val] = [room]
+
+        # sort the rooms by values
+        room_mtx = sorted(attr_dict.items(), key=lambda d: d[0])
+        values = [r_tup[0] for r_tup in room_mtx]
+        grouped_rooms = [r_tup[1] for r_tup in room_mtx]
+        return grouped_rooms, values
+
+    @staticmethod
     def group_by_orientation(rooms, group_count=None, north_vector=Vector2D(0, 1)):
         """Group Room2Ds together that have a similar orientation or exterior walls.
 
@@ -4162,6 +4196,62 @@ class Room2D(_BaseGeometry):
                             for i in range(group_count)]
             grouped_rooms = p_rooms
         return grouped_rooms, core_rooms, orientations
+
+    @staticmethod
+    def automatically_zone(rooms, orient_count=None, north_vector=Vector2D(0, 1),
+                           attr_name=None):
+        """Automatically group Room2Ds with a similar properties into zones.
+
+        Relevant properties that are used to group Room2Ds into zones include story,
+        orientation, and additional attributes (like programs).
+
+        Args:
+            orient_count: An optional positive integer to set the number of orientation
+                groups to use for zoning. For example, setting this to 4 will result
+                in zones being established based on the four orientations (North,
+                East, South, West). If None, the maximum number of unique groups
+                will be used.
+            north_vector: A ladybug_geometry Vector2D for the north direction.
+                Default is the Y-axis (0, 1).
+            attr_name: A string of an attribute that the input Room2Ds should have.
+                This can have '.' that separate the nested attributes from one another.
+                For example, 'properties.energy.program_type'.
+        """
+        # group the rooms by story
+        story_dict = {}
+        for room in rooms:
+            story_id = '{} - '.format(room.parent.display_name) if room.has_parent else ''
+            try:
+                story_dict[story_id].append(room)
+            except KeyError:
+                story_dict[story_id] = [room]
+
+        for story_id, story_rooms in story_dict.items():
+            # group the rooms by orientation
+            perim_rooms, core_rooms, orientations, = \
+                Room2D.group_by_orientation(story_rooms, orient_count, north_vector)
+            if orient_count == 4:
+                orientations = ['N', 'E', 'S', 'W']
+            elif orient_count == 8:
+                orientations = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW']
+            else:
+                orientations = ['{} deg'.format(orient) for orient in orientations]
+            orientations.append('Core')
+            orient_rooms = perim_rooms + [core_rooms]
+
+            # assign the zone name to each group
+            for orient_id, orient_rooms in zip(orientations, orient_rooms):
+                if attr_name is not None:  # group the rooms by attribute
+                    attr_rooms, attr_vals = Room2D.group_by_attribute(orient_rooms, attr_name)
+                    for atr_val, zone_rooms in zip(attr_vals, attr_rooms):
+                        atr_val = atr_val.split('::')[-1]
+                        zone_id = '{}{} - {}'.format(story_id, orient_id, atr_val)
+                        for room in zone_rooms:
+                            room.zone = zone_id
+                else:
+                    zone_id = '{}{}'.format(story_id, orient_id)
+                    for room in orient_rooms:
+                        room.zone = zone_id
 
     @staticmethod
     def join_room_2ds(room_2ds, min_separation=0, tolerance=0.01, identifier=None):
