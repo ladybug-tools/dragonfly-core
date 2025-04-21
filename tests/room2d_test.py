@@ -55,6 +55,9 @@ def test_room2d_init():
     assert room2d.exterior_aperture_area == 0
     assert isinstance(room2d[0], LineSegment3D)
     assert isinstance(room2d.label_point(0.01), Point3D)
+    assert room2d.zone == room2d.identifier
+    room2d.zone = 'Closets'
+    assert room2d.zone == 'Closets'
 
 
 def test_room2d_init_with_windows():
@@ -1190,9 +1193,11 @@ def test_to_from_dict():
     window = (ashrae_base, None, ashrae_base, None)
     shading = (overhang, None, None, None)
     room = Room2D('ShoeBoxZone', Face3D(pts), 3, boundarycs, window, shading, True)
+    room.zone = 'Closed Offices NE'
 
     room_dict = room.to_dict()
     new_room = Room2D.from_dict(room_dict)
+    assert new_room.zone == 'Closed Offices NE'
     assert isinstance(new_room, Room2D)
     assert new_room.to_dict() == room_dict
 

@@ -88,6 +88,7 @@ class Room2D(_BaseGeometry):
         * has_ceiling
         * ceiling_plenum_depth
         * floor_plenum_depth
+        * zone
         * skylight_parameters
         * parent
         * has_parent
@@ -119,7 +120,7 @@ class Room2D(_BaseGeometry):
         '_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
         '_boundary_conditions', '_window_parameters', '_shading_parameters',
         '_air_boundaries', '_is_ground_contact', '_is_top_exposed', '_has_floor',
-        '_has_ceiling', '_ceiling_plenum_depth', '_floor_plenum_depth',
+        '_has_ceiling', '_ceiling_plenum_depth', '_floor_plenum_depth', '_zone',
         '_skylight_parameters', '_parent', '_abridged_properties'
     )
 
@@ -179,12 +180,14 @@ class Room2D(_BaseGeometry):
         # process the top and bottom exposure properties
         self.is_ground_contact = is_ground_contact
         self.is_top_exposed = is_top_exposed
+
+        # set defaults for all other properties
         self._has_floor = True
         self._has_ceiling = True
         self._ceiling_plenum_depth = 0
         self._floor_plenum_depth = 0
+        self._zone = None
         self._skylight_parameters = None
-
         self._air_boundaries = None  # will be set if it's ever used
         self._parent = None  # _parent will be set when Room2D is added to a Story
         self._abridged_properties = None  # will be set when originating from abridged
@@ -289,6 +292,8 @@ class Room2D(_BaseGeometry):
         room.has_ceiling = ceil
         room.ceiling_plenum_depth = ceil_pln
         room.floor_plenum_depth = flr_pln
+        if 'zone' in data and data['zone'] is not None:
+            room.zone = data['zone']
 
         # assign any skylight parameters if they are specified
         if 'skylight_parameters' in data and data['skylight_parameters'] is not None:
@@ -388,6 +393,8 @@ class Room2D(_BaseGeometry):
             is_ground_contact, is_top_exposed, tolerance)
         room_2d.has_floor = has_floor
         room_2d.has_ceiling = has_ceiling
+        if room._zone is not None:
+            room_2d.zone = room.zone
 
         # check if there are any skylights to be added
         skylights, are_doors = [], []
@@ -690,6 +697,31 @@ class Room2D(_BaseGeometry):
     @floor_plenum_depth.setter
     def floor_plenum_depth(self, value):
         self._floor_plenum_depth = float_positive(value, 'floor plenum depth')
+
+    @property
+    def zone(self):
+        """Get or set text for the zone identifier to which this Room2D belongs.
+
+        Room2Ds sharing the same zone identifier are considered part of the same
+        zone in a Building. If the zone identifier has not been specified, it
+        will be the same as the Room2D identifier.
+
+        Note that the zone identifier has no character restrictions much
+        like display_name.
+        """
+        if self._zone is None:
+            return self._identifier
+        return self._zone
+
+    @zone.setter
+    def zone(self, value):
+        if value is not None:
+            try:
+                self._zone = str(value)
+            except UnicodeEncodeError:  # Python 2 machine lacking the character set
+                self._zone = value  # keep it as unicode
+        else:
+            self._zone = value
 
     @property
     def skylight_parameters(self):
@@ -2690,6 +2722,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._has_ceiling = self._has_ceiling
         rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
         rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+        rebuilt_room._zone = self._zone
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
@@ -2816,6 +2849,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._has_ceiling = self._has_ceiling
         rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
         rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+        rebuilt_room._zone = self._zone
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
         rebuilt_room._user_data = self._user_data
@@ -2877,6 +2911,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._has_ceiling = self._has_ceiling
             rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
             rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+            rebuilt_room._zone = self._zone
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
             rebuilt_room._parent = self._parent
@@ -3106,6 +3141,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._has_ceiling = self._has_ceiling
             rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
             rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+            rebuilt_room._zone = self._zone
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
             rebuilt_room._parent = self._parent
@@ -3216,6 +3252,8 @@ class Room2D(_BaseGeometry):
         # assign all of the other attributes to the new room
         if self._display_name is not None:
             new_room._display_name = '{} {} Plenum'.format(self._display_name, pln_typ)
+        if self._zone is not None:
+            new_room._zone = '{} {} Plenum'.format(self._zone, pln_typ)
         new_room._user_data = None if self.user_data is None else self.user_data.copy()
         new_room._air_boundaries = self._air_boundaries[:] \
             if self._air_boundaries is not None else None
@@ -3655,6 +3693,7 @@ class Room2D(_BaseGeometry):
                 hb_room.exclude_floor_area = True
         hb_room.multiplier = multiplier
         hb_room._display_name = self._display_name
+        hb_room._zone = self._zone
         hb_room._user_data = self._user_data
 
         # transfer any extension properties assigned to the Room2D and return result
@@ -3676,6 +3715,8 @@ class Room2D(_BaseGeometry):
         base = {'type': 'Room2D'}
         base['identifier'] = self.identifier
         base['display_name'] = self.display_name
+        if self._zone is not None:
+            base['zone'] = self.zone
         if abridged and self._abridged_properties is not None:
             base['properties'] = self._abridged_properties
         else:
@@ -3991,6 +4032,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._has_ceiling = room_2ds[i]._has_ceiling
             rebuilt_room._ceiling_plenum_depth = room_2ds[i]._ceiling_plenum_depth
             rebuilt_room._floor_plenum_depth = room_2ds[i]._floor_plenum_depth
+            rebuilt_room._zone = room_2ds[i]._zone
             rebuilt_room._skylight_parameters = room_2ds[i].skylight_parameters
             rebuilt_room._display_name = room_2ds[i]._display_name
             rebuilt_room._user_data = None if room_2ds[i].user_data is None else \
@@ -5771,6 +5813,7 @@ class Room2D(_BaseGeometry):
         new_r._has_ceiling = self._has_ceiling
         new_r._ceiling_plenum_depth = self._ceiling_plenum_depth
         new_r._floor_plenum_depth = self._floor_plenum_depth
+        new_r._zone = self._zone
         new_r._skylight_parameters = self._skylight_parameters.duplicate() \
             if self._skylight_parameters is not None else None
         new_r._abridged_properties = self._abridged_properties
