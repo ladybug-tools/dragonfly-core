@@ -17,6 +17,7 @@ import ladybug_geometry.boolean as pb
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
 from honeybee.typing import float_positive, clean_string, clean_and_id_string
+from honeybee.orientation import angles_from_num_orient, orient_index
 import honeybee.boundarycondition as hbc
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Ground
@@ -970,6 +971,27 @@ class Room2D(_BaseGeometry):
         """
         normals = (Vector2D(sg.v.y, -sg.v.x) for sg in self.floor_segments)
         return [math.degrees(north_vector.angle_clockwise(norm)) for norm in normals]
+
+    def average_orientation(self, north_vector=Vector2D(0, 1)):
+        """Get a number between 0 and 360 for the average orientation of exterior walls.
+
+        0 = North, 90 = East, 180 = South, 270 = West.  Will be None if the room has
+        no exterior walls. Resulting value is weighted by the area of each of the
+        wall faces.
+
+        Args:
+            north_vector: A ladybug_geometry Vector2D for the north direction.
+                Default is the Y-axis (0, 1).
+        """
+        orientations = 0
+        seg_lengths = 0
+        for seg, bc in zip(self.floor_segments, self.boundary_conditions):
+            if isinstance(bc, Outdoors):
+                norm = Vector2D(seg.v.y, -seg.v.x)
+                orient = math.degrees(north_vector.angle_clockwise(norm))
+                orientations += orient * seg.area
+                seg_lengths += seg.length
+        return orientations / seg_lengths if seg_lengths != 0 else None
 
     def segment_indices_by_guide_lines(self, lines, tolerance=0.01):
         """Get the indices of segments in this Room2D that lie along given guide lines.
@@ -4081,6 +4103,65 @@ class Room2D(_BaseGeometry):
         """
         return Room2D._adjacency_grouping(
             rooms, Room2D._find_adjacent_air_boundary_rooms)
+
+    @staticmethod
+    def group_by_orientation(rooms, group_count=None, north_vector=Vector2D(0, 1)):
+        """Group Room2Ds together that have a similar orientation or exterior walls.
+
+        This is useful for automatic zoning where rooms with similar solar loads
+        can be grouped into the same zone.
+
+        Args:
+            rooms: A list of Room2Ds to be grouped by their orientation.
+            group_count: An optional positive integer to set the number of orientation
+                groups to use. For example, setting this to 4 will result in rooms
+                being grouped by four orientations (North, East, South, West). If None,
+                the maximum number of unique groups will be used.
+            north_vector: A ladybug_geometry Vector2D for the north direction.
+                Default is the Y-axis (0, 1).
+
+        Returns:
+            A tuple with three items.
+
+            -   grouped_rooms - A list of lists of Room2Ds with each sub-list
+                representing a different orientation.
+
+            -   core_rooms - A list of honeybee Room2Ds with no identifiable orientation.
+
+            -   orientations - A list of numbers between 0 and 360 with one orientation
+                for each branch of the output grouped_rooms. This will be a list of
+                angle ranges if a value is input for group_count.
+        """
+        # loop through each of the rooms and get the orientation
+        orient_dict = {}
+        core_rooms = []
+        for room in rooms:
+            ori = room.average_orientation(north_vector)
+            if ori is None:
+                core_rooms.append(room)
+            else:
+                try:
+                    orient_dict[ori].append(room)
+                except KeyError:
+                    orient_dict[ori] = []
+                    orient_dict[ori].append(room)
+
+        # sort the rooms by orientation values
+        room_mtx = sorted(orient_dict.items(), key=lambda d: float(d[0]))
+        orientations = [r_tup[0] for r_tup in room_mtx]
+        grouped_rooms = [r_tup[1] for r_tup in room_mtx]
+
+        # group orientations if there is an input group_count
+        if group_count is not None:
+            angs = angles_from_num_orient(group_count)
+            p_rooms = [[] for i in range(group_count)]
+            for ori, rm in zip(orientations, grouped_rooms):
+                or_ind = orient_index(ori, angs)
+                p_rooms[or_ind].extend(rm)
+            orientations = ['{} - {}'.format(int(angs[i - 1]), int(angs[i]))
+                            for i in range(group_count)]
+            grouped_rooms = p_rooms
+        return grouped_rooms, core_rooms, orientations
 
     @staticmethod
     def join_room_2ds(room_2ds, min_separation=0, tolerance=0.01, identifier=None):
