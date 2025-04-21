@@ -66,6 +66,8 @@ class Story(_BaseGeometry):
         * type
         * is_plenum
         * has_plenums
+        * has_zones
+        * zone_dict
         * parent
         * has_parent
         * floor_height
@@ -383,6 +385,25 @@ using-multipliers-zone-and-or-window.html
             if room.ceiling_plenum_depth != 0 or room.floor_plenum_depth != 0:
                 return True
         return False
+
+    @property
+    def has_zones(self):
+        """Get a boolean for whether any Rooms in the Story have zones assigned."""
+        return any(room._zone is not None for room in self._room_2ds)
+
+    @property
+    def zone_dict(self):
+        """Get dictionary of Rooms with zone identifiers as the keys.
+
+        This is useful for grouping rooms by their Zone for export.
+        """
+        zones = {}
+        for room in self._room_2ds:
+            try:
+                zones[room.zone].append(room)
+            except KeyError:  # first room to be found in the zone
+                zones[room.zone] = [room]
+        return zones
 
     @property
     def parent(self):
@@ -1490,6 +1511,27 @@ using-multipliers-zone-and-or-window.html
             for i, bc in enumerate(room._boundary_conditions):
                 if isinstance(bc, Outdoors):
                     room.set_boundary_condition(i, bcs.ground)
+
+    def automatically_zone(self, orient_count=None, north_vector=Vector2D(0, 1),
+                           attr_name=None):
+        """Automatically group the rooms of this Story into zones.
+
+        Relevant properties that are used to group Room2Ds into zones include
+        orientation, and additional attributes (like programs).
+
+        Args:
+            orient_count: An optional positive integer to set the number of orientation
+                groups to use for zoning. For example, setting this to 4 will result
+                in zones being established based on the four orientations (North,
+                East, South, West). If None, the maximum number of unique groups
+                will be used.
+            north_vector: A ladybug_geometry Vector2D for the north direction.
+                Default is the Y-axis (0, 1).
+            attr_name: A string of an attribute that the input Room2Ds should have.
+                This can have '.' that separate the nested attributes from one another.
+                For example, 'properties.energy.program_type'.
+        """
+        Room2D.automatically_zone(self._room_2ds, orient_count, north_vector, attr_name)
 
     def generate_grid(self, x_dim, y_dim=None, offset=1.0):
         """Get a list of gridded Mesh3D objects offset from the floors of this story.

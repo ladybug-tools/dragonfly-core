@@ -667,6 +667,22 @@ def test_process_alleys():
     assert ad_count == 2
 
 
+def test_auto_zone():
+    """Test the Building.automatically_zone method."""
+    model_file = './tests/json/model_with_doors_skylights.dfjson'
+    model = Model.from_file(model_file)
+
+    building = model.buildings[0]
+    assert not building.has_zones
+    assert len(building.zone_dict) == 15
+
+    building.automatically_zone(4)
+
+    assert building.has_zones
+    print(len(building.zone_dict))
+    assert len(building.zone_dict) == 7
+
+
 def test_remove_duplicate_roofs():
     """Test the serialization of a model with roofs assigned to the building."""
     model_file = './tests/json/Model_with_duplicated_roofs.dfjson'
