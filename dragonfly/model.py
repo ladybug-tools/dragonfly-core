@@ -1991,7 +1991,6 @@ class Model(_BaseGeometry):
         # intersect the Rooms with one another for matching adjacencies
         HBRoom.intersect_adjacency(rooms, tolerance, angle_tolerance)
         # solve all adjacencies between rooms
-        relevant_types = (Floor, RoofCeiling)
         for i, (room_1, fc_1) in enumerate(zip(rooms, has_floor_ceil)):
             try:
                 for room_2, fc_2 in zip(rooms[i + 1:], has_floor_ceil[i + 1:]):
@@ -1999,12 +1998,10 @@ class Model(_BaseGeometry):
                             room_1.geometry, room_2.geometry, tolerance):
                         continue  # no overlap in bounding box; adjacency impossible
                     for face_1 in room_1._faces:
-                        if isinstance(face_1.boundary_condition, Surface) or \
-                                not isinstance(face_1.type, relevant_types):
+                        if isinstance(face_1.boundary_condition, Surface):
                             continue  # face is not the right type for ceiling adj
                         for face_2 in room_2._faces:
-                            if isinstance(face_2.boundary_condition, Surface) or \
-                                    not isinstance(face_2.type, relevant_types):
+                            if isinstance(face_2.boundary_condition, Surface):
                                 continue  # face is not the right type for ceiling adj
                             if face_1.geometry.is_centered_adjacent(
                                     face_2.geometry, tolerance):
