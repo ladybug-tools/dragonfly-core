@@ -107,16 +107,8 @@ class Model(_BaseGeometry):
         self.tolerance = tolerance
         self.angle_tolerance = angle_tolerance
 
-        self._buildings = []
-        self._context_shades = []
-        if buildings is not None:
-            for bldg in buildings:
-                assert isinstance(bldg, Building), \
-                    'Expected Building. Got {}.'.format(type(bldg))
-                self._buildings.append(bldg)
-        if context_shades is not None:
-            for shade in context_shades:
-                self.add_context_shade(shade)
+        self.buildings = buildings
+        self.context_shades = context_shades
 
         self._properties = ModelProperties(self)
 
@@ -475,13 +467,29 @@ class Model(_BaseGeometry):
 
     @property
     def buildings(self):
-        """Get a tuple of all Building objects in the model."""
+        """Get or set a tuple of all Building objects in the model."""
         return tuple(self._buildings)
+
+    @buildings.setter
+    def buildings(self, value):
+        self._buildings = []
+        if value is not None:
+            for bldg in value:
+                assert isinstance(bldg, Building), \
+                    'Expected Building. Got {}.'.format(type(bldg))
+                self._buildings.append(bldg)
 
     @property
     def context_shades(self):
-        """Get a tuple of all ContextShade objects in the model."""
+        """Get or set a tuple of all ContextShade objects in the model."""
         return tuple(self._context_shades)
+
+    @context_shades.setter
+    def context_shades(self, value):
+        self._context_shades = []
+        if value is not None:
+            for shade in value:
+                self.add_context_shade(shade)
 
     @property
     def stories(self):
