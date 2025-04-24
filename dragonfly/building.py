@@ -105,8 +105,8 @@ class Building(_BaseGeometry):
         _BaseGeometry.__init__(self, identifier)  # process the identifier
         if (unique_stories is None or len(unique_stories) == 0) and \
                 (room_3ds is None or len(room_3ds) == 0):
-            raise ValueError(
-                'Building must have at least one Story or one Room under room_3ds.')
+            raise ValueError('Building must have some geometry - at least one Story '
+                             'or one Room under room_3ds.')
 
         # process the story geometry
         if unique_stories is not None:
@@ -442,6 +442,19 @@ class Building(_BaseGeometry):
         """
         return self._unique_stories
 
+    @unique_stories.setter
+    def unique_stories(self, value):
+        if value is not None:
+            for story in value:
+                assert isinstance(story, Story), \
+                    'Expected dragonfly Story. Got {}'.format(type(story))
+                story._parent = self
+            value = tuple(sorted(value, key=lambda x: x.floor_height))
+            self._unique_stories = value
+        else:
+            self._unique_stories = ()
+        self._check_geometry_exists()
+
     @property
     def unique_room_2ds(self):
         """Get a list of the unique Room2D objects that form the Building."""
@@ -464,6 +477,21 @@ class Building(_BaseGeometry):
         Room.story may reference.
         """
         return self._room_3ds
+
+    @room_3ds.setter
+    def room_3ds(self, value):
+        if value is not None:
+            for room in value:
+                assert isinstance(room, Room), \
+                    'Expected honeybee Room. Got {}'.format(type(room))
+                room._parent = self
+            # assign stories to any Rooms that lack them
+            if not all([r.story is not None for r in value]):
+                Room.stories_by_floor_height(value)
+            self._room_3ds = tuple(value)
+        else:
+            self._room_3ds = ()
+        self._check_geometry_exists()
 
     @property
     def room_3d_faces(self):
@@ -2389,6 +2417,11 @@ class Building(_BaseGeometry):
         sort_rooms = [rs for _, rs in sorted(zip(floor_hgts, floor_rooms),
                                              key=lambda pair: pair[0])]
         return sort_rooms[0]
+
+    def _check_geometry_exists(self):
+        if len(self._unique_stories) == 0 and len(self._room_3ds) == 0:
+            raise ValueError('Building must have some geometry - at least one Story '
+                             'or one Room under room_3ds.')
 
     @staticmethod
     def _is_room_3d_extruded(hb_room, tolerance, angle_tolerance):
