@@ -292,6 +292,35 @@ def test_building_footprint_disconnect():
     assert len(footprint[1].boundary) == 4
 
 
+def test_make_basement_stories():
+    """Test the Building make_basement_stories method."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
+    pts_2 = (Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(20, 10, 0), Point3D(20, 0, 0))
+    pts_3 = (Point3D(0, 10, 0), Point3D(0, 20, 0), Point3D(10, 20, 0), Point3D(10, 10, 0))
+    pts_4 = (Point3D(10, 10, 0), Point3D(10, 20, 0), Point3D(20, 20, 0), Point3D(20, 10, 0))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3.5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3.5)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3.5)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3.5)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office_Building_1234', [story])
+    building = Building('Office_Building_1234', building.all_stories())
+    building.unique_stories[0].room_2ds = [room2d_1.duplicate(), room2d_2.duplicate()]
+    building.unique_stories[0].solve_room_2d_adjacency(0.01)
+
+    building.make_basement_stories(2, True, 0.01)
+    for room_2d in building.unique_stories[0].room_2ds:
+        assert room_2d.is_ground_contact
+        for bc in room_2d.boundary_conditions:
+            assert isinstance(bc, (Ground, Surface))
+    for room_2d in building.unique_stories[1].room_2ds:
+        for bc in room_2d.boundary_conditions:
+            assert isinstance(bc, (Ground, Surface))
+
+
 def test_building_separate_room_2d_plenums():
     """Test the Building separate_room_2d_plenums method."""
     pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))

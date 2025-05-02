@@ -1471,6 +1471,46 @@ class Building(_BaseGeometry):
         # assign the is_ground_contact and is_top_exposed properties
         self._unique_stories[0].set_ground_contact()
 
+    def make_basement_stories(self, basement_count=1, remove_windows=False,
+                              tolerance=0.01):
+        """Make the lowest unique Story(s) of this Building into basements.
+
+        This involves setting the outdoor walls of the basement stories to all
+        have ground boundary conditions and setting the is_ground_contact
+        property on all relevant Room2Ds that are a basement or have a basement
+        story below them.
+
+        Args:
+            basement_count: A positive integer for the number of unique Stories
+                on this Building to make into basements. (Default: 1).
+            remove_windows: Boolean to note whether basement Room2D segments
+                with windows should have their outdoor boundary conditions and
+                windows kept (True) or whether the windows should be removed
+                in order to assign a ground boundary condition to all
+                walls (False). (Default: False).
+            tolerance: The tolerance that will be used to compute the point within
+                the floor boundary that is used to check whether there is geometry
+                below each Room2D. It is recommended that this number not be less
+                than 1 centimeter to avoid long computation times. Default: 0.01,
+                suitable for objects in meters.
+        """
+        # check that the basement count is appropriate
+        if basement_count <= 0:
+            return
+        if basement_count > len(self._unique_stories):
+            basement_count = len(self._unique_stories)
+        # assign underground walls to all basement stories
+        for story in self._unique_stories[:basement_count]:
+            story.make_underground(remove_windows)
+        # set the ground contact property for basement Room2Ds
+        self._unique_stories[0].set_ground_contact()
+        max_gnd_count = basement_count + 1 \
+            if basement_count < len(self._unique_stories) else len(self._unique_stories)
+        if len(self._unique_stories) != 1:
+            for i, story in enumerate(self._unique_stories[1:max_gnd_count]):
+                story_below = self._unique_stories[i]
+                story.set_ground_contact_by_story_below(story_below, tolerance)
+
     def split_room_2d_vertically(self, room_id, tolerance=0.01):
         """Split a Room2D in this Building vertically if it crosses multiple stories.
 

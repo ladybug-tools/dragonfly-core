@@ -1170,8 +1170,9 @@ class Room2D(_BaseGeometry):
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
-        assert isinstance(window_parameter, _WindowParameterBase), \
-            'Expected Window Parameters. Got {}'.format(type(window_parameter))
+        if window_parameter is not None:
+            assert isinstance(window_parameter, _WindowParameterBase), \
+                'Expected Window Parameters. Got {}'.format(type(window_parameter))
         glz_ps = []
         for bc in self._boundary_conditions:
             glz_p = window_parameter if isinstance(bc, Outdoors) else None

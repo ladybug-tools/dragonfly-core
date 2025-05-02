@@ -4,7 +4,8 @@ from __future__ import division
 import math
 
 from ladybug_geometry.geometry2d import Vector2D, Polygon2D
-from ladybug_geometry.geometry3d import Vector3D, Ray3D, Polyline3D, Face3D, Polyface3D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Ray3D, Polyline3D, \
+    Face3D, Polyface3D
 
 from honeybee.typing import float_positive, int_in_range, clean_string, \
     clean_and_id_string, valid_string, invalid_dict_error
@@ -1469,7 +1470,7 @@ using-multipliers-zone-and-or-window.html
         self.room_2ds = split_rooms
 
     def set_top_exposed_by_story_above(self, story_above, tolerance=0.01):
-        """Set the child Room2Ds of this object to have ceilings exposed to the outdoors.
+        """Set the Room2Ds of this Story to have ceilings exposed to the outdoors.
 
         Args:
             story_above: A Story object that sits above this Story. Each Room2D
@@ -1493,7 +1494,36 @@ using-multipliers-zone-and-or-window.html
             else:
                 room.is_top_exposed = True
 
-    def make_underground(self):
+    def set_ground_contact_by_story_below(self, story_below, tolerance=0.01):
+        """Set the Room2Ds of this Story to have ground contact using the story below.
+
+        Note that this method assumes that the story_below is completely
+        underground such that any Room2D of this Story will be ground contact
+        if there is no Room2D below the room.
+
+        Args:
+            story_below: A Story object that sits below this Story. Each Room2D
+                of this Story will be checked to see if the story_below geometry
+                lies below the room and, if not, the ground contact will be set to True.
+            tolerance: The tolerance that will be used to compute the point within
+                the floor boundary that is used to check whether there is geometry
+                above each Room2D. It is recommended that this number not be less
+                than 1 centimeter to avoid long computation times. Default: 0.01,
+                suitable for objects in meters.
+        """
+        down_vec = Vector3D(0, 0, -1)
+        for room in self._room_2ds:
+            rm_pt = room.floor_geometry.center if room.floor_geometry.is_convex else \
+                room.floor_geometry.pole_of_inaccessibility(tolerance)
+            face_ray = Ray3D(Point3D(rm_pt.x, rm_pt.y, rm_pt.z + tolerance), down_vec)
+            for other_room in story_below._room_2ds:
+                if other_room._floor_geometry.intersect_line_ray(face_ray) is not None:
+                    room.is_ground_contact = False
+                    break
+            else:
+                room.is_ground_contact = True
+
+    def make_underground(self, remove_windows=False):
         """Make this Story underground by setting all Room2D segments to have Ground BCs.
 
         Note that this method only changes the outdoor walls of the Room2Ds to have
@@ -1501,16 +1531,25 @@ using-multipliers-zone-and-or-window.html
         contact with the ground, the set_ground_contact should be used in addition
         to this method.
 
-        Also note that this method will throw an exception if any of the Room2Ds have
-        WindowParameters assigned to them (since Ground boundary conditions are)
-        not compatible with windows. So using the set_outdoor_window_parameters
-        method and passing None to remove all windows is often recommended
-        before running this method.
+        Args:
+            remove_windows: Boolean to note whether outdoor Room2D segments
+                with windows should have their outdoor boundary conditions and
+                windows kept (True) or whether the windows should be removed
+                in order to assign a ground boundary condition to all
+                walls (False). (Default: False).
         """
-        for room in self._room_2ds:
-            for i, bc in enumerate(room._boundary_conditions):
-                if isinstance(bc, Outdoors):
-                    room.set_boundary_condition(i, bcs.ground)
+        if remove_windows:
+            self.set_outdoor_window_parameters(None)
+            for room in self._room_2ds:
+                for i, bc in enumerate(room._boundary_conditions):
+                    if isinstance(bc, Outdoors):
+                        room.set_boundary_condition(i, bcs.ground)
+        else:
+            for room in self._room_2ds:
+                zip_obj = zip(room._boundary_conditions, room._window_parameters)
+                for i, (bc, wp) in enumerate(zip_obj):
+                    if wp is None and isinstance(bc, Outdoors):
+                        room.set_boundary_condition(i, bcs.ground)
 
     def automatically_zone(self, orient_count=None, north_vector=Vector2D(0, 1),
                            attr_name=None):
