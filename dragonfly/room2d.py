@@ -3639,9 +3639,12 @@ class Room2D(_BaseGeometry):
             self.identifier, room_polyface, ground_depth=self.floor_height - 1)
         roof_faces = []
         for i in roof_face_i:
-            rfc = hb_room[i]
-            rfc.type = ftyp.roof_ceiling
-            roof_faces.append(rfc)
+            try:
+                rfc = hb_room[i]
+                rfc.type = ftyp.roof_ceiling
+                roof_faces.append(rfc)
+            except IndexError:
+                pass  # something happened to mess up roof faces
 
         # assign BCs and record any Surface conditions to be set on the story level
         adjacencies = []
@@ -4988,19 +4991,6 @@ class Room2D(_BaseGeometry):
                 self._cap_planar_holes(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
-
-        # if we still have non-manifold edges, just remove the degenerate faces
-        if len(room_polyface.non_manifold_edges) != 0:
-            valid_faces = []
-            for face in room_polyface.faces:
-                try:
-                    valid_faces.append(face.remove_colinear_vertices(tolerance))
-                except AssertionError:  # degenerate face found!
-                    pass
-            room_polyface = Polyface3D.from_faces(valid_faces, tolerance)
-            if not room_polyface.is_solid:
-                room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
-
         return room_polyface, roof_face_i
 
     def _roof_faces(self, all_room_poly, rel_rf_polys, rel_rf_planes, tolerance):
@@ -5036,7 +5026,7 @@ class Room2D(_BaseGeometry):
         room_poly_area = all_room_poly[0].area - sum(h.area for h in all_room_poly[1:])
 
         # find the boolean intersection with each roof polygon and project the result
-        int_tol = tolerance / 100  # intersection tolerance must be finer
+        int_tol = tolerance / 1000  # intersection tolerance must be finer
         roof_poly_area = 0
         for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
             # snap the polygons to one another to avoid tolerance issues
@@ -5286,7 +5276,7 @@ class Room2D(_BaseGeometry):
                 e2p2 = Point2D(edge_2.p2.x, edge_2.p2.y)
                 if edge_1_2d.distance_to_point(e2p1) <= tolerance and \
                         edge_1_2d.distance_to_point(e2p2) <= tolerance:
-                    # check to be sure that the segments have not been aired already
+                    # check to be sure that the segments have not been paired already
                     edge_pair_1, edge_pair_2 = (i, oi), (oi, i)
                     if edge_pair_1 in matched_segs:
                         continue
@@ -5298,28 +5288,15 @@ class Room2D(_BaseGeometry):
                     int_pl_2 = Plane(n=norm, o=edge_2.p2)
                     edge_1_1 = intersect_line3d_plane_infinite(edge_1, int_pl_1)
                     edge_1_2 = intersect_line3d_plane_infinite(edge_1, int_pl_2)
-                    new_face3d = Face3D((edge_1_1, edge_1_2, edge_2.p1, edge_2.p2))
+                    new_face3d = Face3D((edge_1_1, edge_1_2, edge_2.p2, edge_2.p1))
+                    try:
+                        new_face3d = new_face3d.remove_colinear_vertices(tolerance)
+                    except AssertionError:
+                        pass
                     # find the grouping of points that is not self intersecting
                     if not new_face3d.is_self_intersecting and \
-                            new_face3d.area > tolerance:
+                            new_face3d.area > tolerance ** 2:
                         vertical_faces.append(new_face3d)
-                    else:
-                        new_face3d = Face3D((edge_1_1, edge_1_2, edge_2.p2, edge_2.p1))
-                        if not new_face3d.is_self_intersecting and \
-                                new_face3d.area > tolerance:
-                            vertical_faces.append(new_face3d)
-                        else:
-                            f_poly = new_face3d.polygon2d
-                            fs1, fs2 = f_poly.segments[0], f_poly.segments[2]
-                            int_pt2d = fs1.intersect_line_ray(fs2)
-                            if int_pt2d is not None:
-                                int_pt = new_face3d.plane.xy_to_xyz(int_pt2d)
-                                new_face3d1 = Face3D((edge_2.p1, int_pt, edge_1_1))
-                                new_face3d2 = Face3D((edge_2.p2, int_pt, edge_1_2))
-                                if new_face3d1.area > tolerance:
-                                    vertical_faces.append(new_face3d1)
-                                if new_face3d2.area > tolerance:
-                                    vertical_faces.append(new_face3d2)
 
         # remove duplicated vertices in the resulting vertical faces
         clean_vert_faces = []
@@ -5360,7 +5337,32 @@ class Room2D(_BaseGeometry):
         for loop in joined_loops:
             if isinstance(loop, Polyline3D) and loop.is_closed(tolerance):
                 cap_face = Face3D(loop.vertices[:-1])
-                if cap_face.check_planar(tolerance, raise_exception=False):
+                try:
+                    cap_face = cap_face.remove_colinear_vertices(tolerance)
+                except AssertionError:  # degenerate geometry
+                    continue
+                if not cap_face.check_planar(tolerance, raise_exception=False):
+                    # try to get the correct plane from non-vertical segments
+                    for edge in cap_face.boundary_segments:
+                        if not edge.is_vertical(tolerance):
+                            norm = Vector3D(edge.v.x, edge.v.y, 0)
+                            norm = norm.rotate_xy(math.pi / 2)
+                            plane = Plane(norm, edge.p)
+                            cap_face = Face3D(loop.vertices[:-1], plane)
+                            break
+                    if not cap_face.check_planar(tolerance, raise_exception=False):
+                        continue
+                if cap_face.is_self_intersecting:
+                    spt_p = cap_face.polygon2d
+                    spt_p = spt_p.split_through_self_intersection(tolerance)
+                    for sp in spt_p:
+                        if sp.is_self_intersecting:
+                            continue
+                        s_verts = [cap_face.plane.xy_to_xyz(pt) for pt in sp]
+                        n_cap_face = Face3D(s_verts)
+                        if n_cap_face.check_planar(tolerance, raise_exception=False):
+                            cap_faces.append(n_cap_face)
+                else:
                     cap_faces.append(cap_face)
 
         # remove duplicated vertices in the resulting cap faces
@@ -5428,16 +5430,21 @@ class Room2D(_BaseGeometry):
                 except AssertionError:  # degenerate sliver face to be removed
                     disconnect_i.append(f_ind)
 
-        if len(disconnect_i) != 0:
-            # process the roof indices
+        if len(disconnect_i) != 0:  # process the roof indices
+            sub_i = 0
+            low_i = roof_face_i[0] + len(room_polyface.faces)
+            for del_i in disconnect_i:
+                if del_i > low_i:
+                    sub_i += 1
             new_roof_face_i = []
             for exist_i in roof_face_i:
-                pos_ei = exist_i + len(room_polyface)
-                for del_i in reversed(disconnect_i):
+                pos_ei = exist_i + len(room_polyface.faces)
+                for del_i in disconnect_i:
                     if del_i == pos_ei:  # deleted roof
+                        sub_i += 1
                         break
-                else:
-                    new_roof_face_i.append(exist_i)
+                else:  # roof that was not removed
+                    new_roof_face_i.append(exist_i + sub_i)
             roof_face_i = new_roof_face_i
             # rebuild the Polyface3D
             p_faces = [room_polyface.faces[f_ind] for f_ind in room_ind]
