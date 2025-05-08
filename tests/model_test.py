@@ -1141,6 +1141,54 @@ def test_to_honeybee_roof_with_overlap():
     assert len(hb_models[0].rooms[0].roof_ceilings) > 1
 
 
+def test_to_honeybee_roof_with_self_intersection():
+    """Test to_honeybee with self-intersecting gables to ensure that it translates."""
+    model_file = './tests/json/self_int_hallway_roof.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False)
+    assert len(hb_models) == 1
+    assert len(hb_models[0].rooms[0].roof_ceilings) > 1
+
+
+def test_to_honeybee_roof_coarse_tolerance():
+    """Test to_honeybee with coarse tolerance to ensure all exceptions are caught."""
+    model_file = './tests/json/Roof_Party_edge_case.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.03)
+    assert len(hb_models) == 1
+    assert len(hb_models[0].rooms[0].roof_ceilings) > 1
+
+
+def test_to_honeybee_roof_coarse_tolerance2():
+    """Test to_honeybee with coarse tolerance to ensure all exceptions are caught."""
+    model_file = './tests/json/Roof_Party_edge_case2.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.03)
+    assert len(hb_models) == 1
+    assert len(hb_models[0].rooms[0].roof_ceilings) > 1
+
+
+def test_to_honeybee_roof_coarse_tolerance3():
+    """Test to_honeybee with coarse tolerance to ensure all exceptions are caught."""
+    model_file = './tests/json/Roof_Party_edge_case3.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.03)
+    assert len(hb_models) == 1
+    assert len(hb_models[0].rooms[0].roof_ceilings) > 1
+
+
 def test_to_honeybee_invalid_roof_1():
     """Test to_honeybee with an invalid roof to ensure all exceptions are caught."""
     model_file = './tests/json/invalid_roof_1.dfjson'
