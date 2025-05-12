@@ -4985,6 +4985,10 @@ class Room2D(_BaseGeometry):
             if not room_polyface.is_solid:
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
 
+        # check to be sure there are still enough valid walls
+        if len(room_polyface.faces) < len(self) + 2:  # invalid roof geometry
+            return None, None
+
         # lastly, try to patch any remaining planar holes by capping them
         if len(room_polyface.naked_edges) != 0:
             room_polyface, roof_face_i = \
