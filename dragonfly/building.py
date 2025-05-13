@@ -1135,8 +1135,15 @@ class Building(_BaseGeometry):
                         plane_ints = []
                         for ov_poly in overlap_polys:
                             for pt in ov_poly:
-                                r_ray = Ray3D(Point3D(pt.x, pt.y, rm_ht), proj_dir)
-                                plane_ints.append(rf_geo.plane.intersect_line_ray(r_ray))
+                                b_pt = Point3D(pt.x, pt.y, rm_ht)
+                                r_ray = Ray3D(b_pt, proj_dir)
+                                pi = rf_geo.plane.intersect_line_ray(r_ray)
+                                if pi is not None:
+                                    plane_ints.append(pi)
+                                elif rf_geo.plane.distance_to_point(b_pt) <= tolerance:
+                                    plane_ints.append(b_pt)
+                                else:
+                                    plane_ints.append(None)
                         if all(pi is not None for pi in plane_ints):
                             overlaps_story = True
                         else:  # roof extends below room; valid assignment impossible
