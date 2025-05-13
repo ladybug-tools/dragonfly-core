@@ -1153,6 +1153,18 @@ def test_to_honeybee_roof_with_self_intersection():
     assert len(hb_models[0].rooms[0].roof_ceilings) > 1
 
 
+def test_to_honeybee_roof_intersect_room():
+    """Test to_honeybee with a roof intersecting a toom."""
+    model_file = './tests/json/roof_intersect_room.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.003)
+    assert len(hb_models) == 1
+    assert len(hb_models[0].rooms[-1].roof_ceilings) > 1
+
+
 def test_to_honeybee_roof_coarse_tolerance():
     """Test to_honeybee with coarse tolerance to ensure all exceptions are caught."""
     model_file = './tests/json/Roof_Party_edge_case.dfjson'
