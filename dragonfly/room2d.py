@@ -3610,7 +3610,7 @@ class Room2D(_BaseGeometry):
                 tuple of Surface.boundary_condition_objects as the second item.
         """
         # create the honeybee Room
-        has_roof = False
+        has_roof, ex_wall_i = False, None
         if self._parent is not None:
             # get a roof specification for the room
             roof_spec = self._parent._room_roofs(self, tolerance)
@@ -3621,7 +3621,7 @@ class Room2D(_BaseGeometry):
                     self.remove_duplicate_vertices(tolerance)
                 except ValueError:  # degenerate room; just let it pass
                     pass
-                room_polyface, roof_face_i = \
+                room_polyface, roof_face_i, ex_wall_i = \
                     self._room_volume_with_roof(roof_spec, tolerance)
                 if room_polyface is None:  # complete failure to interpret roof
                     has_roof = False
@@ -3646,25 +3646,41 @@ class Room2D(_BaseGeometry):
             except IndexError:
                 pass  # something happened to mess up roof faces
 
+        # if not all walls are present, reset IDs so that adjacencies work
+        if ex_wall_i is not None and len(ex_wall_i) != 0:
+            skipped = 0
+            for i, face in enumerate(hb_room.faces):
+                if i - 1 + skipped in ex_wall_i:
+                    skipped += 1
+                face.identifier = '{}..Face{}'.format(self.identifier, i + skipped)
+
         # assign BCs and record any Surface conditions to be set on the story level
-        adjacencies = []
+        adjacencies, skip = [], 0
         for i, bc in enumerate(self._boundary_conditions):
+            if ex_wall_i is not None and i in ex_wall_i:
+                skip += 1
+                continue
+            hb_face = hb_room[i + 1 - skip]
             if not isinstance(bc, Surface):
-                hb_room[i + 1]._boundary_condition = bc
+                hb_face._boundary_condition = bc
             else:
-                adjacencies.append((hb_room[i + 1], bc.boundary_condition_objects))
+                adjacencies.append((hb_face, bc.boundary_condition_objects))
 
         # assign windows, shading, and air boundary properties to walls
+        skip = 0
         for i, glz_par in enumerate(self._window_parameters):
+            if ex_wall_i is not None and i in ex_wall_i:
+                skip += 1
+                continue
             if glz_par is not None:
-                hb_face = hb_room[i + 1]
+                hb_face = hb_room[i + 1 - skip]
                 try:
                     glz_par.add_window_to_face(hb_face, tolerance)
                 except AssertionError as e:
                     if enforce_bc:
                         raise e
-                    hb_room[i + 1]._boundary_condition = bcs.outdoors
-                    hb_room[i + 1].remove_sub_faces()
+                    hb_face._boundary_condition = bcs.outdoors
+                    hb_face.remove_sub_faces()
                     glz_par.add_window_to_face(hb_face, tolerance)
                 if has_roof and isinstance(glz_par, _AsymmetricBase):
                     valid_sf = []
@@ -3674,13 +3690,21 @@ class Room2D(_BaseGeometry):
                     if len(hb_face.sub_faces) != len(valid_sf):
                         hb_face.remove_sub_faces()
                         hb_face.add_sub_faces(valid_sf)
+        skip = 0
         for i, shd_par in enumerate(self._shading_parameters):
+            if ex_wall_i is not None and i in ex_wall_i:
+                skip += 1
+                continue
             if shd_par is not None:
-                shd_par.add_shading_to_face(hb_room[i + 1], tolerance)
+                shd_par.add_shading_to_face(hb_room[i + 1 - skip], tolerance)
         if self._air_boundaries is not None:
+            skip = 0
             for i, a_bnd in enumerate(self._air_boundaries):
+                if ex_wall_i is not None and i in ex_wall_i:
+                    skip += 1
+                    continue
                 if a_bnd:
-                    hb_room[i + 1].type = ftyp.air_boundary
+                    hb_room[i + 1 - skip].type = ftyp.air_boundary
 
         # ensure matching adjacent Faces across the Story
         if self._parent is not None and not has_roof:
@@ -4872,7 +4896,7 @@ class Room2D(_BaseGeometry):
                 point is considered to lie on the edge.
 
         Returns:
-            A tuple with the two items below.
+            A tuple with the three items below.
 
             * room_polyface -- A Polyface3D object for the Room volume. This will
                 be None whenever the Room has no Roof geometries above it or the
@@ -4881,6 +4905,11 @@ class Room2D(_BaseGeometry):
             * roof_face_i -- A list of integers for the indices of the faces in
                 the Polyface3D that correspond to the roof. Will be None whenever
                 the roof is not successfully applied to the Room.
+
+            * ex_wall_i -- A set of integers for the indices of the wall segments
+                that were excluded from the room polyface. This can be used to
+                ensure that windows and boundary conditions are assigned to the
+                correct Face of the polyface.
         """
         # get the roof polygons and the bounding Room2D polygon
         roof_polys = roof_spec.boundary_geometry_2d
@@ -4924,7 +4953,7 @@ class Room2D(_BaseGeometry):
                     part_roof_verts.append(roof_verts[v_count:v_count + len(hole)])
                     v_count += len(hole)
                 p_faces.append(Face3D(part_roof_verts[0], holes=part_roof_verts[1:]))
-            return Polyface3D.from_faces(p_faces, tolerance), [-1]
+            return Polyface3D.from_faces(p_faces, tolerance), [-1], None
 
         # when multiple roofs, each segment must be intersected with the roof polygons
         # gather polygons that account for all of the Room2D holes
@@ -4945,7 +4974,7 @@ class Room2D(_BaseGeometry):
         roof_faces = self._roof_faces(
             all_room_poly, rel_rf_polys, rel_rf_planes, tolerance)
         if roof_faces is None:  # invalid roof geometry
-            return None, None
+            return None, None, None
 
         # create the walls from the segments by intersecting them with the roof
         if len(roof_faces) > len(rel_rf_polys):  # new roofs added; rebuild polygons
@@ -4956,7 +4985,7 @@ class Room2D(_BaseGeometry):
         walls = self._wall_faces_with_roof(
             all_room_poly, all_segments, rel_rf_polys, rel_rf_planes, tolerance)
         if walls is None:  # invalid roof geometry
-            return None, None
+            return None, None, None
 
         # combine all of the room volume faces together
         p_faces.extend(walls)
@@ -4966,6 +4995,7 @@ class Room2D(_BaseGeometry):
         # create the Polyface3D and try to repair it if it is not solid
         room_polyface = Polyface3D.from_faces(p_faces, tolerance)
         ang_tol = math.radians(1)
+        ex_wall_i = None
 
         # make sure that overlapping edges are merged so we don't get false readings
         if not room_polyface.is_solid:
@@ -4979,15 +5009,11 @@ class Room2D(_BaseGeometry):
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
 
         # remove disconnected roof geometries from the Polyface (eg. dormers)
-        if len(room_polyface.naked_edges) != 0:
-            room_polyface, roof_face_i, _ = \
+        if not room_polyface.is_solid:
+            room_polyface, roof_face_i, ex_wall_i, _ = \
                 self._separate_disconnected_faces(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
-
-        # check to be sure there are still enough valid walls
-        if len(room_polyface.faces) < len(self) + 2:  # invalid roof geometry
-            return None, None
 
         # lastly, try to patch any remaining planar holes by capping them
         if len(room_polyface.naked_edges) != 0:
@@ -4995,7 +5021,7 @@ class Room2D(_BaseGeometry):
                 self._cap_planar_holes(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
                 room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
-        return room_polyface, roof_face_i
+        return room_polyface, roof_face_i, ex_wall_i
 
     def _roof_faces(self, all_room_poly, rel_rf_polys, rel_rf_planes, tolerance):
         """Generate Face3D for the Room Roofs when there are multiple Roof Polygons.
@@ -5404,11 +5430,13 @@ class Room2D(_BaseGeometry):
 
                 * roof_face_i -- An updated list of roof face indices in the polyface.
 
+                * ex_wall_i -- A set of wall faces that were excluded in the output.
+
                 * disconnect_geometry -- A list of Face3D objects, which are
                     disconnected and were removed from the Polyface3D.
         """
         # remove disconnected roof geometries from the Polyface (eg. dormers)
-        disconnect_geometry, room_ind, disconnect_i = [], [], []
+        disconnect_geometry, room_ind, disconnect_i, ex_wall_i = [], [], [], None
         edge_i, edge_t = room_polyface.edge_indices, room_polyface.edge_types
         zip_obj = zip(room_polyface.face_indices, room_polyface.faces)
         for f_ind, (face, f3d) in enumerate(zip_obj):
@@ -5435,11 +5463,14 @@ class Room2D(_BaseGeometry):
                     disconnect_i.append(f_ind)
 
         if len(disconnect_i) != 0:  # process the roof indices
+            ex_wall_i, max_wall_i = set(), len(self)
             sub_i = 0
             low_i = roof_face_i[0] + len(room_polyface.faces)
             for del_i in disconnect_i:
                 if del_i > low_i:
                     sub_i += 1
+                elif del_i <= max_wall_i:
+                    ex_wall_i.add(del_i - 1)
             new_roof_face_i = []
             for exist_i in roof_face_i:
                 pos_ei = exist_i + len(room_polyface.faces)
@@ -5454,7 +5485,7 @@ class Room2D(_BaseGeometry):
             p_faces = [room_polyface.faces[f_ind] for f_ind in room_ind]
             disconnect_geometry = [room_polyface.faces[f_ind] for f_ind in disconnect_i]
             room_polyface = Polyface3D.from_faces(p_faces, tolerance)
-        return room_polyface, roof_face_i, disconnect_geometry
+        return room_polyface, roof_face_i, ex_wall_i, disconnect_geometry
 
     def _check_wall_assigned_object(self, value, obj_name=''):
         """Check an input that gets assigned to all of the walls of the Room."""
