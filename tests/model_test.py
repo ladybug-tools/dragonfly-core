@@ -1154,7 +1154,7 @@ def test_to_honeybee_roof_with_self_intersection():
 
 
 def test_to_honeybee_roof_intersect_room():
-    """Test to_honeybee with a roof intersecting a toom."""
+    """Test to_honeybee with a roof intersecting a room."""
     model_file = './tests/json/roof_intersect_room.dfjson'
     model = Model.from_file(model_file)
     upper_story = model.buildings[0][-1]
