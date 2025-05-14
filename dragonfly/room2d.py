@@ -4916,6 +4916,8 @@ class Room2D(_BaseGeometry):
         roof_planes = roof_spec.planes
         room_pts2d = [Point2D(pt.x, pt.y) for pt in self.floor_geometry.boundary]
         room_poly = Polygon2D(room_pts2d)
+        ang_tol = math.radians(1)
+        ex_wall_i = None
 
         # gather all of the relevant roof polygons for the Room2D
         rel_rf_polys, rel_rf_planes, is_full_bound = [], [], False
@@ -4953,7 +4955,15 @@ class Room2D(_BaseGeometry):
                     part_roof_verts.append(roof_verts[v_count:v_count + len(hole)])
                     v_count += len(hole)
                 p_faces.append(Face3D(part_roof_verts[0], holes=part_roof_verts[1:]))
-            return Polyface3D.from_faces(p_faces, tolerance), [-1], None
+            room_polyface = Polyface3D.from_faces(p_faces, tolerance)
+            roof_face_i = [-1]
+            if not room_polyface.is_solid:  # roof is touching a floor segment
+                tol = tolerance
+                room_polyface, roof_face_i, ex_wall_i, _ = \
+                    self._separate_disconnected_faces(room_polyface, roof_face_i, tol)
+                if not room_polyface.is_solid:
+                    room_polyface = room_polyface.merge_overlapping_edges(tol, ang_tol)
+            return Polyface3D.from_faces(p_faces, tolerance), roof_face_i, ex_wall_i
 
         # when multiple roofs, each segment must be intersected with the roof polygons
         # gather polygons that account for all of the Room2D holes
@@ -4994,8 +5004,6 @@ class Room2D(_BaseGeometry):
 
         # create the Polyface3D and try to repair it if it is not solid
         room_polyface = Polyface3D.from_faces(p_faces, tolerance)
-        ang_tol = math.radians(1)
-        ex_wall_i = None
 
         # make sure that overlapping edges are merged so we don't get false readings
         if not room_polyface.is_solid:
@@ -5436,7 +5444,8 @@ class Room2D(_BaseGeometry):
                     disconnected and were removed from the Polyface3D.
         """
         # remove disconnected roof geometries from the Polyface (eg. dormers)
-        disconnect_geometry, room_ind, disconnect_i, ex_wall_i = [], [], [], None
+        disconnect_geometry, p_faces = [], []
+        disconnect_i, ex_wall_i = [], None
         edge_i, edge_t = room_polyface.edge_indices, room_polyface.edge_types
         zip_obj = zip(room_polyface.face_indices, room_polyface.faces)
         for f_ind, (face, f3d) in enumerate(zip_obj):
@@ -5457,8 +5466,8 @@ class Room2D(_BaseGeometry):
                 disconnect_i.append(f_ind)
             else:
                 try:
-                    f3d.remove_duplicate_vertices(tolerance)
-                    room_ind.append(f_ind)
+                    f3d = f3d.remove_colinear_vertices(tolerance)
+                    p_faces.append(f3d)
                 except AssertionError:  # degenerate sliver face to be removed
                     disconnect_i.append(f_ind)
 
@@ -5481,10 +5490,9 @@ class Room2D(_BaseGeometry):
                 else:  # roof that was not removed
                     new_roof_face_i.append(exist_i + sub_i)
             roof_face_i = new_roof_face_i
-            # rebuild the Polyface3D
-            p_faces = [room_polyface.faces[f_ind] for f_ind in room_ind]
-            disconnect_geometry = [room_polyface.faces[f_ind] for f_ind in disconnect_i]
-            room_polyface = Polyface3D.from_faces(p_faces, tolerance)
+        # rebuild the Polyface3D
+        disconnect_geometry = [room_polyface.faces[f_ind] for f_ind in disconnect_i]
+        room_polyface = Polyface3D.from_faces(p_faces, tolerance)
         return room_polyface, roof_face_i, ex_wall_i, disconnect_geometry
 
     def _check_wall_assigned_object(self, value, obj_name=''):
