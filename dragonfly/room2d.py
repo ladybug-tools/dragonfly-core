@@ -383,18 +383,18 @@ class Room2D(_BaseGeometry):
                                  for f in room.faces if isinstance(f.type, Floor)])
         is_top_exposed = all([isinstance(f.boundary_condition, Outdoors)
                               for f in room.faces if isinstance(f.type, RoofCeiling)])
-        has_floor = any([isinstance(f.type, AirBoundary)
-                         for f in room.faces if f.altitude < -89.0])
-        has_ceiling = any([isinstance(f.type, AirBoundary)
-                           for f in room.faces if f.altitude > 89.0])
+        ex_floor = any([isinstance(f.type, AirBoundary)
+                        for f in room.faces if f.altitude < -89.0])
+        ex_ceiling = any([isinstance(f.type, AirBoundary)
+                          for f in room.faces if f.altitude > 89.0])
 
         # create the Dragonfly Room2D
         room_2d = cls(
             room.identifier, flr_geo, floor_to_ceiling_height,
             boundary_conditions, window_parameters, None,
             is_ground_contact, is_top_exposed, tolerance)
-        room_2d.has_floor = has_floor
-        room_2d.has_ceiling = has_ceiling
+        room_2d.has_floor = not ex_floor
+        room_2d.has_ceiling = not ex_ceiling
         if room._zone is not None:
             room_2d.zone = room.zone
 

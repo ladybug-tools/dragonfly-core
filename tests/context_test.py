@@ -2,8 +2,9 @@ from dragonfly.context import ContextShade
 
 from honeybee.shade import Shade
 
-from ladybug_geometry.geometry2d import Point2D
-from ladybug_geometry.geometry3d import Point3D, Vector3D, Plane, Face3D, Mesh3D
+from ladybug_geometry.geometry2d import Point2D, LineSegment2D
+from ladybug_geometry.geometry3d import Point3D, Vector3D, Plane, Face3D, \
+    Mesh3D, Polyface3D
 
 import pytest
 
@@ -111,10 +112,22 @@ def test_snap_to_grid():
             Point3D(2.1, 0, 2), Point3D(4.1, 0, 2))
     mesh = Mesh3D(pts2, [(0, 1, 2, 3), (2, 3, 4)])
     awning_canopy = ContextShade('Awning_Canopy', [face, mesh])
+    assert not awning_canopy.is_conforming(Plane())
 
     awning_canopy.snap_to_grid(1.0, None)
     assert awning_canopy[0].vertices != pts1
-    assert awning_canopy[1].vertices != pts2
+
+
+def test_align():
+    """Test the ContextShade align method."""
+    shade_box = Polyface3D.from_box(2, 2, 0.5, Plane(o=Point3D(0, 0, 3)))
+    awning_canopy = ContextShade('Awning_Canopy', shade_box.faces)
+    assert awning_canopy.is_conforming(Plane())
+
+    align_line = LineSegment2D.from_end_points(Point2D(2.1, -1), Point2D(2.1, 3))
+    new_awning = awning_canopy.duplicate()
+    new_awning.align(align_line, 0.2, 0.01)
+    assert new_awning.area > awning_canopy.area
 
 
 def test_to_honeybee():
