@@ -3,8 +3,11 @@
 from __future__ import division
 import math
 
-from ladybug_geometry.geometry2d import Vector2D
-from ladybug_geometry.geometry3d import Point3D, Plane, Face3D, Mesh3D
+from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
+    Polygon2D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Plane, Face3D, Mesh3D
+from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
+    closest_point2d_on_line2d_infinite
 
 from honeybee.shade import Shade
 from honeybee.shademesh import ShadeMesh
@@ -201,6 +204,57 @@ class ContextShade(_BaseGeometry):
                                for shd_geo in self._geometry)
         self.properties.scale(factor, origin)
 
+    def is_conforming(self, plane, angle_tolerance=1.0, min_length=0.01):
+        """Get a boolean for whether this objects's vertices conform with a plane.
+
+        Args:
+            plane: A ladybug-geometry Plane that will be used to evaluate whether
+                each geometry vertex conforms to the plane or not.
+            angle_tolerance: A number for the maximum difference in degrees that the
+                geometry segments can differ from the XY axes of the plane for it
+                to be considered non-conforming. (Default: 1.0).
+            min_length: A number for the minimum length that a Room2D segment must
+                be for it to be considered for non-conformity. Setting this to
+                zero will evaluate all Room2D segments. (Default: 0.01; suitable
+                for objects in meters).
+
+        Returns:
+            True if the ContextShade conforms to the plane. False if it does not.
+        """
+        # define variables to be used throughout the evaluation
+        min_ang = math.radians(angle_tolerance)
+        max_ang = math.pi - min_ang
+        x_axis, y_axis = plane.x, plane.y
+        # loop through the geometries and build up a vertex map
+        for geo in self.geometry:
+            if isinstance(geo, Face3D):
+                seg_loops = [geo.boundary_segments]
+                if geo.has_holes:
+                    seg_loops.extend(geo.hole_segments)
+                # loop through the segments and evaluate their non-conformity
+                for seg_loop in seg_loops:
+                    for seg in seg_loop:
+                        if seg.length < min_length:
+                            continue
+                        if seg.is_vertical(min_length):
+                            continue
+                        try:
+                            ang = seg.v.angle(x_axis)
+                        except ZeroDivisionError:  # vertical segment
+                            continue
+                        if ang < min_ang or ang > max_ang:
+                            continue
+                        try:
+                            ang = seg.v.angle(y_axis)
+                        except ZeroDivisionError:  # vertical segment
+                            continue
+                        if ang < min_ang or ang > max_ang:
+                            continue
+                        return False
+            else:  # meshes are always considered un-conforming
+                return False
+        return True
+
     def unconforming_vertex_map(self, plane, angle_tolerance=1.0, min_length=0.01):
         """Analyze this object's vertices for conformity with a plane's XY axes.
 
@@ -284,9 +338,8 @@ class ContextShade(_BaseGeometry):
                             loop_points.append(seg.p)
                     points_to_keep.append(loop_points)
                 vertex_map.append(points_to_keep)
-            else:  # meshes are always considered conforming
-                mesh_map = [None] * len(geo.vertices)
-                vertex_map(mesh_map)
+            else:  # meshes are always considered un-conforming
+                vertex_map.append(geo.vertices)
 
         return vertex_map
 
@@ -331,8 +384,8 @@ class ContextShade(_BaseGeometry):
                         final_holes.append(final_hole)
                 f_pl = geo.plane
                 new_geometry.append(Face3D(final_boundary, f_pl, final_holes))
-            else:
-                new_geometry.append(geo)
+            else:  # meshes are always considered un-conforming
+                new_geometry.append(Mesh3D(v_map, geo.faces))
         self._geometry = tuple(new_geometry)
 
     def snap_to_grid(self, grid_increment, base_plane=None):
@@ -408,7 +461,95 @@ class ContextShade(_BaseGeometry):
 
         # rebuild the new floor geometry and assign it to the Room2D
         if len(new_geometry) != 0:
-            self._geometry = new_geometry
+            self._geometry = tuple(new_geometry)
+
+    def align(self, line_ray, distance, tolerance=0.01):
+        """Move sShade vertices within a given distance of a line to be on that line.
+
+        This is useful for coordinating the ContextShade with the alignment of Room2Ds.
+
+        Note that the planes of the shade Face3Ds will be preserved unless the
+        shade is perfectly vertical.
+
+        Args:
+            line_ray: A ladybug_geometry Ray2D or LineSegment2D to which the shade
+                vertices will be aligned. Ray2Ds will be interpreted as being infinite
+                in both directions while LineSegment2Ds will be interpreted as only
+                existing between two points.
+            distance: The maximum distance between a vertex and the line_ray where
+                the vertex will be moved to lie on the line_ray. Vertices beyond
+                this distance will be left as they are.
+            tolerance: The minimum distance between vertices below which they are
+                considered co-located. This is used to evaluate whether a given
+                geometry is perfectly vertical. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # check the input line_ray
+        if isinstance(line_ray, Ray2D):
+            closest_func = closest_point2d_on_line2d_infinite
+        elif isinstance(line_ray, LineSegment2D):
+            closest_func = closest_point2d_on_line2d
+        else:
+            msg = 'Expected Ray2D or LineSegment2D. Got {}.'.format(type(line_ray))
+            raise TypeError(msg)
+
+        # loop through the current geometry and snap the vertices
+        new_geo = []
+        for geo in self._geometry:
+            if isinstance(geo, Face3D):
+                is_vert = any(s.is_vertical(tolerance) for s in geo.boundary_segments)
+                if is_vert:  # snap all vertices to the plane preserving the Z
+                    new_boundary, new_holes = [], None
+                    for pt in geo.boundary:
+                        pt2 = Point2D(pt.x, pt.y)
+                        close_pt = closest_func(pt, line_ray)
+                        if pt2.distance_to_point(close_pt) <= distance:
+                            new_boundary.append(Point3D(close_pt.x, close_pt.y, pt.z))
+                        else:
+                            new_boundary.append(pt)
+                    if geo.has_holes:
+                        new_holes = []
+                        for hole in geo.holes:
+                            new_hole = []
+                            for pt in hole:
+                                pt2 = Point2D(pt.x, pt.y)
+                                cl_pt = closest_func(pt, line_ray)
+                                if pt2.distance_to_point(close_pt) <= distance:
+                                    new_hole.append(Point3D(cl_pt.x, cl_pt.y, pt.z))
+                                else:
+                                    new_hole.append(pt)
+                            new_holes.append(new_hole)
+                    new_geo.append(Face3D(new_boundary, holes=new_holes))
+                else:
+                    polygons = [Polygon2D(Point2D(pt.x, pt.y) for pt in geo.boundary)]
+                    if geo.has_holes:
+                        for hole in geo.holes:
+                            hp = Polygon2D(Point2D(pt.x, pt.y) for pt in hole)
+                            polygons.append(hp)
+                    # loop through the polygons and align the vertices
+                    new_polygons = []
+                    for poly in polygons:
+                        new_poly = []
+                        for pt in poly:
+                            close_pt = closest_func(pt, line_ray)
+                            if pt.distance_to_point(close_pt) <= distance:
+                                new_poly.append(close_pt)
+                            else:
+                                new_poly.append(pt)
+                        new_polygons.append(Polygon2D(new_poly))
+                    # project the points back onto the shade
+                    proj_dir = Vector3D(0, 0, 1)
+                    new_loops = []
+                    for poly in new_polygons:
+                        new_pts3d = []
+                        for pt2 in poly:
+                            pt3 = Point3D.from_point2d(pt2)
+                            new_pts3d.append(geo.plane.project_point(pt3, proj_dir))
+                        new_loops.append(new_pts3d)
+                    new_geo.append(Face3D(new_loops[0], holes=new_loops[1:]))
+            else:  # meshes are never aligned
+                new_geo.append(geo)
+        self._geometry = tuple(new_geo)
 
     def to_honeybee(self):
         """Convert Dragonfly ContextShade to a list of Honeybee Shades and ShadeMeshes.
