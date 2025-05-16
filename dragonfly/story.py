@@ -1911,6 +1911,64 @@ using-multipliers-zone-and-or-window.html
             raise ValueError(full_msg)
         return full_msg
 
+    def check_collision_with_story(self, other_story, tolerance=0.01,
+                                   raise_exception=True, detailed=False):
+        """Check that the Room2Ds of this Story do not collide with those on another.
+
+        The check is performed by first determining whether the rooms have any overlap
+        in vertical space, which is greater than the tolerance. If so, a check is
+        performed to evaluate whether the two room polygons overlap in plan, thereby
+        indicating a collision.
+
+        Args:
+            other_story: The other Story object for which collisions with this
+                Story will be evaluated.
+            tolerance: The minimum distance that two Room2Ds geometries can collide
+                with one another and still be considered valid. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if colliding geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        # find the collisions across the Room2Ds
+        msgs = []
+        for room_1 in self.room_2ds:
+            fh1, ch1 = room_1.floor_height, room_1.ceiling_height
+            poly_1 = room_1.floor_geometry.polygon2d
+            for room_2 in other_story.room_2ds:
+                fh2, ch2 = room_2.floor_height, room_2.ceiling_height
+                v_overlap = 0
+                if fh1 < fh2 and ch1 - tolerance > fh2:
+                    v_overlap = ch1 - fh2
+                elif fh2 < fh1 and ch2 - tolerance > fh1:
+                    v_overlap = ch2 - fh1
+                if v_overlap != 0:
+                    poly_2 = room_2.floor_geometry.polygon2d
+                    if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
+                        msg = 'Room2D "{}" on Story "{}" collides with Room2D "{}" ' \
+                            'on Story "{}" with a vertical overlap of {}.'.format(
+                                room_1.display_name, self.display_name,
+                                room_2.display_name, other_story.display_name, v_overlap)
+                        msg = self._validation_message_child(
+                            msg, room_1, detailed, '100108',
+                            error_type='Colliding Rooms Between Stories')
+                        if detailed:
+                            msg['element_id'].append(room_2.identifier)
+                            msg['element_name'].append(room_2.display_name)
+                            msg['parents'].append(msg['parents'][0])
+                        msgs.append(msg)
+        # report any errors
+        if detailed:
+            return msgs
+        full_msg = '\n '.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
     def check_no_roof_overlaps(
             self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.

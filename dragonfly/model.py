@@ -1001,6 +1001,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_plenum_depths(tol, False, detailed))
         msgs.append(self.check_window_parameters_valid(tol, False, detailed))
         msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
+        msgs.append(self.check_collisions_between_stories(tol, False, detailed))
         msgs.append(self.check_roofs_above_rooms(tol, False, detailed))
         msgs.append(self.check_room2d_floor_heights_valid(False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
@@ -1314,6 +1315,37 @@ class Model(_BaseGeometry):
         if bldg_ids != []:
             msg = 'The following Buildings have overlaps in their Room2D geometry' \
                 ':\n{}'.format('\n'.join(bldg_ids))
+            if raise_exception:
+                raise ValueError(msg)
+            return msg
+        return ''
+
+    def check_collisions_between_stories(
+            self, tolerance=None, raise_exception=True, detailed=False):
+        """Check that Room2Ds of each Story do not collide with others in each Building.
+
+        Args:
+            tolerance: The minimum distance that two Room2Ds geometries can collide
+                with one another and still be considered valid. If None, the Model
+                tolerance will be used. (Default: None).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if colliding geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        tolerance = self.tolerance if tolerance is None else tolerance
+        bldg_msgs = []
+        for bldg in self._buildings:
+            ov_msg = bldg.check_collisions_between_stories(tolerance, False, detailed)
+            if ov_msg:
+                bldg_msgs.extend(ov_msg)
+        if detailed:
+            return bldg_msgs
+        if bldg_msgs != []:
+            msg = '\n'.join(bldg_msgs)
             if raise_exception:
                 raise ValueError(msg)
             return msg

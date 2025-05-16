@@ -1898,6 +1898,43 @@ class Building(_BaseGeometry):
                     has_flr_ceil.extend(story_list)
         return has_flr_ceil
 
+    def check_collisions_between_stories(
+            self, tolerance=0.01, raise_exception=True, detailed=False):
+        """Check that Room2Ds of each Story do not collide with others in the Building.
+
+        Args:
+            tolerance: The minimum distance that two Room2Ds geometries can collide
+                with one another and still be considered valid. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if colliding geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        msgs = []
+        if len(self._unique_stories) > 1:
+            for i in range(len(self._unique_stories) - 1):
+                story1, story2 = self._unique_stories[i], self._unique_stories[i + 1]
+                col_msg = story1.check_collision_with_story(
+                    story2, tolerance, False, detailed)
+                if col_msg:
+                    if detailed:
+                        msgs.extend(col_msg)
+                    else:
+                        msgs.append(col_msg)
+        if detailed:
+            return msgs
+        if msgs != []:
+            msg = 'Building "{}" has stories with rooms that collide with one another' \
+                ':\n {}'.format(self.full_id, '\n '.join(msgs))
+            if raise_exception:
+                raise ValueError(msg)
+            return msg
+        return ''
+
     def to_honeybee(self, use_multiplier=True, exclude_plenums=False, tolerance=0.01,
                     enforce_adj=True, enforce_solid=True):
         """Convert Dragonfly Building to a Honeybee Model.
