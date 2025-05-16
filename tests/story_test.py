@@ -3,6 +3,7 @@ import pytest
 
 from dragonfly.story import Story
 from dragonfly.room2d import Room2D
+from dragonfly.roof import RoofSpecification
 from dragonfly.windowparameter import SimpleWindowRatio
 from dragonfly.shadingparameter import Overhang
 
@@ -308,6 +309,39 @@ def test_story_remove_room_2d_duplicate_vertices():
         'SquareShoebox2..Face4'
     assert room2d_2.boundary_conditions[3].boundary_condition_objects[0] == \
         'SquareShoebox1..Face2'
+
+
+def test_check_roofs_above_rooms():
+    """Test the Story check_roofs_above_rooms method."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
+    pts_2 = (Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(20, 10, 0), Point3D(20, 0, 0))
+    pts_3 = (Point3D(0, 10, 0), Point3D(0, 20, 0), Point3D(10, 20, 0), Point3D(10, 10, 0))
+    pts_4 = (Point3D(10, 10, 0), Point3D(10, 20, 0), Point3D(20, 20, 0), Point3D(20, 10, 0))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3.5, is_top_exposed=True)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3.5, is_top_exposed=True)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3.5, is_top_exposed=True)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3.5, is_top_exposed=True)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    r_pts_1 = (Point3D(0, 0, 15), Point3D(0, 20, 15), Point3D(10, 20, 20), Point3D(10, 0, 20))
+    r_pts_2 = (Point3D(10, 0, 20), Point3D(10, 20, 20), Point3D(20, 20, 15), Point3D(20, 0, 15))
+    story.roof = RoofSpecification([Face3D(r_pts_1), Face3D(r_pts_2)])
+
+    assert story.check_roofs_above_rooms(raise_exception=False) == ''
+
+    for room in story.room_2ds:
+        room.move(Vector3D(0, 0, 15))
+    assert story.check_roofs_above_rooms(raise_exception=False) == ''
+
+    for room in story.room_2ds:
+        room.ceiling_plenum_depth = 0.5
+    assert story.check_roofs_above_rooms(raise_exception=False) != ''
+
+    for room in story.room_2ds:
+        room.ceiling_plenum_depth = 0
+        room.move(Vector3D(0, 0, 1))
+    assert story.check_roofs_above_rooms(raise_exception=False) != ''
 
 
 def test_to_honeybee():
