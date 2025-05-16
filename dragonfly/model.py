@@ -1321,9 +1321,12 @@ class Model(_BaseGeometry):
 
     def check_roofs_above_rooms(
             self, tolerance=None, raise_exception=True, detailed=False):
-        """Check that geometries of RoofSpecifications do not overlap with one another.
+        """Check that all roof geometries lie above the Room2Ds of the model.
 
-        Overlaps make the Roof geometry unusable for translation to Honeybee.
+        Roofs that lie below or intersect the Room2D floor plates (or the plenum floors)
+        will cause an invalid calculation of the Room volume when translated
+        to Honeybee. Roofs touching the edges of floor plates within the tolerance
+        are permitted and can be translated to closed Honeybee Room volumes.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
@@ -1361,8 +1364,9 @@ class Model(_BaseGeometry):
             self, tolerance=None, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.
 
-        This is not a requirement for the Model to be valid but it is sometimes
-        useful to check.
+        This is NOT a requirement for the Model to be valid but it is sometimes
+        useful to check when trying to make the simplest and cleanest
+        representation of the roofs.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap

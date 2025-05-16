@@ -993,7 +993,7 @@ class RoofSpecification(object):
                 roof_verts = [roof_plane.project_point(pt, proj_dir)
                               for pt in room.floor_geometry.vertices]
                 roof_min = Face3D(roof_verts).min.z
-                if roof_min < hp_flr_hgt:
+                if roof_min < hp_flr_hgt - tolerance:
                     msg = msg_temp.format(room.display_name, hp_flr_hgt, roof_min)
                     messages.append(msg)
                     bad_rooms.append(room)
@@ -1014,7 +1014,7 @@ class RoofSpecification(object):
             if roof_faces is None:  # invalid roof geometry
                 continue
             roof_min = min(f.min.z for f in roof_faces)
-            if roof_min < hp_flr_hgt:
+            if roof_min < hp_flr_hgt - tolerance:
                 msg = msg_temp.format(room.display_name, hp_flr_hgt, roof_min)
                 messages.append(msg)
                 bad_rooms.append(room)

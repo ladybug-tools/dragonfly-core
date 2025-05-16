@@ -464,7 +464,7 @@ class ContextShade(_BaseGeometry):
             self._geometry = tuple(new_geometry)
 
     def align(self, line_ray, distance, tolerance=0.01):
-        """Move sShade vertices within a given distance of a line to be on that line.
+        """Move Shade vertices within a given distance of a line to be on that line.
 
         This is useful for coordinating the ContextShade with the alignment of Room2Ds.
 
