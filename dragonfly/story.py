@@ -1876,8 +1876,10 @@ using-multipliers-zone-and-or-window.html
             self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications all lie above the Room2D geometry.
 
-        Roofs that lie below the Room2Ds will result in invalid Honeybee Rooms
-        with self-intersecting walls.
+        Roofs that lie below or intersect the Room2D floor plates (or the plenum floors)
+        will cause an invalid calculation of the Room volume when translated
+        to Honeybee. Roofs touching the edges of floor plates within the tolerance
+        are permitted and can be translated to closed Honeybee Room volumes.
 
         Args:
             tolerance: The minimum distance between coordinate values that is
@@ -1913,9 +1915,9 @@ using-multipliers-zone-and-or-window.html
             self, tolerance=0.01, raise_exception=True, detailed=False):
         """Check that geometries of RoofSpecifications do not overlap with one another.
 
-        This is NOT required for the Story to be valid but it is sometimes
-        useful to check since it can indicate whether the roof can be cleaned
-        up into a more concise set of geometries.
+        This is NOT a requirement for the Model to be valid but it is sometimes
+        useful to check when trying to make the simplest and cleanest
+        representation of the roofs.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
