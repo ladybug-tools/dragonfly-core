@@ -956,9 +956,11 @@ class RoofSpecification(object):
         # get the roof polygons and set up the message template
         roof_polys = self.boundary_geometry_2d
         roof_planes = self.planes
-        msg_temp = 'Room2D "{}" has a floor height (including plenums) at {} ' \
-            'and this intersects the roof geometry above the room, which extends ' \
-            'down to {}. Change the room plenum depth, lower the room floor height, ' \
+        msg_temp = 'Room2D "{}" has a {}floor height at {} and this is above the ' \
+            'roof geometry covering the room, which extends down to {}. {}'
+        suggest = 'Lower the room floor height, delete the roofs, or move the ' \
+            'roof/room boundaries.'
+        suggest_pln = 'Change the room plenum depth, lower the room floor height, ' \
             'or delete the roofs.'
 
         # loop through the rooms and test for collisions
@@ -994,7 +996,12 @@ class RoofSpecification(object):
                               for pt in room.floor_geometry.vertices]
                 roof_min = Face3D(roof_verts).min.z
                 if roof_min < hp_flr_hgt - tolerance:
-                    msg = msg_temp.format(room.display_name, hp_flr_hgt, roof_min)
+                    if room.ceiling_plenum_depth != 0 or room.floor_plenum_depth != 0:
+                        hgt_type, sug = 'plenum ', suggest_pln
+                    else:
+                        hgt_type, sug = '', suggest
+                    msg = msg_temp.format(
+                        room.display_name, hgt_type, hp_flr_hgt, roof_min, sug)
                     messages.append(msg)
                     bad_rooms.append(room)
                 continue
@@ -1015,7 +1022,12 @@ class RoofSpecification(object):
                 continue
             roof_min = min(f.min.z for f in roof_faces)
             if roof_min < hp_flr_hgt - tolerance:
-                msg = msg_temp.format(room.display_name, hp_flr_hgt, roof_min)
+                if room.ceiling_plenum_depth != 0 or room.floor_plenum_depth != 0:
+                    hgt_type, sug = 'plenum ', suggest_pln
+                else:
+                    hgt_type, sug = '', suggest
+                msg = msg_temp.format(
+                    room.display_name, hgt_type, hp_flr_hgt, roof_min, sug)
                 messages.append(msg)
                 bad_rooms.append(room)
         return messages, bad_rooms
