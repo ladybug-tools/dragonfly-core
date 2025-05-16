@@ -380,6 +380,39 @@ def test_building_separate_room_2d_plenums():
     assert len(building_dup.unique_stories) == 8
 
 
+def test_check_collisions_between_stories():
+    """Test the Building check_collisions_between_stories method."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(0, 10, 0), Point3D(10, 10, 0), Point3D(10, 0, 0))
+    pts_2 = (Point3D(10, 0, 0), Point3D(10, 10, 0), Point3D(20, 10, 0), Point3D(20, 0, 0))
+    pts_3 = (Point3D(0, 10, 0), Point3D(0, 20, 0), Point3D(10, 20, 0), Point3D(10, 10, 0))
+    pts_4 = (Point3D(10, 10, 0), Point3D(10, 20, 0), Point3D(20, 20, 0), Point3D(20, 10, 0))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3.5)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3.5)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3.5)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3.5)
+    story = Story('Office_Floor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('Office_Building_1234', [story])
+    building = Building('Office_Building_1234', building.all_stories())
+    for room in building.unique_stories[0]:
+        room.is_ground_contact = True
+    for room in building.unique_stories[-1]:
+        room.is_top_exposed = True
+
+    assert building.check_collisions_between_stories(raise_exception=False) == ''
+
+    building.unique_stories[0].room_2ds[0].floor_to_ceiling_height = 4
+    assert building.check_collisions_between_stories(raise_exception=False) != ''
+    print(building.check_collisions_between_stories(raise_exception=False))
+
+    building.unique_stories[0].room_2ds[0].floor_to_ceiling_height = 3.5
+    building.unique_stories[1].room_2ds[0].move(Vector3D(0, 0, -0.5))
+    assert building.check_collisions_between_stories(raise_exception=False) != ''
+    print(building.check_collisions_between_stories(raise_exception=False))
+
+
 def test_honeybee_ceiling_plenum():
     """Test the Room2D.ceiling_plenum_depth translation to honeybee."""
     # simple 10 x 10 rooms
