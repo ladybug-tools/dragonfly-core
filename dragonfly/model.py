@@ -971,6 +971,75 @@ class Model(_BaseGeometry):
             self.tolerance = self.tolerance * scale_fac
             self.units = units
 
+    def check_for_extension(self, extension_name='All',
+                            raise_exception=True, detailed=False):
+        """Check that the Model is valid for a specific Dragonfly extension.
+
+        This process will typically include both dragonfly-core checks as well
+        as checks that apply only to the extension. However, any checks that
+        are not relevant for the specified extension will be ignored.
+
+        Note that the specified Dragonfly extension must be installed in order
+        for this method to run successfully.
+
+        Args:
+            extension_name: Text for the name of the extension to be checked.
+                The value input here is case-insensitive such that "radiance"
+                and "Radiance" will both result in the model being checked for
+                validity with dragonfly-radiance. This value can also be set to
+                "All" in order to run checks for all installed extensions. Some
+                common dragonfly extension names that can be input here if they
+                are installed include:
+
+                * Radiance
+                * EnergyPlus
+                * OpenStudio
+                * DesignBuilder
+                * DOE2
+                * IES
+                * IDAICE
+
+                Note that EnergyPlus, OpenStudio, and DesignBuilder are all set
+                to run the same checks with dragonfly-energy.
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if any errors are found. If False, this method will simply
+                return a text string with all errors that were found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A text string with all errors that were found or a list if detailed is True.
+            This string (or list) will be empty if no errors were found.
+        """
+        # set up defaults to ensure the method runs correctly
+        detailed = False if raise_exception else detailed
+        extension_name = extension_name.lower()
+        if extension_name == 'all':
+            return self.check_all(raise_exception, detailed)
+        energy_extensions = ('energyplus', 'openstudio', 'designbuilder')
+        if extension_name in energy_extensions:
+            extension_name = 'energy'
+        elif extension_name == 'iesve':  # TODO: remove when honeybee-iesve is published
+            extension_name = 'ies'
+
+        # check the extension attributes
+        assert self.tolerance != 0, \
+            'Model must have a non-zero tolerance in order to perform geometry checks.'
+        assert self.angle_tolerance != 0, \
+            'Model must have a non-zero angle_tolerance to perform geometry checks.'
+        msgs = self._properties._check_for_extension(extension_name, detailed)
+        if detailed:
+            msgs = [m for m in msgs if isinstance(m, list)]
+
+        # output a final report of errors or raise an exception
+        full_msgs = [msg for msg in msgs if msg]
+        if detailed:
+            return [m for msg in full_msgs for m in msg]
+        full_msg = '\n'.join(full_msgs)
+        if raise_exception and len(full_msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
     def check_all(self, raise_exception=True, detailed=False):
         """Check all of the aspects of the Model for possible errors.
 
@@ -992,10 +1061,7 @@ class Model(_BaseGeometry):
             'Model must have a non-zero tolerance in order to perform geometry checks.'
         tol, a_tol = self.tolerance, self.angle_tolerance
         # perform checks for key dragonfly model schema rules
-        msgs.append(self.check_duplicate_context_shade_identifiers(False, detailed))
-        msgs.append(self.check_duplicate_room_2d_identifiers(False, detailed))
-        msgs.append(self.check_duplicate_story_identifiers(False, detailed))
-        msgs.append(self.check_duplicate_building_identifiers(False, detailed))
+        msgs.append(self.check_all_duplicate_identifiers(False, detailed))
         msgs.append(self.check_degenerate_room_2ds(tol, False, detailed))
         msgs.append(self.check_self_intersecting_room_2ds(tol, False, detailed))
         msgs.append(self.check_plenum_depths(tol, False, detailed))
@@ -1007,10 +1073,77 @@ class Model(_BaseGeometry):
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
-        ext_msgs = self._properties._check_extension_attr()
+        ext_msgs = self._properties._check_all_extension_attr()
         if detailed:
             ext_msgs = [m for m in ext_msgs if isinstance(m, list)]
         msgs.extend(ext_msgs)
+        # output a final report of errors or raise an exception
+        full_msgs = [msg for msg in msgs if msg]
+        if detailed:
+            return [m for msg in full_msgs for m in msg]
+        full_msg = '\n'.join(full_msgs)
+        if raise_exception and len(full_msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
+    def check_all_room_collisions(self, raise_exception=True, detailed=False):
+        """Check all types of Room2D collisions and major geometry errors.
+
+        This includes checking for degenerate and self-interesting Room2Ds as well
+        as checking for Room2D overlaps within Stories and collisions between Stories.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if any duplicate IDs are found. If False, this method will simply
+                return a text string with all errors that were found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A text string with all errors that were found or a list if detailed is True.
+            This string (or list) will be empty if no errors were found.
+        """
+        # set up defaults to ensure the method runs correctly
+        detailed = False if raise_exception else detailed
+        msgs = []
+        # perform checks for duplicate identifiers
+        msgs.append(self.check_degenerate_room_2ds(False, detailed))
+        msgs.append(self.check_self_intersecting_room_2ds(False, detailed))
+        msgs.append(self.check_no_room2d_overlaps(False, detailed))
+        msgs.append(self.check_collisions_between_stories(False, detailed))
+        # output a final report of errors or raise an exception
+        full_msgs = [msg for msg in msgs if msg]
+        if detailed:
+            return [m for msg in full_msgs for m in msg]
+        full_msg = '\n'.join(full_msgs)
+        if raise_exception and len(full_msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
+    def check_all_duplicate_identifiers(self, raise_exception=True, detailed=False):
+        """Check that there are no duplicate identifiers for any geometry objects.
+
+        This includes Buildings, Stories, Room2Ds, and ContextShades.
+
+        Args:
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if any duplicate IDs are found. If False, this method will simply
+                return a text string with all errors that were found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A text string with all errors that were found or a list if detailed is True.
+            This string (or list) will be empty if no errors were found.
+        """
+        # set up defaults to ensure the method runs correctly
+        detailed = False if raise_exception else detailed
+        msgs = []
+        # perform checks for duplicate identifiers
+        msgs.append(self.check_duplicate_context_shade_identifiers(False, detailed))
+        msgs.append(self.check_duplicate_room_2d_identifiers(False, detailed))
+        msgs.append(self.check_duplicate_story_identifiers(False, detailed))
+        msgs.append(self.check_duplicate_building_identifiers(False, detailed))
         # output a final report of errors or raise an exception
         full_msgs = [msg for msg in msgs if msg]
         if detailed:
@@ -1856,6 +1989,88 @@ class Model(_BaseGeometry):
         Use this method to access Writer class to write the model in other formats.
         """
         return writer
+
+    @staticmethod
+    def validate(model, check_function='check_for_extension', check_args=None,
+                 json_output=False):
+        """Get a string of a validation report given a specific check_function.
+
+        Args:
+            model: A Dragonfly Model object for which validation will be performed.
+                This can also be the file path to a DFJSON or a JSON string
+                representation of a Dragonfly Model. These latter two options may
+                be useful if the type of validation issue with the Model is
+                one that prevents serialization.
+            check_function: Text for the name of a check function on this Model
+                that will be used to generate the validation report. For example,
+                check_all or check_rooms_solid. (Default: check_for_extension),
+            check_args: An optional list of arguments to be passed to the
+                check_function. If None, all default values for the arguments
+                will be used. (Default: None).
+            json_output: Boolean to note whether the output validation report
+                should be formatted as a JSON object instead of plain text.
+        """
+        # first get the function to call on this class
+        check_func = getattr(Model, check_function, None)
+        assert check_func is not None, \
+            'Dragonfly Model class has no method {}'.format(check_function)
+
+        # process the input model if it's not already serialized
+        report = ''
+        if isinstance(model, str):
+            try:
+                if model.startswith('{'):
+                    model = Model.from_dict(json.loads(model))
+                elif os.path.isfile(model):
+                    model = Model.from_file(model)
+                else:
+                    report = 'Input Model for validation is not a Model object, ' \
+                        'file path to a Model or a Model DFJSON string.'
+            except Exception as e:
+                report = str(e)
+        elif not isinstance(model, Model):
+            report = 'Input Model for validation is not a Model object, ' \
+                'file path to a Model or a Model DFJSON string.'
+        # process the arguments and options
+        args = [model] if check_args is None else [model] + list(check_args)
+        kwargs = {'raise_exception': False}
+
+        # create the report
+        if not json_output:  # create a plain text report
+            # add the versions of things into the validation message
+            c_ver = df_folders.dragonfly_core_version_str
+            s_ver = df_folders.dragonfly_schema_version_str
+            ver_msg = 'Validating Model using dragonfly-core=={} and ' \
+                'dragonfly-schema=={}'.format(c_ver, s_ver)
+            # run the check function
+            if isinstance(args[0], Model):
+                kwargs['detailed'] = False
+                report = check_func(*args, **kwargs)
+            # format the results of the check
+            if report == '':
+                full_msg = ver_msg + '\nCongratulations! Your Model is valid!'
+            else:
+                full_msg = ver_msg + \
+                    '\nYour Model is invalid for the following reasons:\n' + report
+            return full_msg
+        else:
+            # add the versions of things into the validation message
+            out_dict = {
+                'type': 'ValidationReport',
+                'app_name': 'Dragonfly',
+                'app_version': df_folders.dragonfly_core_version_str,
+                'schema_version': df_folders.dragonfly_schema_version_str,
+                'fatal_error': report
+            }
+            if report == '':
+                kwargs['detailed'] = True
+                errors = check_func(*args, **kwargs)
+                out_dict['errors'] = errors
+                out_dict['valid'] = True if len(out_dict['errors']) == 0 else False
+            else:
+                out_dict['errors'] = []
+                out_dict['valid'] = False
+            return json.dumps(out_dict, indent=4)
 
     @staticmethod
     def lines_from_pomf(pomf_file):
