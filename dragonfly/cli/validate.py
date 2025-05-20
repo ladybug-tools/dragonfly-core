@@ -1,11 +1,10 @@
 """dragonfly validation commands."""
-import click
 import sys
 import logging
-import json
+import click
 
+from ladybug.commandutil import process_content_to_output
 from dragonfly.model import Model
-from dragonfly.config import folders
 
 _logger = logging.getLogger(__name__)
 
@@ -19,16 +18,18 @@ def validate():
 @click.argument('model-file', type=click.Path(
     exists=True, file_okay=True, dir_okay=False, resolve_path=True))
 @click.option(
-    '--check-all/--room-overlaps', ' /-ro', help='Flag to note whether the output '
-    'validation report should validate all possible issues with the model or only '
-    'the Room2D overlaps of each Story should be checked. Checking for room overlaps '
-    'will also check for degenerate and self-intersecting Rooms.',
-    default=True, show_default=True)
+    '--extension', '-e', help='Text for the name of the extension to be checked. '
+    'The value input is case-insensitive such that "radiance" and "Radiance" will '
+    'both result in the model being checked for validity with dragonfly-radiance. '
+    'This value can also be set to "All" in order to run checks for all installed '
+    'extensions. Some common dragonfly extension names that can be input here include: '
+    'Radiance, EnergyPlus, DOE2, IES, IDAICE',
+    type=str, default='All', show_default=True)
 @click.option(
     '--plain-text/--json', ' /-j', help='Flag to note whether the output validation '
     'report should be formatted as a JSON object instead of plain text. If set to JSON, '
-    'the output object will contain several attributes. The "honeybee_core" and '
-    '"honeybee_schema" attributes will note the versions of these libraries used in '
+    'the output object will contain several attributes. The "dragonfly_core" and '
+    '"dragonfly_schema" attributes will note the versions of these libraries used in '
     'the validation process. An attribute called "fatal_error" is a text string '
     'containing an exception if the Model failed to serialize and will be an empty '
     'string if serialization was successful. An attribute called "errors" will '
@@ -36,10 +37,14 @@ def validate():
     'boolean attribute called "valid" will note whether the Model is valid or not.',
     default=True, show_default=True)
 @click.option(
+    '--room-overlaps', 'room_overlaps', flag_value='True',
+    help='Deprecated flag used to check room collisions. '
+    'Use `dragonfly validate room-collisions` instead.')
+@click.option(
     '--output-file', '-f', help='Optional file to output the full report '
     'of any errors detected. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
-def validate_model(model_file, check_all, plain_text, output_file):
+def validate_model_cli(model_file, extension, plain_text, room_overlaps, output_file):
     """Validate a Model file against the Dragonfly schema.
 
     \b
@@ -48,61 +53,103 @@ def validate_model(model_file, check_all, plain_text, output_file):
             HBJSON or a HBpkl from which a Dragonfly model should be derived.
     """
     try:
-        if plain_text:
-            # re-serialize the Model to make sure no errors are found
-            click.echo(
-                'Validating Model using dragonfly-core=={} and '
-                'dragonfly-schema=={}'.format(
-                    folders.dragonfly_core_version_str,
-                    folders.dragonfly_schema_version_str
-                )
-            )
-            parsed_model = Model.from_file(model_file)
-            click.echo('Re-serialization passed.')
-            # perform several other checks for key dragonfly model schema rules
-            if check_all:
-                report = parsed_model.check_all(raise_exception=False)
-            else:
-                r1 = parsed_model.check_degenerate_room_2ds(raise_exception=False)
-                r2 = parsed_model.check_self_intersecting_room_2ds(raise_exception=False)
-                r3 = parsed_model.check_no_room2d_overlaps(raise_exception=False)
-                report = r1 + r2 + r3
-            click.echo('Geometry and identifier checks completed.')
-            # check the report and write the summary of errors
-            if report == '':
-                output_file.write('Congratulations! Your Model is valid!')
-            else:
-                error_msg = '\nYour Model is invalid for the following reasons:'
-                output_file.write('\n'.join([error_msg, report]))
+        json = not plain_text
+        if room_overlaps == 'True':
+            print('--room-overlaps option is deprecated. '
+                  'Use `dragonfly validate room-collisions` instead.')
+            validate_room_collisions(model_file, json, output_file)
         else:
-            out_dict = {
-                'type': 'ValidationReport',
-                'app_name': 'Dragonfly',
-                'app_version': folders.dragonfly_core_version_str,
-                'schema_version': folders.dragonfly_schema_version_str
-            }
-            try:
-                parsed_model = Model.from_file(model_file)
-                out_dict['fatal_error'] = ''
-                if check_all:
-                    errors = parsed_model.check_all(raise_exception=False, detailed=True)
-                else:
-                    err1 = parsed_model.check_degenerate_room_2ds(
-                        raise_exception=False, detailed=True)
-                    err2 = parsed_model.check_self_intersecting_room_2ds(
-                            raise_exception=False, detailed=True)
-                    err3 = parsed_model.check_no_room2d_overlaps(
-                        raise_exception=False, detailed=True)
-                    errors = err1 + err2 + err3
-                out_dict['errors'] = errors
-                out_dict['valid'] = True if len(out_dict['errors']) == 0 else False
-            except Exception as e:
-                out_dict['fatal_error'] = str(e)
-                out_dict['errors'] = []
-                out_dict['valid'] = False
-            output_file.write(json.dumps(out_dict, indent=4))
+            validate_model(model_file, extension, json, output_file)
     except Exception as e:
         _logger.exception('Model validation failed.\n{}'.format(e))
         sys.exit(1)
     else:
         sys.exit(0)
+
+
+def validate_model(model_file, extension='All', json=False, output_file=None,
+                   plain_text=True):
+    """Validate all properties of a Model file against the Dragonfly schema.
+
+    This includes checking basic compliance of dragonfly geometry with the rules
+    that guarantee translation to valid closed Honeybee Rooms as well as checks
+    for extension attributes.
+
+    Args:
+        model_file: Full path to a Dragonfly Model file.
+        extension_name: Text for the name of the extension to be checked.
+            The value input here is case-insensitive such that "radiance"
+            and "Radiance" will both result in the model being checked for
+            validity with dragonfly-radiance. This value can also be set to
+            "All" in order to run checks for all installed extensions. Some
+            common dragonfly extension names that can be input here if they
+            are installed include:
+
+            * Radiance
+            * EnergyPlus
+            * DOE2
+            * IES
+            * IDAICE
+
+        json: Boolean to note whether the output validation report should be
+            formatted as a JSON object instead of plain text. (Default: False).
+        output_file: Optional file to output the full report of the validation.
+            If None, the string will simply be returned from this method.
+    """
+    report = Model.validate(model_file, 'check_for_extension', [extension], json)
+    return process_content_to_output(report, output_file)
+
+
+@validate.command('room-collisions')
+@click.argument('model-file', type=click.Path(
+    exists=True, file_okay=True, dir_okay=False, resolve_path=True))
+@click.option(
+    '--plain-text/--json', ' /-j', help='Flag to note whether the output validation '
+    'report should be formatted as a JSON object instead of plain text. If set to JSON, '
+    'the output object will contain several attributes. An attribute called '
+    '"fatal_error" is a text string containing an exception if the Model failed to '
+    'serialize and will be an empty string if serialization was successful. An '
+    'attribute called "errors" will contain a list of JSON objects for each '
+    'invalid issue. A boolean attribute called "valid" will note whether the Model '
+    'is valid or not.', default=True, show_default=True)
+@click.option(
+    '--output-file', '-f', help='Optional file to output the full report '
+    'of the validation. By default it will be printed out to stdout.',
+    type=click.File('w'), default='-')
+def validate_room_collisions_cli(model_file, plain_text, output_file):
+    """Validate whether all Room volumes in a model are solid.
+
+    The returned result can include a list of all naked and non-manifold edges
+    preventing closed room volumes when --json is used. This is helpful for visually
+    identifying issues in geometry that are preventing the room volume from
+    validating as closed.
+
+    \b
+    Args:
+        model_file: Full path to a Dragonfly Model file.
+    """
+    try:
+        json = not plain_text
+        validate_room_collisions(model_file, json, output_file)
+    except Exception as e:
+        _logger.exception('Model room volume validation failed.\n{}'.format(e))
+        sys.exit(1)
+    else:
+        sys.exit(0)
+
+
+def validate_room_collisions(model_file, json=False, output_file=None, plain_text=True):
+    """Get a list of all naked and non-manifold edges preventing closed room volumes.
+
+    This is helpful for visually identifying issues in geometry that are preventing
+    the room volume from reading as closed.
+
+    Args:
+        model_file: Full path to a Dragonfly Model file.
+        json: Boolean to note whether the output validation report should be
+            formatted as a JSON object instead of plain text. (Default: False).
+        output_file: Optional file to output the full report of the validation.
+            If None, the string will simply be returned from this method.
+    """
+    report = Model.validate(model_file, 'check_all_room_collisions', json_output=json)
+    return process_content_to_output(report, output_file)

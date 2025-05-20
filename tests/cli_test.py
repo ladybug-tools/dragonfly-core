@@ -7,7 +7,7 @@ from dragonfly.cli.edit import convert_units, solve_adjacency, reset_room_bounda
     align_room_2ds, remove_short_segments, windows_by_ratio
 from dragonfly.cli.translate import model_to_honeybee_cli, \
     merge_models_to_honeybee_cli
-from dragonfly.cli.validate import validate_model
+from dragonfly.cli.validate import validate_model_cli
 
 from dragonfly.model import Model
 from honeybee.boundarycondition import Surface
@@ -147,10 +147,10 @@ def test_validate_model():
     incorrect_input_model = './tests/json/bad_adjacency_model.dfjson'
     if (sys.version_info >= (3, 7)):
         runner = CliRunner()
-        result = runner.invoke(validate_model, [input_model])
+        result = runner.invoke(validate_model_cli, [input_model])
         assert result.exit_code == 0
         runner = CliRunner()
-        result = runner.invoke(validate_model, [incorrect_input_model])
+        result = runner.invoke(validate_model_cli, [incorrect_input_model])
         outp = result.output
         assert 'Your Model is invalid for the following reasons' in outp
         assert 'does not have a Surface boundary condition' in outp
@@ -161,14 +161,14 @@ def test_validate_model_json():
     incorrect_input_model = './tests/json/bad_adjacency_model.dfjson'
     if (sys.version_info >= (3, 7)):
         runner = CliRunner()
-        result = runner.invoke(validate_model, [input_model, '--json'])
+        result = runner.invoke(validate_model_cli, [input_model, '--json'])
         assert result.exit_code == 0
         outp = result.output
         valid_report = json.loads(outp)
         assert not valid_report['valid']
         assert len(valid_report['errors']) == 2  # there are two Room2D overlaps
         runner = CliRunner()
-        result = runner.invoke(validate_model, [incorrect_input_model, '--json'])
+        result = runner.invoke(validate_model_cli, [incorrect_input_model, '--json'])
         outp = result.output
         valid_report = json.loads(outp)
         assert not valid_report['valid']
