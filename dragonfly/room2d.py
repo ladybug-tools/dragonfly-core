@@ -1402,7 +1402,7 @@ class Room2D(_BaseGeometry):
                 self._boundary_conditions[i] = bcs.outdoors
 
     def find_segment_adjacency(self, room_2ds, tolerance=0.01):
-        """Evaluate each of the segment of this Room2D for adjacency with other Room2Ds.
+        """Evaluate each of the segments of this Room2D for adjacency with other Room2Ds.
 
         This is purely a geometric analysis and is separate from any boundary
         conditions that may or may not be assigned to the Room2Ds.
