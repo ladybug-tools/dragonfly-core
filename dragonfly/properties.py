@@ -385,11 +385,20 @@ class ModelProperties(_Properties):
         """
         msgs = []
         for atr in self._extension_attributes:
+            check_msg = None
             var = getattr(self, atr)
             if not hasattr(var, 'check_all'):
                 continue
             try:
-                msgs.append(var.check_all(raise_exception=False))
+                try:
+                    check_msg = var.check_all(raise_exception=False, detailed=detailed)
+                except TypeError:  # no option available for detailed error message
+                    check_msg = var.check_all(raise_exception=False)
+                if detailed and check_msg is not None:
+                    msgs.append(check_msg)
+                elif check_msg != '':
+                    f_msg = 'Attributes for {} are invalid.\n{}'.format(atr, check_msg)
+                    msgs.append(f_msg)
             except Exception as e:
                 import traceback
                 traceback.print_exc()
