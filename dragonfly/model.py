@@ -1073,7 +1073,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
-        ext_msgs = self._properties._check_all_extension_attr()
+        ext_msgs = self._properties._check_all_extension_attr(detailed)
         if detailed:
             ext_msgs = [m for m in ext_msgs if isinstance(m, list)]
         msgs.extend(ext_msgs)
