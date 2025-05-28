@@ -383,6 +383,7 @@ class Building(_BaseGeometry):
         if not all([room.story is not None for room in model.rooms]):
             model.assign_stories_by_floor_height(min_diff)
             remove_stories = True
+
         # group the rooms by story and create dragonfly Stories
         story_dict = {}
         for room in model.rooms:
@@ -390,6 +391,7 @@ class Building(_BaseGeometry):
                 story_dict[room.story].append(room)
             except KeyError:
                 story_dict[room.story] = [room]
+
         # evaluate floor heights to see if floors should be split
         removed_flrs, new_flrs = [], {}
         for s_id, rms in story_dict.items():
@@ -401,13 +403,22 @@ class Building(_BaseGeometry):
         for r_flr in removed_flrs:
             story_dict.pop(r_flr)
         story_dict.update(new_flrs)
+
         # create the Story and Building objects
         stories = []
         for s_id, rms in story_dict.items():
             story_id = clean_string(str(s_id))
-            valid_rooms = [r for r in rms if not r.exclude_floor_area]
+            valid_rooms, plenum_rooms = [], []
+            for r in rms:
+                if not r.exclude_floor_area:
+                    valid_rooms.append(r)
+                else:
+                    plenum_rooms.append(r)
             if len(valid_rooms) != 0:
-                story = Story.from_honeybee(story_id, rms, model.tolerance)
+                story = Story.from_honeybee(story_id, valid_rooms, model.tolerance)
+                stories.append(story)
+            if len(plenum_rooms) != 0:
+                story = Story.from_honeybee(story_id, plenum_rooms, model.tolerance)
                 stories.append(story)
         bldg = cls(model.identifier, stories)
         bldg._display_name = model._display_name
