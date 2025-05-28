@@ -177,7 +177,7 @@ class Story(_BaseGeometry):
         return story
 
     @classmethod
-    def from_honeybee(cls, identifier, rooms, tolerance):
+    def from_honeybee(cls, identifier, rooms, tolerance=0.01):
         """Initialize a Story from a list of Honeybee Rooms.
 
         Args:
@@ -185,13 +185,17 @@ class Story(_BaseGeometry):
                 and not contain any spaces or special characters.
             rooms: A list of Honeybee Room objects.
             tolerance: The maximum difference between values at which point vertices
-                are considered to be the same.
+                are considered to be the same. (Default: 0.01,
+                suitable for objects in Meters).
         """
         # create the Room2Ds from the Honeybee Rooms
-        room_2ds = []
+        room_2ds, rfs = [], []
         for hb_room in rooms:
             try:
                 room_2ds.append(Room2D.from_honeybee(hb_room, tolerance))
+                for face in hb_room.roof_ceilings:
+                    if face.tilt > 1:  # use one degree tolerance
+                        rfs.append(face.geometry)
             except Exception:  # invalid Honeybee Room that is not a closed solid
                 msg = 'Room "{}" is not a closed solid and cannot be converted to ' \
                     'a Room2D.\nTry using the "ExtrudedOnly" option to convert ' \
@@ -200,10 +204,14 @@ class Story(_BaseGeometry):
         s_type = 'CeilingPlenum' \
             if all(hb_room.exclude_floor_area for hb_room in rooms) else 'Standard'
 
-        room_2ds = [room for room in room_2ds if room is not None]
         # re-set the adjacencies in relation to the Room2D segments
+        room_2ds = [room for room in room_2ds if room is not None]
         room_2ds = cls._reset_adjacencies_from_honeybee(room_2ds, tolerance)
-        return cls(identifier, room_2ds, type=s_type)
+
+        # create the roof geometry if it exists
+        roof = RoofSpecification.from_geometry_to_join(rfs, tolerance) \
+            if len(rfs) != 0 else None
+        return cls(identifier, room_2ds, roof=roof, type=s_type)
 
     @staticmethod
     def _reset_adjacencies_from_honeybee(room_2ds, tolerance):

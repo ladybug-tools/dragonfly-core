@@ -377,8 +377,18 @@ class Room2D(_BaseGeometry):
                 if isinstance(wall_f.type, AirBoundary):
                     air_bounds[i] = True
 
-        # determine the ceiling height, and top/bottom boundary conditions
-        floor_to_ceiling_height = room.geometry.max.z - room.geometry.min.z
+        # determine the ceiling height
+        horiz_roofs = []
+        for face in room.roof_ceilings:
+            if face.tilt <= 1:  # use one degree tolerance
+                horiz_roofs.append(face.geometry)
+        if len(horiz_roofs) != 0:
+            ceiling_height = sum(f[0].z for f in horiz_roofs) / len(horiz_roofs)
+        else:
+            ceiling_height = room.geometry.max.z
+        floor_to_ceiling_height = ceiling_height - room.geometry.min.z
+
+        # determine the top/bottom boundary conditions
         is_ground_contact = all([isinstance(f.boundary_condition, Ground)
                                  for f in room.faces if isinstance(f.type, Floor)])
         is_top_exposed = all([isinstance(f.boundary_condition, Outdoors)

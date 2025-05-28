@@ -6,7 +6,7 @@ import math
 from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
     Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
-    Plane, Face3D, Polyface3D
+    Polyline3D, Plane, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
 import ladybug_geometry.boolean as pb
@@ -17,10 +17,9 @@ class RoofSpecification(object):
 
     Args:
         geometry: An array of Face3D objects representing the geometry of the Roof.
-            Together, these Face3D should either completely cover or completely avoid
-            each Room2D of the Story to which the RoofSpecification is assigned.
-            Cases where Room2Ds are only partially covered by roofs will result in
-            those Room2Ds being extruded to their floor_to_ceiling_height.
+            Cases where Room2Ds are only partially covered by these roof geometries
+            will result in those portions of the Room2Ds being extruded to their
+            floor_to_ceiling_height.
 
     Properties:
         * geometry
@@ -47,8 +46,55 @@ class RoofSpecification(object):
         self._is_resolved = False  # will be set during the serialization process
 
     @classmethod
+    def from_geometry_to_join(cls, geometry, tolerance=0.01):
+        """Initialize RoofSpecification from an array of Face3D to be joined together.
+
+        When using this classmethod, Face3D that are coplanar and touching within
+        the tolerance will be joined together in the returned RoofSpecification
+        object. This makes this classmethod particularly useful when trying to
+        create roofs from honeybee models where the contiguous roof geometries
+        are spread across multiple 3D Rooms.
+
+        Args:
+            geometry: An array of Face3D objects representing the geometry of
+                the Roof.
+            tolerance: The maximum difference between values at which point vertices
+                are considered to be the same. (Default: 0.01,
+                suitable for objects in Meters).
+        """
+        # group the geometries based on their co-planarity
+        roof_groups = []
+        for geo in geometry:
+            is_grouped = False
+            for r_grp in roof_groups:
+                for rg in r_grp:
+                    if geo.is_coplanar(rg, tolerance):
+                        r_grp.append(geo)
+                        is_grouped = True
+                        break
+                if is_grouped:
+                    break
+            else:
+                roof_groups.append([geo])
+
+        # join the coplanar faces together
+        all_geos = []
+        for r_grp in roof_groups:
+            p_face = Polyface3D.from_faces(r_grp, tolerance)
+            p_lines = Polyline3D.join_segments(p_face.naked_edges, tolerance)
+            if len(p_lines) == 1:  # can be represented with a single Face3D
+                final_faces = [Face3D(p_lines[0].vertices[:-1])]
+            else:  # need to separate holes from distinct Face3Ds
+                faces = [Face3D(pl.vertices[:-1]) for pl in p_lines]
+                final_faces = Face3D.merge_faces_to_holes(faces, tolerance)
+            for f_geo in final_faces:
+                f_geo = Face3D(f_geo.boundary, f_geo.plane) if f_geo.has_holes else f_geo
+                all_geos.append(f_geo)
+        return cls(all_geos)
+
+    @classmethod
     def from_dict(cls, data):
-        """Initialize an RoofSpecification from a dictionary.
+        """Initialize RoofSpecification from a dictionary.
 
         Args:
             data: A dictionary representation of an RoofSpecification object.
