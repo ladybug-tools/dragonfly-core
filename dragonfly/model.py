@@ -70,6 +70,10 @@ class Model(_BaseGeometry):
         angle_tolerance: The max angle difference in degrees that vertices are allowed
             to differ from one another in order to consider them colinear. Zero indicates
             that no angle tolerance checks should be performed. (Default: 1.0).
+        reference_vector: An optional Vector3D to relate the model back to an
+            original source coordinate system. This is useful if the model has
+            been moved from its original location and there may be future operations
+            of merging geometry from the original source model. (Default: None).
 
     Properties:
         * identifier
@@ -78,6 +82,7 @@ class Model(_BaseGeometry):
         * units
         * tolerance
         * angle_tolerance
+        * reference_vector
         * buildings
         * context_shades
         * stories
@@ -97,15 +102,17 @@ class Model(_BaseGeometry):
         * user_data
     """
     __slots__ = ('_buildings', '_context_shades',
-                 '_units', '_tolerance', '_angle_tolerance')
+                 '_units', '_tolerance', '_angle_tolerance', '_reference_vector')
 
     def __init__(self, identifier, buildings=None, context_shades=None,
-                 units='Meters', tolerance=None, angle_tolerance=1.0):
+                 units='Meters', tolerance=None, angle_tolerance=1.0,
+                 reference_vector=None):
         """A collection of Buildings and ContextShades for an entire model."""
         _BaseGeometry.__init__(self, identifier)  # process the identifier
         self.units = units
         self.tolerance = tolerance
         self.angle_tolerance = angle_tolerance
+        self.reference_vector = reference_vector
 
         self.buildings = buildings
         self.context_shades = context_shades
@@ -130,6 +137,9 @@ class Model(_BaseGeometry):
             data['tolerance'] is None else data['tolerance']
         angle_tol = 1.0 if 'angle_tolerance' not in data or \
             data['angle_tolerance'] is None else data['angle_tolerance']
+        ref_vec = None if 'reference_vector' not in data or \
+            data['reference_vector'] is None else \
+            Vector3D.from_array(data['reference_vector'])
 
         # import all of the geometry
         buildings = None  # import buildings
@@ -168,7 +178,7 @@ class Model(_BaseGeometry):
 
         # build the model object
         model = Model(data['identifier'], buildings, context_shades,
-                      units, tol, angle_tol)
+                      units, tol, angle_tol, ref_vec)
         if 'display_name' in data and data['display_name'] is not None:
             model.display_name = data['display_name']
         if 'user_data' in data and data['user_data'] is not None:
@@ -466,6 +476,23 @@ class Model(_BaseGeometry):
         self._angle_tolerance = float_positive(value, 'model angle_tolerance')
 
     @property
+    def reference_vector(self):
+        """Get or set a Vector3D relating the model to a source coordinate system.
+
+        This is useful if the model has been moved from its original location
+        and there may be future operations of merging geometry from the
+        original source model.
+        """
+        return self._reference_vector
+
+    @reference_vector.setter
+    def reference_vector(self, value):
+        if value is not None:
+            assert isinstance(value, Vector3D), 'Expected Vector3D for Model ' \
+                'reference_vector. Got {}.'.format(type(value))
+        self._reference_vector = value
+
+    @property
     def buildings(self):
         """Get or set a tuple of all Building objects in the model."""
         return tuple(self._buildings)
@@ -592,12 +619,20 @@ class Model(_BaseGeometry):
         that have matching identifiers within a merged Story will not be added
         in order to avoid ID conflicts. Context Shades will also not be added if their
         identifier matches one that is already in the Model.
+
+        Note that the other model's unit system does not have to match this one
+        since the other_model will automatically be converted to this model's
+        units before merging. Also, if this model has a reference_vector assigned,
+        it will be used to translate the other_model before it is merged into
+        this one.
         """
         # check that the object to merge is a Model and its units are correct
         assert isinstance(other_model, Model), \
             'Expected Dragonfly Model. Got {}.'.format(type(other_model))
         if self.units != other_model.units:
             other_model.convert_to_units(self.units)
+        if self.reference_vector is not None:
+            other_model.move(self.reference_vector)
         # add the Buildings while checking to see if they should be merged
         bldg_to_add = list(self._buildings)
         for o_bldg in other_model._buildings:
@@ -970,6 +1005,44 @@ class Model(_BaseGeometry):
             self.scale(scale_fac)
             self.tolerance = self.tolerance * scale_fac
             self.units = units
+            if self.reference_vector is not None:
+                self.reference_vector = self.reference_vector * scale_fac
+
+    def reset_coordinate_system(self, new_origin=None):
+        """Set the origin of the coordinate system in which the model exists.
+
+        This is useful for resolving cases where the model geometry lies so
+        far from the origin in its current coordinate system that it creates
+        problems. For example, the model geometry might be so high above the
+        origin that EnergyPlus models it in the conditions of the stratosphere.
+        Another possibility is that the float values of the coordinates are so
+        high that floating point tolerance interferes with the proper
+        representation of the model's details.
+
+        In addition to moving the model such that the new_origin sets the
+        coordinate values of the geometry, this method will also set the
+        reference_vector of this object such that any models added into this
+        one from the original source coordinate system respect the new system.
+
+        Args:
+            new_origin: A Point3D in the model's current coordinate system that
+                will become the origin of the new coordinate system. If unspecified,
+                the minimum of the bounding box around the model geometry will
+                be used and the average_height_above_ground will be used to
+                set the Z coordinate. (Default: None).
+        """
+        # compute the new_origin from the bounding box around the geometry
+        if new_origin is None:
+            min_2d = self.min
+            z_val = self.average_height - self.average_height_above_ground
+            new_origin = Point3D(min_2d.x, min_2d.y, z_val)
+        # move the geometry using a vector that is the inverse of the origin
+        ref_vec = Vector3D(-new_origin.x, -new_origin.y, -new_origin.z)
+        self.move(ref_vec)
+        if self.reference_vector is None:
+            self.reference_vector = ref_vec
+        else:
+            self.reference_vector = self.reference_vector + ref_vec
 
     def check_for_extension(self, extension_name='All',
                             raise_exception=True, detailed=False):
@@ -1917,6 +1990,8 @@ class Model(_BaseGeometry):
             base['tolerance'] = self.tolerance
         if self.angle_tolerance != 0:
             base['angle_tolerance'] = self.angle_tolerance
+        if self.reference_vector is not None:
+            base['reference_vector'] = self.reference_vector.to_array()
 
         if self.user_data is not None:
             base['user_data'] = self.user_data
@@ -2459,7 +2534,7 @@ class Model(_BaseGeometry):
             self.identifier,
             [bldg.duplicate() for bldg in self._buildings],
             [shade.duplicate() for shade in self._context_shades],
-            self.units, self.tolerance, self.angle_tolerance)
+            self.units, self.tolerance, self.angle_tolerance, self.reference_vector)
         new_model._display_name = self.display_name
         new_model._user_data = None if self.user_data is None else self.user_data.copy()
         new_model._properties._duplicate_extension_attr(self._properties)
