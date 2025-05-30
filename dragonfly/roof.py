@@ -86,7 +86,10 @@ class RoofSpecification(object):
                 final_faces = [Face3D(p_lines[0].vertices[:-1])]
             else:  # need to separate holes from distinct Face3Ds
                 faces = [Face3D(pl.vertices[:-1]) for pl in p_lines]
-                final_faces = Face3D.merge_faces_to_holes(faces, tolerance)
+                try:
+                    final_faces = Face3D.merge_faces_to_holes(faces, tolerance)
+                except Exception:  # some really wacky geometry was input
+                    final_faces = faces
             for f_geo in final_faces:
                 f_geo = Face3D(f_geo.boundary, f_geo.plane) if f_geo.has_holes else f_geo
                 all_geos.append(f_geo)

@@ -411,7 +411,7 @@ class Room2D(_BaseGeometry):
         # check if there are any skylights to be added
         skylights, are_doors = [], []
         for f in room.faces:
-            if isinstance(f.type, RoofCeiling):
+            if isinstance(f.type, RoofCeiling) and f.tilt < 89:
                 sf_objs = f._apertures + f._doors
                 for sf in sf_objs:
                     verts2d = tuple(Point2D(pt.x, pt.y) for pt in sf.geometry.boundary)

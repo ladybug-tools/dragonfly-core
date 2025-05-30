@@ -2358,7 +2358,10 @@ class Model(_BaseGeometry):
         # change any remaining Floor/Roof boundary conditions to be outdoors
         relevant_bcs = (Outdoors, Surface, Ground)
         for room in rooms:
-            rel_types = story_rel_types[room.story]
+            try:
+                rel_types = story_rel_types[room.story]
+            except KeyError:  # 3D honeybee rooms to ignore
+                continue
             for face in room._faces:
                 if isinstance(face.type, rel_types):
                     if not isinstance(face.boundary_condition, relevant_bcs):
