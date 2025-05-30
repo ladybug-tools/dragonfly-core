@@ -34,8 +34,8 @@ def test_from_honeybee():
 
     model_dict = json.loads(result.output)
     new_model = Model.from_dict(model_dict)
-    assert len(new_model.room_2ds) == 6
-    assert len(new_model.room_3ds) == 9
+    assert len(new_model.room_2ds) == 14
+    assert len(new_model.room_3ds) == 1
 
 
 def test_convert_units():

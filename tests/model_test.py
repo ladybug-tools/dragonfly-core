@@ -1293,7 +1293,7 @@ def test_model_with_room3ds():
     assert isinstance(model.max, Point2D)
 
     # test the model converted entirely to Room2D
-    model.buildings[0].convert_all_room_3ds_to_2d(extrusion_rooms_only=False)
+    model.buildings[0].convert_all_room_3ds_to_2d(conversion_method='AllRoom2D')
 
     assert len(model.buildings[0].room_3ds) == 0
     assert len(model.buildings[0].unique_room_2ds) == 10
@@ -1823,13 +1823,13 @@ def test_from_honeybee_methods():
     assert len(df_model.room_2ds) == 15
     assert len(df_model.room_3ds) == 0
 
-    df_model = Model.from_honeybee(model, conversion_method='AllRoom3D')
-    assert len(df_model.room_2ds) == 0
-    assert len(df_model.room_3ds) == 15
-
     df_model = Model.from_honeybee(model, conversion_method='ExtrudedOnly')
-    assert len(df_model.room_2ds) == 6
-    assert len(df_model.room_3ds) == 9
+    assert len(df_model.room_2ds) == 14
+    assert len(df_model.room_3ds) == 1
+
+    df_model = Model.from_honeybee(model, conversion_method='AllRoom3D')
+    assert len(df_model.room_2ds) == 5
+    assert len(df_model.room_3ds) == 10
 
 
 def test_writer():

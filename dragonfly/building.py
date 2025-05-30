@@ -15,6 +15,7 @@ from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 from honeybee.model import Model
 from honeybee.room import Room
 from honeybee.shade import Shade
+from honeybee.facetype import Wall, Floor, RoofCeiling
 from honeybee.boundarycondition import Outdoors, Surface
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.typing import clean_string, invalid_dict_error
@@ -341,22 +342,40 @@ class Building(_BaseGeometry):
 
         Args:
             model: A Honeybee Model to be converted to a Dragonfly Building.
-            conversion_method: Text to indicate how the Honeybee Rooms should be
-                converted to Dragonfly. Note that the AllRoom2D option may result
-                in some loss or simplification of the 3D Honeybee geometry but
-                ensures that all of Dragonfly's features for editing the rooms can
-                be used. The ExtrudedOnly method will convert only the 3D Rooms
-                that would have no loss or simplification of geometry when converted
-                to Room2D. AllRoom3D keeps all detailed 3D geometry on the
-                Building.room_3ds property, enabling you to convert the 3D Rooms
-                to Room2D using the Building.convert_room_3ds_to_2d() method as you
-                see fit. (Default: AllRoom2D). Choose from the following options.
+            conversion_method: Text to indicate how to convert the Honeybee Rooms
+                that have a loss of information when converted to Dragonfly Room2D.
+                Choose from the following options. (Default: AllRoom2D).
 
-                * AllRoom2D - All Honeybee Rooms converted to Dragonfly Room2D
-                * ExtrudedOnly - Only pure extrusions converted to Dragonfly Room2D
-                * AllRoom3D - All Honeybee Rooms left as-is on Building.room_3ds
-
+                * AllRoom3D - Any Room with Face geometry that is not perfectly
+                    horizontal or vertical will be left as-is on Building.room_3ds.
+                * ExtrudedOnly - Rooms where all floors are horizontal and walls
+                    are vertical will be imported to Room2D. Sloped roof geometries
+                    will be imported as Dragonfly RoofSpecification with roof
+                    faces being joined across rooms of the same story. Rooms with
+                    sloped floors or slanted walls will be left as-is
+                    on Building.room_3ds.
+                * AllRoom2D - All Honeybee Rooms will be converted to Room2D
+                    regardless of the orientation of their Faces. Rooms with
+                    sloped floors or slanted walls pointing downwards will be
+                    projected into the XY plane to make the Room2D floor plate
+                    geometry. Sloped roofs and slanted walls that point upwards
+                    will be converted to dragonfly RoofSpecification in an attempt
+                    to preserve as much of the original room volume geometry
+                    as possible.
         """
+        # create the Building object with all rooms as 3D
+        dup_rooms = [r.duplicate() for r in model.rooms]
+        bldg = cls(model.identifier, room_3ds=dup_rooms)
+        bldg._display_name = model._display_name
+        # convert the relevant rooms to 2D
+        min_diff = parse_distance_string('2m', model.units)
+        bldg.convert_all_room_3ds_to_2d(
+            conversion_method=conversion_method, min_difference=min_diff,
+            tolerance=model.tolerance, angle_tolerance=model.angle_tolerance)
+        for story in bldg.unique_stories:
+            story._reset_adjacencies_from_honeybee(story.room_2ds, model.tolerance)
+        return bldg
+
         # if the rooms are being left as they are, just create the Building
         method = conversion_method.lower()
         if method in ('allroom3d', 'extrudedonly'):
@@ -418,7 +437,8 @@ class Building(_BaseGeometry):
                 story = Story.from_honeybee(story_id, valid_rooms, model.tolerance)
                 stories.append(story)
             if len(plenum_rooms) != 0:
-                story = Story.from_honeybee(story_id, plenum_rooms, model.tolerance)
+                story = Story.from_honeybee('{}_Plenum'.format(story_id),
+                                            plenum_rooms, model.tolerance)
                 stories.append(story)
         bldg = cls(model.identifier, stories)
         bldg._display_name = model._display_name
@@ -1276,7 +1296,8 @@ class Building(_BaseGeometry):
         return df_rooms
 
     def convert_all_room_3ds_to_2d(
-            self, extrusion_rooms_only=True, tolerance=0.01, angle_tolerance=1):
+            self, conversion_method='AllRoom2D', min_difference=2.0,
+            tolerance=0.01, angle_tolerance=1):
         """Convert all 3D Honeybee Rooms on this Building to a Dragonfly Room2Ds.
 
         This process will add the Room2Ds to an existing Dragonfly Story on the
@@ -1284,13 +1305,31 @@ class Building(_BaseGeometry):
         object. If not, a new Story on this Building will be initialized.
 
         Args:
-            extrusion_rooms_only: A boolean to note whether only the 3D Rooms that
-                can be represented as a Room2D without loss of geometry should be
-                converted to Room2Ds. When True, all 3D Rooms that are not pure
-                extrusions will be left as they are. If False, all 3D Rooms in
-                the model will be translated to Room2D regardless of whether they
-                are extrusions or not, meaning that there may be some loss of
-                geometry or simplification of it.
+            conversion_method: Text to indicate how to convert the 3D Rooms
+                that have a loss of information when converted to Dragonfly Room2D.
+                Choose from the following options. (Default: AllRoom2D).
+
+                * AllRoom3D - Any Room with Face geometry that is not perfectly
+                    horizontal or vertical will be left as-is on Building.room_3ds.
+                * ExtrudedOnly - Rooms where all floors are horizontal and walls
+                    are vertical will be converted to Room2D. Sloped roof geometries
+                    will be converted to Dragonfly RoofSpecification with roof
+                    faces being joined across rooms of the same story. Rooms with
+                    sloped floors or slanted walls will be left as-is
+                    on Building.room_3ds.
+                * AllRoom2D - All Honeybee Rooms will be converted to Room2D
+                    regardless of the orientation of their Faces. Rooms with
+                    sloped floors or slanted walls pointing downwards will be
+                    projected into the XY plane to make the Room2D floor plate
+                    geometry. Sloped roofs and slanted walls that point upwards
+                    will be converted to dragonfly RoofSpecification in an attempt
+                    to preserve as much of the original room volume geometry
+                    as possible.
+
+            min_difference:  An float value to denote the minimum difference
+                in floor heights that is considered meaningful. This is used to
+                establish stories in the event that the 3D Rooms do not already
+                have them. (Default: 2.0, which is suitable for models in meters).
             tolerance: The maximum difference between values at which point vertices
                 are considered to be the same. (Default: 0.01, suitable for
                 objects in Meters).
@@ -1301,20 +1340,59 @@ class Building(_BaseGeometry):
         Returns:
             A list of the newly-created Room2D objects from the converted Rooms.
         """
-        # collect the relevant 3D Rooms if extrusion_rooms_only is selected
-        new_room_3ds = []
-        if extrusion_rooms_only:
-            hb_rooms = []
+        # verify that the input method is valid
+        method = conversion_method.lower()
+        if method not in ('allroom3d', 'extrudedonly', 'allroom2d'):
+            msg = 'Building conversion_method "{}" is not recognized\nChoose from: ' \
+                'AllRoom2D, ExtrudedOnly, AllRoom3D.'.format(conversion_method)
+            raise ValueError(msg)
+
+        # collect the relevant 3D Rooms to be converted
+        new_room_3ds, hb_rooms = [], []
+        if method == 'allroom3d':
             for hb_room in self.room_3ds:
-                if self._is_room_3d_extruded(hb_room, tolerance, angle_tolerance):
+                if self._is_room_flat_top_extrusion(hb_room, tolerance, angle_tolerance):
+                    hb_rooms.append(hb_room)
+                else:
+                    new_room_3ds.append(hb_room)
+        elif method == 'extrudedonly':
+            for hb_room in self.room_3ds:
+                if self._is_room_sloped_extrusion(hb_room, tolerance, angle_tolerance):
                     hb_rooms.append(hb_room)
                 else:
                     new_room_3ds.append(hb_room)
         else:
             hb_rooms = self.room_3ds
 
+        # assign stories if they don't already exist
+        if not all([room.story is not None for room in hb_rooms]):
+            Room.stories_by_floor_height(hb_rooms.min_difference)
+
+        # group the rooms by story and create dragonfly Stories
+        story_dict = {}
+        for room in hb_rooms:
+            try:
+                story_dict[room.story].append(room)
+            except KeyError:
+                story_dict[room.story] = [room]
+
+        # evaluate floor heights to see if stories should be split
+        removed_flrs, new_flrs = [], {}
+        for s_id, rms in story_dict.items():
+            if not self._room_story_geometry_valid(rms):
+                rm_grps, flr_hts = Room.group_by_floor_height(rms, min_difference)
+                for grp, ht in zip(rm_grps, flr_hts):
+                    new_flrs['{}_{}'.format(s_id, ht)] = grp
+                removed_flrs.append(s_id)
+        for r_flr in removed_flrs:
+            story_dict.pop(r_flr)
+        story_dict.update(new_flrs)
+        for s_id, rms in story_dict.items():
+            for rm in rms:
+                rm.story = s_id
+
         # convert the relevant 3D Rooms to Room2D
-        df_rooms = []
+        df_rooms, roof_dict = [], {}
         for hb_room in hb_rooms:
             # create a Dragonfly Room2D from the Honeybee Room
             try:
@@ -1322,6 +1400,21 @@ class Building(_BaseGeometry):
             except Exception:  # invalid Honeybee Room that is not a closed solid
                 new_room_3ds.append(hb_room)
                 continue
+            # extract the relevant roof geometries
+            rfs = []
+            if method == 'extrudedonly':
+                for face in hb_room.roof_ceilings:
+                    if face.tilt > angle_tolerance:
+                        rfs.append(face.geometry)
+            elif method == 'allroom2d':
+                for face in hb_room.faces:
+                    if angle_tolerance < face.tilt < 90 - angle_tolerance:
+                        rfs.append(face.geometry)
+            if len(rfs) != 0:
+                try:
+                    roof_dict[hb_room.story].extend(rfs)
+                except KeyError:
+                    roof_dict[hb_room.story] = rfs
             # assign the Room2D to an existing Story or create a new one
             for story in self._unique_stories:
                 if story.display_name == hb_room.story:
@@ -1332,6 +1425,16 @@ class Building(_BaseGeometry):
                 new_story.display_name = hb_room.story
                 self.add_stories([new_story])
             df_rooms.append(df_room)
+
+        # build roof specifications from joined versions of the roofs
+        for story_name, roof_geos in roof_dict.items():
+            for story in self._unique_stories:
+                if story.display_name == story_name:
+                    all_geo = story.roof.geometry + tuple(roof_geos) \
+                        if story.roof is not None else roof_geos
+                    story.roof = RoofSpecification.from_geometry_to_join(
+                        all_geo, tolerance)
+                    break
 
         # reset the 3D Rooms on this object
         self._room_3ds = tuple(new_room_3ds)
@@ -2519,11 +2622,11 @@ class Building(_BaseGeometry):
                              'or one Room under room_3ds.')
 
     @staticmethod
-    def _is_room_3d_extruded(hb_room, tolerance, angle_tolerance):
-        """Test if a 3D Room is a pure extrusion.
+    def _is_room_flat_top_extrusion(hb_room, tolerance, angle_tolerance):
+        """Test if a 3D Honeybee Room is a flat-topped extrusion.
 
-        Pure extrusions can be converted into Room2Ds without any loss or
-        simplification of geometry.
+        This will only be True if all Faces in the Room are vertical or horizontal
+        within the angle tolerance.
 
         Args:
             hb_room: The 3D Honeybee Room to be tested.
@@ -2533,7 +2636,7 @@ class Building(_BaseGeometry):
                 be evaluated in degrees.
 
         Returns:
-            True if the 3D Room is a pure extrusion. False if not.
+            True if the 3D Room is a flat-topped extrusion. False if not.
         """
         # set up the parameters for evaluating vertical or horizontal
         vert_vec = Vector3D(0, 0, 1)
@@ -2551,6 +2654,56 @@ class Building(_BaseGeometry):
                     continue
                 elif min_h_ang <= v_ang <= max_h_ang:
                     continue
+                return False
+            except AssertionError:  # degenerate face to ignore
+                pass
+        return True
+
+    @staticmethod
+    def _is_room_sloped_extrusion(hb_room, tolerance, angle_tolerance):
+        """Test if a 3D Honeybee Room is a sloped-roof extrusion.
+
+        This will only be True if all Floor Faces of the Room are horizontal
+        and all Wall Faces are vertical within the angle tolerance. Roof Faces
+        are permitted to have any level of slope as long as they are pointing
+        upwards. AirBoundary Faces must be vertical or horizontal.
+
+        Args:
+            hb_room: The 3D Honeybee Room to be tested.
+            tolerance: The absolute tolerance with which the Room geometry will
+                be evaluated.
+            angle_tolerance: The angle tolerance at which the geometry will
+                be evaluated in degrees.
+
+        Returns:
+            True if the 3D Room is a sloped-roof extrusion. False if not.
+        """
+        # set up the parameters for evaluating vertical or horizontal
+        vert_vec = Vector3D(0, 0, 1)
+        min_v_ang = math.radians(angle_tolerance)
+        max_v_ang = math.pi - min_v_ang
+        min_h_ang = (math.pi / 2) - min_v_ang
+        max_h_ang = (math.pi / 2) + min_v_ang
+
+        # loop through the 3D Room faces and test them
+        for face in hb_room._faces:
+            try:  # first make sure that the geometry is not degenerate
+                clean_geo = face.geometry.remove_colinear_vertices(tolerance)
+                v_ang = clean_geo.normal.angle(vert_vec)
+                if isinstance(face.type, Wall):
+                    if min_h_ang <= v_ang <= max_h_ang:
+                        continue
+                elif isinstance(face.type, Floor):
+                    if v_ang <= min_v_ang or v_ang >= max_v_ang:
+                        continue
+                elif isinstance(face.type, RoofCeiling):
+                    if v_ang <= min_h_ang:
+                        continue
+                else:  # AirBoundary Faces must be vertical or horizontal
+                    if v_ang <= min_v_ang or v_ang >= max_v_ang:
+                        continue
+                    elif min_h_ang <= v_ang <= max_h_ang:
+                        continue
                 return False
             except AssertionError:  # degenerate face to ignore
                 pass
