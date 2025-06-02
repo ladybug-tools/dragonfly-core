@@ -1678,14 +1678,14 @@ class RectangularWindows(_AsymmetricBase):
             tolerance: Optional tolerance value. Default: 0.01, suitable for
                 objects in meters.
         """
-        # collect the global properties of the face that set limits on apertures
-        wall_plane = face.geometry.plane
-        wall_plane = wall_plane.rotate(wall_plane.n, math.pi, wall_plane.o)
-        width_seg = LineSegment3D.from_end_points(face.geometry[0], face.geometry[1])
-        h_vec, b_pt = Vector3D(0, 0, face.max.z - face.min.z), face.geometry[1]
-        height_seg = LineSegment3D.from_end_points(b_pt, b_pt.move(h_vec))
+        # get the plane of the parent wall
+        fg = face.geometry
+        min_pt, max_pt = fg.lower_left_corner, fg.upper_right_corner
+        width_seg = LineSegment3D.from_end_points(
+            min_pt, Point3D(max_pt.x, max_pt.y, min_pt.z))
+        wall_plane = Plane(n=face.geometry.plane.n, o=min_pt, x=width_seg.v)
         max_width = width_seg.length - tolerance
-        max_height = height_seg.length - tolerance
+        max_height = max_pt.z - min_pt.z - tolerance
 
         # loop through each window and create its geometry
         sub_faces = []
@@ -2403,13 +2403,13 @@ class DetailedWindows(_AsymmetricBase):
                 objects in meters.
         """
         # get the plane of the parent wall
-        wall_plane = face.geometry.plane
-        wall_plane = wall_plane.rotate(wall_plane.n, math.pi, wall_plane.o)
-        width_seg = LineSegment3D.from_end_points(face.geometry[0], face.geometry[1])
-        h_vec, b_pt = Vector3D(0, 0, face.max.z - face.min.z), face.geometry[1]
-        height_seg = LineSegment3D.from_end_points(b_pt, b_pt.move(h_vec))
+        fg = face.geometry
+        min_pt, max_pt = fg.lower_left_corner, fg.upper_right_corner
+        width_seg = LineSegment3D.from_end_points(
+            min_pt, Point3D(max_pt.x, max_pt.y, min_pt.z))
+        wall_plane = Plane(n=face.geometry.plane.n, o=min_pt, x=width_seg.v)
         max_width = width_seg.length - tolerance
-        max_height = height_seg.length - tolerance
+        max_height = max_pt.z - min_pt.z - tolerance
 
         # automatically clip any geometries outside of the face so they are bounded by it
         clean_polygons, clean_are_doors, kept_i = [], [], []

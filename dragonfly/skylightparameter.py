@@ -409,6 +409,21 @@ class DetailedSkylights(_SkylightParameterBase):
                     len(are_doors), len(polygons))
             self._are_doors = are_doors
 
+    @classmethod
+    def from_honeybee(cls, sub_faces):
+        """Create DetailedSkylights from an array of Honeybee Apertures and Doors.
+
+        Args:
+            sub_faces: A list of Honeybee Apertures and/or Doors to be converted
+                to Dragonfly DetailedSkylights.
+        """
+        polygons, are_doors = [], []
+        for sf in sub_faces:
+            verts2d = tuple(Point2D(pt.x, pt.y) for pt in sf.geometry.boundary)
+            polygons.append(Polygon2D(verts2d))
+            are_doors.append(isinstance(sf, Door))
+        return cls(polygons, are_doors)
+
     @property
     def polygons(self):
         """Get an array of Polygon2Ds with one polygon for each skylight."""

@@ -27,6 +27,7 @@ from .story import Story
 from .roof import RoofSpecification
 from .room2d import Room2D
 from .windowparameter import _AsymmetricBase
+from .skylightparameter import DetailedSkylights
 import dragonfly.writer.building as writer
 
 
@@ -374,78 +375,6 @@ class Building(_BaseGeometry):
             tolerance=model.tolerance, angle_tolerance=model.angle_tolerance)
         for story in bldg.unique_stories:
             story._reset_adjacencies_from_honeybee(story.room_2ds, model.tolerance)
-        return bldg
-
-        # if the rooms are being left as they are, just create the Building
-        method = conversion_method.lower()
-        if method in ('allroom3d', 'extrudedonly'):
-            dup_rooms = [r.duplicate() for r in model.rooms]
-            bldg = cls(model.identifier, room_3ds=dup_rooms)
-            bldg._display_name = model._display_name
-            if method == 'extrudedonly':
-                bldg.convert_all_room_3ds_to_2d(
-                    extrusion_rooms_only=True, tolerance=model.tolerance,
-                    angle_tolerance=model.angle_tolerance)
-                for story in bldg.unique_stories:
-                    story._reset_adjacencies_from_honeybee(
-                        story.room_2ds, model.tolerance)
-            return bldg
-        elif method != 'allroom2d':
-            msg = 'Building.from_honeybee conversion_method "{}" is not recognized\n' \
-                'Choose from: AllRoom2D, ExtrudedOnly, AllRoom3D.'.format(
-                    conversion_method)
-            raise ValueError(msg)
-
-        # proceed to convert all to Room2D; assign stories if they don't already exist
-        min_diff = parse_distance_string('2m', model.units)
-        remove_stories = False
-        if not all([room.story is not None for room in model.rooms]):
-            model.assign_stories_by_floor_height(min_diff)
-            remove_stories = True
-
-        # group the rooms by story and create dragonfly Stories
-        story_dict = {}
-        for room in model.rooms:
-            try:
-                story_dict[room.story].append(room)
-            except KeyError:
-                story_dict[room.story] = [room]
-
-        # evaluate floor heights to see if floors should be split
-        removed_flrs, new_flrs = [], {}
-        for s_id, rms in story_dict.items():
-            if not cls._room_story_geometry_valid(rms):
-                rm_grps, flr_hts = Room.group_by_floor_height(rms, min_diff)
-                for grp, ht in zip(rm_grps, flr_hts):
-                    new_flrs['{}_{}'.format(s_id, ht)] = grp
-                removed_flrs.append(s_id)
-        for r_flr in removed_flrs:
-            story_dict.pop(r_flr)
-        story_dict.update(new_flrs)
-
-        # create the Story and Building objects
-        stories = []
-        for s_id, rms in story_dict.items():
-            story_id = clean_string(str(s_id))
-            valid_rooms, plenum_rooms = [], []
-            for r in rms:
-                if not r.exclude_floor_area:
-                    valid_rooms.append(r)
-                else:
-                    plenum_rooms.append(r)
-            if len(valid_rooms) != 0:
-                story = Story.from_honeybee(story_id, valid_rooms, model.tolerance)
-                stories.append(story)
-            if len(plenum_rooms) != 0:
-                story = Story.from_honeybee('{}_Plenum'.format(story_id),
-                                            plenum_rooms, model.tolerance)
-                stories.append(story)
-        bldg = cls(model.identifier, stories)
-        bldg._display_name = model._display_name
-        # if stories were auto-generated, remove them to avoid editing the input
-        if remove_stories:
-            for rm in model.rooms:
-                rm.story = None
         return bldg
 
     @staticmethod
@@ -1400,8 +1329,8 @@ class Building(_BaseGeometry):
             except Exception:  # invalid Honeybee Room that is not a closed solid
                 new_room_3ds.append(hb_room)
                 continue
-            # extract the relevant roof geometries
-            rfs = []
+            # extract the relevant roof and skylight geometries
+            rfs, skylights = [], []
             if method == 'extrudedonly':
                 for face in hb_room.roof_ceilings:
                     if face.tilt > angle_tolerance:
@@ -1410,11 +1339,27 @@ class Building(_BaseGeometry):
                 for face in hb_room.faces:
                     if angle_tolerance < face.tilt < 90 - angle_tolerance:
                         rfs.append(face.geometry)
+                        if len(face.sub_faces) != 0 and isinstance(face.type, Wall):
+                            skylights.append(
+                                DetailedSkylights.from_honeybee(face.sub_faces))
+            # assign the roof geometries to a dictionary to keep track of them
             if len(rfs) != 0:
                 try:
                     roof_dict[hb_room.story].extend(rfs)
                 except KeyError:
                     roof_dict[hb_room.story] = rfs
+            # assign any skylights to the Room2D
+            if len(skylights) != 0:
+                if len(skylights) == 1:
+                    new_sky_light = skylights[0]
+                else:
+                    new_polys = skylights[0].polygons
+                    new_is_dr = skylights[0].are_doors
+                    for sl in skylights[1:]:
+                        new_polys += sl.polygons
+                        new_is_dr += sl.are_doors
+                    new_sky_light = DetailedSkylights(new_polys, new_is_dr)
+                df_room.skylight_parameters = new_sky_light
             # assign the Room2D to an existing Story or create a new one
             for story in self._unique_stories:
                 if story.display_name == hb_room.story:

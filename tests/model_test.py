@@ -1153,8 +1153,8 @@ def test_to_honeybee_roof_with_self_intersection():
     assert len(hb_models[0].rooms[0].roof_ceilings) > 1
 
 
-def test_to_honeybee_roof_intersect_room():
-    """Test to_honeybee with a roof intersecting a room."""
+def test_to_honeybee_roof_touching_floor_1():
+    """Test to_honeybee with a roof touching a room floor plate."""
     model_file = './tests/json/roof_intersect_room.dfjson'
     model = Model.from_file(model_file)
     upper_story = model.buildings[0][-1]
@@ -1163,6 +1163,26 @@ def test_to_honeybee_roof_intersect_room():
     hb_models = model.to_honeybee('District', None, False, tolerance=0.003)
     assert len(hb_models) == 1
     assert len(hb_models[0].rooms[-1].roof_ceilings) > 1
+
+
+def test_to_honeybee_roof_touching_floor_2():
+    """Test to_honeybee with a roof touching a room floor plate."""
+    model_file = './tests/json/roof_touching_floor_example.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False, tolerance=0.003)
+    assert len(hb_models) == 1
+    room = hb_models[0].rooms[0]
+    assert len(room.roof_ceilings) > 1
+    for i, wall in enumerate(room.walls):
+        if i == 3:
+            assert len(wall.apertures) == 4
+        elif i == 4:
+            assert len(wall.apertures) == 7
+        else:
+            assert len(wall.apertures) == 0
 
 
 def test_to_honeybee_non_manifold_roof_issue():
@@ -1310,7 +1330,7 @@ def test_model_with_room3ds():
     assert model.floor_area == pytest.approx(1334, rel=1e-3)
 
     assert model.exterior_wall_area == pytest.approx(772, rel=1e-3)
-    assert model.exterior_aperture_area == pytest.approx(290.8, rel=1e-3)
+    assert model.exterior_aperture_area == pytest.approx(359.2, rel=1e-3)
     assert model.volume == pytest.approx(4898.5, rel=1e-3)
     assert isinstance(model.min, Point2D)
     assert isinstance(model.max, Point2D)
