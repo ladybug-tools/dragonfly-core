@@ -969,7 +969,7 @@ class RoofSpecification(object):
             selected_indices: An optional list of indices for specific roof
                 geometries to be split with the input lines. If None, all of
                 the roof geometry will be tested for intersection with the
-                input polygon. (Default: None).
+                input lines. (Default: None).
             tolerance: The maximum difference between point values for them to be
                 considered distinct from one another. (Default: 0.01; suitable
                 for objects in Meters).
@@ -1002,6 +1002,34 @@ class RoofSpecification(object):
 
         # update the geometry
         self.geometry = split_geometries
+
+    def join_geometries(self, selected_indices=None, tolerance=0.01):
+        """Join coplanar roofs together that are touching within the tolerance.
+
+        Args:
+            selected_indices: An optional list of indices for specific roof
+                geometries to be joined together. If None, all of the roof
+                geometry will be tested for whether they can be joined
+                together. (Default: None).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+        """
+        # separate geometry to join from that to keep
+        if selected_indices is None:
+            geo_to_join, geo_to_keep = self.geometry, []
+        else:
+            geo_to_join, geo_to_keep = [], []
+            for i, geo in enumerate(self.geometry):
+                if i in selected_indices:
+                    geo_to_join.append(geo)
+                else:
+                    geo_to_keep.append(geo)
+        # join the geometries together
+        if len(geo_to_join) != 0:
+            joined_roof = RoofSpecification.from_geometry_to_join(
+                geo_to_join, tolerance=tolerance)
+            self.geometry = joined_roof.geometry + tuple(geo_to_keep)
 
     def check_roof_above_rooms(self, room_2ds, tolerance=0.01):
         """Check that all geometries of this roof lie above a given set of Room2Ds.
