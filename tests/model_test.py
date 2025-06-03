@@ -809,6 +809,16 @@ def test_roof_party_failure():
     assert len(room_1.roof_ceilings) > 1
 
 
+def test_self_intersecting_roof_party():
+    """Test the translation of another complicated roof."""
+    model_file = './tests/json/self_intersecting_roof.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False, enforce_solid=True)
+    room_1 = hb_models[0].rooms[0]
+    assert len(room_1.roof_ceilings) > 1
+
+
 def test_non_planar_roof():
     """Test the translation of another complicated roof."""
     model_file = './tests/json/non_planar_roof.dfjson'
