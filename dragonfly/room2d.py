@@ -5172,8 +5172,20 @@ class Room2D(_BaseGeometry):
             A list of Face3D for the Walls of the Room. Will be None if the Roof
             geometries are invalid.
         """
+        # establish variables to be used throughout the calculation
         wall_faces = []
         proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
+        # get the relative tolerance using a log function
+        try:
+            rtol = int(math.log10(tolerance)) * -1
+        except ValueError:
+            rtol = 0  # the tol is equal to 1 (out of range for log)
+        # account for the fact that the tolerance may not be base 10
+        base = int(tolerance * 10 ** (rtol + 1))
+        if base == 10 or base == 0:  # tolerance is base 10 (eg. 0.001)
+            base = 1
+        else:  # tolerance is not base 10 (eg. 0.003)
+            rtol += 1
 
         # loop through holes and boundary polygons and generate walls from them
         for rm_poly, rm_segs in zip(all_room_poly, all_segments):
@@ -5205,8 +5217,7 @@ class Room2D(_BaseGeometry):
                     for rf_seg in current_poly.segments:
                         int_pt = seg_2d.intersect_line_ray(rf_seg)
                         if int_pt is None:
-                            dist, cls_pts = closest_point2d_between_line2d(
-                                seg_2d, rf_seg)
+                            dist, cls_pts = closest_point2d_between_line2d(seg_2d, rf_seg)
                             if dist <= tolerance:
                                 int_pt = cls_pts[0]
                         if int_pt is not None:
@@ -5217,15 +5228,14 @@ class Room2D(_BaseGeometry):
                         for o_seg in o_poly.segments:
                             int_pt = seg_2d.intersect_line_ray(o_seg)
                             if int_pt is None:
-                                d, cls_pts = closest_point2d_between_line2d(
-                                    seg_2d, o_seg)
+                                d, cls_pts = closest_point2d_between_line2d(seg_2d, o_seg)
                                 if d <= tolerance:
                                     int_pt = cls_pts[0]
                             if int_pt is not None:
                                 int_pts.append((int_pt, 1))
                                 int_pls.append(o_pl)
                     # sort the intersections points along the segment
-                    pt_dists = [(ipt[1], seg_2d.p1.distance_to_point(ipt[0]))
+                    pt_dists = [(round(seg_2d.p1.distance_to_point(ipt[0]), rtol), ipt[1])
                                 for ipt in int_pts]
                     pts_pls = [
                         (
@@ -5235,12 +5245,18 @@ class Room2D(_BaseGeometry):
                         )
                         for i_pt, i_pl in zip(int_pts, int_pls)]
                     sort_obj = sorted(zip(pt_dists, pts_pls), key=lambda pair: pair[0])
+                    # if there are any jumps back in the segment, correct them
+                    prev_seg_i = 0
+                    for b, pt_grp in enumerate(sort_obj):
+                        current_seg_i = pt_grp[0][1]
+                        if current_seg_i < prev_seg_i:  # move it ahead one place
+                            if b < len(sort_obj):
+                                sort_obj.insert(b + 1, sort_obj.pop(b))
+                        prev_seg_i = current_seg_i
                     sort_pts_pls = [x for _, x in sort_obj]
                     # remove any point/plane combinations that are duplicates
                     i_to_remove = []
                     for i, (pt, pln, pt3) in enumerate(sort_pts_pls[1:]):
-                        if i == 0:  # first vertex is always correct so keep it
-                            continue
                         if pt3.distance_to_point(sort_pts_pls[i][2]) < tolerance:
                             i_to_remove.append(i)
                     for del_i in reversed(i_to_remove):

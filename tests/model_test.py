@@ -830,6 +830,17 @@ def test_non_planar_roof():
     assert len(room_1.roof_ceilings) > 1
 
 
+def test_wall_faces_with_roof_bug():
+    """Test the translation of another complicated roof that caused a wall failure."""
+    model_file = './tests/json/wall_faces_with_roof_bug.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False,
+                                  tolerance=0.003, enforce_solid=True)
+    room_1 = hb_models[0].rooms[0]
+    assert len(room_1.roof_ceilings) > 1
+
+
 def test_check_duplicate_identifiers():
     """Test check_duplicate_building_identifiers."""
     pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
