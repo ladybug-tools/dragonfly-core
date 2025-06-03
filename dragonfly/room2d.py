@@ -5144,7 +5144,14 @@ class Room2D(_BaseGeometry):
                 if f.area <= area_diff + tol_area:
                     roof_faces.append(f)
 
-        return roof_faces
+        # perform a final check to remove all colinear vertices from the roof
+        clean_roof_faces = []
+        for roof_face in roof_faces:
+            try:
+                clean_roof_faces.append(roof_face.remove_colinear_vertices(tolerance))
+            except AssertionError:
+                continue  # degenerate face to ignore
+        return clean_roof_faces
 
     def _wall_faces_with_roof(self, all_room_poly, all_segments,
                               rel_rf_polys, rel_rf_planes, tolerance):
