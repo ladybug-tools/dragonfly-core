@@ -2629,6 +2629,7 @@ class Building(_BaseGeometry):
         max_v_ang = math.pi - min_v_ang
         min_h_ang = (math.pi / 2) - min_v_ang
         max_h_ang = (math.pi / 2) + min_v_ang
+        sloped_count = 0
 
         # loop through the 3D Room faces and test them
         for face in hb_room._faces:
@@ -2642,7 +2643,10 @@ class Building(_BaseGeometry):
                     if v_ang <= min_v_ang or v_ang >= max_v_ang:
                         continue
                 elif isinstance(face.type, RoofCeiling):
-                    if v_ang <= min_h_ang:
+                    if v_ang <= min_v_ang or v_ang >= max_v_ang:
+                        continue
+                    elif v_ang <= min_h_ang:
+                        sloped_count += 1
                         continue
                 else:  # AirBoundary Faces must be vertical or horizontal
                     if v_ang <= min_v_ang or v_ang >= max_v_ang:
@@ -2652,6 +2656,10 @@ class Building(_BaseGeometry):
                 return False
             except AssertionError:  # degenerate face to ignore
                 pass
+
+        # if there are too many roof faces (like a dome), just keep it 3D
+        if sloped_count > 25:
+            return False
         return True
 
     @staticmethod
