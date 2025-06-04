@@ -80,21 +80,22 @@ class RoofSpecification(object):
         # join the coplanar faces together
         all_geos = []
         for r_grp in roof_groups:
-            if len(r_grp) == 1:
-                final_faces = r_grp
+            # remove colinear vertices and degenerate geometries
+            clean_geos = []
+            for geo in r_grp:
+                try:
+                    clean_geo = geo.remove_colinear_vertices(tolerance)
+                    if clean_geo.normal.z < 0:
+                        clean_geo = clean_geo.flip()
+                    clean_geos.append(clean_geo)
+                except AssertionError:  # degenerate geometry to ignore
+                    pass
+
+            if len(clean_geos) == 0:
+                continue
+            elif len(clean_geos) == 1:
+                final_faces = clean_geos
             else:
-                # remove colinear vertices and degenerate geometries
-                clean_geos = []
-                for geo in r_grp:
-                    try:
-                        clean_geo = geo.remove_colinear_vertices(tolerance)
-                        if clean_geo.normal.z < 0:
-                            clean_geo = clean_geo.flip()
-                        clean_geos.append(clean_geo)
-                    except AssertionError:  # degenerate geometry to ignore
-                        pass
-                if len(clean_geos) == 0:
-                    continue
                 # convert the floor Face3Ds into counterclockwise Polygon2Ds
                 roof_polys = []
                 for rf_geo in clean_geos:
@@ -104,9 +105,14 @@ class RoofSpecification(object):
                         for hole in rf_geo.holes:
                             h_poly = Polygon2D([Point2D(pt.x, pt.y) for pt in hole])
                             roof_polys.append(h_poly)
+
                 # get the boundary around all of the polygons
                 rf_polys2d = Polygon2D.joined_intersected_boundary(roof_polys, tolerance)
-                r_pln, proj_dir = clean_geos[0].plane, Vector3D(0, 0, 1)
+                r_pln_normal = clean_geos[0].normal
+                for geo in clean_geos[1:]:
+                    r_pln_normal += geo.normal
+                r_pln = Plane(n=r_pln_normal, o=clean_geos[0].plane.o)
+                proj_dir = Vector3D(0, 0, 1)
                 final_faces = []
                 for r_poly in rf_polys2d:
                     r_face = []
@@ -114,6 +120,8 @@ class RoofSpecification(object):
                         pt3 = r_pln.project_point(Point3D(pt2.x, pt2.y), proj_dir)
                         r_face.append(pt3)
                     final_faces.append(Face3D(r_face, plane=r_pln))
+
+            # remake the faces so they do no have holes
             for f_geo in final_faces:
                 f_geo = Face3D(f_geo.boundary, f_geo.plane) if f_geo.has_holes else f_geo
                 all_geos.append(f_geo)
