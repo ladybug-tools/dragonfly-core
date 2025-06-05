@@ -364,7 +364,7 @@ class Room2D(_BaseGeometry):
                 if len(wall_f._apertures) != 0 or len(wall_f._doors) != 0:
                     sf_objs = wall_f._apertures + wall_f._doors
                     w_geos = [sf.geometry for sf in sf_objs]
-                    is_drs = [isinstance(sf, Door) for sf in sf_objs]
+                    is_drs = [isinstance(sf, Door) and not sf.is_glass for sf in sf_objs]
                     if abs(wall_f.normal.z) <= 0.01:  # vertical wall
                         window_parameters[i] = DetailedWindows.from_face3ds(
                             w_geos, seg, is_drs)
@@ -416,7 +416,7 @@ class Room2D(_BaseGeometry):
                 for sf in sf_objs:
                     verts2d = tuple(Point2D(pt.x, pt.y) for pt in sf.geometry.boundary)
                     skylights.append(Polygon2D(verts2d))
-                    are_doors.append(isinstance(sf, Door))
+                    are_doors.append(isinstance(sf, Door) and not sf.is_glass)
         if len(skylights) != 0:
             room_2d.skylight_parameters = DetailedSkylights(skylights, are_doors)
 
@@ -1225,7 +1225,9 @@ class Room2D(_BaseGeometry):
         The geometry of the SubFaces will automatically be converted to
         WindowParameters in the plane of each wall segment and appropriate is_door
         properties will be used to denote whether the projected SubFace is an
-        Aperture vs. a Door.
+        Aperture vs. a Door. Doors with True is_glass properties will get a
+        False is_door property such that they will transmit light in destination
+        simulation engines.
 
         Args:
             sub_faces: A list of orphaned Honeybee Apertures and/or Doors to be
@@ -1281,7 +1283,8 @@ class Room2D(_BaseGeometry):
                                 clean_pts = [face.plane.project_point(pt)
                                              for pt in sf.geometry.boundary]
                                 proj_geometry = Face3D(clean_pts)
-                                isd = True if isinstance(sf, Door) else False
+                                isd = True if isinstance(sf, Door) \
+                                    and not sf.is_glass else False
                                 wps[i].append((proj_geometry, isd))
 
         # convert any projected Face3Ds to DetailedWindows and assign them
@@ -1302,7 +1305,7 @@ class Room2D(_BaseGeometry):
             for sf in skylight_sfs:
                 bnd_pts = sf.geometry.boundary
                 sky_poly.append(Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in bnd_pts)))
-                isd = True if isinstance(sf, Door) else False
+                isd = True if isinstance(sf, Door) and not sf.is_glass else False
                 are_doors.append(isd)
             self.skylight_parameters = DetailedSkylights(sky_poly, are_doors)
             self.offset_skylights_from_edges(5 * tolerance, tolerance)
