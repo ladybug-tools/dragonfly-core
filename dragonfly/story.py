@@ -62,6 +62,7 @@ class Story(_BaseGeometry):
         * full_id
         * room_2ds
         * floor_to_floor_height
+        * floor_height
         * multiplier
         * roof
         * type
@@ -71,7 +72,9 @@ class Story(_BaseGeometry):
         * zone_dict
         * parent
         * has_parent
-        * floor_height
+        * max_room_2d_ceiling_height
+        * min_room_2d_floor_height
+        * highest_plenum_floor_height
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
@@ -423,6 +426,22 @@ using-multipliers-zone-and-or-window.html
     def has_parent(self):
         """Boolean noting whether this Story has a parent Building."""
         return self._parent is not None
+
+    @property
+    def max_room_2d_ceiling_height(self):
+        """Get the highest ceiling height of all Room2Ds in the Story.
+
+        Note that this property is not set-able and is linked to the Room2D geometry.
+        """
+        return max([room.ceiling_height for room in self._room_2ds])
+
+    @property
+    def min_room_2d_floor_height(self):
+        """Get the lowest floor height of all Room2Ds in the Story.
+
+        Note that this property is not set-able and is linked to the Room2D geometry.
+        """
+        return min([room.floor_height for room in self._room_2ds])
 
     @property
     def highest_plenum_floor_height(self):

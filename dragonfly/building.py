@@ -1979,12 +1979,12 @@ class Building(_BaseGeometry):
         if len(self._unique_stories) > 1:
             stories = self._unique_stories
             for i, story1 in enumerate(stories):
-                fh1 = story1.floor_height
-                ch1 = fh1 + story1.floor_to_floor_height
+                fh1 = story1.min_room_2d_floor_height
+                ch1 = story1.max_room_2d_ceiling_height
                 try:
                     for story2 in stories[i + 1:]:
-                        fh2 = story2.floor_height
-                        ch2 = fh2 + story2.floor_to_floor_height
+                        fh2 = story2.min_room_2d_floor_height
+                        ch2 = story2.max_room_2d_ceiling_height
                         v_overlap = 0
                         if fh1 < fh2 and ch1 - tolerance > fh2:
                             v_overlap = ch1 - fh2

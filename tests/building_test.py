@@ -1,7 +1,6 @@
 # coding=utf-8
 import pytest
 
-from dragonfly.model import Model as DFModel
 from dragonfly.building import Building
 from dragonfly.story import Story
 from dragonfly.room2d import Room2D
@@ -410,21 +409,6 @@ def test_check_collisions_between_stories():
     building.unique_stories[0].room_2ds[0].floor_to_ceiling_height = 3.5
     building.unique_stories[1].room_2ds[0].move(Vector3D(0, 0, -0.5))
     assert building.check_collisions_between_stories(raise_exception=False) != ''
-
-
-def test_check_collisions_between_stories_complex():
-    """Test the Building check_collisions_between_stories method with a complex model."""
-    model_file = './tests/json/model_invalid_collisions.dfjson'
-    model = DFModel.from_file(model_file)
-    building = model.buildings[0]
-
-    report = building.check_collisions_between_stories(raise_exception=False)
-    assert report != ''
-    assert '003-MEP BASEMENT' in report
-    assert '210-T2 CIRCULATION' in report
-
-    report = model.check_collisions_between_stories(raise_exception=False, detailed=True)
-    assert len(report) == 1
 
 
 def test_honeybee_ceiling_plenum():

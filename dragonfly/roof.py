@@ -124,7 +124,11 @@ class RoofSpecification(object):
             # remake the faces so they do no have holes
             for f_geo in final_faces:
                 f_geo = Face3D(f_geo.boundary, f_geo.plane) if f_geo.has_holes else f_geo
-                all_geos.append(f_geo)
+                try:
+                    f_geo = f_geo.remove_colinear_vertices(tolerance)
+                    all_geos.append(f_geo)
+                except AssertionError:  # degenerate geometry to ignore
+                    pass
         return cls(all_geos)
 
     @classmethod
