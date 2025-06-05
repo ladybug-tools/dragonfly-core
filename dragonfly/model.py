@@ -1547,7 +1547,10 @@ class Model(_BaseGeometry):
         for bldg in self._buildings:
             ov_msg = bldg.check_collisions_between_stories(tolerance, False, detailed)
             if ov_msg:
-                bldg_msgs.extend(ov_msg)
+                if detailed:
+                    bldg_msgs.extend(ov_msg)
+                else:
+                    bldg_msgs.append(ov_msg)
         if detailed:
             return bldg_msgs
         if bldg_msgs != []:

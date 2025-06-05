@@ -1973,20 +1973,37 @@ class Building(_BaseGeometry):
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
+        detailed = False if raise_exception else detailed
+        # loop through the stories and test for collisions
         msgs = []
         if len(self._unique_stories) > 1:
-            for i in range(len(self._unique_stories) - 1):
-                story1, story2 = self._unique_stories[i], self._unique_stories[i + 1]
-                col_msg = story1.check_collision_with_story(
-                    story2, tolerance, False, detailed)
-                if col_msg:
-                    if detailed:
-                        msgs.extend(col_msg)
-                    else:
-                        msgs.append(col_msg)
+            stories = self._unique_stories
+            for i, story1 in enumerate(stories):
+                fh1 = story1.floor_height
+                ch1 = fh1 + story1.floor_to_floor_height
+                try:
+                    for story2 in stories[i + 1:]:
+                        fh2 = story2.floor_height
+                        ch2 = fh2 + story2.floor_to_floor_height
+                        v_overlap = 0
+                        if fh1 < fh2 and ch1 - tolerance > fh2:
+                            v_overlap = ch1 - fh2
+                        elif fh2 < fh1 and ch2 - tolerance > fh1:
+                            v_overlap = ch2 - fh1
+                        if v_overlap != 0:
+                            col_msg = story1.check_collision_with_story(
+                                story2, tolerance, False, detailed)
+                            if col_msg:
+                                if detailed:
+                                    msgs.extend(col_msg)
+                                else:
+                                    msgs.append(col_msg)
+                except IndexError:
+                    pass  # we have reached the end of the list of stories
+        # process the output messages if issues were found
         if detailed:
             return msgs
-        if msgs != []:
+        if len(msgs) != 0:
             msg = 'Building "{}" has stories with rooms that collide with one another' \
                 ':\n {}'.format(self.full_id, '\n '.join(msgs))
             if raise_exception:
