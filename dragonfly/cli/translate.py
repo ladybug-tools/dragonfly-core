@@ -186,9 +186,7 @@ def model_to_honeybee(
             'full_path': os.path.abspath(file_path)
         }
         hb_jsons.append(hb_info)
-    if log_file is None:
-        return json.dumps(hb_jsons, indent=4)
-    log_file.write(json.dumps(hb_jsons, indent=4))
+    return process_content_to_output(json.dumps(hb_jsons, indent=4), log_file)
 
 
 @translate.command('model-to-honeybee-file')

@@ -5,6 +5,7 @@ import logging
 import json
 
 from ladybug_geometry.geometry2d.pointvector import Point2D
+from ladybug.commandutil import process_content_to_output
 from ladybug.location import Location
 from honeybee.units import UNITS_TOLERANCES
 from honeybee.model import Model as HBModel
@@ -63,11 +64,8 @@ def merge_models(base_model, other_model=(), output_file=None):
     other_models = [Model.from_file(m) for m in other_model]
     for o_model in other_models:
         parsed_model.add_model(o_model)
-
     # write the new model out to the file or stdout
-    if output_file is None:
-        return json.dumps(parsed_model.to_dict())
-    output_file.write(json.dumps(parsed_model.to_dict()))
+    return process_content_to_output(json.dumps(parsed_model.to_dict()), output_file)
 
 
 @create.command('from-honeybee')
@@ -136,17 +134,13 @@ def from_honeybee(base_model, conversion_method='ExtrudedOnly',
     # serialize the input Model(s)
     hb_model = HBModel.from_file(base_model)
     other_models = [HBModel.from_file(m) for m in other_model]
-
     # convert the Honeybee Model(s) to Dragonfly
     df_model = Model.from_honeybee(hb_model, conversion_method)
     for o_hb_model in other_models:
         o_df_model = Model.from_honeybee(o_hb_model, conversion_method)
         df_model.add_model(o_df_model)
-
     # write the new model out to the file or stdout
-    if output_file is None:
-        return json.dumps(df_model.to_dict())
-    output_file.write(json.dumps(df_model.to_dict()))
+    return process_content_to_output(json.dumps(df_model.to_dict()), output_file)
 
 
 @create.command('from-geojson')
@@ -275,6 +269,4 @@ def from_geojson(
         model.separate_top_bottom_floors()
 
     # write the model out to the file or stdout
-    if output_file is None:
-        return json.dumps(model.to_dict())
-    output_file.write(json.dumps(model.to_dict()))
+    return process_content_to_output(json.dumps(model.to_dict()), output_file)
