@@ -5124,7 +5124,9 @@ class Room2D(_BaseGeometry):
                     roof_faces.append(Face3D(pt3s, rf_plane))
 
         # if all of the polygons didn't cover the Room2D, add extra horizontal roof faces
-        min_len = sorted(seg.length for seg in all_room_poly[0].segments)[0]
+        sort_lens = sorted(seg.length for seg in all_room_poly[0].segments)
+        max_len = sort_lens[-1]
+        min_len = sort_lens[0]
         min_len = tolerance if min_len < tolerance else min_len
         tol_area = min_len * tolerance
         area_diff = abs(room_poly_area - roof_poly_area)
@@ -5143,8 +5145,9 @@ class Room2D(_BaseGeometry):
             ceil_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
             ceil_geo = self.floor_geometry.move(ceil_vec)
             cover_faces = ceil_geo.coplanar_difference(subtract_geo, tolerance, ang_tol)
+            up_tol_area = max_len * tolerance
             for f in cover_faces:
-                if f.area <= area_diff + tol_area:
+                if f.area <= area_diff + up_tol_area:
                     roof_faces.append(f)
 
         # perform a final check to remove all colinear vertices from the roof
@@ -5183,12 +5186,6 @@ class Room2D(_BaseGeometry):
             rtol = int(math.log10(tolerance)) * -1
         except ValueError:
             rtol = 0  # the tol is equal to 1 (out of range for log)
-        # account for the fact that the tolerance may not be base 10
-        base = int(tolerance * 10 ** (rtol + 1))
-        if base == 10 or base == 0:  # tolerance is base 10 (eg. 0.001)
-            base = 1
-        else:  # tolerance is not base 10 (eg. 0.003)
-            rtol += 1
 
         # loop through holes and boundary polygons and generate walls from them
         for rm_poly, rm_segs in zip(all_room_poly, all_segments):
@@ -5248,6 +5245,13 @@ class Room2D(_BaseGeometry):
                         )
                         for i_pt, i_pl in zip(int_pts, int_pls)]
                     sort_obj = sorted(zip(pt_dists, pts_pls), key=lambda pair: pair[0])
+                    # remove any point/plane combinations that are duplicates
+                    i_to_remove = []
+                    for i, (dist_tup, (pt, pln, pt3)) in enumerate(sort_obj[1:]):
+                        if pt3.distance_to_point(sort_obj[i][1][2]) < tolerance:
+                            i_to_remove.append(i)
+                    for del_i in reversed(i_to_remove):
+                        sort_obj.pop(del_i)
                     # if there are any jumps back in the segment, correct them
                     prev_seg_i = 0
                     for b, pt_grp in enumerate(sort_obj):
@@ -5257,13 +5261,6 @@ class Room2D(_BaseGeometry):
                                 sort_obj.insert(b + 1, sort_obj.pop(b))
                         prev_seg_i = current_seg_i
                     sort_pts_pls = [x for _, x in sort_obj]
-                    # remove any point/plane combinations that are duplicates
-                    i_to_remove = []
-                    for i, (pt, pln, pt3) in enumerate(sort_pts_pls[1:]):
-                        if pt3.distance_to_point(sort_pts_pls[i][2]) < tolerance:
-                            i_to_remove.append(i)
-                    for del_i in reversed(i_to_remove):
-                        sort_pts_pls.pop(del_i)
                     # if two points are equivalent, reorder with the previous point plane
                     ord_pts = [x[0] for x in sort_pts_pls]
                     ord_pls = [x[1] for x in sort_pts_pls]

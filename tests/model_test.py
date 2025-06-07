@@ -784,6 +784,17 @@ def test_complicated_roof_failure():
     assert len(room_2.roof_ceilings) > 1
 
 
+def test_complicated_boolean_int_roof_failure():
+    """Test the translation of a roof with a boolean intersection failure."""
+    model_file = './tests/json/roof_boolean_int_fail.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False,
+                                  tolerance=0.003, enforce_solid=True)
+    room_1 = hb_models[0].rooms[0]
+    assert len(room_1.roof_ceilings) > 1
+
+
 def test_has_floor_ceilings():
     """Test the translation of a model without floors or ceilings."""
     model_file = './tests/json/has_floor_ceiling_model.dfjson'
