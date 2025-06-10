@@ -592,8 +592,8 @@ class Building(_BaseGeometry):
             r3_h = max(r.max.z for r in self.room_3ds)
         if self.has_room_2ds:
             last_flr = self._unique_stories[-1]
-            r2_h = last_flr.floor_height + \
-                (last_flr.floor_to_floor_height * last_flr.multiplier)
+            r2_h = last_flr.max_room_2d_ceiling_height + \
+                (last_flr.floor_to_floor_height * (last_flr.multiplier - 1))
         if r2_h is not None and r3_h is not None:
             return max(r2_h, r3_h)
         elif r2_h is not None:
@@ -608,7 +608,7 @@ class Building(_BaseGeometry):
         """
         r2_h, r3_h, bldg_h = None, None, self.height
         try:
-            r2_h = bldg_h - self.unique_stories_above_ground[0].floor_height
+            r2_h = bldg_h - self.unique_stories_above_ground[0].min_room_2d_floor_height
         except IndexError:  # building completely below ground or no Room2Ds
             r2_h = 0
         if self.has_room_3ds:
@@ -627,7 +627,7 @@ class Building(_BaseGeometry):
         """
         r2_h, r3_h, bldg_h = None, None, self.height
         try:
-            r2_h = bldg_h - self.unique_stories[0].floor_height
+            r2_h = bldg_h - self.unique_stories[0].min_room_2d_floor_height
         except IndexError:  # building completely below ground or no Room2Ds
             r2_h = 0
         if self.has_room_3ds:
