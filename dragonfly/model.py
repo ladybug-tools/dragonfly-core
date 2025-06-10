@@ -543,6 +543,8 @@ class Model(_BaseGeometry):
 
         Note that this will be a float and not an integer in most cases.
         """
+        if len(self._buildings) == 0:
+            return 0
         return sum([bldg.story_count for bldg in self._buildings]) / len(self._buildings)
 
     @property
@@ -551,17 +553,23 @@ class Model(_BaseGeometry):
 
         Note that this will be a float and not an integer in most cases.
         """
+        if len(self._buildings) == 0:
+            return 0
         return sum([bldg.story_count_above_ground for bldg in self._buildings]) / \
             len(self._buildings)
 
     @property
     def average_height(self):
         """Get the average height of the Buildings as an absolute Z-coordinate."""
+        if len(self._buildings) == 0:
+            return 0
         return sum([bldg.height for bldg in self._buildings]) / len(self._buildings)
 
     @property
     def average_height_above_ground(self):
         """Get the average building height relative to the first floor above ground."""
+        if len(self._buildings) == 0:
+            return 0
         return sum([bldg.height_above_ground for bldg in self._buildings]) / \
             len(self._buildings)
 
