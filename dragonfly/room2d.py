@@ -1269,7 +1269,13 @@ class Room2D(_BaseGeometry):
         wps = [[] for _ in floor_segments]
         if len(sf_to_add) != 0:
             ext_vec = Vector3D(0, 0, ftc)
-            walls = [Face3D.from_extrusion(seg, ext_vec) for seg in floor_segments]
+            walls = []
+            for seg in floor_segments:
+                if seg.length > tolerance:
+                    walls.append(Face3D.from_extrusion(seg, ext_vec))
+                else:  # sliver wall to ignore
+                    walls.append(None)
+            already_assigned = [[] for _ in walls]
             for sf in sf_to_add:
                 # first check if the sub-face might be a skylight
                 v_ang = sf.normal.angle(ext_vec)
@@ -1277,15 +1283,22 @@ class Room2D(_BaseGeometry):
                     skylight_sfs.append(sf)
                 else:  # check if the sub-face belongs in any of the walls
                     for i, face in enumerate(walls):
+                        if face is None:
+                            continue
                         if overlapping_bounding_boxes(sf.geometry, face, dist):
                             ang = sf.normal.angle(face.normal)
                             if ang < a_tol_min or ang > a_tol_max:
                                 clean_pts = [face.plane.project_point(pt)
                                              for pt in sf.geometry.boundary]
-                                proj_geometry = Face3D(clean_pts)
-                                isd = True if isinstance(sf, Door) \
-                                    and not sf.is_glass else False
-                                wps[i].append((proj_geometry, isd))
+                                proj_geo = Face3D(clean_pts)
+                                if any(proj_geo.center.distance_to_point(pt) < tolerance
+                                       for pt in already_assigned[i]):
+                                    continue
+                                else:
+                                    isd = True if isinstance(sf, Door) \
+                                        and not sf.is_glass else False
+                                    wps[i].append((proj_geo, isd))
+                                    already_assigned[i].append(proj_geo.center)
 
         # convert any projected Face3Ds to DetailedWindows and assign them
         new_win_pars = []
