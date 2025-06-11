@@ -2350,7 +2350,12 @@ class Model(_BaseGeometry):
                                 continue  # face is not the right type for ceiling adj
                             if face_1.geometry.is_centered_adjacent(
                                     face_2.geometry, tolerance):
-                                face_1.set_adjacency(face_2)
+                                try:
+                                    face_1.set_adjacency(face_2)
+                                except AssertionError:  # invalid skylights; remove
+                                    face_1.remove_sub_faces()
+                                    face_2.remove_sub_faces()
+                                    face_1.set_adjacency(face_2)
                                 hf_1, hc_1 = fc_1
                                 hf_2, hc_2 = fc_2
                                 if not hc_1 and not hf_2:
