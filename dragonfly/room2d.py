@@ -5239,14 +5239,27 @@ class Room2D(_BaseGeometry):
                     # find where it intersects the other relevant polygons
                     for o_poly, o_pl in zip(other_poly, other_planes):
                         for o_seg in o_poly.segments:
-                            int_pt = seg_2d.intersect_line_ray(o_seg)
-                            if int_pt is None:
-                                d, cls_pts = closest_point2d_between_line2d(seg_2d, o_seg)
-                                if d <= tolerance:
-                                    int_pt = cls_pts[0]
-                            if int_pt is not None:
-                                int_pts.append((int_pt, 1))
-                                int_pls.append(o_pl)
+                            dist_1 = o_seg.distance_to_point(seg_2d.p1)
+                            dist_2 = o_seg.distance_to_point(seg_2d.p2)
+                            dist_3 = seg_2d.distance_to_point(o_seg.p1)
+                            dist_4 = seg_2d.distance_to_point(o_seg.p2)
+                            dists = [dist_1, dist_2, dist_3, dist_4]
+                            pts = [seg_2d.p1, seg_2d.p2, o_seg.p1, o_seg.p2]
+                            co_pts = [pt for pt, d in zip(pts, dists) if d < tolerance]
+                            if len(co_pts) > 1:
+                                # segments are colinear and overlap; add both points
+                                for co_pt in co_pts:
+                                    int_pts.append((co_pt, 1))
+                                    int_pls.append(o_pl)
+                            else:
+                                int_pt = seg_2d.intersect_line_ray(o_seg)
+                                if int_pt is None:
+                                    d, cls_pts = closest_point2d_between_line2d(seg_2d, o_seg)
+                                    if d <= tolerance:
+                                        int_pt = cls_pts[0]
+                                if int_pt is not None:
+                                    int_pts.append((int_pt, 1))
+                                    int_pls.append(o_pl)
                     # sort the intersections points along the segment
                     pt_dists = [(round(seg_2d.p1.distance_to_point(ipt[0]), rtol), ipt[1])
                                 for ipt in int_pts]
