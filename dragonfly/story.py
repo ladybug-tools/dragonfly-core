@@ -1872,23 +1872,38 @@ using-multipliers-zone-and-or-window.html
         msgs = []
         rooms = self.room_2ds
         for i, room_1 in enumerate(rooms):
-            poly_1 = room_1.floor_geometry.polygon2d
+            # first check whether the boundaries of the rooms overlap
+            poly_1 = room_1.floor_geometry.boundary_polygon2d
             try:
                 for room_2 in rooms[i + 1:]:
-                    poly_2 = room_2.floor_geometry.polygon2d
+                    poly_2 = room_2.floor_geometry.boundary_polygon2d
                     if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
-                        msg = 'Room2D "{}" overlaps with Room2D "{}" more than the '\
-                            'tolerance ({}) on Story "{}".'.format(
-                                room_1.display_name, room_2.display_name,
-                                tolerance, self.display_name)
-                        msg = self._validation_message_child(
-                            msg, room_1, detailed, '100104',
-                            error_type='Overlapping Room Geometries')
-                        if detailed:
-                            msg['element_id'].append(room_2.identifier)
-                            msg['element_name'].append(room_2.display_name)
-                            msg['parents'].append(msg['parents'][0])
-                        msgs.append(msg)
+                        # check that one room is not inside the hole of another
+                        inside_hole = False
+                        if room_1.floor_geometry.has_holes:
+                            for hole in room_1.floor_geometry.hole_polygon2d:
+                                if hole.polygon_relationship(poly_2, tolerance) == 1:
+                                    inside_hole = True
+                                    break
+                        if not inside_hole and room_2.floor_geometry.has_holes:
+                            for hole in room_2.floor_geometry.hole_polygon2d:
+                                if hole.polygon_relationship(poly_1, tolerance) == 1:
+                                    inside_hole = True
+                                    break
+                        # if the room is not in a hole, then they overlap
+                        if not inside_hole:
+                            msg = 'Room2D "{}" overlaps with Room2D "{}" more than ' \
+                                'the tolerance ({}) on Story "{}".'.format(
+                                    room_1.display_name, room_2.display_name,
+                                    tolerance, self.display_name)
+                            msg = self._validation_message_child(
+                                msg, room_1, detailed, '100104',
+                                error_type='Overlapping Room Geometries')
+                            if detailed:
+                                msg['element_id'].append(room_2.identifier)
+                                msg['element_name'].append(room_2.display_name)
+                                msg['parents'].append(msg['parents'][0])
+                            msgs.append(msg)
             except IndexError:
                 pass  # we have reached the end of the list
         # report any errors
@@ -1965,7 +1980,8 @@ using-multipliers-zone-and-or-window.html
         msgs = []
         for room_1 in self.room_2ds:
             fh1, ch1 = room_1.floor_height, room_1.ceiling_height
-            poly_1 = room_1.floor_geometry.polygon2d
+            poly_1 = room_1.floor_geometry.boundary_polygon2d
+            # first check whether the rooms have any vertical overlap
             for room_2 in other_story.room_2ds:
                 fh2, ch2 = room_2.floor_height, room_2.ceiling_height
                 v_overlap = 0
@@ -1974,20 +1990,36 @@ using-multipliers-zone-and-or-window.html
                 elif fh2 < fh1 and ch2 - tolerance > fh1:
                     v_overlap = ch2 - fh1
                 if v_overlap != 0:
-                    poly_2 = room_2.floor_geometry.polygon2d
+                    # check whether the boundaries of the rooms overlap
+                    poly_2 = room_2.floor_geometry.boundary_polygon2d
                     if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
-                        msg = 'Room2D "{}" on Story "{}" collides with Room2D "{}" ' \
-                            'on Story "{}" with a vertical overlap of {}.'.format(
-                                room_1.display_name, self.display_name,
-                                room_2.display_name, other_story.display_name, v_overlap)
-                        msg = self._validation_message_child(
-                            msg, room_1, detailed, '100108',
-                            error_type='Colliding Rooms Between Stories')
-                        if detailed:
-                            msg['element_id'].append(room_2.identifier)
-                            msg['element_name'].append(room_2.display_name)
-                            msg['parents'].append(msg['parents'][0])
-                        msgs.append(msg)
+                        # check that one room is not inside the hole of another
+                        inside_hole = False
+                        if room_1.floor_geometry.has_holes:
+                            for hole in room_1.floor_geometry.hole_polygon2d:
+                                if hole.polygon_relationship(poly_2, tolerance) == 1:
+                                    inside_hole = True
+                                    break
+                        if not inside_hole and room_2.floor_geometry.has_holes:
+                            for hole in room_2.floor_geometry.hole_polygon2d:
+                                if hole.polygon_relationship(poly_1, tolerance) == 1:
+                                    inside_hole = True
+                                    break
+                        # if the room is not in a hole, then they collide
+                        if not inside_hole:
+                            msg = 'Room2D "{}" on Story "{}" collides with Room2D "{}"' \
+                                ' on Story "{}" with a vertical overlap of {}.'.format(
+                                    room_1.display_name, self.display_name,
+                                    room_2.display_name, other_story.display_name,
+                                    v_overlap)
+                            msg = self._validation_message_child(
+                                msg, room_1, detailed, '100108',
+                                error_type='Colliding Rooms Between Stories')
+                            if detailed:
+                                msg['element_id'].append(room_2.identifier)
+                                msg['element_name'].append(room_2.display_name)
+                                msg['parents'].append(msg['parents'][0])
+                            msgs.append(msg)
         # report any errors
         if detailed:
             return msgs
