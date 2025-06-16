@@ -62,6 +62,14 @@ class ContextShade(_BaseGeometry):
     def from_dict(cls, data):
         """Initialize an ContextShade from a dictionary.
 
+        Note that this method will automatically remove invalid geometries
+        detected in the input like Face3Ds with fewer than three vertices,
+        Mesh3Ds that lack all faces, etc.
+
+        If all geometry in the ContextShade is invalid, this method will
+        raise a ValueError exception with a message reporting what is wrong
+        with the geometry.
+
         Args:
             data: A dictionary representation of an ContextShade object.
         """
@@ -69,13 +77,28 @@ class ContextShade(_BaseGeometry):
         assert data['type'] == 'ContextShade', 'Expected ContextShade dictionary. ' \
             'Got {}.'.format(data['type'])
 
+        # serialize the geometry, removing invalid geometries in the process
         is_detached = data['is_detached'] if 'is_detached' in data else True
-        geometry = []
+        geometry, err_msgs = [], []
         for shd_geo in data['geometry']:
             if shd_geo['type'] == 'Face3D':
-                geometry.append(Face3D.from_dict(shd_geo))
+                try:
+                    geometry.append(Face3D.from_dict(shd_geo))
+                except AssertionError as e:  # invalid Face3D to ignore
+                    err_msgs.append(str(e))
             else:
-                geometry.append(Mesh3D.from_dict(shd_geo))
+                try:
+                    geometry.append(Mesh3D.from_dict(shd_geo))
+                except AssertionError as e:  # invalid Mesh3D to ignore
+                    err_msgs.append(str(e))
+        if len(geometry) == 0:
+            shade_name = data['display_name'] if 'display_name' in data and \
+                data['display_name'] is not None else data['identifier']
+            msg = 'All geometry of ContextShade "{}" is invalid: {}'.format(
+                shade_name, '. '.join(err_msgs))
+            raise ValueError(msg)
+
+        # create the ContextShade
         shade = cls(data['identifier'], geometry, is_detached)
         if 'display_name' in data and data['display_name'] is not None:
             shade.display_name = data['display_name']

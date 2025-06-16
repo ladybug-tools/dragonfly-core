@@ -170,6 +170,32 @@ def test_to_from_dict():
     assert new_context.to_dict() == context_dict
 
 
+def test_from_dict_invalid():
+    """Test the from dict of ContextShade objects with invalid dictionaries."""
+    pts1 = (Point3D(1.1, 1.1, 4), Point3D(2.1, 1.1, 4), Point3D(2.1, 2.1, 4),
+            Point3D(1.1, 2.1, 4))
+    plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
+    face = Face3D(pts1, plane)
+    pts2 = (Point3D(0, 0, 2), Point3D(0, 2.1, 2), Point3D(2.1, 2.1, 2),
+            Point3D(2.1, 0, 2), Point3D(4.1, 0, 2))
+    mesh = Mesh3D(pts2, [(0, 1, 2, 3), (2, 3, 4)])
+    awning_canopy = ContextShade('Awning_Canopy', [face, mesh])
+
+    context_dict = awning_canopy.to_dict()
+    new_context = ContextShade.from_dict(context_dict)
+    assert isinstance(new_context, ContextShade)
+    assert new_context.to_dict() == context_dict
+    assert len(new_context.geometry) == 2
+
+    context_dict['geometry'][1]['faces'] = []
+    new_context = ContextShade.from_dict(context_dict)
+    assert len(new_context.geometry) == 1
+
+    context_dict['geometry'][0]['boundary'] = [pts1[0].to_array(), pts1[1].to_array()]
+    with pytest.raises(ValueError):
+        new_context = ContextShade.from_dict(context_dict)
+
+
 def test_writer():
     """Test the Building writer object."""
     tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
