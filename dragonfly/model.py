@@ -1052,7 +1052,7 @@ class Model(_BaseGeometry):
         else:
             self.reference_vector = self.reference_vector + ref_vec
 
-    def check_for_extension(self, extension_name='All',
+    def check_for_extension(self, extension_name='Generic',
                             raise_exception=True, detailed=False):
         """Check that the Model is valid for a specific Dragonfly extension.
 
@@ -1068,9 +1068,13 @@ class Model(_BaseGeometry):
                 The value input here is case-insensitive such that "radiance"
                 and "Radiance" will both result in the model being checked for
                 validity with dragonfly-radiance. This value can also be set to
-                "All" in order to run checks for all installed extensions. Some
-                common dragonfly extension names that can be input here if they
-                are installed include:
+                "Generic" in order to run checks for all installed extensions.
+                Using "Generic" will run all except the most limiting of
+                checks (eg. DOE2's lack of support for courtyards) with the
+                goal of producing a model that can be exported to multiple
+                engines (albeit with a little extra postprocessing for
+                particularly limited engines). Some common dragonfly extension
+                names that can be input here if they are installed include:
 
                 * Radiance
                 * EnergyPlus
@@ -1095,7 +1099,7 @@ class Model(_BaseGeometry):
         # set up defaults to ensure the method runs correctly
         detailed = False if raise_exception else detailed
         extension_name = extension_name.lower()
-        if extension_name == 'all':
+        if extension_name in ('all', 'generic'):
             return self.check_all(raise_exception, detailed)
         energy_extensions = ('energyplus', 'openstudio', 'designbuilder')
         if extension_name in energy_extensions:
