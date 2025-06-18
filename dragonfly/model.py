@@ -1071,7 +1071,7 @@ class Model(_BaseGeometry):
                 "Generic" in order to run checks for all installed extensions.
                 Using "Generic" will run all except the most limiting of
                 checks (eg. DOE2's lack of support for courtyards) with the
-                goal of producing a model that can be exported to multiple
+                goal of producing a model that is export-able to multiple
                 engines (albeit with a little extra postprocessing for
                 particularly limited engines). Some common dragonfly extension
                 names that can be input here if they are installed include:
@@ -1100,7 +1100,8 @@ class Model(_BaseGeometry):
         detailed = False if raise_exception else detailed
         extension_name = extension_name.lower()
         if extension_name in ('all', 'generic'):
-            return self.check_all(raise_exception, detailed)
+            all_ext_checks = extension_name == 'all'
+            return self.check_all(raise_exception, detailed, all_ext_checks)
         energy_extensions = ('energyplus', 'openstudio', 'designbuilder')
         if extension_name in energy_extensions:
             extension_name = 'energy'
@@ -1125,8 +1126,8 @@ class Model(_BaseGeometry):
             raise ValueError(full_msg)
         return full_msg
 
-    def check_all(self, raise_exception=True, detailed=False):
-        """Check all of the aspects of the Model for possible errors.
+    def check_all(self, raise_exception=True, detailed=False, all_ext_checks=False):
+        """Check all of the aspects of the Model for validation errors.
 
         Args:
             raise_exception: Boolean to note whether a ValueError should be raised
@@ -1134,6 +1135,12 @@ class Model(_BaseGeometry):
                 return a text string with all errors that were found. (Default: True).
             detailed: Boolean for whether the returned object is a detailed list of
                 dicts with error info or a string with a message. (Default: False).
+            all_ext_checks: Boolean to note whether every single check that is
+                available for all installed extensions should be run (True) or only
+                generic checks that cover all except the most limiting of
+                cases should be run (False). Examples of checks that are skipped
+                include DOE2's lack of support for courtyards and floor plates
+                with holes. (Default: False).
 
         Returns:
             A text string with all errors that were found. This string will be empty
@@ -1158,7 +1165,7 @@ class Model(_BaseGeometry):
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
         # check the extension attributes
-        ext_msgs = self._properties._check_all_extension_attr(detailed)
+        ext_msgs = self._properties._check_all_extension_attr(detailed, all_ext_checks)
         if detailed:
             ext_msgs = [m for m in ext_msgs if isinstance(m, list)]
         msgs.extend(ext_msgs)
