@@ -3009,7 +3009,7 @@ class Room2D(_BaseGeometry):
         # split the Room2D with the line
         new_geos = self.floor_geometry.split_with_line(line_3d, tolerance)
         if new_geos is None or len(new_geos) == 1:
-            return [self]  # the Face3D did not overlap with one another
+            return [self]  # the line did not overlap with the Room2D
         # create the final Room2Ds
         return self._create_split_rooms(new_geos, tolerance)
 
@@ -3042,7 +3042,7 @@ class Room2D(_BaseGeometry):
         # split the Room2D with the polyline
         new_geos = self.floor_geometry.split_with_polyline(polyline_3d, tolerance)
         if new_geos is None or len(new_geos) == 1:
-            return [self]  # the Face3D did not overlap with one another
+            return [self]  # the polyline did not overlap with the Room2D
         # create the final Room2Ds
         return self._create_split_rooms(new_geos, tolerance)
 
@@ -3077,7 +3077,7 @@ class Room2D(_BaseGeometry):
         new_geos, _ = Face3D.coplanar_split(
             self.floor_geometry, face_3d, tolerance, ang_tol)
         if new_geos is None or len(new_geos) == 1:
-            return [self]  # the Face3D did not overlap with one another
+            return [self]  # the polygon did not overlap with the Room2D
         # create the final Room2Ds
         return self._create_split_rooms(new_geos, tolerance)
 
@@ -3121,7 +3121,7 @@ class Room2D(_BaseGeometry):
         # split the Room2D with the line
         new_geos = self.floor_geometry.split_with_lines(lines_3d, tolerance)
         if new_geos is None or len(new_geos) == 1:
-            return [self]  # the Face3D did not overlap with one another
+            return [self]  # the lines did not overlap with the Room2D
         # create the final Room2Ds
         return self._create_split_rooms(new_geos, tolerance)
 
@@ -3176,6 +3176,89 @@ class Room2D(_BaseGeometry):
         if len(new_rooms) == 1:  # preserve the original room identifier
             new_rooms[0].identifier = self.identifier
         return new_rooms
+
+    def split_with_thick_line(self, line, thickness, tolerance=0.01):
+        """Split this Room2D with a thickened LineSegment2D creating a gap.
+
+        If the input line does not intersect this Room2D, a list with only the
+        current room will be returned.
+
+        Args:
+            line: A LineSegment2D object that will be used to split this Room2D
+                into two or more pieces.
+            thickness: A number for the thickness to be applied to the line before
+                it is used to split the Room2D. The input line will be offset half
+                of this distance in both directions before it is used to split
+                this Room2D.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input line. Will be a list with only the current Room2D if the line
+            does not split it.
+        """
+        # create a 3D version of the line for the closest point calculation
+        if isinstance(line, LineSegment2D):
+            # check if the coordinate values are too high to resolve with tolerance
+            t_up = tolerance * 1e6
+            if line.p.x > t_up or line.p.y > t_up or line.v.x > t_up or line.v.y > t_up:
+                min_pt, max_pt = self.min, self.max
+                base, hgt = max_pt.x - min_pt.x, max_pt.y - min_pt.y
+                bound_rect = Polygon2D.from_rectangle(min_pt, Vector2D(0, 1), base, hgt)
+                inter_pts = bound_rect.intersect_line_ray(line)
+                if len(inter_pts) == 2:
+                    line = LineSegment2D.from_end_points(inter_pts[0], inter_pts[1])
+            line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, self.floor_height),
+                                    Vector3D(line.v.x, line.v.y, 0))
+        else:
+            msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+            raise TypeError(msg)
+        # split the Room2D with the line
+        new_geos = self.floor_geometry.split_with_thick_line(
+            line_3d, thickness, tolerance)
+        if new_geos is None:
+            return [self]  # the line did not overlap with the Room2D
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
+
+    def split_with_thick_polyline(self, polyline, thickness, tolerance=0.01):
+        """Split this Room2D with a thickened Polyline2D creating a gap.
+
+        If the input polyline does not intersect this Room2D, a list with only
+        the current room will be returned.
+
+        Args:
+            polyline: A Polyline2D object that will be used to split this Room2D
+                into two or more pieces.
+            thickness: A number for the thickness to be applied to the polyline before
+                it is used to split the Room2D. The input polyline will be offset half
+                of this distance in both directions before it is used to split
+                this Room2D.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+
+        Returns:
+            A list of Room2D for the result of splitting this Room2D with the
+            input polyline. Will be a list with only the current Room2D if the
+            polyline does not split it.
+        """
+        # create a 3D version of the polyline for the closest point calculation
+        if isinstance(polyline, Polyline2D):
+            polyline_3d = Polyline3D(
+                [Point3D(pt.x, pt.y, self.floor_height) for pt in polyline])
+        else:
+            msg = 'Expected Polyline2D. Got {}.'.format(type(polyline))
+            raise TypeError(msg)
+        # split the Room2D with the polyline
+        new_geos = self.floor_geometry.split_with_thick_polyline(
+            polyline_3d, thickness, tolerance)
+        if new_geos is None:
+            return [self]  # the polyline did not overlap with the Room2D
+        # create the final Room2Ds
+        return self._create_split_rooms(new_geos, tolerance)
 
     def _create_split_rooms(self, face_3ds, tolerance):
         """Create Room2Ds from Face3Ds that were split from this Room2D."""

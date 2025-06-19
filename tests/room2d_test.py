@@ -980,6 +980,55 @@ def test_split_with_polygon():
         pytest.approx(room2d.exterior_aperture_area, rel=1e-2)
 
 
+def test_split_with_thick_line():
+    """Test the Room2D split_with_line method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(4, 0, 2), Point3D(4, 4, 2), Point3D(0, 4, 2))
+    h_pts = (Point3D(1, 1, 2), Point3D(3, 1, 2), Point3D(3, 3, 2), Point3D(1, 3, 2))
+    face = Face3D(f_pts, holes=[h_pts])
+    room2d = Room2D('DonutShoebox1', face, 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 8
+    room2d.to_detailed_windows()
+
+    l_pts = (Point2D(-1, 2), Point2D(2, 2))
+    line = LineSegment2D.from_end_points(*l_pts)
+    int_result = room2d.split_with_thick_line(line, 0.2, 0.01)
+    assert len(int_result) == 1
+    assert len(int_result[0].floor_geometry.vertices) == 12
+
+    l_pts = (Point2D(-1, 2), Point2D(5, 2))
+    line = LineSegment2D.from_end_points(*l_pts)
+    int_result = room2d.split_with_thick_line(line, 0.2, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry.vertices) == 8
+
+
+def test_split_with_thick_polyline():
+    """Test the Room2D split_with_thick_polyline method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(4, 0, 2), Point3D(4, 4, 2), Point3D(0, 4, 2))
+    h_pts = (Point3D(1, 1, 2), Point3D(3, 1, 2), Point3D(3, 3, 2), Point3D(1, 3, 2))
+    face = Face3D(f_pts, holes=[h_pts])
+    room2d = Room2D('DonutShoebox1', face, 3)
+    ashrae_base = SimpleWindowRatio(0.4)
+    room2d.window_parameters = [ashrae_base] * 8
+    room2d.to_detailed_windows()
+
+    l_pts = (Point2D(-1, 2), Point2D(2, 2), Point2D(2, 2.5))
+    line = Polyline2D(l_pts)
+    int_result = room2d.split_with_thick_polyline(line, 0.2, 0.01)
+    assert len(int_result) == 1
+    assert len(int_result[0].floor_geometry.vertices) == 12
+
+    l_pts = (Point2D(-1, 2), Point2D(2, 2), Point2D(2, 5))
+    line = Polyline2D(l_pts)
+    int_result = room2d.split_with_thick_polyline(line, 0.2, 0.01)
+    assert len(int_result) == 2
+    assert len(int_result[0].floor_geometry.vertices) == 10 or \
+        len(int_result[0].floor_geometry.vertices) == 6
+    assert len(int_result[1].floor_geometry.vertices) == 10 or \
+        len(int_result[1].floor_geometry.vertices) == 6
+
+
 def test_room2d_solve_adjacency():
     """Test the Room2D solve_adjacency method."""
     pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
