@@ -4,9 +4,9 @@ from __future__ import division
 import math
 
 from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
-    Polygon2D
+    Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
-    Plane, Face3D, Polyface3D
+    Plane, Polyline3D, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
 import ladybug_geometry.boolean as pb
@@ -1006,6 +1006,101 @@ class RoofSpecification(object):
                 # split the roof geometry with the lines
                 new_geos = geo.split_with_lines(lines_3d, tolerance)
                 if new_geos is None or len(new_geos) == 1:
+                    split_geometries.append(geo)  # no overlap
+                else:
+                    split_geometries.extend(new_geos)  # roof successfully split
+            else:
+                split_geometries.append(geo)
+
+        # update the geometry
+        self.geometry = split_geometries
+
+    def split_with_thick_line(self, line, thickness, selected_indices=None,
+                              tolerance=0.01):
+        """Split this RoofSpecification with a thickened LineSegment2D creating a gap.
+
+        If the input line does not intersect the roof geometry in a manner
+        that splits it, this roof will remain unaltered.
+
+        Args:
+            line: A LineSegment2D object that will be used to split this roof geometry.
+            thickness: A number for the thickness to be applied to the line before
+                it is used to split the roofs. The input line will be offset half
+                of this distance in both directions before it is used to split
+                this roof geometry.
+            selected_indices: An optional list of indices for specific roof
+                geometries to be split with the input line. If None, all of
+                the roof geometry will be tested for intersection with the
+                input line. (Default: None).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+        """
+        # check the inputs
+        if not isinstance(line, LineSegment2D):
+            msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+            raise TypeError(msg)
+
+        # split the geometries with the line
+        proj_dir = Vector3D(0, 0, 1)
+        split_geometries = []
+        for i, geo in enumerate(self.geometry):
+            if selected_indices is None or i in selected_indices:
+                # project the line into the plane of the roof geometry
+                pt1 = geo.plane.project_point(Point3D.from_point2d(line.p1), proj_dir)
+                pt2 = geo.plane.project_point(Point3D.from_point2d(line.p2), proj_dir)
+                line_3d = LineSegment3D.from_end_points(pt1, pt2)
+                # split the roof geometry with the line
+                new_geos = geo.split_with_thick_line(line_3d, thickness, tolerance)
+                if new_geos is None:
+                    split_geometries.append(geo)  # no overlap
+                else:
+                    split_geometries.extend(new_geos)  # roof successfully split
+            else:
+                split_geometries.append(geo)
+
+        # update the geometry
+        self.geometry = split_geometries
+
+    def split_with_thick_polyline(self, polyline, thickness, selected_indices=None,
+                                  tolerance=0.01):
+        """Split this RoofSpecification with a thickened Polyline2D creating a gap.
+
+        If the input polyline does not intersect the roof geometry in a manner
+        that splits it, this roof will remain unaltered.
+
+        Args:
+            polyline: A Polyline2D object that will be used to split this roof geometry.
+            thickness: A number for the thickness to be applied to the polyline before
+                it is used to split the roofs. The input polyline will be offset half
+                of this distance in both directions before it is used to split
+                this roof geometry.
+            selected_indices: An optional list of indices for specific roof
+                geometries to be split with the input polyline. If None, all of
+                the roof geometry will be tested for intersection with the
+                input polyline. (Default: None).
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+        """
+        # check the inputs
+        if not isinstance(polyline, Polyline2D):
+            msg = 'Expected Polyline2D. Got {}.'.format(type(polyline))
+            raise TypeError(msg)
+
+        # split the geometries with the polyline
+        proj_dir = Vector3D(0, 0, 1)
+        split_geometries = []
+        for i, geo in enumerate(self.geometry):
+            if selected_indices is None or i in selected_indices:
+                # project the polyline into the plane of the roof geometry
+                pts_3d = [geo.plane.project_point(Point3D.from_point2d(pt), proj_dir)
+                          for pt in polyline.vertices]
+                polyline_3d = Polyline3D(pts_3d)
+                # split the roof geometry with the line
+                new_geos = geo.split_with_thick_polyline(
+                    polyline_3d, thickness, tolerance)
+                if new_geos is None:
                     split_geometries.append(geo)  # no overlap
                 else:
                     split_geometries.extend(new_geos)  # roof successfully split

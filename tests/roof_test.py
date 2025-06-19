@@ -3,7 +3,7 @@ import pytest
 import math
 import json
 
-from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polygon2D
+from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, Plane, Face3D, LineSegment3D
 
 from dragonfly.roof import RoofSpecification
@@ -355,6 +355,49 @@ def test_split_with_line():
     assert len(roof.geometry) == 1
     roof.split_with_lines([split_line])
     assert len(roof.geometry) == 2
+
+
+def test_split_with_thick_line():
+    """Test the RoofSpecification split_with_thick_line method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(4, 0, 2), Point3D(4, 4, 4), Point3D(0, 4, 4))
+    face = Face3D(f_pts)
+    roof = RoofSpecification([face])
+
+    l_pts = (Point2D(-1, 2), Point2D(2, 2))
+    line = LineSegment2D.from_end_points(*l_pts)
+    test_roof = roof.duplicate()
+    test_roof.split_with_thick_line(line, 0.2, tolerance=0.01)
+    assert len(test_roof.geometry) == 1
+    assert len(test_roof.geometry[0].vertices) == 8
+
+    l_pts = (Point2D(-1, 2), Point2D(5, 2))
+    line = LineSegment2D.from_end_points(*l_pts)
+    test_roof = roof.duplicate()
+    test_roof.split_with_thick_line(line, 0.2, tolerance=0.01)
+    assert len(test_roof.geometry) == 2
+    assert len(test_roof.geometry[0].vertices) == 4
+
+
+def test_split_with_thick_polyline():
+    """Test the RoofSpecification split_with_thick_polyline method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(4, 0, 2), Point3D(4, 4, 4), Point3D(0, 4, 4))
+    face = Face3D(f_pts)
+    roof = RoofSpecification([face])
+
+    l_pts = (Point2D(-1, 2), Point2D(2, 2), Point2D(2, 2.5))
+    line = Polyline2D(l_pts)
+    test_roof = roof.duplicate()
+    test_roof.split_with_thick_polyline(line, 0.2, tolerance=0.01)
+    assert len(test_roof.geometry) == 1
+    assert len(test_roof.geometry[0].vertices) == 10
+
+    l_pts = (Point2D(-1, 2), Point2D(2, 2), Point2D(2, 5))
+    line = Polyline2D(l_pts)
+    test_roof = roof.duplicate()
+    test_roof.split_with_thick_polyline(line, 0.2, tolerance=0.01)
+    assert len(test_roof.geometry) == 2
+    assert len(test_roof.geometry[0].vertices) == 4 or \
+        len(test_roof.geometry[0].vertices) == 6
 
 
 def test_endless_loop_resolved_geometry():

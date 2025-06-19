@@ -3184,8 +3184,7 @@ class Room2D(_BaseGeometry):
         current room will be returned.
 
         Args:
-            line: A LineSegment2D object that will be used to split this Room2D
-                into two or more pieces.
+            line: A LineSegment2D object that will be used to split this Room2D.
             thickness: A number for the thickness to be applied to the line before
                 it is used to split the Room2D. The input line will be offset half
                 of this distance in both directions before it is used to split
@@ -3230,8 +3229,7 @@ class Room2D(_BaseGeometry):
         the current room will be returned.
 
         Args:
-            polyline: A Polyline2D object that will be used to split this Room2D
-                into two or more pieces.
+            polyline: A Polyline2D object that will be used to split this Room2D.
             thickness: A number for the thickness to be applied to the polyline before
                 it is used to split the Room2D. The input polyline will be offset half
                 of this distance in both directions before it is used to split
