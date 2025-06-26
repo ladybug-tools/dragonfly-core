@@ -1288,17 +1288,18 @@ class Room2D(_BaseGeometry):
                         if overlapping_bounding_boxes(sf.geometry, face, dist):
                             ang = sf.normal.angle(face.normal)
                             if ang < a_tol_min or ang > a_tol_max:
-                                clean_pts = [face.plane.project_point(pt)
-                                             for pt in sf.geometry.boundary]
-                                proj_geo = Face3D(clean_pts)
-                                if any(proj_geo.center.distance_to_point(pt) < tolerance
-                                       for pt in already_assigned[i]):
-                                    continue
-                                else:
-                                    isd = True if isinstance(sf, Door) \
-                                        and not sf.is_glass else False
-                                    wps[i].append((proj_geo, isd))
-                                    already_assigned[i].append(proj_geo.center)
+                                bpts = sf.geometry.boundary
+                                clean_pts = [face.plane.project_point(pt) for pt in bpts]
+                                if clean_pts[0].distance_to_point(bpts[0]) <= dist:
+                                    pj_geo = Face3D(clean_pts)
+                                    if any(pj_geo.center.distance_to_point(p) < tolerance
+                                           for p in already_assigned[i]):
+                                        continue
+                                    else:
+                                        isd = True if isinstance(sf, Door) \
+                                            and not sf.is_glass else False
+                                        wps[i].append((pj_geo, isd))
+                                        already_assigned[i].append(pj_geo.center)
 
         # convert any projected Face3Ds to DetailedWindows and assign them
         sliver_tol = 3 * tolerance
