@@ -8,6 +8,7 @@ if (sys.version_info < (3, 0)):  # python 2
 
 from ladybug_geometry.geometry2d import Point2D, Vector2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, Face3D
+from ladybug_geometry.intersection2d import closest_point2d_on_line2d
 from ladybug_geometry.bounding import bounding_rectangle
 
 from honeybee.typing import float_in_range, float_positive
@@ -758,6 +759,135 @@ class DetailedSkylights(_SkylightParameterBase):
         # assign the offset polygons to this object
         self._polygons = tuple(new_polygons)
         self._are_doors = tuple(new_are_doors)
+
+    def make_flush(self, frame_distance, offset_boundary=False,
+                   tolerance=0.01, angle_tolerance=1.0):
+        """Make the edges of skylight geometry flush if they lie within frame_distance.
+
+        This is useful for translating between interfaces that expect the skylight
+        frame to be included within from the geometry.
+
+        Args:
+            frame_distance: Distance with which the edges of each skylight will
+                be moved in order to make them flush with neighboring skylights.
+            offset_boundary: Boolean to note whether the outer boundary of skylight
+                groups that have been made flush with one another should be offset
+                after all skylights within the group have been made flush (True)
+                or the boundary around the group should be left unchanged (False).
+                Set to True when the intended result is more like an offset of
+                skylight geometries to account for the frame rather than just making
+                the skylights flush. (Default: True).
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+            angle_tolerance: The max angle difference in degrees that a skylight
+                segment direction can differ from the X or Y axis before it is
+                excluded from being made flush. (Default: 1).
+        """
+        # process the inputs used throughout the calculation
+        touch_dist = 2 * frame_distance
+        min_distance = 0.5 * touch_dist
+        merge_distance = 3 * frame_distance
+        a_tol = math.radians(angle_tolerance)
+        x_axis, y_axis = Vector2D(1, 0), Vector2D(0, 1)
+
+        # first group the skylights together if they lie within 2 times frame_distance
+        grouped_polys = Polygon2D.group_by_touching(self.polygons, touch_dist)
+        grouped_are_doors = []
+        for pg_grp in grouped_polys:
+            for p_gon1 in pg_grp:
+                for p_gon2, isd in zip(self.polygons, self.are_doors):
+                    if p_gon1.center.is_equivalent(p_gon2.center, tolerance):
+                        grouped_are_doors.append(isd)
+                        break
+                else:
+                    grouped_are_doors.append(False)
+
+        # for each skylight group, generate axes for aligning them flush
+        flush_polys = []
+        for ply_grp in grouped_polys:
+            # if the group has only one skylight, use the fast method
+            if len(ply_grp) == 1:
+                if offset_boundary:
+                    ply_grp = [ply_grp[0].offset(-frame_distance)]
+                flush_polys.extend(ply_grp)
+                continue
+
+            # get the common X and Y axes
+            y_axes, _ = Polygon2D.common_axes(ply_grp, y_axis, min_distance,
+                                              merge_distance, a_tol, None)
+            x_axes, _ = Polygon2D.common_axes(ply_grp, x_axis, min_distance,
+                                              merge_distance, a_tol, None)
+            # pull the skylight polygons to the X and Y axes
+            for i, poly in enumerate(ply_grp):
+                ply_grp[i] = self._pull_to_segments(poly, y_axes, touch_dist)
+            for i, poly in enumerate(ply_grp):
+                ply_grp[i] = self._pull_to_segments(poly, x_axes, touch_dist)
+
+            # offset the outer boundary of the group if requested
+            if offset_boundary:
+                # set up variables to be used to group segments
+                n_vec = Vector2D(0, 1)
+                a_tol = math.radians(5)  # tolerance for evaluating parallel lines
+                # get the boundary around the group and offset it
+                grp_bounds = Polygon2D.joined_intersected_boundary(ply_grp, tolerance)
+                pull_segs = []
+                for bnd in grp_bounds:
+                    bnd = bnd.remove_colinear_vertices(tolerance)
+                    bnd = bnd.offset(-frame_distance)
+                    pull_segs.extend(bnd.segments)
+                # group the lines base on whether they are parallel to one another
+                grouped_lines = {}
+                for lin in pull_segs:
+                    azimuth = n_vec.angle_clockwise(lin.v)
+                    if azimuth >= math.pi - a_tol:
+                        azimuth = azimuth - math.pi
+                    for key in grouped_lines.keys():
+                        if key - a_tol < azimuth < key + a_tol:
+                            grouped_lines[key].append(lin)
+                            break
+                    else:
+                        grouped_lines[azimuth] = [lin]
+                pull_segs = list(grouped_lines.values())
+                # pull the skylight polygons to the X and Y axes
+                for i in range(len(ply_grp)):
+                    for seg_grp in pull_segs:
+                        ply_grp[i] = self._pull_to_segments(
+                            ply_grp[i], seg_grp, touch_dist)
+            # add the group to all of the flush polygons
+            flush_polys.extend(ply_grp)
+
+        # remove any degenerate polygons created in the process
+        i_to_remove = []
+        for i, poly in enumerate(flush_polys):
+            try:
+                poly.remove_colinear_vertices(tolerance)
+            except (ValueError, AssertionError):
+                i_to_remove.append(i)
+        for del_i in reversed(i_to_remove):
+            flush_polys.pop(del_i)
+            grouped_are_doors.pop(del_i)
+
+        # set the attributes of the object to the new cleaned polygons
+        self._polygons = tuple(flush_polys)
+        self._are_doors = tuple(grouped_are_doors)
+
+    @staticmethod
+    def _pull_to_segments(polygon, line_segments, distance):
+        """Pull a Polygon2D to a list of LineSegment2Ds."""
+        new_vertices = []
+        for pt in polygon.vertices:
+            dists, c_pts = [], []
+            for line in line_segments:
+                close_pt = closest_point2d_on_line2d(pt, line)
+                c_pts.append(close_pt)
+                dists.append(pt.distance_to_point(close_pt))
+            sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+            if sort_pt[0][0] <= distance:
+                new_vertices.append(sort_pt[0][1])
+            else:
+                new_vertices.append(pt)
+        return Polygon2D(new_vertices)
 
     def remove_self_intersecting(self, tolerance=0.01):
         """Remove any skylight polygons that are self intersecting.
