@@ -889,6 +889,19 @@ class DetailedSkylights(_SkylightParameterBase):
                 new_vertices.append(pt)
         return Polygon2D(new_vertices)
 
+    def rectangularize(self):
+        """Convert all geometries in this skylight to rectangles.
+
+        This is done by using taking the bounding rectangle around each geometry.
+        """
+        new_polygons = []
+        for poly in self.polygons:
+            min_pt, max_pt = poly.min, poly.max
+            pts = (min_pt, Point2D(max_pt.x, min_pt.y),
+                   max_pt, Point2D(min_pt.x, max_pt.y))
+            new_polygons.append(Polygon2D(pts))
+        self._polygons = tuple(new_polygons)
+
     def remove_self_intersecting(self, tolerance=0.01):
         """Remove any skylight polygons that are self intersecting.
 
