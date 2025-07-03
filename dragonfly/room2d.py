@@ -1565,6 +1565,67 @@ class Room2D(_BaseGeometry):
             if len(self._skylight_parameters.polygons) == 0:
                 self._skylight_parameters = None
 
+    def make_windows_flush(self, frame_distance, offset_boundary=False,
+                           tolerance=0.01, angle_tolerance=1.0):
+        """Make the edges of window geometry flush if they lie within the frame_distance.
+
+        This is useful for translating between interfaces that expect the window
+        frame to be included within the geometry.
+
+        Args:
+            frame_distance: Distance with which the edges of each window will
+                be moved in order to make them flush with neighboring windows.
+            offset_boundary: Boolean to note whether the outer boundary of window
+                groups that have been made flush with one another should be offset
+                after all windows within the group have been made flush (True)
+                or the boundary around the group should be left unchanged (False).
+                Set to True when the intended result is more like an offset of
+                window geometries to account for the frame rather than just making
+                the windows flush. (Default: True).
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+            angle_tolerance: The max angle difference in degrees that a window
+                segment direction can differ from the X or Y axis before it is
+                excluded from being made flush. (Default: 1).
+        """
+        for wp, seg in zip(self._window_parameters, self.floor_segments):
+            if isinstance(wp, DetailedWindows):
+                wp.make_flush(frame_distance, offset_boundary,
+                              tolerance, angle_tolerance)
+                if offset_boundary:
+                    wp.adjust_for_segment(seg, self.floor_to_ceiling_height, tolerance)
+
+    def make_skylights_flush(self, frame_distance, offset_boundary=False,
+                             tolerance=0.01, angle_tolerance=1.0):
+        """Make the edges of skylight geometry flush if they lie within frame_distance.
+
+        This is useful for translating between interfaces that expect the skylight
+        frame to be included within the geometry.
+
+        Args:
+            frame_distance: Distance with which the edges of each skylight will
+                be moved in order to make them flush with neighboring skylights.
+            offset_boundary: Boolean to note whether the outer boundary of skylight
+                groups that have been made flush with one another should be offset
+                after all skylights within the group have been made flush (True)
+                or the boundary around the group should be left unchanged (False).
+                Set to True when the intended result is more like an offset of
+                skylight geometries to account for the frame rather than just making
+                the skylights flush. (Default: True).
+            tolerance: The minimum difference between point values for them to be
+                considered the distinct. (Default: 0.01, suitable for objects
+                in meters).
+            angle_tolerance: The max angle difference in degrees that a skylight
+                segment direction can differ from the X or Y axis before it is
+                excluded from being made flush. (Default: 1).
+        """
+        if isinstance(self._skylight_parameters, DetailedSkylights):
+            self._skylight_parameters.make_flush(frame_distance, offset_boundary,
+                                                 tolerance, angle_tolerance)
+            if offset_boundary:
+                self.offset_skylights_from_edges(tolerance, tolerance)
+
     def move(self, moving_vec):
         """Move this Room2D along a vector.
 
