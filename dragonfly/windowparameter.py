@@ -2545,7 +2545,6 @@ class DetailedWindows(_AsymmetricBase):
         self._polygons = tuple(offset_polys)
         self._are_doors = tuple(offset_are_doors)
 
-    
     def make_flush(self, frame_distance, offset_boundary=False,
                    tolerance=0.01, angle_tolerance=1.0):
         """Make the edges of window geometry flush if they lie within the frame_distance.
