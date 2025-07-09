@@ -1350,6 +1350,10 @@ using-multipliers-zone-and-or-window.html
             self._room_2ds = Room2D.intersect_adjacency(self._room_2ds, tolerance)
         Room2D.solve_adjacency(self._room_2ds, tolerance, resolve_window_conflicts)
 
+    def patch_missing_adjacencies(self):
+        """Replace any Surface BCs with missing adjacent objects with outdoors."""
+        Room2D.patch_missing_adjacencies(self._room_2ds)
+
     def set_adjacent_air_boundary(self, room_ids=None, guide_lines=None, tolerance=0.01):
         """Set adjacencies between Room2Ds in this Story to use air boundaries.
 
