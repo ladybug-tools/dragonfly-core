@@ -1784,6 +1784,14 @@ class Building(_BaseGeometry):
                     new_bcs.append(bc)
             new_room.boundary_conditions = new_bcs
 
+        # remove adjacencies if plenum floor heights differ too much to be adjacent
+        for story in new_stories:
+            if story.check_room2d_floor_heights_valid(raise_exception=False) != '':
+                min_ciel = min(rm.floor_to_ceiling_height for rm in story.room_2ds)
+                room_groups, _ = Room2D.group_by_floor_height(story.room_2ds, min_ciel)
+                for rm_group in room_groups:
+                    Room2D.patch_missing_adjacencies(rm_group)
+
         # insert any newly-created stories into the Building
         for n_st in new_stories:
             n_st._parent = self

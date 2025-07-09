@@ -4285,6 +4285,94 @@ class Room2D(_BaseGeometry):
         return tuple(intersected_rooms)
 
     @staticmethod
+    def patch_missing_adjacencies(room_2ds):
+        """Replace any Surface BCs with missing adjacent objects with outdoors.
+
+        Args:
+            room_2ds: A list of Room2Ds for which Surface boundary conditions
+                with missing adjacencies will be replaced with Outdoors. Note that
+                missing adjacencies are identified by searching across all
+                Room2Ds within the input room_2ds (not by whether the Room2D's
+                parent story contains the adjacent Room2D or not).
+        """
+        # gather all of the Surface boundary conditions
+        srf_bc_dict = {}
+        for room in room_2ds:
+            for i, bc in enumerate(room._boundary_conditions):
+                if isinstance(bc, Surface):
+                    bc_objs = bc.boundary_condition_objects
+                    try:
+                        bc_ind = int(bc_objs[0].split('..Face')[-1]) - 1
+                        srf_bc_dict[(bc_objs[-1], bc_ind)] = \
+                            (room.identifier, bc_objs[0], i, room)
+                    except ValueError:  # Surface BC not following dragonfly convention
+                        # this will be reported as a missing adjacency later
+                        srf_bc_dict[(bc_objs[-1], 10000)] = \
+                            (room.identifier, bc_objs[0], i, room)
+        # check the adjacencies for all Surface boundary conditions
+        for key, val in srf_bc_dict.items():
+            rm_id = key[0]
+            for room in room_2ds:
+                if room.identifier == rm_id:
+                    try:
+                        rm_bc = room._boundary_conditions[key[1]]
+                    except IndexError:  # referenced wall segment does not exist
+                        val[3]._boundary_conditions[val[2]] = bcs.outdoors
+                        break
+                    if not isinstance(rm_bc, Surface):
+                        val[3]._boundary_conditions[val[2]] = bcs.outdoors
+                    break
+            else:
+                val[3]._boundary_conditions[val[2]] = bcs.outdoors
+
+    @staticmethod
+    def group_by_floor_height(rooms, min_difference=0.01):
+        """Group Room2Ds according to their floor_height.
+
+        Args:
+            rooms: A list of Room2Ds to be grouped by floor height.
+            min_difference: An float value to denote the minimum difference
+                in floor heights that is considered meaningful. Default: 0.01, which
+                means that virtually any minor difference in floor heights will
+                result in a new group. This assumption is suitable for models
+                in meters.
+
+        Returns:
+            A tuple with two items.
+
+            -   grouped_rooms - A list of lists of Room2Ds with each sub-list
+                representing a different floor height.
+
+            -   floor_heights - A list of floor heights with one floor height for each
+                sub-list of the output grouped_rooms.
+        """
+        # loop through each of the rooms and get the floor height
+        flrhgt_dict = {}
+        for room in rooms:
+            flrhgt = room.floor_height
+            try:  # assume there is already a story with the room's floor height
+                flrhgt_dict[flrhgt].append(room)
+            except KeyError:  # this is the first room with this floor height
+                flrhgt_dict[flrhgt] = []
+                flrhgt_dict[flrhgt].append(room)
+
+        # sort the rooms by floor heights
+        room_mtx = sorted(flrhgt_dict.items(), key=lambda d: float(d[0]))
+        flr_hgts = [r_tup[0] for r_tup in room_mtx]
+        rooms = [r_tup[1] for r_tup in room_mtx]
+
+        # group floor heights if they differ by less than the min_difference
+        floor_heights = [flr_hgts[0]]
+        grouped_rooms = [rooms[0]]
+        for flrh, rm in zip(flr_hgts[1:], rooms[1:]):
+            if flrh - floor_heights[-1] < min_difference:
+                grouped_rooms[-1].extend(rm)
+            else:
+                grouped_rooms.append(rm)
+                floor_heights.append(flrh)
+        return grouped_rooms, floor_heights
+
+    @staticmethod
     def group_by_adjacency(rooms):
         """Group Room2Ds together that are connected by adjacencies.
 
