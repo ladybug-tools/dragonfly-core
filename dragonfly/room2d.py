@@ -1209,17 +1209,10 @@ class Room2D(_BaseGeometry):
                 overhead doors. (Default: None).
         """
         # remove doors from the WindowParameters
-        glz_ps = []
         for i, glz in enumerate(self._window_parameters):
             if isinstance(glz, _AsymmetricBase):
                 if seg_indices is None or i in seg_indices:
                     glz = glz.remove_doors()
-            glz_ps.append(glz)
-        self._window_parameters = glz_ps
-        # remove overhead doors from the skylights
-        if isinstance(self.skylight_parameters, DetailedSkylights):
-            if seg_indices is None:
-                self.skylight_parameters.remove_doors()
 
     def to_rectangular_windows(self):
         """Convert all of the windows of the Room2D to the RectangularWindows format."""
@@ -1258,13 +1251,10 @@ class Room2D(_BaseGeometry):
                 this Room2D for which windows should be rectangularized. If None,
                 all segments will have their windows rectangularized. (Default: None).
         """
-        glz_ps = []
         for i, glz in enumerate(self._window_parameters):
             if isinstance(glz, DetailedWindows):
                 if seg_indices is None or i in seg_indices:
                     glz = glz.rectangularize(percent_area_change_threshold)
-            glz_ps.append(glz)
-        self._window_parameters = glz_ps
 
     def assign_sub_faces(self, sub_faces, projection_distance=0, tolerance=0.01,
                          angle_tolerance=1.0):
