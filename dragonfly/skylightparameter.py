@@ -922,7 +922,7 @@ class DetailedSkylights(_SkylightParameterBase):
             pts = (min_pt, Point2D(max_pt.x, min_pt.y),
                    max_pt, Point2D(min_pt.x, max_pt.y))
             new_poly = Polygon2D(pts)
-            if fract_change is not None and \
+            if fract_change is None or \
                     new_poly.area - poly.area <= poly.area * fract_change:
                 new_polygons.append(new_poly)
             else:
