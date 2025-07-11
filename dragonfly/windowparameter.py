@@ -2511,6 +2511,36 @@ class DetailedWindows(_AsymmetricBase):
         new_w._user_data = None if self.user_data is None else self.user_data.copy()
         return new_w
 
+    def rectangularize(self, percent_area_change_threshold=None):
+        """Convert window polygons to rectangles.
+
+        Note that rectangular conversion is done simply by taking the bounding
+        rectangle around each polygon. If this bounding rectangle representation
+        changes the area by more than the percent_area_change_threshold, it will
+        not be converted to a rectangle.
+
+        Args:
+            percent_area_change_threshold: A positive number for the maximum permitted
+                change in area that is allowed by the operation. For example, setting
+                it to 100 will allow windows to double in size by this operation.
+                Set to None to have all windows rectangularized no matter the
+                change in area that this causes. (Default: None).
+        """
+        fract_change = percent_area_change_threshold / 100 \
+            if percent_area_change_threshold is not None else None
+        new_polygons = []
+        for poly in self.polygons:
+            min_pt, max_pt = poly.min, poly.max
+            pts = (min_pt, Point2D(max_pt.x, min_pt.y),
+                   max_pt, Point2D(min_pt.x, max_pt.y))
+            new_poly = Polygon2D(pts)
+            if fract_change is not None and \
+                    new_poly.area - poly.area <= poly.area * fract_change:
+                new_polygons.append(new_poly)
+            else:
+                new_polygons.append(poly)
+        self._polygons = tuple(new_polygons)
+
     def offset(self, offset_distance, tolerance=0.01):
         """Offset the edges of all polygons by a certain distance.
 
