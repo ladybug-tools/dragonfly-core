@@ -1614,6 +1614,19 @@ class RectangularWindows(_AsymmetricBase):
                 'parent wall [{}].'.format(win_area, total_area)
         return ''
 
+    def remove_doors(self):
+        """Remove all doors from this object."""
+        new_origins, new_widths, new_heights = [], [], []
+        for o, w, h, isd in zip(self.origins, self.widths, self.heights, self.are_doors):
+            if not isd:
+                new_origins.append(o)
+                new_widths.append(w)
+                new_heights.append(h)
+        self._origins = tuple(new_origins)
+        self._widths = tuple(new_widths)
+        self._heights = tuple(new_heights)
+        self._are_doors = (False,) * len(new_origins)
+
     def shift_vertically(self, shift_distance):
         """Shift these WindowParameters up or down in the wall plane.
 
@@ -2330,6 +2343,15 @@ class DetailedWindows(_AsymmetricBase):
             new_w_par.user_data = clean_u
         return new_w_par
 
+    def remove_doors(self):
+        """Remove all door polygons from this object."""
+        new_polys = []
+        for poly, is_dr in zip(self.polygons, self.are_doors):
+            if not is_dr:
+                new_polys.append(poly)
+        self._polygons = tuple(new_polys)
+        self._are_doors = (False,) * len(new_polys)
+
     def shift_vertically(self, shift_distance):
         """Shift these WindowParameters up or down in the wall plane.
 
@@ -2743,16 +2765,20 @@ class DetailedWindows(_AsymmetricBase):
                 considered distinct. (Default: 0.01, suitable for objects in meters).
         """
         # gather a clean version of the polygons with colinear vertices removed
-        clean_polys = []
-        for poly in self.polygons:
+        clean_polys, door_polys = [], []
+        for poly, is_dr in zip(self.polygons, self.are_doors):
             try:
-                clean_polys.append(poly.remove_colinear_vertices(tolerance))
+                c_poly = poly.remove_colinear_vertices(tolerance)
+                if is_dr:
+                    door_polys.append(c_poly)
+                else:
+                    clean_polys.append(c_poly)
             except AssertionError:  # degenerate geometry to ignore
                 pass
+
         # join the polygons together
         if max_separation <= tolerance:
-            new_polys = Polygon2D.joined_intersected_boundary(
-                clean_polys, tolerance)
+            new_polys = Polygon2D.joined_intersected_boundary(clean_polys, tolerance)
         else:
             new_polys = Polygon2D.gap_crossing_boundary(
                 clean_polys, max_separation, tolerance)
@@ -2774,6 +2800,9 @@ class DetailedWindows(_AsymmetricBase):
                         is_self_intersect = True
                 if is_self_intersect:
                     new_polys = clean_polys
+
+        # bring everything together and reassign the door property
+        new_polys = new_polys + door_polys
         self._reassign_are_doors(new_polys)
         self._polygons = tuple(new_polys)
 
