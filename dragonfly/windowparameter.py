@@ -2571,8 +2571,8 @@ class DetailedWindows(_AsymmetricBase):
         """
         # process the inputs used throughout the calculation
         touch_dist = 2 * frame_distance
-        min_distance = 0.5 * touch_dist
-        merge_distance = 3 * frame_distance
+        min_distance = 0.5 * frame_distance
+        merge_distance = 2.5 * frame_distance
         a_tol = math.radians(angle_tolerance)
         x_axis, y_axis = Vector2D(1, 0), Vector2D(0, 1)
 
