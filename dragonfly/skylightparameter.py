@@ -532,6 +532,15 @@ class DetailedSkylights(_SkylightParameterBase):
                 return msg_template.format(i)
         return ''
 
+    def remove_doors(self):
+        """Remove all door polygons from this object."""
+        new_polys = []
+        for poly, is_dr in zip(self.polygons, self.are_doors):
+            if not is_dr:
+                new_polys.append(poly)
+        self._polygons = tuple(new_polys)
+        self._are_doors = (False,) * len(new_polys)
+
     def add_skylight_to_face(self, face, tolerance=0.01):
         """Add Apertures to a Honeybee Roof Face using these Skylight Parameters.
 

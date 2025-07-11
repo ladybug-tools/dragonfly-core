@@ -1199,6 +1199,28 @@ class Room2D(_BaseGeometry):
             shd_ps.append(shd_p)
         self._shading_parameters = shd_ps
 
+    def remove_doors(self, seg_indices=None):
+        """Remove all doors from this Room2D.
+
+        Args:
+            seg_indices: An optional list of integers for the wall segments of
+                this Room2D for which doors should be removed. If None, all
+                segments will be checked for doors to remove, including
+                overhead doors. (Default: None).
+        """
+        # remove doors from the WindowParameters
+        glz_ps = []
+        for i, glz in enumerate(self._window_parameters):
+            if isinstance(glz, _AsymmetricBase):
+                if seg_indices is None or i in seg_indices:
+                    glz = glz.remove_doors()
+            glz_ps.append(glz)
+        self._window_parameters = glz_ps
+        # remove overhead doors from the skylights
+        if isinstance(self.skylight_parameters, DetailedSkylights):
+            if seg_indices is None:
+                self.skylight_parameters.remove_doors()
+
     def to_rectangular_windows(self):
         """Convert all of the windows of the Room2D to the RectangularWindows format."""
         glz_ps = []
@@ -1218,7 +1240,7 @@ class Room2D(_BaseGeometry):
             glz_ps.append(glz)
         self._window_parameters = glz_ps
 
-    def rectangularize_windows(self, percent_area_change_threshold=None):
+    def rectangularize_windows(self, percent_area_change_threshold=None, seg_indices=None):
         """Convert detailed windows of the Room2D to rectangles.
 
         Note that rectangular conversion is done simply by taking the bounding
@@ -1232,11 +1254,15 @@ class Room2D(_BaseGeometry):
                 it to 100 will allow windows to double in size by this operation.
                 Set to None to have all windows rectangularized no matter the
                 change in area that this causes. (Default: None).
+            seg_indices: An optional list of integers for the wall segments of
+                this Room2D for which windows should be rectangularized. If None,
+                all segments will have their windows rectangularized. (Default: None).
         """
         glz_ps = []
-        for glz in self._window_parameters:
+        for i, glz in enumerate(self._window_parameters):
             if isinstance(glz, DetailedWindows):
-                glz = glz.rectangularize(percent_area_change_threshold)
+                if seg_indices is None or i in seg_indices:
+                    glz = glz.rectangularize(percent_area_change_threshold)
             glz_ps.append(glz)
         self._window_parameters = glz_ps
 
@@ -1534,7 +1560,7 @@ class Room2D(_BaseGeometry):
                 'condition.'.format(self._boundary_conditions[seg_index])
         self._window_parameters[seg_index] = window_parameter
 
-    def offset_windows(self, offset_distance, tolerance=0.01):
+    def offset_windows(self, offset_distance, tolerance=0.01, seg_indices=None):
         """Offset detailed windows by a certain distance.
 
         This is useful for translating between interfaces that expect the window
@@ -1548,10 +1574,14 @@ class Room2D(_BaseGeometry):
             tolerance: The minimum difference between point values for them to be
                 considered the distinct. (Default: 0.01, suitable for objects
                 in meters).
+            seg_indices: An optional list of integers for the wall segments of
+                this Room2D for which windows should be offset. If None,
+                all segments will have their windows offset. (Default: None).
         """
-        for wp in self._window_parameters:
+        for i, wp in enumerate(self._window_parameters):
             if isinstance(wp, _AsymmetricBase):
-                wp.offset(offset_distance, tolerance)
+                if seg_indices is None or i in seg_indices:
+                    wp.offset(offset_distance, tolerance)
 
     def offset_skylights(self, offset_distance, tolerance=0.01):
         """Offset detailed skylights by a certain distance.
@@ -1588,7 +1618,7 @@ class Room2D(_BaseGeometry):
                 self._skylight_parameters = None
 
     def make_windows_flush(self, frame_distance, offset_boundary=False,
-                           tolerance=0.01, angle_tolerance=1.0):
+                           tolerance=0.01, angle_tolerance=1.0, seg_indices=None):
         """Make the edges of window geometry flush if they lie within the frame_distance.
 
         This is useful for translating between interfaces that expect the window
@@ -1610,13 +1640,18 @@ class Room2D(_BaseGeometry):
             angle_tolerance: The max angle difference in degrees that a window
                 segment direction can differ from the X or Y axis before it is
                 excluded from being made flush. (Default: 1).
+            seg_indices: An optional list of integers for the wall segments of
+                this Room2D for which windows should be made flush. If None,
+                all segments will have their windows made flush. (Default: None).
         """
-        for wp, seg in zip(self._window_parameters, self.floor_segments):
+        for i, (wp, seg) in enumerate(zip(self._window_parameters, self.floor_segments)):
             if isinstance(wp, DetailedWindows):
-                wp.make_flush(frame_distance, offset_boundary,
-                              tolerance, angle_tolerance)
-                if offset_boundary:
-                    wp.adjust_for_segment(seg, self.floor_to_ceiling_height, tolerance)
+                if seg_indices is None or i in seg_indices:
+                    wp.make_flush(frame_distance, offset_boundary,
+                                  tolerance, angle_tolerance)
+                    if offset_boundary:
+                        wp.adjust_for_segment(seg, self.floor_to_ceiling_height,
+                                              tolerance)
 
     def make_skylights_flush(self, frame_distance, offset_boundary=False,
                              tolerance=0.01, angle_tolerance=1.0):
