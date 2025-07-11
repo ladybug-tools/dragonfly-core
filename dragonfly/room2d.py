@@ -1218,6 +1218,28 @@ class Room2D(_BaseGeometry):
             glz_ps.append(glz)
         self._window_parameters = glz_ps
 
+    def rectangularize_windows(self, percent_area_change_threshold=None):
+        """Convert detailed windows of the Room2D to rectangles.
+
+        Note that rectangular conversion is done simply by taking the bounding
+        rectangle around each polygon. If this bounding rectangle representation
+        changes the area by more than the percent_area_change_threshold, it will
+        not be converted to a rectangle.
+
+        Args:
+            percent_area_change_threshold: A positive number for the maximum permitted
+                change in area that is allowed by the operation. For example, setting
+                it to 100 will allow windows to double in size by this operation.
+                Set to None to have all windows rectangularized no matter the
+                change in area that this causes. (Default: None).
+        """
+        glz_ps = []
+        for glz in self._window_parameters:
+            if isinstance(glz, DetailedWindows):
+                glz = glz.rectangularize(percent_area_change_threshold)
+            glz_ps.append(glz)
+        self._window_parameters = glz_ps
+
     def assign_sub_faces(self, sub_faces, projection_distance=0, tolerance=0.01,
                          angle_tolerance=1.0):
         """Assign a list of orphaned SubFaces (Apertures and Doors) to this Room2D.
