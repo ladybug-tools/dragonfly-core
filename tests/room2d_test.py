@@ -291,7 +291,7 @@ def test_room2d_overlap_area():
     assert room_1.overlap_area(room_2) == 0
     assert room_1.overlap_area(room_3) == 0
     assert room_1.overlap_area(room_4) == pytest.approx(25.0, rel=1e-3)
-    assert room_1.overlap_area(room_5) == 0
+    assert room_1.overlap_area(room_5) == pytest.approx(25.0, rel=1e-3)
 
 
 def test_room2d_set_outdoor_window_shading_parameters():

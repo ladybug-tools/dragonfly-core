@@ -798,6 +798,27 @@ class Building(_BaseGeometry):
                 rooms.append(room)
         return rooms
 
+    def stories_by_display_name(self, story_name):
+        """Get all of the Stories with a given display_name in the Building."""
+        stories = []
+        for story in self.unique_stories:
+            if story.display_name == story_name:
+                stories.append(story)
+        return stories
+
+    def stories_by_identifier(self, identifiers):
+        """Get a list of Story objects in the Building given Story identifiers."""
+        stories, bldg_stories = [], self.unique_stories
+        for identifier in identifiers:
+            for story in bldg_stories:
+                if story.identifier == identifier:
+                    stories.append(story)
+                    break
+            else:
+                raise ValueError(
+                    'Story "{}" was not found in the Building.'.format(identifier))
+        return stories
+
     def footprint(self, tolerance=0.01):
         """A list of Face3D objects representing the footprint of the building.
 
@@ -984,6 +1005,21 @@ class Building(_BaseGeometry):
         # sort the stories by floor level and assign them to this Building
         unique_stories = tuple(sorted(new_stories, key=lambda x: x.floor_height))
         self._unique_stories = unique_stories
+
+    def remove_stories_by_identifier(self, identifiers):
+        """Remove Stories from this Building given Story identifiers to remove."""
+        new_stories = [s for s in self.unique_stories
+                       if s.identifier not in identifiers]
+        # raise an error if any of the stories were not matched
+        if len(new_stories) != len(self.unique_stories) - len(identifiers):
+            for identifier in identifiers:
+                for story in self.unique_stories:
+                    if story.identifier == identifier:
+                        break
+                else:
+                    raise ValueError(
+                        'Story "{}" was not found in the Building.'.format(identifier))
+        self.unique_stories = new_stories
 
     def add_room_3ds(self, rooms, add_duplicate_ids=False):
         """Add additional 3D Honeybee Room objects to this Building.
@@ -1384,6 +1420,91 @@ class Building(_BaseGeometry):
         # reset the 3D Rooms on this object
         self._room_3ds = tuple(new_room_3ds)
         return df_rooms
+
+    def match_and_replace_room_2d_floor_geometry(
+            self, base_story_id, replaced_story_ids=None,
+            overlap_percent=50, projection_distance=0,
+            remove_unmatched=False, tolerance=0.01, angle_tolerance=1.0):
+        """Replace Room2D floor_geometry on stories using a base story in the building.
+
+        This method is intended for the case that several stories with repeated
+        room geometry exist over the Building height and all stories have been
+        explicitly modeled with unique room names and possibly unique window geometry.
+        However, only one story represents the clean room floor plates such that
+        a desired building can be achieved by simply replacing the room geometry
+        of the other stories with that of the base story.
+
+        All Room2D names and properties of the replaced stories will be preserved
+        through this method. Furthermore, windows and boundary conditions will
+        be preserved if they do not differ by more than the projection_distance
+        between the base story and the replaced stories.
+
+        Args:
+            base_story_id: Text for the identifier of the Story in this building
+                that represents the clean Room2D geometry to be used as a base
+                for all of the stories to be replaced.
+            replaced_story_ids: An optional list of text strings for the identifiers
+                of Stories to have their Room2D geometries replaced with the
+                base Story geometry. If None, the Room2D geometries of all Stories
+                in the Building with be replaced. (Default: None).
+            overlap_percent: A number between 1 and 99 that represents the
+                percentage of total floor area overlap between a given base room
+                and a room on the replaced stories at which point the room
+                will be replaced with the geometry on the base story. Typically,
+                50% should be considered the lowest and most lenient overlap
+                given that lower numbers have the potential to match a room to
+                two rooms in the base story, often yielding unexpected results.
+                However, this method will still run with lower overlap thresholds.
+                Setting this value to 100 means that rooms are only replaced if
+                they perfectly match the base story geometry, effectively causing
+                this method to make no changes. (Default: 50).
+            projection_distance: A number to be used to project the original window
+                and door geometry back onto the wall segments of each room after
+                the floor geometry has been replaced. If the windows/doors on
+                the original geometry do not differ by more than the projection_distance
+                between the base story and the replaced stories, the original
+                windows will be preserved. Set to zero to have windows/doors
+                preserved only if there is no change between the base story and
+                the replaced story Room2D wall segment. (Default: 0).
+            remove_unmatched: A boolean to note whether Room2Ds on the replaced
+                Stories that are not matched to any Room2D on the base Story should
+                be removed from the Building (True) or whether they should simply
+                be left as they are (False). (Default: False).
+            tolerance: The minimum difference in coordinate values for them
+                to be considered distinct from one another. (Default: 0.01,
+                suitable for objects in meters).
+            angle_tolerance: The max angle difference in degrees that wall segments
+                and sub-faces can differ from one another in order for them to
+                be re-projected onto the new floor geometry. (Default: 1).
+        """
+        # get the base story and stories to be replaced
+        base_story = self.stories_by_identifier([base_story_id])[0]
+        if replaced_story_ids is not None:
+            replaced_stories = self.stories_by_identifier(replaced_story_ids)
+        else:
+            replaced_stories = [s for s in self.unique_stories
+                                if s.identifier != base_story_id]
+        overlap_frac = overlap_percent / 100
+        b_threshes = [b_room.floor_area * overlap_frac for b_room in base_story.room_2ds]
+
+        # loop through each of the replaced stories and match/replace rooms
+        for r_story in replaced_stories:
+            matched_rooms = []
+            for r_room in r_story.room_2ds:
+                for b_room, b_thresh in zip(base_story.room_2ds, b_threshes):
+                    overlap = b_room.overlap_area(r_room, tolerance)
+                    if overlap >= b_thresh:
+                        m_vec = Vector3D(0, 0, r_room.floor_height - b_room.floor_height)
+                        r_room.replace_floor_geometry(
+                            b_room.floor_geometry.move(m_vec), projection_distance,
+                            tolerance, angle_tolerance)
+                        matched_rooms.append(r_room)
+                        break
+            if remove_unmatched:
+                if len(matched_rooms) == 0:  # remove the whole story
+                    self.remove_stories_by_identifier([r_story.identifier])
+                else:
+                    r_story.room_2ds = matched_rooms
 
     def add_prefix(self, prefix):
         """Change the object identifier and all child objects by inserting a prefix.
