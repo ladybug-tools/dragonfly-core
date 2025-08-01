@@ -1047,8 +1047,9 @@ class Room2D(_BaseGeometry):
         # perform a boolean intersection operation between the two floor Face3Ds
         self._floor_geometry
         ang_tol = math.radians(1)
+        m_vec = Vector3D(0, 0, self.floor_height - other_room2d.floor_height)
         new_geos = Face3D.coplanar_intersection(
-            self_face, other_face, tolerance, ang_tol)
+            self_face, other_face.move(m_vec), tolerance, ang_tol)
         if new_geos is None or len(new_geos) == 0:
             return 0  # the Face3Ds did not overlap with one another
         return sum(f.area for f in new_geos)
@@ -2829,7 +2830,8 @@ class Room2D(_BaseGeometry):
                 to be considered distinct from one another. (Default: 0.01,
                 suitable for objects in meters).
             angle_tolerance: The max angle difference in degrees that wall segments
-                and sub-faces can differ from one another in order 
+                and sub-faces can differ from one another in order for them to
+                be re-projected onto the new floor geometry. (Default: 1).
         """
         # process the new floor geometry so that it abides by Room2D rules
         if new_floor_geometry.normal.z <= 0:  # ensure upward-facing Face3D
@@ -2839,8 +2841,8 @@ class Room2D(_BaseGeometry):
                                     new_floor_geometry.holes)
 
         # convert the original geometry to honeybee so we get 3D sub-faces
-        hb_room = self.to_honeybee(tolerance=tolerance, enforce_bc=False,
-                                   enforce_solid=False)
+        hb_room, _ = self.to_honeybee(tolerance=tolerance, enforce_bc=False,
+                                      enforce_solid=False)
         hb_sub_faces = hb_room.apertures + hb_room.doors
 
         # match the segments of the floor geometry to walls of the Room
@@ -2852,7 +2854,8 @@ class Room2D(_BaseGeometry):
         for i, seg in enumerate(segs):
             wall_f = self._segment_wall_face(hb_room, seg, projection_distance)
             if wall_f is not None:
-                new_bcs[i] = wall_f.boundary_condition
+                if not isinstance(wall_f.boundary_condition, Surface):
+                    new_bcs[i] = wall_f.boundary_condition
                 if isinstance(wall_f.type, AirBoundary):
                     air_bounds[i] = True
 
