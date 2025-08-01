@@ -2697,7 +2697,9 @@ class Room2D(_BaseGeometry):
         """Change the floor_geometry of the Room2D with segment-altering specifications.
 
         This method is intended to be used when the floor geometry has been edited
-        by some external means and this Room2D should be updated for coordination.
+        by some simple operation (eg. adding, removing or moving a vertex).
+        Effectively all properties of the wall segments are preserved, including
+        windows and boundary conditions.
 
         The method tries to infer whether an removed floor segment means that an
         original segment has been merged into another or removed completely using
@@ -2712,9 +2714,7 @@ class Room2D(_BaseGeometry):
         Args:
             new_floor_geometry: A Face3D for the new floor_geometry of this Room2D.
                 Note that this method expects the plane of this Face3D to match
-                the original floor_geometry Face3D and for the counter-clockwise
-                vertex ordering of the segments to be the same as the original
-                floor geometry (though segments can obviously be added or removed).
+                the original floor_geometry Face3D.
             edit_code: A text string that indicates the operations that were
                 performed on the original floor_geometry segments to yield the
                 new_floor_geometry. The following letters are used in this code
@@ -2804,6 +2804,69 @@ class Room2D(_BaseGeometry):
         self._window_parameters = new_win
         self._shading_parameters = new_shd
         self._air_boundaries = None  # reset to avoid any conflicts
+
+    def replace_floor_geometry(self, new_floor_geometry, projection_distance=0,
+                               tolerance=0.01, angle_tolerance=1.0):
+        """Replace the floor_geometry of this Room2D while retaining some wall info.
+
+        This method is intended to be used when the floor geometry has undergone
+        a fairly complex set of edits and some loss of windows or boundary conditions
+        is acceptable or expected when parts of the new floor geometry lie far
+        away from the original room geometry.
+
+        Args:
+            new_floor_geometry: A Face3D for the new floor_geometry of this Room2D.
+                Note that this method expects the plane of this Face3D to match
+                the original floor_geometry Face3D.
+            projection_distance: An optional number to be used to project the
+                original window and door geometry onto the wall segments of the
+                new floor geometry. If specified, then windows/doors on the original
+                geometry that have moved within this distance will be preserved
+                as the floor geometry is replaced. Otherwise, windows/doors will
+                only be added if they are on a wall segment that has not moved
+                at all between the original and new floor geometry.
+            tolerance: The minimum difference in coordinate values for them
+                to be considered distinct from one another. (Default: 0.01,
+                suitable for objects in meters).
+            angle_tolerance: The max angle difference in degrees that wall segments
+                and sub-faces can differ from one another in order 
+        """
+        # process the new floor geometry so that it abides by Room2D rules
+        if new_floor_geometry.normal.z <= 0:  # ensure upward-facing Face3D
+            new_floor_geometry = new_floor_geometry.flip()
+        o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, new_floor_geometry.plane.o.z))
+        new_floor_geometry = Face3D(new_floor_geometry.boundary, o_pl,
+                                    new_floor_geometry.holes)
+
+        # convert the original geometry to honeybee so we get 3D sub-faces
+        hb_room = self.to_honeybee(tolerance=tolerance, enforce_bc=False,
+                                   enforce_solid=False)
+        hb_sub_faces = hb_room.apertures + hb_room.doors
+
+        # match the segments of the floor geometry to walls of the Room
+        segs = new_floor_geometry.boundary_segments if new_floor_geometry.holes is \
+            None else new_floor_geometry.boundary_segments + \
+            tuple(seg for hole in new_floor_geometry.hole_segments for seg in hole)
+        new_bcs = [bcs.outdoors] * len(segs)
+        air_bounds = [False] * len(segs)
+        for i, seg in enumerate(segs):
+            wall_f = self._segment_wall_face(hb_room, seg, projection_distance)
+            if wall_f is not None:
+                new_bcs[i] = wall_f.boundary_condition
+                if isinstance(wall_f.type, AirBoundary):
+                    air_bounds[i] = True
+
+        # assign the updated properties to this Room2D
+        self._floor_geometry = new_floor_geometry
+        self._segment_count = len(segs)
+        self.window_parameters = None
+        self.shading_parameters = None
+        self._boundary_conditions = new_bcs
+        self._air_boundaries = air_bounds
+
+        # assign the windows back to this room using the 3D version of the originals
+        self.assign_sub_faces(hb_sub_faces, projection_distance=projection_distance,
+                              tolerance=tolerance, angle_tolerance=angle_tolerance)
 
     def remove_colinear_vertices(self, tolerance=0.01, preserve_wall_props=True):
         """Get a version of this Room2D without colinear or duplicate vertices.
