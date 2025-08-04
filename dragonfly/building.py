@@ -9,7 +9,7 @@ except ImportError:
     xrange = range  # python 3
 
 from ladybug_geometry.geometry2d import Vector2D, Point2D, LineSegment2D, Polygon2D
-from ladybug_geometry.geometry3d import Vector3D, Point3D, Ray3D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, Ray3D, Face3D
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
 from honeybee.model import Model
@@ -1487,20 +1487,40 @@ class Building(_BaseGeometry):
         overlap_frac = overlap_percent / 100
         b_threshes = [b_room.floor_area * overlap_frac for b_room in base_story.room_2ds]
 
-        # loop through each of the replaced stories and match/replace rooms
+        # loop through each of the replaced stories and match rooms
+        matched_stories = []
         for r_story in replaced_stories:
             matched_rooms = []
             for r_room in r_story.room_2ds:
+                match_r = []
                 for b_room, b_thresh in zip(base_story.room_2ds, b_threshes):
                     overlap = b_room.overlap_area(r_room, tolerance)
                     if overlap >= b_thresh:
                         m_vec = Vector3D(0, 0, r_room.floor_height - b_room.floor_height)
-                        r_room.replace_floor_geometry(
-                            b_room.floor_geometry.move(m_vec), projection_distance,
-                            tolerance, angle_tolerance)
-                        matched_rooms.append(r_room)
-                        break
-            if remove_unmatched:
+                        match_r.append(b_room.floor_geometry.move(m_vec))
+                matched_rooms.append(match_r)
+            matched_stories.append(matched_rooms)
+
+        # replace the rooms with the correct match
+        final_matched_stories = []
+        for r_story, matched_rooms in zip(replaced_stories, matched_stories):
+            final_matched_rooms = []
+            for r_room, match_r in zip(r_story.room_2ds, matched_rooms):
+                if len(match_r) == 1:
+                    r_room.replace_floor_geometry(
+                        match_r[0], projection_distance, tolerance, angle_tolerance)
+                    final_matched_rooms.append(r_room)
+                elif len(match_r) > 1:
+                    joined_geo = Face3D.join_coplanar_faces(match_r, tolerance)
+                    r_geo = tuple(sorted(joined_geo, key=lambda x: x.area))[0]
+                    r_room.replace_floor_geometry(
+                        r_geo, projection_distance, tolerance, angle_tolerance)
+                    final_matched_rooms.append(r_room)
+            final_matched_stories.append(final_matched_rooms)
+
+        # remove unmatched if requested
+        if remove_unmatched:
+            for r_story, matched_rooms in zip(replaced_stories, final_matched_rooms):
                 if len(matched_rooms) == 0:  # remove the whole story
                     self.remove_stories_by_identifier([r_story.identifier])
                 else:
