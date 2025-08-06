@@ -1488,39 +1488,45 @@ class Building(_BaseGeometry):
         b_threshes = [b_room.floor_area * overlap_frac for b_room in base_story.room_2ds]
 
         # loop through each of the replaced stories and match rooms
-        matched_stories = []
+        matched_stories, matched_areas = [], []
         for r_story in replaced_stories:
-            matched_rooms = []
+            matched_rooms, matched_a = [], []
             for r_room in r_story.room_2ds:
-                match_r = []
+                match_r, match_a = [], 0
                 for b_room, b_thresh in zip(base_story.room_2ds, b_threshes):
                     overlap = b_room.overlap_area(r_room, tolerance)
                     if overlap >= b_thresh:
                         m_vec = Vector3D(0, 0, r_room.floor_height - b_room.floor_height)
                         match_r.append(b_room.floor_geometry.move(m_vec))
+                        match_a += overlap
                 matched_rooms.append(match_r)
+                matched_a.append(match_a)
             matched_stories.append(matched_rooms)
+            matched_areas.append(matched_a)
 
         # replace the rooms with the correct match
         final_matched_stories = []
-        for r_story, matched_rooms in zip(replaced_stories, matched_stories):
+        zip_obj = zip(replaced_stories, matched_stories, matched_areas)
+        for r_story, matched_rooms, matched_a in zip_obj:
             final_matched_rooms = []
-            for r_room, match_r in zip(r_story.room_2ds, matched_rooms):
-                if len(match_r) == 1:
-                    r_room.replace_floor_geometry(
-                        match_r[0], projection_distance, tolerance, angle_tolerance)
-                    final_matched_rooms.append(r_room)
-                elif len(match_r) > 1:
-                    joined_geo = Face3D.join_coplanar_faces(match_r, tolerance)
-                    r_geo = tuple(sorted(joined_geo, key=lambda x: x.area))[0]
-                    r_room.replace_floor_geometry(
-                        r_geo, projection_distance, tolerance, angle_tolerance)
-                    final_matched_rooms.append(r_room)
+            for r_room, match_r, area in zip(r_story.room_2ds, matched_rooms, matched_a):
+                if len(match_r) == 0:  # room was not matched
+                    continue
+                if area / r_room.floor_area > overlap_frac:
+                    if len(match_r) == 1:
+                        r_room.replace_floor_geometry(
+                            match_r[0], projection_distance, tolerance, angle_tolerance)
+                    elif len(match_r) > 1:
+                        joined_geo = Face3D.join_coplanar_faces(match_r, tolerance)
+                        r_geo = tuple(sorted(joined_geo, key=lambda x: x.area))[0]
+                        r_room.replace_floor_geometry(
+                            r_geo, projection_distance, tolerance, angle_tolerance)
+                final_matched_rooms.append(r_room)
             final_matched_stories.append(final_matched_rooms)
 
         # remove unmatched if requested
         if remove_unmatched:
-            for r_story, matched_rooms in zip(replaced_stories, final_matched_rooms):
+            for r_story, matched_rooms in zip(replaced_stories, final_matched_stories):
                 if len(matched_rooms) == 0:  # remove the whole story
                     self.remove_stories_by_identifier([r_story.identifier])
                 else:
