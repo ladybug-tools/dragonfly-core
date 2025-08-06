@@ -2107,11 +2107,6 @@ class Model(_BaseGeometry):
             json_output: Boolean to note whether the output validation report
                 should be formatted as a JSON object instead of plain text.
         """
-        # first get the function to call on this class
-        check_func = getattr(Model, check_function, None)
-        assert check_func is not None, \
-            'Dragonfly Model class has no method {}'.format(check_function)
-
         # process the input model if it's not already serialized
         report = ''
         if isinstance(model, str):
@@ -2128,8 +2123,22 @@ class Model(_BaseGeometry):
         elif not isinstance(model, Model):
             report = 'Input Model for validation is not a Model object, ' \
                 'file path to a Model or a Model DFJSON string.'
+
+        # get the function to call to do checks
+        if '.' in check_function:  # nested attribute
+            attributes = check_function.split('.')  # get all the sub-attributes
+            check_func = model
+            for attribute in attributes:
+                if check_func is None:
+                    continue
+                check_func = getattr(check_func, attribute, None)
+        else:
+            check_func = getattr(model, check_function, None)
+        assert check_func is not None, \
+            'Dragonfly Model class has no method {}'.format(check_function)
+
         # process the arguments and options
-        args = [model] if check_args is None else [model] + list(check_args)
+        args = [] if check_args is None else [] + list(check_args)
         kwargs = {'raise_exception': False}
 
         # create the report
@@ -2140,9 +2149,8 @@ class Model(_BaseGeometry):
             ver_msg = 'Validating Model using dragonfly-core=={} and ' \
                 'dragonfly-schema=={}'.format(c_ver, s_ver)
             # run the check function
-            if isinstance(args[0], Model):
-                kwargs['detailed'] = False
-                report = check_func(*args, **kwargs)
+            kwargs['detailed'] = False
+            report = check_func(*args, **kwargs)
             # format the results of the check
             if report == '':
                 full_msg = ver_msg + '\nCongratulations! Your Model is valid!'
