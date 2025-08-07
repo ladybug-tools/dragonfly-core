@@ -318,32 +318,56 @@ class RoofSpecification(object):
         if len(clean_geo) != 0:
             self._geometry = tuple(clean_geo)
 
-    def resolved_geometry(self, tolerance=0.01):
+    def resolved_geometry(self, tolerance=0.01, split_through_holes=False):
         """Get a version of this object's geometry with all overlaps in plan resolved.
 
         In the case of overlaps, the roof geometry that has the lowest average
         z-value for the overlap will become the "correct" one that actually
-        bounds the room geometry.
+        bounds the room geometry. This method can also optionally split any roof
+        geometries with holes such that they can be accurately accounted for in
+        the room volume calculation.
 
         Args:
             tolerance: The minimum distance that two Roof geometries can overlap
                 with one another and still be considered distinct. (Default: 0.01,
                 suitable for objects in meters).
+            split_through_holes: Boolean to note whether roof geometries with holes
+                in them should be split through the holes as part of the resolution
+                process. This is needed to accurately represent these holes in
+                the room volume calculation but may require some extra cleanup
+                in terms of merging coplanar roof faces. (Default: False).
 
         Returns:
             A list of Face3D that have no overlaps in plan.
         """
-        # first check to see if an overlap is possible
-        if len(self._geometry) == 1:
-            return self._geometry
+        # if split_through_holes is requested, perform the split
+        if split_through_holes:
+            base_geo = []
+            for geo in self._geometry:
+                if geo.has_holes:
+                    try:
+                        base_geo.extend(geo.split_through_holes())
+                    except AssertionError:  # probably an invalid hole to ignore
+                        base_geo.append(geo)
+                else:
+                    base_geo.append(geo)
+        else:
+            base_geo = list(self._geometry)
 
-        # set up global variables
+        # check to see if an overlap is possible
+        if len(base_geo) == 1:
+            return base_geo
+
+        # convert the roof geometry to 2D
         proj_dir = Vector3D(0, 0, 1)
-        planes, geo_2d = [], []
-        sort_obj = sorted(zip(self.boundary_geometry_2d, self.planes),
+        bound_geo = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))
+                     for geo in base_geo]
+        bound_planes = [geo.plane for geo in base_geo]
+        sort_obj = sorted(zip(bound_geo, bound_planes),
                           key=lambda pair: pair[0].area, reverse=True)
 
         # remove colinear vertices from all roof polygons
+        planes, geo_2d = [], []
         for geo, pl in sort_obj:
             try:
                 clean_geo = geo.remove_colinear_vertices(tolerance)
@@ -410,7 +434,8 @@ class RoofSpecification(object):
                         r_face.append(pt3)
                     resolved_geo.append(Face3D(r_face, plane=r_pln))
             return resolved_geo
-        return self._geometry  # no overlaps in the geometry; just return as is
+
+        return base_geo  # no overlaps in the geometry; just return as is
 
     @staticmethod
     def _process_polygon_overlap(eval_poly, eval_pln, eval_i, o_poly,
