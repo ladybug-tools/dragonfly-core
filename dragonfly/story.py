@@ -2108,7 +2108,8 @@ using-multipliers-zone-and-or-window.html
         if self.roof is not None:
             if any(room.is_top_exposed for room in self._room_2ds):
                 original_roof = self.roof
-                res_roof_geo = self.roof.resolved_geometry(tolerance)
+                res_roof_geo = self.roof.resolved_geometry(
+                    tolerance, split_through_holes=True)
                 res_roof = RoofSpecification(res_roof_geo)
                 res_roof._is_resolved = True
                 self.roof = res_roof

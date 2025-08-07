@@ -5523,12 +5523,28 @@ class Room2D(_BaseGeometry):
                     roof_faces.append(f)
 
         # perform a final check to remove all colinear vertices from the roof
-        clean_roof_faces = []
+        clean_roofs = []
         for roof_face in roof_faces:
             try:
-                clean_roof_faces.append(roof_face.remove_colinear_vertices(tolerance))
+                clean_roofs.append(roof_face.remove_colinear_vertices(tolerance))
             except AssertionError:
                 continue  # degenerate face to ignore
+
+        # merge coplanar faces across the roofs if they exist
+        coplanar_dict = {clean_roofs[0].plane: [clean_roofs[0]]}
+        for geo in clean_roofs[1:]:
+            for pln, f_list in coplanar_dict.items():
+                if geo.plane.is_coplanar(pln):
+                    f_list.append(geo)
+                    break
+            else:  # the first face with this type of plane
+                coplanar_dict[geo.plane] = [geo]
+        clean_roof_faces = []
+        for f_geos in coplanar_dict.values():
+            if len(f_geos) == 1:  # no faces to merge
+                clean_roof_faces.append(f_geos[0])
+            else:  # there are faces to merge
+                clean_roof_faces.extend(Face3D.join_coplanar_faces(f_geos, tolerance))
         return clean_roof_faces
 
     def _wall_faces_with_roof(self, all_room_poly, all_segments,
