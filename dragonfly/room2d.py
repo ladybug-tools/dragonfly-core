@@ -5578,115 +5578,120 @@ class Room2D(_BaseGeometry):
             rot_poly = rm_poly.vertices[1:] + (pt1,)
             for pt2, seg in zip(rot_poly, rm_segs):
                 face_pts = [seg.p1, seg.p2]
+                int_pts, int_pls = [(seg.p1, 0)], [current_plane]
+                # find where the segment leaves the polygon
+                seg_2d = LineSegment2D.from_array(((pt1.x, pt1.y), (pt2.x, pt2.y)))
+                for rf_seg in current_poly.segments:
+                    int_pt = seg_2d.intersect_line_ray(rf_seg)
+                    if int_pt is None:
+                        dist, cls_pts = closest_point2d_between_line2d(seg_2d, rf_seg)
+                        if dist <= tolerance:
+                            int_pt = cls_pts[0]
+                    if int_pt is not None:
+                        int_pts.append((int_pt, 0))
+                        int_pls.append(current_plane)
+
                 # see if the segment ends in the same face it starts in
-                if current_poly.point_relationship(pt2, tolerance) >= 0:  # project seg
+                if len(int_pts) <= 3 and \
+                        current_poly.point_relationship(pt2, tolerance) >= 0:
                     face_pts.append(current_plane.project_point(seg.p2, proj_dir))
                     face_pts.append(current_plane.project_point(seg.p1, proj_dir))
-                else:
-                    int_pts, int_pls = [(seg.p1, 0)], [current_plane]
-                    # find where the segment leaves the polygon
-                    seg_2d = LineSegment2D.from_array(((pt1.x, pt1.y), (pt2.x, pt2.y)))
-                    for rf_seg in current_poly.segments:
-                        int_pt = seg_2d.intersect_line_ray(rf_seg)
-                        if int_pt is None:
-                            dist, cls_pts = closest_point2d_between_line2d(seg_2d, rf_seg)
-                            if dist <= tolerance:
-                                int_pt = cls_pts[0]
-                        if int_pt is not None:
-                            int_pts.append((int_pt, 0))
-                            int_pls.append(current_plane)
-                    # find where it intersects the other relevant polygons
-                    for o_poly, o_pl in zip(other_poly, other_planes):
-                        for o_seg in o_poly.segments:
-                            dist_1 = o_seg.distance_to_point(seg_2d.p1)
-                            dist_2 = o_seg.distance_to_point(seg_2d.p2)
-                            dist_3 = seg_2d.distance_to_point(o_seg.p1)
-                            dist_4 = seg_2d.distance_to_point(o_seg.p2)
-                            dists = [dist_1, dist_2, dist_3, dist_4]
-                            pts = [seg_2d.p1, seg_2d.p2, o_seg.p1, o_seg.p2]
-                            co_pts = [pt for pt, d in zip(pts, dists) if d < tolerance]
-                            if len(co_pts) > 1:
-                                # segments are colinear and overlap; add both points
-                                for co_pt in co_pts:
-                                    int_pts.append((co_pt, 1))
-                                    int_pls.append(o_pl)
-                            else:
-                                int_pt = seg_2d.intersect_line_ray(o_seg)
-                                if int_pt is None:
-                                    d, cls_pts = closest_point2d_between_line2d(seg_2d, o_seg)
-                                    if d <= tolerance:
-                                        int_pt = cls_pts[0]
-                                if int_pt is not None:
-                                    int_pts.append((int_pt, 1))
-                                    int_pls.append(o_pl)
-                    # sort the intersections points along the segment
-                    pt_dists = [(round(seg_2d.p1.distance_to_point(ipt[0]), rtol), ipt[1])
-                                for ipt in int_pts]
-                    pts_pls = [
-                        (
-                            i_pt[0],
-                            i_pl,
-                            i_pl.project_point(Point3D.from_point2d(i_pt[0]), proj_dir)
-                        )
-                        for i_pt, i_pl in zip(int_pts, int_pls)]
-                    sort_obj = sorted(zip(pt_dists, pts_pls), key=lambda pair: pair[0])
-                    # remove any point/plane combinations that are duplicates
-                    i_to_remove = []
-                    for i, (dist_tup, (pt, pln, pt3)) in enumerate(sort_obj[1:]):
-                        if pt3.distance_to_point(sort_obj[i][1][2]) < tolerance:
-                            i_to_remove.append(i)
-                    for del_i in reversed(i_to_remove):
-                        sort_obj.pop(del_i)
-                    # if there are any jumps back in the segment, correct them
-                    prev_seg_i = 0
-                    for b, pt_grp in enumerate(sort_obj):
-                        current_seg_i = pt_grp[0][1]
-                        if current_seg_i < prev_seg_i:  # move it ahead one place
-                            if b < len(sort_obj):
-                                sort_obj.insert(b + 1, sort_obj.pop(b))
-                        prev_seg_i = current_seg_i
-                    sort_pts_pls = [x for _, x in sort_obj]
-                    # if two points are equivalent, reorder with the previous point plane
-                    ord_pts = [x[0] for x in sort_pts_pls]
-                    ord_pls = [x[1] for x in sort_pts_pls]
-                    ord_pts3 = [x[2] for x in sort_pts_pls]
-                    for i, (pt, pln, pt3) in enumerate(sort_pts_pls[1:]):
-                        if i == 0:
-                            continue
-                        if pt.distance_to_point(ord_pts[i]) < tolerance:
-                            prev_pl = ord_pls[i - 1]
-                            if prev_pl.distance_to_point(pt3) < \
-                                    prev_pl.distance_to_point(sort_pts_pls[i][2]):
-                                # reorder the points
-                                ord_pts[i], ord_pts[i + 1] = ord_pts[i + 1], ord_pts[i]
-                                ord_pls[i], ord_pls[i + 1] = ord_pls[i + 1], ord_pls[i]
-                                ord_pts3[i], ord_pts3[i + 1] = ord_pts3[i + 1], ord_pts3[i]
-                    # project the points onto the planes
-                    rf_pts = [ipl.project_point(Point3D.from_point2d(ipt), proj_dir)
-                              for ipt, ipl in zip(ord_pts, ord_pls)]
-                    # add a vertex for where the segment ends in the polygon
-                    for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
-                        if rf_py.point_relationship(pt2, tolerance) >= 0:
-                            other_poly.pop(i)
-                            other_poly.append(current_poly)
-                            other_planes.pop(i)
-                            other_planes.append(current_plane)
-                            current_poly, current_plane = rf_py, rf_pl
-                            rf_pts.append(
-                                rf_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
-                            break
-                    # remove duplicated vertices from the list
-                    rf_pts = [pt for i, pt in enumerate(rf_pts)
-                              if not pt.is_equivalent(rf_pts[i - 1], tolerance)]
-                    if current_poly is None or len(rf_pts) < 2:
-                        return None  # point not inside a roof; invalid roof
-                    # check that the first two vertices are not a sliver
-                    if abs(rf_pts[0].x - rf_pts[1].x) < tolerance and \
-                            abs(rf_pts[0].y - rf_pts[1].y) < tolerance:
-                        rf_pts.pop(0)
-                    # add the points to the Face3D vertices
-                    rf_pts.reverse()
-                    face_pts.extend(rf_pts)
+                    wall_faces.append(Face3D(face_pts))  # make the final Face3D
+                    pt1 = pt2  # increment for next segment
+                    continue
+
+                # find where it intersects the other relevant polygons
+                for o_poly, o_pl in zip(other_poly, other_planes):
+                    for o_seg in o_poly.segments:
+                        dist_1 = o_seg.distance_to_point(seg_2d.p1)
+                        dist_2 = o_seg.distance_to_point(seg_2d.p2)
+                        dist_3 = seg_2d.distance_to_point(o_seg.p1)
+                        dist_4 = seg_2d.distance_to_point(o_seg.p2)
+                        dists = [dist_1, dist_2, dist_3, dist_4]
+                        pts = [seg_2d.p1, seg_2d.p2, o_seg.p1, o_seg.p2]
+                        co_pts = [pt for pt, d in zip(pts, dists) if d < tolerance]
+                        if len(co_pts) > 1:
+                            # segments are colinear and overlap; add both points
+                            for co_pt in co_pts:
+                                int_pts.append((co_pt, 1))
+                                int_pls.append(o_pl)
+                        else:
+                            int_pt = seg_2d.intersect_line_ray(o_seg)
+                            if int_pt is None:
+                                d, cls_pts = closest_point2d_between_line2d(seg_2d, o_seg)
+                                if d <= tolerance:
+                                    int_pt = cls_pts[0]
+                            if int_pt is not None:
+                                int_pts.append((int_pt, 1))
+                                int_pls.append(o_pl)
+                # sort the intersections points along the segment
+                pt_dists = [(round(seg_2d.p1.distance_to_point(ipt[0]), rtol), ipt[1])
+                            for ipt in int_pts]
+                pts_pls = [
+                    (
+                        i_pt[0],
+                        i_pl,
+                        i_pl.project_point(Point3D.from_point2d(i_pt[0]), proj_dir)
+                    )
+                    for i_pt, i_pl in zip(int_pts, int_pls)]
+                sort_obj = sorted(zip(pt_dists, pts_pls), key=lambda pair: pair[0])
+                # remove any point/plane combinations that are duplicates
+                i_to_remove = []
+                for i, (dist_tup, (pt, pln, pt3)) in enumerate(sort_obj[1:]):
+                    if pt3.distance_to_point(sort_obj[i][1][2]) < tolerance:
+                        i_to_remove.append(i)
+                for del_i in reversed(i_to_remove):
+                    sort_obj.pop(del_i)
+                # if there are any jumps back in the segment, correct them
+                prev_seg_i = 0
+                for b, pt_grp in enumerate(sort_obj):
+                    current_seg_i = pt_grp[0][1]
+                    if current_seg_i < prev_seg_i:  # move it ahead one place
+                        if b < len(sort_obj):
+                            sort_obj.insert(b + 1, sort_obj.pop(b))
+                    prev_seg_i = current_seg_i
+                sort_pts_pls = [x for _, x in sort_obj]
+                # if two points are equivalent, reorder with the previous point plane
+                ord_pts = [x[0] for x in sort_pts_pls]
+                ord_pls = [x[1] for x in sort_pts_pls]
+                ord_pts3 = [x[2] for x in sort_pts_pls]
+                for i, (pt, pln, pt3) in enumerate(sort_pts_pls[1:]):
+                    if i == 0:
+                        continue
+                    if pt.distance_to_point(ord_pts[i]) < tolerance:
+                        prev_pl = ord_pls[i - 1]
+                        if prev_pl.distance_to_point(pt3) < \
+                                prev_pl.distance_to_point(sort_pts_pls[i][2]):
+                            # reorder the points
+                            ord_pts[i], ord_pts[i + 1] = ord_pts[i + 1], ord_pts[i]
+                            ord_pls[i], ord_pls[i + 1] = ord_pls[i + 1], ord_pls[i]
+                            ord_pts3[i], ord_pts3[i + 1] = ord_pts3[i + 1], ord_pts3[i]
+                # project the points onto the planes
+                rf_pts = [ipl.project_point(Point3D.from_point2d(ipt), proj_dir)
+                          for ipt, ipl in zip(ord_pts, ord_pls)]
+                # add a vertex for where the segment ends in the polygon
+                for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
+                    if rf_py.point_relationship(pt2, tolerance) >= 0:
+                        other_poly.pop(i)
+                        other_poly.append(current_poly)
+                        other_planes.pop(i)
+                        other_planes.append(current_plane)
+                        current_poly, current_plane = rf_py, rf_pl
+                        rf_pts.append(
+                            rf_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
+                        break
+                # remove duplicated vertices from the list
+                rf_pts = [pt for i, pt in enumerate(rf_pts)
+                          if not pt.is_equivalent(rf_pts[i - 1], tolerance)]
+                if current_poly is None or len(rf_pts) < 2:
+                    return None  # point not inside a roof; invalid roof
+                # check that the first two vertices are not a sliver
+                if abs(rf_pts[0].x - rf_pts[1].x) < tolerance and \
+                        abs(rf_pts[0].y - rf_pts[1].y) < tolerance:
+                    rf_pts.pop(0)
+                # add the points to the Face3D vertices
+                rf_pts.reverse()
+                face_pts.extend(rf_pts)
                 # make the final Face3D
                 if len(face_pts) == 2:  # second point not inside a roof, invalid roof
                     return None
