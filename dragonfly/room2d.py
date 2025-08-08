@@ -5577,22 +5577,30 @@ class Room2D(_BaseGeometry):
 
         # loop through holes and boundary polygons and generate walls from them
         for rm_poly, rm_segs in zip(all_room_poly, all_segments):
-            # find the polygon that the first room vertex is located in
-            current_poly, current_plane = None, None
-            other_poly, other_planes = rel_rf_polys[:], rel_rf_planes[:]  # copy lists
-            pt1 = rm_poly[0]
-            for i, (rf_py, rf_pl) in enumerate(zip(rel_rf_polys, rel_rf_planes)):
-                if rf_py.point_relationship(pt1, tolerance) >= 0:
-                    current_poly, current_plane = rf_py, rf_pl
-                    other_poly.pop(i)
-                    other_planes.pop(i)
-                    break
-            if current_poly is None:  # first point not inside a roof, invalid roof
-                return None
-
-            # loop through segments and add vertices if they cross outside the roof face
+            pt1 = rm_poly[0]  # start with the first vertex of the room polygon
             rot_poly = rm_poly.vertices[1:] + (pt1,)
+
+            # loop through segments and make a wall face for each one
             for pt2, seg in zip(rot_poly, rm_segs):
+                # find the polygon that the first segment vertex is located in
+                current_poly, current_plane = None, None
+                other_poly, other_planes = rel_rf_polys[:], rel_rf_planes[:]  # copy lists
+                # sort the roof polygons by Z to ensure lower roof polygons are first
+                pt1_3 = Point3D(pt1.x, pt1.y)
+                zs = [rf_pl.project_point(pt1_3, proj_dir).z for rf_pl in other_planes]
+                sort_obj = sorted(zip(zs, other_poly, other_planes), key=lambda x: x[0])
+                zs, other_poly, other_planes = zip(*sort_obj)
+                other_poly, other_planes = list(other_poly), list(other_planes)
+                for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
+                    if rf_py.point_relationship(pt1, tolerance) >= 0:
+                        current_poly, current_plane = rf_py, rf_pl
+                        other_poly.pop(i)
+                        other_planes.pop(i)
+                        break
+                if current_poly is None:  # first point not inside a roof, invalid roof
+                    return None
+
+                # start building the wall face
                 face_pts = [seg.p1, seg.p2]
                 int_pts, int_pls = [(seg.p1, 0)], [current_plane]
                 # find where the segment leaves the polygon
@@ -5607,8 +5615,10 @@ class Room2D(_BaseGeometry):
                         int_pts.append((int_pt, 0))
                         int_pls.append(current_plane)
 
-                # see if the segment ends in the same face it starts in
-                if len(int_pts) <= 3 and \
+                # if the segment ends in the same face it starts, the solution is simple
+                pts_set = set(str((round(pt[0].x, rtol), round(pt[0].y, rtol)))
+                              for pt in int_pts)
+                if len(pts_set) <= 2 and \
                         current_poly.point_relationship(pt2, tolerance) >= 0:
                     face_pts.append(current_plane.project_point(seg.p2, proj_dir))
                     face_pts.append(current_plane.project_point(seg.p1, proj_dir))
@@ -5616,7 +5626,7 @@ class Room2D(_BaseGeometry):
                     pt1 = pt2  # increment for next segment
                     continue
 
-                # find where it intersects the other relevant polygons
+                # otherwise, we must find where it intersects the other roof polygons
                 for o_poly, o_pl in zip(other_poly, other_planes):
                     for o_seg in o_poly.segments:
                         dist_1 = o_seg.distance_to_point(seg_2d.p1)
@@ -5640,6 +5650,7 @@ class Room2D(_BaseGeometry):
                             if int_pt is not None:
                                 int_pts.append((int_pt, 1))
                                 int_pls.append(o_pl)
+
                 # sort the intersections points along the segment
                 pt_dists = [(round(seg_2d.p1.distance_to_point(ipt[0]), rtol), ipt[1])
                             for ipt in int_pts]
