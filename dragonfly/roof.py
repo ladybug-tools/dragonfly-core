@@ -1304,8 +1304,7 @@ class RoofSpecification(object):
             proj_faces.append(proj_face)
         # join the projected Face3D into a Polyface3D and get all naked edges
         roof_p_face = Polyface3D.from_faces(proj_faces, tolerance)
-        roof_p_face = roof_p_face.merge_overlapping_edges(
-            tolerance, math.radians(1))
+        roof_p_face = roof_p_face.merge_overlapping_edges(tolerance)
         internal_ed = roof_p_face.internal_edges
         # check whether each Face3D vertex lies on an internal edge
         ridge_info = []
