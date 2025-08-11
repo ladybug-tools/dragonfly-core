@@ -5301,7 +5301,6 @@ class Room2D(_BaseGeometry):
         roof_planes = roof_spec.planes
         room_pts2d = [Point2D(pt.x, pt.y) for pt in self.floor_geometry.boundary]
         room_poly = Polygon2D(room_pts2d)
-        ang_tol = math.radians(1)
         ex_wall_i = None
 
         # gather all of the relevant roof polygons for the Room2D
@@ -5347,7 +5346,7 @@ class Room2D(_BaseGeometry):
                 room_polyface, roof_face_i, ex_wall_i, _ = \
                     self._separate_disconnected_faces(room_polyface, roof_face_i, tol)
                 if not room_polyface.is_solid:
-                    room_polyface = room_polyface.merge_overlapping_edges(tol, ang_tol)
+                    room_polyface = room_polyface.merge_overlapping_edges(tol)
             return Polyface3D.from_faces(p_faces, tolerance), roof_face_i, ex_wall_i
 
         # when multiple roofs, each segment must be intersected with the roof polygons
@@ -5392,28 +5391,28 @@ class Room2D(_BaseGeometry):
 
         # make sure that overlapping edges are merged so we don't get false readings
         if not room_polyface.is_solid:
-            room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
+            room_polyface = room_polyface.merge_overlapping_edges(tolerance)
 
         # try to patch any vertical gaps between roofs with new walls
         if len(room_polyface.naked_edges) != 0:
             room_polyface, roof_face_i = \
                 self._patch_vertical_gaps(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
-                room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
+                room_polyface = room_polyface.merge_overlapping_edges(tolerance)
 
         # remove disconnected roof geometries from the Polyface (eg. dormers)
         if not room_polyface.is_solid:
             room_polyface, roof_face_i, ex_wall_i, _ = \
                 self._separate_disconnected_faces(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
-                room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
+                room_polyface = room_polyface.merge_overlapping_edges(tolerance)
 
         # lastly, try to patch any remaining planar holes by capping them
         if len(room_polyface.naked_edges) != 0:
             room_polyface, roof_face_i = \
                 self._cap_planar_holes(room_polyface, roof_face_i, tolerance)
             if not room_polyface.is_solid:
-                room_polyface = room_polyface.merge_overlapping_edges(tolerance, ang_tol)
+                room_polyface = room_polyface.merge_overlapping_edges(tolerance)
         return room_polyface, roof_face_i, ex_wall_i
 
     def _roof_faces(self, all_room_poly, rel_rf_polys, rel_rf_planes, tolerance):
