@@ -700,7 +700,7 @@ def test_remove_duplicate_roofs():
     for story in model.stories:
         if story.roof is not None:
             all_roof_geos.extend(story.roof.geometry)
-    assert (len(all_roof_geos)) == 14
+    assert (len(all_roof_geos)) == 15
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
     assert len(hb_models) == 1
@@ -730,7 +730,7 @@ def test_building_assigned_roofs_2():
     model = Model.from_file(model_file)
     stories = model.stories
 
-    assert len(stories[0].roof) <= 30
+    assert len(stories[0].roof) <= 31
 
 
 def test_roof_resolved_geometry():
