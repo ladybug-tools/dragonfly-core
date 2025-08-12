@@ -1065,8 +1065,9 @@ class Building(_BaseGeometry):
         will get the roof geometry assigned to it unless this top Story has a
         floor_height above the roof geometry, in which case the next highest story
         will be checked until a compatible one is found. If a given roof geometry
-        does not overlap with any story geometry or lies below all of the stories,
-        it will not be assigned to the Building.
+        does not overlap with any story geometry, it will be added to the top-most
+        story of the building unless it lies below all of the stories, in which
+        case it will not be assigned to the Building.
 
         Args:
             roof_geometry: An array of Face3D objects representing the geometry
@@ -1148,6 +1149,9 @@ class Building(_BaseGeometry):
                 if overlaps_story:  # we have found the story to assign the roof geometry
                     story_roofs[i].append(rf_geo)
                     break
+            else:  # if it did not overlap any story, just add it to the top
+                if rf_geo.max.z > st_ht:  # make sure it is not below all stories
+                    story_roofs[0].append(rf_geo)
 
         # create the RoofSpecification objects and assign them to the stories
         for story, roof_geos in zip(rev_stories, story_roofs):
