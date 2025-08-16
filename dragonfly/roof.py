@@ -625,6 +625,34 @@ class RoofSpecification(object):
         new_face_3d = Face3D(roof_verts, plane=roof_plane)
         self.update_geometry_3d(new_face_3d, polygon_index)
 
+    def remove_small_holes(self, area_threshold, selected_indices=None):
+        """Remove any holes in thr roof geometry that are below a certain area threshold.
+
+        Args:
+            area_threshold: A number for the area below which holes will be removed.
+            selected_indices: An optional list of indices for specific roof
+                geometries for which holes will be removed. If None, all of the roof
+                geometry will be have holes removed. (Default: None).
+        """
+        new_geo = []
+        for i, face in enumerate(self.geometry):
+            if (selected_indices is None or i in selected_indices) and face.has_holes:
+                holes_to_remove, holes_to_keep = [], []
+                for i, hole in enumerate(face.holes):
+                    tf = Face3D(hole, face.plane)
+                    if tf.area < area_threshold:
+                        holes_to_remove.append(hole)
+                    else:
+                        holes_to_keep.append(hole)
+                # if removable holes were found, rebuild the Room2D
+                if len(holes_to_remove) > 0:
+                    new_geo.append(Face3D(face.boundary, face.plane, holes_to_keep))
+                else:
+                    new_geo.append(face)
+            else:
+                new_geo.append(face)
+        self.geometry = new_geo
+
     def snap_to_grid(self, grid_increment, selected_indices=None, base_plane=None,
                      tolerance=0.01):
         """Snap naked roof vertices to the nearest grid node defined by an increment.

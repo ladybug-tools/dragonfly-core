@@ -176,6 +176,21 @@ def test_reflect():
     assert test_2.geometry[0][1].z == pytest.approx(2, rel=1e-3)
 
 
+def test_roof_remove_small_holes():
+    """Test the RoofSpecification.align objects and basic properties."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 5, 5), Point3D(0, 5, 5))
+    pts_11 = (Point3D(1, 1, 1), Point3D(2, 1, 1), Point3D(2, 2, 2), Point3D(1, 2, 2))
+    pts_12 = (Point3D(3, 1, 1), Point3D(5, 1, 1), Point3D(5, 3, 3), Point3D(3, 3, 3))
+    pts_2 = (Point3D(0, 5, 5), Point3D(10, 5, 5), Point3D(10, 10, 0), Point3D(0, 10, 0))
+    roof = RoofSpecification([Face3D(pts_1, holes=[pts_11, pts_12]), Face3D(pts_2)])
+
+    assert len(roof[0].holes) == 2
+    roof.remove_small_holes(2)
+    assert len(roof[0].holes) == 1
+    roof.remove_small_holes(6)
+    assert not roof[0].has_holes
+
+
 def test_roof_align():
     """Test the RoofSpecification.align objects and basic properties."""
     pts_1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 5, 5), Point3D(0, 5, 5))
