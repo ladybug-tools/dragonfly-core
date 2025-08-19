@@ -5448,7 +5448,7 @@ class Room2D(_BaseGeometry):
         room_poly_area = all_room_poly[0].area - sum(h.area for h in all_room_poly[1:])
 
         # find the boolean intersection with each roof polygon and project the result
-        int_tol = tolerance / 1000  # intersection tolerance must be finer
+        int_tol = tolerance / 100  # intersection tolerance must be finer
         roof_poly_area = 0
         for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
             # snap the polygons to one another to avoid tolerance issues
@@ -5463,7 +5463,12 @@ class Room2D(_BaseGeometry):
             try:
                 int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
             except Exception:  # intersection failed for some reason
-                return None
+                # tiny edge caused a failure; try one more time with small tol
+                int_tol = int_tol / 100
+                try:
+                    int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
+                except Exception:
+                    return None   # the edge is just too tiny
             polys = Polygon2D._from_bool_poly(int_result, tolerance)
             if self.floor_geometry.has_holes and len(polys) > 1:
                 # sort the polygons by area and check if any are inside the others
