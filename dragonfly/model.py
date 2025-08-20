@@ -103,6 +103,24 @@ class Model(_BaseGeometry):
     """
     __slots__ = ('_buildings', '_context_shades',
                  '_units', '_tolerance', '_angle_tolerance', '_reference_vector')
+    # dictionary mapping validation error codes to a corresponding check function
+    ERROR_MAP = {
+        '100001': 'check_duplicate_context_shade_identifiers',
+        '100002': 'check_duplicate_room_2d_identifiers',
+        '100003': 'check_duplicate_story_identifiers',
+        '100004': 'check_duplicate_building_identifiers',
+        '100101': 'check_degenerate_room_2ds',
+        '100102': 'check_self_intersecting_room_2ds',
+        '100103': 'check_window_parameters_valid',
+        '100104': 'check_no_room2d_overlaps',
+        '100105': 'check_roofs_above_rooms',
+        '100106': 'check_room2d_floor_heights_valid',
+        '100107': 'check_plenum_depths',
+        '100108': 'check_collisions_between_stories',
+        '100201': 'check_missing_adjacencies',
+        '100202': 'check_missing_adjacencies',
+        '100203': 'check_missing_adjacencies'
+    }
 
     def __init__(self, identifier, buildings=None, context_shades=None,
                  units='Meters', tolerance=None, angle_tolerance=1.0,
@@ -1126,6 +1144,49 @@ class Model(_BaseGeometry):
             raise ValueError(full_msg)
         return full_msg
 
+    def check_for_error(self, error_code, raise_exception=True, detailed=False):
+        """Check that the Model is valid for a specific validation error code.
+
+        Note that, in order for error codes from a given dragonfly extension to
+        run correctly with this method, the specified Dragonfly extension related
+        to the error code must be installed.
+
+        Args:
+            error_code: Text for the error code for which the check will be performed.
+                This can be the value under the "code" key in the dictionary of
+                the validation error whenever the detailed option is used.
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if any errors are found. If False, this method will simply
+                return a text string with all errors that were found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A text string with all errors that were found or a list if detailed is True.
+            This string (or list) will be empty if no errors were found.
+        """
+        # set up defaults to ensure the method runs correctly
+        detailed = False if raise_exception else detailed
+        assert self.tolerance != 0, \
+            'Model must have a non-zero tolerance in order to perform geometry checks.'
+        assert self.angle_tolerance != 0, \
+            'Model must have a non-zero angle_tolerance to perform geometry checks.'
+        error_code = str(error_code)  # catch the case someone passed an int
+
+        # get the check function to be run from the error code
+        try:  # fist see if the check function exists on the cor object
+            check_func = self.ERROR_MAP[error_code]
+            check_func = getattr(self, check_func)
+        except KeyError:  # next, see if the check function exists in an extension
+            check_func = self._properties._check_func_from_code(error_code)
+            if check_func is None:
+                err_msg = 'No check function was found matching the error ' \
+                    'code "{}".'.format(error_code)
+                raise ValueError(err_msg)
+
+        # run the check function
+        return check_func(raise_exception=raise_exception, detailed=detailed)
+
     def check_all(self, raise_exception=True, detailed=False, all_ext_checks=False):
         """Check all of the aspects of the Model for validation errors.
 
@@ -1139,12 +1200,12 @@ class Model(_BaseGeometry):
                 available for all installed extensions should be run (True) or only
                 generic checks that cover all except the most limiting of
                 cases should be run (False). Examples of checks that are skipped
-                include DOE2's lack of support for courtyards and floor plates
-                with holes. (Default: False).
+                when this argument is False include a check for any courtyards
+                in buildings, which are not supported in DOE2. (Default: False).
 
         Returns:
-            A text string with all errors that were found. This string will be empty
-            of no errors were found.
+            A text string with all errors that were found or a list if detailed is True.
+            This string (or list) will be empty if no errors were found.
         """
         # set up defaults to ensure the method runs correctly
         detailed = False if raise_exception else detailed
