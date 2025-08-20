@@ -784,6 +784,19 @@ def test_failing_roof_edge_case():
     assert main_room.geometry.is_solid
 
 
+def test_failing_roof_edge_case_2():
+    """Test the translation of another room with a roof."""
+    model_file = './tests/json/wall_roof_fail.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False,
+                                  tolerance=0.003, enforce_solid=False)
+    hb_model = hb_models[0]
+    main_room = hb_model.rooms[0]
+    assert len(main_room.roof_ceilings) > 1
+    assert main_room.geometry.is_solid
+
+
 def test_complicated_roof_failure():
     """Test the translation of a complicated roof."""
     model_file = './tests/json/roof_failure.dfjson'
