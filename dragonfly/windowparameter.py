@@ -2198,6 +2198,63 @@ class DetailedWindows(_AsymmetricBase):
         return sum(poly.area for poly, isd in zip(self.polygons, self.are_doors)
                    if not isd)
 
+    def overlapping_geometries(self, segment, tolerance=0.01):
+        """Get Face3D representing window/door geometries that are overlapping.
+
+        This is used to create helper_geometry for the case of invalid
+        window parameters.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            tolerance: The minimum distance that two polygons must overlap in order
+                for them to be considered overlapping and invalid. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of Face3D representing overlapping window/door geometries. This
+            list will be empty if none of the geometries overlap.
+        """
+        # group the polygons according to their overlaps
+        grouped_polys = Polygon2D.group_by_overlap(self.polygons, tolerance)
+        # build Face3D any polygons that overlap
+        up_vec = Vector3D(0, 0, 1)
+        wall_plane = Plane(n=segment.v.cross(up_vec), o=segment.p1, x=segment.v)
+        overlap_geos = []
+        for poly_group in grouped_polys:
+            if len(poly_group) > 1:
+                for poly in poly_group:
+                    pt3d = tuple(wall_plane.xy_to_xyz(pt) for pt in poly)
+                    overlap_geos.append(Face3D(pt3d))
+        return overlap_geos
+
+    def self_intersecting_geometries(self, segment, tolerance=0.01):
+        """Get Face3D representing window/door geometries that are self-intersecting.
+
+        This is used to create helper_geometry for the case of invalid
+        window parameters.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            tolerance: The minimum distance between a vertex coordinates where
+                they are considered equivalent. (Default: 0.01, suitable
+                for objects in meters).
+
+        Returns:
+            A list of Face3D representing self-intersecting window/door geometries.
+            This list will be empty if none of the geometries overlap.
+        """
+        # build Face3D any polygons that self-intersect
+        up_vec = Vector3D(0, 0, 1)
+        wall_plane = Plane(n=segment.v.cross(up_vec), o=segment.p1, x=segment.v)
+        int_geos = []
+        for polygon in self.polygons:
+            if polygon.is_self_intersecting:
+                new_geo = polygon.remove_colinear_vertices(tolerance)
+                if new_geo.is_self_intersecting:
+                    pt3d = tuple(wall_plane.xy_to_xyz(pt) for pt in polygon)
+                    int_geos.append(Face3D(pt3d))
+        return int_geos
+
     def check_window_overlaps(self, tolerance=0.01):
         """Check whether any polygons overlap with one another.
 

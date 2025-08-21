@@ -3725,27 +3725,36 @@ class Room2D(_BaseGeometry):
             A string with the message or a list with a dictionary if detailed is True.
         """
         detailed = False if raise_exception else detailed
-        msgs = []
+        msgs, help_geo = [], []
         checkable_par = (RectangularWindows, DetailedWindows)
-        for i, wp in enumerate(self._window_parameters):
+        for i, (wp, seg) in enumerate(zip(self._window_parameters, self.floor_segments)):
             if wp is not None and isinstance(wp, checkable_par):
                 msg = wp.check_window_overlaps(tolerance)
                 if msg != '':
                     msgs.append(' Segment ({}) - {}'.format(i, msg))
                 if isinstance(wp, DetailedWindows):
+                    if msg != '':
+                        help_geo.extend(wp.overlapping_geometries(seg, tolerance))
                     msg = wp.check_self_intersecting(tolerance)
                     if msg != '':
                         msgs.append(' Segment ({}) - {}'.format(i, msg))
+                        help_geo.extend(wp.self_intersecting_geometries(seg, tolerance))
         if isinstance(self._skylight_parameters, DetailedSkylights):
-            msg = self._skylight_parameters.check_valid_for_face(self.floor_geometry)
+            sp = self._skylight_parameters
+            m_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
+            roof_face = self.floor_geometry.move(m_vec)
+            msg = sp.check_valid_for_face(roof_face)
             if msg != '':
                 msgs.append(' Skylights - {}'.format(msg))
-            msg = self._skylight_parameters.check_overlaps(tolerance)
+                help_geo.extend(sp.invalid_face_geometries(roof_face))
+            msg = sp.check_overlaps(tolerance)
             if msg != '':
                 msgs.append(' Skylights - {}'.format(msg))
+                help_geo.extend(sp.overlapping_geometries(roof_face, tolerance))
             msg = self._skylight_parameters.check_self_intersecting(tolerance)
             if msg != '':
                 msgs.append(' Skylights - {}'.format(msg))
+                help_geo.extend(sp.self_intersecting_geometries(roof_face, tolerance))
         if len(msgs) == 0:
             return [] if detailed else ''
         full_msg = 'Room2D "{}" contains invalid window parameters.' \
@@ -3753,6 +3762,7 @@ class Room2D(_BaseGeometry):
         full_msg = self._validation_message_child(
             full_msg, self, detailed, '100103', error_type='Invalid Window Parameters')
         if detailed:
+            full_msg['helper_geometry'] = [f.to_dict() for f in help_geo]
             return [full_msg]
         if raise_exception:
             raise ValueError(full_msg)
