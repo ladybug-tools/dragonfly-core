@@ -532,7 +532,7 @@ class DetailedSkylights(_SkylightParameterBase):
                 for hole in face.holes
             )
         invalid_geos = []
-        for p_gon in enumerate(self.polygons):
+        for p_gon in self.polygons:
             if not self._is_sub_polygon(p_gon, parent_poly, parent_holes):
                 pt3d = tuple(face.plane.xy_to_xyz(pt) for pt in p_gon)
                 invalid_geos.append(Face3D(pt3d))
