@@ -2032,6 +2032,23 @@ using-multipliers-zone-and-or-window.html
                                 msg['element_id'].append(room_2.identifier)
                                 msg['element_name'].append(room_2.display_name)
                                 msg['parents'].append(msg['parents'][0])
+                                if fh1 > fh2:
+                                    m_z = room_1.floor_geometry[0].z - \
+                                        room_2.floor_geometry[0].z
+                                    m_vec = Vector3D(0, 0, m_z)
+                                    room_1_geo = room_1.floor_geometry
+                                    room_2_geo = room_2.floor_geometry.move(m_vec)
+                                else:
+                                    m_z = room_2.floor_geometry[0].z - \
+                                        room_1.floor_geometry[0].z
+                                    m_vec = Vector3D(0, 0, m_z)
+                                    room_1_geo = room_1.floor_geometry.move(m_vec)
+                                    room_2_geo = room_2.floor_geometry
+                                help_geo = Face3D.coplanar_intersection(
+                                    room_1_geo, room_2_geo, tolerance, 0.017)
+                                if help_geo is not None:
+                                    msg['helper_geometry'] = \
+                                        [f.to_dict() for f in help_geo]
                             msgs.append(msg)
         # report any errors
         if detailed:
