@@ -3655,6 +3655,8 @@ class Room2D(_BaseGeometry):
                 msg, self, detailed, '100102',
                 error_type='Self-Intersecting Room Geometry')
             if detailed:
+                full_msg['helper_geometry'] = \
+                    self.floor_geometry.self_intersection_points
                 return [full_msg]
             if raise_exception:
                 raise ValueError(full_msg)
