@@ -2559,6 +2559,79 @@ class Room2D(_BaseGeometry):
             new_geo = Face3D(new_loops[0], self.floor_geometry.plane, new_loops[1:])
         self.update_floor_geometry(new_geo, edit_code, tolerance)
 
+    def coordinate_segment_vertices(self, line_segments, distance, tolerance=0.01):
+        """Insert vertices to this Room2D to coordinate this Room2D with line segments.
+
+        This is sometimes a useful operation to run after using the pull_to_segments
+        method in order to address the case that the segments to which this Room2D was
+        pulled have more vertices along the adjacency boundary than what this Room2D
+        started with.
+
+        Any vertices of the line_segments that are within the specified distance but
+        cannot be matched to a vertex on this Room2D within the tolerance will be
+        inserted into this Room2D, splitting the wall segment in the process.
+
+        Args:
+            line_segments: A list of ladybug_geometry LineSegment2D with which this
+                Room2D's vertices will be coordinated.
+            distance: The maximum distance between a Room2D vertex and the line
+                segment end points where the vertex will be moved to lie at the
+                end point of the segment. Vertices beyond this distance will be
+                left as they are.
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # determine all of the vertices of the other Room2D that should be inserted
+        self_segs = list(self.floor_segments_2d)
+        self_pts_2d = [seg.p for seg in self_segs]
+        other_pts_2d = []
+        for seg in line_segments:
+            if len(other_pts_2d) == 0 or \
+                    seg.p1.distance_to_point(other_pts_2d[-1]) > tolerance:
+                other_pts_2d.append(seg.p1)
+            other_pts_2d.append(seg.p2)
+        insert_pts = []
+        for o_pt in other_pts_2d:
+            possible_insert = False
+            for i, seg in enumerate(self_segs):
+                if seg.distance_to_point(o_pt) < distance:
+                    possible_insert = True
+                    break
+            if possible_insert:
+                for s_pt in self_pts_2d:
+                    if s_pt.distance_to_point(o_pt) <= tolerance:
+                        break
+                else:
+                    insert_pts.append((i, o_pt))
+
+        # loop through the segments and split them if insertion points were found
+        if len(insert_pts) == 0:
+            return
+        sort_int_pts = sorted(insert_pts, key=lambda x: x[0], reverse=True)
+        edit_code = ['K'] * len(self_segs)
+        for ins_ind, pt in sort_int_pts:
+            split_seg = self_segs[ins_ind]
+            new_seg1 = LineSegment2D.from_end_points(split_seg.p1, pt)
+            new_seg2 = LineSegment2D.from_end_points(pt, split_seg.p2)
+            self_segs[ins_ind] = new_seg2
+            self_segs.insert(ins_ind, new_seg1)
+            edit_code.insert(ins_ind, 'A')
+
+        # create a new floor_geometry Face3D and update the geometry with the edit code
+        z_val = self.floor_geometry.boundary[0].z
+        if not self.floor_geometry.has_holes:
+            pts = [Point3D(seg.p.x, seg.p.y, z_val) for seg in self_segs]
+            new_geo = Face3D(pts, self.floor_geometry.plane)
+        else:
+            joined_segs = Polyline2D.join_segments(self_segs, tolerance)
+            new_loops = []
+            for p_line in joined_segs:
+                pts = [Point3D(pt.x, pt.y, z_val) for pt in p_line.vertices[:-1]]
+                new_loops.append(pts)
+            new_geo = Face3D(new_loops[0], self.floor_geometry.plane, new_loops[1:])
+        self.update_floor_geometry(new_geo, edit_code, tolerance)
+
     def remove_duplicate_vertices(self, tolerance=0.01):
         """Remove duplicate vertices from this Room2D.
 
