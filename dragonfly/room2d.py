@@ -1286,12 +1286,20 @@ class Room2D(_BaseGeometry):
                 and sub-faces can differ from one another in order for the sub-face
                 to be projected onto the geometry. (Default: 1).
         """
-        # process the angle tolerance into radians
+        # process the angle tolerance into criteria to be used to categorize sub-faces
         a_tol_min = math.radians(angle_tolerance)
         a_tol_max = math.pi - a_tol_min
         perp = math.pi / 2
         perp_min, perp_max = perp - a_tol_min, perp + a_tol_min
-        floor_segments, ftc = self.floor_segments, self.floor_to_ceiling_height
+
+        # determine criteria for the bounding box around the room
+        floor_segments = self.floor_segments
+        ftc = self.floor_to_ceiling_height
+        if self.has_parent and self.parent.roof is not None:
+            max_roof = self.parent.roof.max_height
+            roof_ftc = max_roof - self.floor_height
+            if roof_ftc > ftc:
+                ftc = roof_ftc
 
         # search all of the sub-faces that could be relevant
         r_min_pt, max_pt = self.floor_geometry.min, self.floor_geometry.max
