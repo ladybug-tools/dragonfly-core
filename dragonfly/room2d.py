@@ -12,7 +12,8 @@ from ladybug_geometry.intersection2d import closest_point2d_between_line2d, \
     closest_point2d_on_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
-from ladybug_geometry.bounding import bounding_box, overlapping_bounding_boxes
+from ladybug_geometry.bounding import bounding_box, overlapping_bounding_boxes, \
+    overlapping_bounding_rect
 import ladybug_geometry.boolean as pb
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
@@ -1295,11 +1296,19 @@ class Room2D(_BaseGeometry):
         # determine criteria for the bounding box around the room
         floor_segments = self.floor_segments
         ftc = self.floor_to_ceiling_height
-        if self.has_parent and self.parent.roof is not None:
-            max_roof = self.parent.roof.max_height
-            roof_ftc = max_roof - self.floor_height
-            if roof_ftc > ftc:
-                ftc = roof_ftc
+        if self.is_top_exposed and self.has_parent and self.parent.roof is not None:
+            rel_roofs = []
+            for roof in self.parent.roof:
+                if overlapping_bounding_rect(self.floor_geometry, roof, tolerance):
+                    rel_roofs.append(roof)
+            if len(rel_roofs) != 0:
+                max_roof = rel_roofs[0].max.z
+                for r_geo in rel_roofs[1:]:
+                    if r_geo.max.z > max_roof:
+                        max_roof = r_geo.max.z
+                roof_ftc = max_roof - self.floor_height
+                if roof_ftc > ftc:
+                    ftc = roof_ftc
 
         # search all of the sub-faces that could be relevant
         r_min_pt, max_pt = self.floor_geometry.min, self.floor_geometry.max
