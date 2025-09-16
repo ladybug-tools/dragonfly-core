@@ -6150,6 +6150,8 @@ class Room2D(_BaseGeometry):
                     # split the face into to 3 smaller faces along its height
                     lseg = LineSegment3D.from_end_points(face.geometry[0],
                                                          face.geometry[1])
+                    if lseg.length == 0:
+                        continue
                     mid_dist = self.floor_to_ceiling_height - ciel_diff - flr_diff
                     vec1 = Vector3D(0, 0, flr_diff)
                     vec2 = Vector3D(0, 0, self.floor_to_ceiling_height - ciel_diff)
@@ -6177,6 +6179,8 @@ class Room2D(_BaseGeometry):
                     # split the face into to 2 smaller faces along its height
                     lseg = LineSegment3D.from_end_points(face.geometry[0],
                                                          face.geometry[1])
+                    if lseg.length == 0:
+                        continue
                     mid_dist = self.floor_to_ceiling_height - flr_diff
                     vec1 = Vector3D(0, 0, flr_diff)
                     below = Face3D.from_extrusion(lseg, vec1)
@@ -6194,6 +6198,8 @@ class Room2D(_BaseGeometry):
                     # split the face into to 2 smaller faces along its height
                     lseg = LineSegment3D.from_end_points(face.geometry[0],
                                                          face.geometry[1])
+                    if lseg.length == 0:
+                        continue
                     mid_dist = self.floor_to_ceiling_height - ciel_diff
                     vec1 = Vector3D(0, 0, mid_dist)
                     mid = Face3D.from_extrusion(lseg, vec1)
