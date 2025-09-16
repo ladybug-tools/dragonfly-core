@@ -5622,11 +5622,26 @@ class Room2D(_BaseGeometry):
             ang_tol = math.radians(1)
             ceil_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
             ceil_geo = self.floor_geometry.move(ceil_vec)
+            # first attempt a coplanar difference with all geometry together
             cover_faces = ceil_geo.coplanar_difference(subtract_geo, tolerance, ang_tol)
             up_tol_area = max_len * tolerance
+            all_fail = True
             for f in cover_faces:
                 if f.area <= area_diff + up_tol_area:
                     roof_faces.append(f)
+                    all_fail = False
+            # if all of them failed, try subtracting them individually
+            if all_fail:
+                cover_faces = [ceil_geo]
+                for sub_geo in subtract_geo:
+                    new_cover = []
+                    for c_geo in cover_faces:
+                        cf = c_geo.coplanar_difference([sub_geo], tolerance, ang_tol)
+                        new_cover.extend(cf)
+                    cover_faces = new_cover
+                for f in cover_faces:
+                    if f.area <= area_diff + up_tol_area:
+                        roof_faces.append(f)
 
         # perform a final check to remove all colinear vertices from the roof
         clean_roofs = []
@@ -5687,7 +5702,7 @@ class Room2D(_BaseGeometry):
             rot_poly = rm_poly.vertices[1:] + (pt1,)
 
             # loop through segments and make a wall face for each one
-            for c, (pt2, seg) in enumerate(zip(rot_poly, rm_segs)):
+            for pt2, seg in zip(rot_poly, rm_segs):
                 # find the polygon that the first segment vertex is located in
                 current_poly, current_plane = None, None
                 other_poly, other_planes = rel_rf_polys[:], rel_rf_planes[:]  # copy lists
