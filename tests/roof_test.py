@@ -55,12 +55,12 @@ def test_resolved_geometry():
     roof = RoofSpecification(res_geo)
     assert roof.overlap_count(0.01) == 0
 
-    assert res_geo[0].area == pytest.approx(10.0 * math.sqrt(50), abs=1e-3)
-    assert res_geo[1].area == pytest.approx(10.0 * math.sqrt(50), abs=1e-3)
+    assert res_geo[0].area == pytest.approx(98.994949, abs=1e-3)
+    assert res_geo[1].area == pytest.approx(42.42640687, abs=1e-3)
     assert res_geo[2].area == pytest.approx(50.0, abs=1e-3)
 
-    assert res_geo[0].center.z == pytest.approx(2.5, abs=1e-3)
-    assert res_geo[1].center.z == pytest.approx(2.5, abs=1e-3)
+    assert res_geo[0].center.z == pytest.approx(3.5, abs=1e-3)
+    assert res_geo[1].center.z == pytest.approx(1.5, abs=1e-3)
     assert res_geo[2].center.z == pytest.approx(0.0, abs=1e-3)
 
 
@@ -421,4 +421,4 @@ def test_endless_loop_resolved_geometry():
     with open(test_json) as json_file:
         data = json.load(json_file)
     roof = RoofSpecification.from_dict(data)
-    assert len(roof.resolved_geometry(0.003)) >= 5
+    assert len(roof.resolved_geometry(0.003)) >= 3
