@@ -321,12 +321,10 @@ class RoofSpecification(object):
     def resolved_geometry(self, tolerance=0.01, split_through_holes=False):
         """Get a version of this object's geometry with all overlaps in plan resolved.
 
-        In the case of overlaps, the roof geometry that has the lowest average
+        In the case of overlaps, the roof geometry that has the highest average
         z-value for the overlap will become the "correct" one that actually
         bounds the room geometry except for the case where the Z domains of the
-        overlapping portions collide with one another. In this case of roof
-        intersections/collisions across the Z domain, the top-most geometry
-        will become the one that bounds the room volume.
+        overlapping portions collide with one another.
 
         This method can also optionally split any roof geometries with holes such
         that they can be accurately accounted for in the room volume calculation.
@@ -415,27 +413,14 @@ class RoofSpecification(object):
                             o_face_2.append(pt2)
                         o_face_1 = Face3D(o_face_1, plane=pln_1)
                         o_face_2 = Face3D(o_face_2, plane=pln_2)
-                        # check whether the Z domains of the geometries overlap
-                        f1_min, f1_max = o_face_1.min.z, o_face_1.max.z
-                        f2_min, f2_max = o_face_2.min.z, o_face_2.max.z
-                        if f1_max >= f2_min and f2_max >= f1_min:  # use top-most
-                            if o_face_1.center.z < o_face_2.center.z:
-                                poly_1 = self._process_polygon_overlap(
-                                    poly_1, pln_1, i, o_poly,
-                                    remove_i, geo_2d, planes, gei, tol)
-                            else:  # remove the overlap from the second polygon
-                                poly_2 = self._process_polygon_overlap(
-                                    poly_2, pln_2, j, o_poly,
-                                    remove_i, geo_2d, planes, gei, tol)
-                        else:  # no overlap; use bottom-most
-                            if o_face_1.center.z > o_face_2.center.z:
-                                poly_1 = self._process_polygon_overlap(
-                                    poly_1, pln_1, i, o_poly,
-                                    remove_i, geo_2d, planes, gei, tol)
-                            else:  # remove the overlap from the second polygon
-                                poly_2 = self._process_polygon_overlap(
-                                    poly_2, pln_2, j, o_poly,
-                                    remove_i, geo_2d, planes, gei, tol)
+                        if o_face_1.center.z <= o_face_2.center.z:
+                            poly_1 = self._process_polygon_overlap(
+                                poly_1, pln_1, i, o_poly,
+                                remove_i, geo_2d, planes, gei, tol)
+                        else:  # remove the overlap from the second polygon
+                            poly_2 = self._process_polygon_overlap(
+                                poly_2, pln_2, j, o_poly,
+                                remove_i, geo_2d, planes, gei, tol)
                 elif poly_relationship == 1:
                     # polygon is completely inside the other; remove it
                     remove_i.append(j)
