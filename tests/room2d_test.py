@@ -17,7 +17,7 @@ from dragonfly.story import Story
 from dragonfly.building import Building
 from dragonfly.model import Model
 from dragonfly.windowparameter import SimpleWindowRatio, SingleWindow, \
-    RepeatingWindowRatio, DetailedWindows
+    RepeatingWindowRatio, RectangularWindows, DetailedWindows
 from dragonfly.skylightparameter import DetailedSkylights
 from dragonfly.shadingparameter import Overhang
 
@@ -1027,6 +1027,28 @@ def test_split_with_thick_polyline():
         len(int_result[0].floor_geometry.vertices) == 6
     assert len(int_result[1].floor_geometry.vertices) == 10 or \
         len(int_result[1].floor_geometry.vertices) == 6
+
+
+def test_separate_plenum():
+    """Test the Room2D separate_plenum method."""
+    f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
+    room2d = Room2D('SquareShoebox1', Face3D(f_pts), 4)
+    ashrae_base = SimpleWindowRatio(0.8)
+    room2d.window_parameters = [ashrae_base] * 4
+    room2d.to_rectangular_windows()
+
+    ceiling_plenum = room2d.separate_plenum(3.5)
+    assert isinstance(ceiling_plenum, Room2D)
+    assert ceiling_plenum.floor_to_ceiling_height == pytest.approx(0.5, rel=1e-2)
+    for wp in ceiling_plenum.window_parameters:
+        assert isinstance(wp, RectangularWindows)
+
+    room2d.to_detailed_windows()
+    floor_plenum = room2d.separate_plenum(3, floor_plenum=True)
+    assert isinstance(floor_plenum, Room2D)
+    assert floor_plenum.floor_to_ceiling_height == pytest.approx(0.5, rel=1e-2)
+    for wp in floor_plenum.window_parameters:
+        assert isinstance(wp, DetailedWindows)
 
 
 def test_room2d_solve_adjacency():
