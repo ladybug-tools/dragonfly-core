@@ -1637,12 +1637,10 @@ class RectangularWindows(_AsymmetricBase):
         max_width = seg_len - tol
         max_height = floor_to_ceiling_height - tol
 
-        # loop through the vertices and adjust them
+        # loop through the windows and adjust them
         new_origins, new_widths, new_heights, new_ad, kept_i = [], [], [], [], []
         zip_obj = zip(self.origins, self.widths, self.heights, self.are_doors)
         for i, (o, wid, hgt, isd) in enumerate(zip_obj):
-            ox = o.x if o.x > tol else tol
-            oy = o.y if o.y > tol else tol
             final_width = max_width - o.x if wid + o.x > max_width else wid
             final_height = max_height - o.y if hgt + o.y > max_height else hgt
             if final_height > 0 and final_height > 0:  # inside upper wall boundary
@@ -1679,20 +1677,34 @@ class RectangularWindows(_AsymmetricBase):
         return new_w_par
 
     def remove_doors(self):
-        """Remove all doors from this object."""
-        new_origins, new_widths, new_heights = [], [], []
-        for o, w, h, isd in zip(self.origins, self.widths, self.heights, self.are_doors):
+        """Get a version of these window parameters with all doors removed."""
+        new_origins, new_widths, new_heights, kept_i = [], [], [], []
+        zip_obj = zip(self.origins, self.widths, self.heights, self.are_doors)
+        for o, w, h, isd in zip_obj:
             if not isd:
                 new_origins.append(o)
                 new_widths.append(w)
                 new_heights.append(h)
-        self._origins = tuple(new_origins)
-        self._widths = tuple(new_widths)
-        self._heights = tuple(new_heights)
-        self._are_doors = (False,) * len(new_origins)
+        # return the final window parameters
+        new_w_par = None
+        if len(new_origins) != 0:
+            new_w_par = RectangularWindows(new_origins, new_widths, new_heights)
+
+        # update user_data lists if some windows were not added
+        if new_w_par is not None and self.user_data is not None:
+            clean_u = self.user_data
+            if len(new_origins) != len(self.origins):
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.origins):
+                        clean_u[key] = [val[j] for j in kept_i]
+                    else:
+                        clean_u[key] = val
+            new_w_par.user_data = clean_u
+        return new_w_par
 
     def shift_vertically(self, shift_distance):
-        """Shift these WindowParameters up or down in the wall plane.
+        """Get a version of these WindowParameters shifted up or down in the wall plane.
 
         This is useful when the windows are assigned to a Room2D that is
         vertically split and new windows need to be assigned to new Room2Ds.
@@ -1710,7 +1722,7 @@ class RectangularWindows(_AsymmetricBase):
         return new_w
 
     def shift_horizontally(self, shift_distance):
-        """Shift these WindowParameters left or right in the wall plane.
+        """Get a version of these WindowParameters shifted left or right in the wall plane.
 
         This is useful when the length of the segment that the windows are assigned
         to has changed a lot from the original value such that the windows should
@@ -1730,7 +1742,7 @@ class RectangularWindows(_AsymmetricBase):
         return new_w
 
     def to_rectangular_windows(self, segment, floor_to_ceiling_height):
-        """Returns the class instance. Provided here for consistency with other classes.
+        """Returns the object instance. Provided here for consistency with other classes.
 
         Args:
             segment: A LineSegment3D to which these parameters are applied.
@@ -1772,6 +1784,14 @@ class RectangularWindows(_AsymmetricBase):
             final_width = max_width - o.x if wid + o.x > max_width else wid
             final_height = max_height - o.y if hgt + o.y > max_height else hgt
             if final_height > 0 and final_width > 0:  # inside wall boundary
+                ox, oy = o.x, o.y
+                if ox < tolerance:
+                    final_width = final_width + ox - tolerance
+                    ox = tolerance
+                if oy < tolerance:
+                    final_height = final_height + oy - tolerance
+                    oy = tolerance
+                o = Point2D(ox, oy)
                 base_plane = Plane(wall_plane.n, wall_plane.xy_to_xyz(o), wall_plane.x)
                 s_geo = Face3D.from_rectangle(final_width, final_height, base_plane)
                 if isd:
@@ -1807,22 +1827,38 @@ class RectangularWindows(_AsymmetricBase):
         return new_w
 
     def remove_small_windows(self, area_threshold):
-        """Remove any small windows that are below a certain area threshold.
+        """Get a version of these window parameters with small geometries removed.
 
         Args:
             area_threshold: A number for the area below which a window will be removed.
         """
-        new_origins, new_widths, new_heights, new_are_doors = [], [], [], []
-        for o, w, h, isd in zip(self.origins, self.widths, self.heights, self.are_doors):
+        new_origins, new_widths, new_heights, new_ad, kept_i = [], [], [], [], []
+        zip_obj = zip(self.origins, self.widths, self.heights, self.are_doors)
+        for i, (o, w, h, isd) in enumerate(zip_obj):
             if w * h > area_threshold:
                 new_origins.append(o)
                 new_widths.append(w)
                 new_heights.append(h)
-                new_are_doors.append(isd)
-        self._origins = tuple(new_origins)
-        self._widths = tuple(new_widths)
-        self._heights = tuple(new_heights)
-        self._are_doors = tuple(new_are_doors)
+                new_ad.append(isd)
+                kept_i.append(i)
+
+        # return the final window parameters
+        new_w_par = None
+        if len(new_origins) != 0:
+            new_w_par = RectangularWindows(new_origins, new_widths, new_heights, new_ad)
+
+        # update user_data lists if some windows were not added
+        if new_w_par is not None and self.user_data is not None:
+            clean_u = self.user_data
+            if len(new_origins) != len(self.origins):
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.origins):
+                        clean_u[key] = [val[j] for j in kept_i]
+                    else:
+                        clean_u[key] = val
+            new_w_par.user_data = clean_u
+        return new_w_par
 
     def flip(self, seg_length):
         """Flip the direction of the windows along a segment.
@@ -2465,13 +2501,30 @@ class DetailedWindows(_AsymmetricBase):
         return new_w_par
 
     def remove_doors(self):
-        """Remove all door polygons from this object."""
-        new_polys = []
-        for poly, is_dr in zip(self.polygons, self.are_doors):
+        """Get a version of these window parameters with all doors removed."""
+        new_polygons, kept_i = [], []
+        for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
             if not is_dr:
-                new_polys.append(poly)
-        self._polygons = tuple(new_polys)
-        self._are_doors = (False,) * len(new_polys)
+                new_polygons.append(poly)
+                kept_i.append(i)
+
+        # return the final window parameters
+        new_w_par = None
+        if len(new_polygons) != 0:
+            new_w_par = DetailedWindows(new_polygons)
+
+        # update user_data lists if some windows were not added
+        if new_w_par is not None and self.user_data is not None:
+            clean_u = self.user_data
+            if len(new_polygons) != len(self.polygons):
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
+                        clean_u[key] = [val[j] for j in kept_i]
+                    else:
+                        clean_u[key] = val
+            new_w_par.user_data = clean_u
+        return new_w_par
 
     def shift_vertically(self, shift_distance):
         """Shift these WindowParameters up or down in the wall plane.
@@ -2954,19 +3007,37 @@ class DetailedWindows(_AsymmetricBase):
             self._polygons = tuple(new_polys)
 
     def remove_small_windows(self, area_threshold):
-        """Remove any small window polygons that are below a certain area threshold.
+        """Get a version of these window parameters with small geometries removed.
 
         Args:
             area_threshold: A number for the area below which a window polygon
                 will be removed.
         """
-        new_polygons, new_are_doors = [], []
-        for poly, is_dr in zip(self.polygons, self.are_doors):
+        # evaluate the area of each polygon
+        new_polygons, new_are_doors, kept_i = [], [], []
+        for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
             if poly.area > area_threshold:
                 new_polygons.append(poly)
                 new_are_doors.append(is_dr)
-        self._polygons = tuple(new_polygons)
-        self._are_doors = tuple(new_are_doors)
+                kept_i.append(i)
+
+        # return the final window parameters
+        new_w_par = None
+        if len(new_polygons) != 0:
+            new_w_par = DetailedWindows(new_polygons, new_are_doors)
+
+        # update user_data lists if some windows were not added
+        if new_w_par is not None and self.user_data is not None:
+            clean_u = self.user_data
+            if len(new_polygons) != len(self.polygons):
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
+                        clean_u[key] = [val[j] for j in kept_i]
+                    else:
+                        clean_u[key] = val
+            new_w_par.user_data = clean_u
+        return new_w_par
 
     def split(self, segments, tolerance=0.01):
         """Split DetailedWindows parameters across a list of ordered segments.

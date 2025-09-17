@@ -618,12 +618,15 @@ class DetailedSkylights(_SkylightParameterBase):
 
     def remove_doors(self):
         """Remove all door polygons from this object."""
-        new_polys = []
+        new_polygons = []
         for poly, is_dr in zip(self.polygons, self.are_doors):
             if not is_dr:
-                new_polys.append(poly)
-        self._polygons = tuple(new_polys)
-        self._are_doors = (False,) * len(new_polys)
+                new_polygons.append(poly)
+        # return the final window parameters
+        new_s_par = None
+        if len(new_polygons) != 0:
+            new_s_par = DetailedSkylights(new_polygons)
+        return new_s_par
 
     def add_skylight_to_face(self, face, tolerance=0.01):
         """Add Apertures to a Honeybee Roof Face using these Skylight Parameters.
@@ -1014,7 +1017,7 @@ class DetailedSkylights(_SkylightParameterBase):
         self._polygons = tuple(new_polygons)
 
     def remove_self_intersecting(self, tolerance=0.01):
-        """Remove any skylight polygons that are self intersecting.
+        """Get these skylight parameters with self intersecting geometries removed.
 
         Args:
             tolerance: The minimum distance between a vertex coordinates where
@@ -1037,9 +1040,11 @@ class DetailedSkylights(_SkylightParameterBase):
                         new_are_doors.append(isd)
                 except AssertionError:
                     pass
-        # assign the clean polygons to this object
-        self._polygons = tuple(new_polygons)
-        self._are_doors = tuple(new_are_doors)
+        # return the final skylight parameters
+        new_s_par = None
+        if len(new_polygons) != 0:
+            new_s_par = DetailedSkylights(new_polygons, new_are_doors)
+        return new_s_par
 
     def union_overlaps(self, tolerance=0.01):
         """Union any skylight polygons that overlap with one another.
@@ -1123,19 +1128,23 @@ class DetailedSkylights(_SkylightParameterBase):
             self._polygons = tuple(new_polys)
 
     def remove_small_skylights(self, area_threshold):
-        """Remove any small skylight polygons that are below a certain area threshold.
+        """Get a version of these skylight parameters with small geometries removed.
 
         Args:
             area_threshold: A number for the area below which a skylight polygon
                 will be removed.
         """
+        # evaluate the small skylights
         new_polygons, new_are_doors = [], []
         for poly, is_dr in zip(self.polygons, self.are_doors):
             if poly.area > area_threshold:
                 new_polygons.append(poly)
                 new_are_doors.append(is_dr)
-        self._polygons = tuple(new_polygons)
-        self._are_doors = tuple(new_are_doors)
+        # return the final skylight parameters
+        new_s_par = None
+        if len(new_polygons) != 0:
+            new_s_par = DetailedSkylights(new_polygons, new_are_doors)
+        return new_s_par
 
     @classmethod
     def from_dict(cls, data):
