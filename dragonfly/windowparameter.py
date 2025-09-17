@@ -1614,6 +1614,70 @@ class RectangularWindows(_AsymmetricBase):
                 'parent wall [{}].'.format(win_area, total_area)
         return ''
 
+    def adjust_for_segment(self, segment, floor_to_ceiling_height, tolerance=0.01):
+        """Get these parameters with geometry excluded beyond the domain of a given line.
+
+        Args:
+            segment: A LineSegment3D to which these parameters are applied.
+            floor_to_ceiling_height: The floor-to-ceiling height of the Room2D
+                to which the segment belongs.
+            tolerance: The minimum distance between a vertex and the edge of the
+                wall segment that is considered not touching. (Default: 0.01, suitable
+                for objects in meters).
+
+        Returns:
+            A new RectangularWindows object that fits entirely in the domain of the
+            input line segment and floor_to_ceiling_height.
+        """
+        # compute the maximum width and height
+        seg_len = segment.length
+        tol, double_tol = tolerance, 2 * tolerance
+        if seg_len - double_tol < 0 or floor_to_ceiling_height - double_tol < 0:
+            return None
+        max_width = seg_len - tol
+        max_height = floor_to_ceiling_height - tol
+
+        # loop through the vertices and adjust them
+        new_origins, new_widths, new_heights, new_ad, kept_i = [], [], [], [], []
+        zip_obj = zip(self.origins, self.widths, self.heights, self.are_doors)
+        for i, (o, wid, hgt, isd) in enumerate(zip_obj):
+            ox = o.x if o.x > tol else tol
+            oy = o.y if o.y > tol else tol
+            final_width = max_width - o.x if wid + o.x > max_width else wid
+            final_height = max_height - o.y if hgt + o.y > max_height else hgt
+            if final_height > 0 and final_height > 0:  # inside upper wall boundary
+                if o.x + final_width > tol and o.y + final_height > tol:  # lower bound
+                    ox, oy = o.x, o.y
+                    if ox < tol:
+                        final_width = final_width + ox - tol
+                        ox = tol
+                    if oy < tol:
+                        final_height = final_height + oy - tol
+                        oy = tol
+                    new_origins.append(Point2D(ox, oy))
+                    new_widths.append(final_width)
+                    new_heights.append(final_height)
+                    new_ad.append(isd)
+                    kept_i.append(i)
+
+        # return the final window parameters
+        new_w_par = None
+        if len(new_origins) != 0:
+            new_w_par = RectangularWindows(new_origins, new_widths, new_heights, new_ad)
+
+        # update user_data lists if some windows were not added
+        if new_w_par is not None and self.user_data is not None:
+            clean_u = self.user_data
+            if len(new_origins) != len(self.origins):
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.origins):
+                        clean_u[key] = [val[j] for j in kept_i]
+                    else:
+                        clean_u[key] = val
+            new_w_par.user_data = clean_u
+        return new_w_par
+
     def remove_doors(self):
         """Remove all doors from this object."""
         new_origins, new_widths, new_heights = [], [], []
@@ -1707,7 +1771,7 @@ class RectangularWindows(_AsymmetricBase):
         for i, (o, wid, hgt, isd) in enumerate(zip_obj):
             final_width = max_width - o.x if wid + o.x > max_width else wid
             final_height = max_height - o.y if hgt + o.y > max_height else hgt
-            if final_height > 0 and final_height > 0:  # inside wall boundary
+            if final_height > 0 and final_width > 0:  # inside wall boundary
                 base_plane = Plane(wall_plane.n, wall_plane.xy_to_xyz(o), wall_plane.x)
                 s_geo = Face3D.from_rectangle(final_width, final_height, base_plane)
                 if isd:
