@@ -1207,14 +1207,42 @@ class Room2D(_BaseGeometry):
         Args:
             seg_indices: An optional list of integers for the wall segments of
                 this Room2D for which doors should be removed. If None, all
-                segments will be checked for doors to remove, including
-                overhead doors. (Default: None).
+                segments will be checked for doors to remove. (Default: None).
         """
-        # remove doors from the WindowParameters
+        new_wp = []
         for i, glz in enumerate(self._window_parameters):
             if isinstance(glz, _AsymmetricBase):
                 if seg_indices is None or i in seg_indices:
                     glz = glz.remove_doors()
+            new_wp.append(glz)
+        self.window_parameters = new_wp
+
+    def remove_small_windows(self, area_threshold, seg_indices=None):
+        """Remove windows of the room that are smaller than a specified area threshold.
+
+        Args:
+            area_threshold: The area of a window below which it will be removed.
+            seg_indices: An optional list of integers for the wall segments of
+                this Room2D for which small windows should be removed. If None, all
+                segments will be checked for small windows to remove. (Default: None).
+        """
+        new_wp = []
+        for i, wp in enumerate(self.window_parameters):
+            if isinstance(wp, _AsymmetricBase):
+                if seg_indices is None or i in seg_indices:
+                    wp = wp.remove_small_windows(area_threshold)
+            new_wp.append(wp)
+        self.window_parameters = new_wp
+
+    def remove_small_skylights(self, area_threshold):
+        """Remove skylights of the room that are smaller than a specified area threshold.
+
+        Args:
+            area_threshold: The area of a skylight below which it will be removed.
+        """
+        if isinstance(self.skylight_parameters, DetailedSkylights):
+            self.skylight_parameters = \
+                self.skylight_parameters.remove_small_skylights(area_threshold)
 
     def to_rectangular_windows(self):
         """Convert all of the windows of the Room2D to the RectangularWindows format."""
