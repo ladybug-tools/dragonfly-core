@@ -323,6 +323,9 @@ def test_split_with_polygon():
     assert len(roof) == 5
     assert sum(rg.area for rg in roof.geometry) == pytest.approx(roof_area, abs=1e-3)
 
+    roof.join_geometries()
+    assert len(roof) == 3
+
 
 def test_split_with_lines():
     """Test the RoofSpecification split_with_lines method."""
@@ -344,6 +347,9 @@ def test_split_with_lines():
 
     assert len(roof) == 6
     assert sum(rg.area for rg in roof.geometry) == pytest.approx(roof_area, abs=1e-3)
+
+    roof.join_geometries()
+    assert len(roof) == 3
 
 
 def test_split_with_line():
@@ -371,6 +377,9 @@ def test_split_with_line():
     roof.split_with_lines([split_line])
     assert len(roof.geometry) == 2
 
+    roof.join_geometries()
+    assert len(roof) == 1
+
 
 def test_split_with_thick_line():
     """Test the RoofSpecification split_with_thick_line method."""
@@ -391,6 +400,9 @@ def test_split_with_thick_line():
     test_roof.split_with_thick_line(line, 0.2, tolerance=0.01)
     assert len(test_roof.geometry) == 2
     assert len(test_roof.geometry[0].vertices) == 4
+
+    test_roof.join_geometries()
+    assert len(test_roof) == 2
 
 
 def test_split_with_thick_polyline():

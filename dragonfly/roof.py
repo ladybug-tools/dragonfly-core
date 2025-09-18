@@ -9,7 +9,6 @@ from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
     Plane, Polyline3D, Face3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
-import ladybug_geometry.boolean as pb
 
 
 class RoofSpecification(object):
@@ -23,6 +22,7 @@ class RoofSpecification(object):
 
     Properties:
         * geometry
+        * geometry_2d
         * boundary_geometry_2d
         * planes
         * parent
@@ -108,27 +108,37 @@ class RoofSpecification(object):
 
                 # get the boundary around all of the polygons
                 rf_polys2d = Polygon2D.joined_intersected_boundary(roof_polys, tolerance)
+                # remove colinear vertices from the resulting polygons
+                clean_polys = []
+                for poly in rf_polys2d:
+                    try:
+                        clean_polys.append(poly.remove_colinear_vertices(tolerance))
+                    except AssertionError:
+                        pass  # degenerate polygon to ignore
+
+                # construct the final projected faces
+                final_faces = []
                 r_pln_normal = clean_geos[0].normal
                 for geo in clean_geos[1:]:
                     r_pln_normal += geo.normal
                 r_pln = Plane(n=r_pln_normal, o=clean_geos[0].plane.o)
                 proj_dir = Vector3D(0, 0, 1)
-                final_faces = []
-                for r_poly in rf_polys2d:
-                    r_face = []
-                    for pt2 in r_poly.vertices:
-                        pt3 = r_pln.project_point(Point3D(pt2.x, pt2.y), proj_dir)
-                        r_face.append(pt3)
-                    final_faces.append(Face3D(r_face, plane=r_pln))
+                if len(clean_polys) == 0:
+                    continue
+                elif len(clean_polys) == 1:  # can be represented with a single Face3D
+                    pts3d = [r_pln.project_point(Point3D(pt.x, pt.y), proj_dir)
+                             for pt in clean_polys[0]]
+                    final_faces.append(Face3D(pts3d, plane=r_pln))
+                else:  # need to separate holes from distinct Face3Ds
+                    bound_faces = []
+                    for poly in clean_polys:
+                        pts3d = [r_pln.project_point(Point3D(pt.x, pt.y), proj_dir)
+                                 for pt in poly]
+                        bound_faces.append(Face3D(pts3d, plane=r_pln))
+                    merged_faces = Face3D.merge_faces_to_holes(bound_faces, tolerance)
+                    final_faces.extend(merged_faces)
+            all_geos.extend(final_faces)
 
-            # remake the faces so they do no have holes
-            for f_geo in final_faces:
-                f_geo = Face3D(f_geo.boundary, f_geo.plane) if f_geo.has_holes else f_geo
-                try:
-                    f_geo = f_geo.remove_colinear_vertices(tolerance)
-                    all_geos.append(f_geo)
-                except AssertionError:  # degenerate geometry to ignore
-                    pass
         return cls(all_geos)
 
     @classmethod
@@ -161,15 +171,35 @@ class RoofSpecification(object):
         self._geometry = value
 
     @property
+    def geometry_2d(self):
+        """Get a tuple of tuples where each sub-tuple has Polygon2Ds for each geometry.
+
+        There is one sub-tuple for each Face3D in this RoofSpecification. The first
+        Polygon2D always represents the boundary around the Face3D and any
+        subsequent Polygon2Ds represent holes that may be in the Face3D.
+        All polygons will be in the World XY coordinate system instead of the
+        coordinate system of the Face3D's plane.
+        """
+        geo_2d = []
+        for geo in self._geometry:
+            polys = [Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))]
+            if geo.has_holes:
+                for hole in geo.holes:
+                    polys.append(Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in hole)))
+            geo_2d.append(polys)
+        return tuple(geo_2d)
+
+    @property
     def boundary_geometry_2d(self):
         """Get a tuple of Polygon2D for the boundaries around each Face3D in geometry.
 
-        These Polygons will be in the World XY coordinate system instead of the
+        These polygons will be in the World XY coordinate system instead of the
         coordinate system of the Face3D's plane.
         """
         return tuple(
             Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))
-            for geo in self._geometry)
+            for geo in self._geometry
+        )
 
     @property
     def planes(self):
@@ -597,7 +627,8 @@ class RoofSpecification(object):
         geo_list[face_index] = new_face_3d
         self._geometry = tuple(geo_list)
 
-    def update_geometry_2d(self, new_polygon_2d, polygon_index):
+    def update_geometry_2d(
+            self, new_polygon_2d, polygon_index, new_hole_polygon_2d=None):
         """Change one of the Face3D in this roof by supplying a 2D Polygon.
 
         This method is intended to be used when the roof geometry has been edited
@@ -614,7 +645,11 @@ class RoofSpecification(object):
                 that has been edited.
             polygon_index: An integer for the index of the boundary polygon in
                 the roof to be replaced.
+            new_hole_polygon_2d: An optional list of Polygon2D for new hole
+                geometry to be updated. If None, any holes in the roof geometry
+                will be left as they are. (Default: None).
         """
+        # first process the boundary polygon
         assert isinstance(new_polygon_2d, Polygon2D), \
             'Expected Polygon2D for RoofSpecification.update_geometry_2d. ' \
             'Got {}'.format(type(new_polygon_2d))
@@ -624,7 +659,18 @@ class RoofSpecification(object):
         for pt2 in new_polygon_2d.vertices:
             pt3 = roof_plane.project_point(Point3D(pt2.x, pt2.y), proj_dir)
             roof_verts.append(pt3)
-        new_face_3d = Face3D(roof_verts, plane=roof_plane)
+        # process the holes
+        holes = self._geometry[polygon_index].holes
+        if new_hole_polygon_2d is not None:
+            holes = []
+            for hole_poly in new_hole_polygon_2d:
+                hole_verts = []
+                for pt2 in hole_poly.vertices:
+                    pt3 = roof_plane.project_point(Point3D(pt2.x, pt2.y), proj_dir)
+                    hole_verts.append(pt3)
+                holes.append(hole_verts)
+        # create the final Face3D and update it
+        new_face_3d = Face3D(roof_verts, plane=roof_plane, holes=holes)
         self.update_geometry_3d(new_face_3d, polygon_index)
 
     def remove_small_holes(self, area_threshold, selected_indices=None):
@@ -721,7 +767,7 @@ class RoofSpecification(object):
                         new_y = grid_increment * round(pt.y / grid_increment)
                         n_pt = face.plane.project_point(Point3D(new_x, new_y), proj_dir)
                         new_pts.append(n_pt)
-                    new_geo.append(Face3D(new_pts, plane=face.plane))
+                    new_geo.append(Face3D(new_pts, plane=face.plane, holes=face.holes))
                 else:
                     new_geo.append(face)
             else:
@@ -766,34 +812,43 @@ class RoofSpecification(object):
             raise TypeError(msg)
 
         # get the polygons and planes
-        polygons, planes = self.boundary_geometry_2d, self.planes
+        polygons, planes = self.geometry_2d, self.planes
 
         # loop through the roof polygons and align the vertices
         aligned_polygons = []
-        for poly in polygons:
-            new_poly = []
-            for pt in poly:
-                close_pt = closest_func(pt, line_ray)
-                if pt.distance_to_point(close_pt) <= distance:
-                    new_poly.append(close_pt)
-                else:
-                    new_poly.append(pt)
-            aligned_polygons.append(Polygon2D(new_poly))
+        for poly_list in polygons:
+            align_poly_list = []
+            for poly in poly_list:
+                new_poly = []
+                for pt in poly:
+                    close_pt = closest_func(pt, line_ray)
+                    if pt.distance_to_point(close_pt) <= distance:
+                        new_poly.append(close_pt)
+                    else:
+                        new_poly.append(pt)
+                align_poly_list.append(Polygon2D(new_poly))
+            aligned_polygons.append(align_poly_list)
 
         # constrain the roof edges, which typically preserves roof ridge lines
         new_polygons = []
         for old_poly, new_poly in zip(polygons, aligned_polygons):
-            con_poly = self._constrain_edges(old_poly, new_poly, [line_ray], tolerance)
-            new_polygons.append(con_poly)
+            new_polys = []
+            for op, np in zip(old_poly, new_poly):
+                con_poly = self._constrain_edges(op, np, [line_ray], tolerance)
+                new_polys.append(con_poly)
+            new_polygons.append(new_polys)
 
         # project the points back onto the roof
         proj_dir = Vector3D(0, 0, 1)
         new_geo = []
-        for poly, r_pl in zip(new_polygons, planes):
+        for poly_list, r_pl in zip(new_polygons, planes):
             new_pts3d = []
-            for pt2 in poly:
-                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
-            new_geo.append(Face3D(new_pts3d, plane=r_pl))
+            for poly in poly_list:
+                new_3d = []
+                for p2 in poly:
+                    new_3d.append(r_pl.project_point(Point3D.from_point2d(p2), proj_dir))
+                new_pts3d.append(new_3d)
+            new_geo.append(Face3D(new_pts3d[0], plane=r_pl, holes=new_pts3d[1:]))
         self.geometry = new_geo
 
     def pull_to_segments(self, line_segments, distance, snap_vertices=True,
@@ -837,27 +892,30 @@ class RoofSpecification(object):
                 raise TypeError(msg)
 
         # get the polygons and planes
-        polygons, planes = self.boundary_geometry_2d, self.planes
+        polygons, planes = self.geometry_2d, self.planes
 
         # loop through the roof polygons and align the vertices
         aligned_polygons = []
-        for i, poly in enumerate(polygons):
+        for i, poly_list in enumerate(polygons):
             if selected_indices is None or i in selected_indices:
-                new_boundary = []
-                for pt in poly:
-                    dists, c_pts = [], []
-                    for line_ray in line_segments:
-                        close_pt = closest_point2d_on_line2d(pt, line_ray)
-                        c_pts.append(close_pt)
-                        dists.append(pt.distance_to_point(close_pt))
-                    sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
-                    if sort_pt[0][0] <= distance:
-                        new_boundary.append(sort_pt[0][1])
-                    else:
-                        new_boundary.append(pt)
-                aligned_polygons.append(Polygon2D(new_boundary))
+                align_poly_list = []
+                for poly in poly_list:
+                    new_boundary = []
+                    for pt in poly:
+                        dists, c_pts = [], []
+                        for line_ray in line_segments:
+                            close_pt = closest_point2d_on_line2d(pt, line_ray)
+                            c_pts.append(close_pt)
+                            dists.append(pt.distance_to_point(close_pt))
+                        sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+                        if sort_pt[0][0] <= distance:
+                            new_boundary.append(sort_pt[0][1])
+                        else:
+                            new_boundary.append(pt)
+                    align_poly_list.append(Polygon2D(new_boundary))
+                aligned_polygons.append(align_poly_list)
             else:
-                aligned_polygons.append(poly)
+                aligned_polygons.append(poly_list)
 
         # if snap_vertices was requested, perform an additional operation to snap them
         if snap_vertices:
@@ -866,39 +924,47 @@ class RoofSpecification(object):
                 vertices.append(line.p1)
                 vertices.append(line.p2)
             new_polygons = []
-            for i, poly in enumerate(aligned_polygons):
+            for i, poly_list in enumerate(aligned_polygons):
                 if selected_indices is None or i in selected_indices:
-                    new_boundary = []
-                    for pt in poly:
-                        dists = [pt.distance_to_point(pt_2d) for pt_2d in vertices]
-                        sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
-                        if sort_pt[0][0] <= distance:
-                            new_boundary.append(sort_pt[0][1])
-                        else:
-                            new_boundary.append(pt)
-                    new_polygons.append(Polygon2D(new_boundary))
+                    new_polys = []
+                    for poly in poly_list:
+                        new_boundary = []
+                        for pt in poly:
+                            dists = [pt.distance_to_point(pt_2d) for pt_2d in vertices]
+                            sort_pt = sorted(zip(dists, vertices), key=lambda pair: pair[0])
+                            if sort_pt[0][0] <= distance:
+                                new_boundary.append(sort_pt[0][1])
+                            else:
+                                new_boundary.append(pt)
+                        new_polys.append(Polygon2D(new_boundary))
+                    new_polygons.append(new_polys)
                 else:
-                    new_polygons.append(poly)
+                    new_polygons.append(poly_list)
             aligned_polygons = new_polygons
 
         # constrain the roof edges, which typically preserves roof ridge lines
         new_polygons = []
         for i, (old_poly, new_poly) in enumerate(zip(polygons, aligned_polygons)):
             if selected_indices is None or i in selected_indices:
-                con_poly = self._constrain_edges(
-                    old_poly, new_poly, line_segments, tolerance)
-                new_polygons.append(con_poly)
+                new_polys = []
+                for op, np in zip(old_poly, new_poly):
+                    con_poly = self._constrain_edges(op, np, line_segments, tolerance)
+                    new_polys.append(con_poly)
+                new_polygons.append(new_polys)
             else:
                 new_polygons.append(new_poly)
 
         # project the points back onto the roof
         proj_dir = Vector3D(0, 0, 1)
         new_geo = []
-        for poly, r_pl in zip(new_polygons, planes):
+        for poly_list, r_pl in zip(new_polygons, planes):
             new_pts3d = []
-            for pt2 in poly:
-                new_pts3d.append(r_pl.project_point(Point3D.from_point2d(pt2), proj_dir))
-            new_geo.append(Face3D(new_pts3d, plane=r_pl))
+            for poly in poly_list:
+                new_3d = []
+                for p2 in poly:
+                    new_3d.append(r_pl.project_point(Point3D.from_point2d(p2), proj_dir))
+                new_pts3d.append(new_3d)
+            new_geo.append(Face3D(new_pts3d[0], plane=r_pl, holes=new_pts3d[1:]))
         self.geometry = new_geo
 
     def subtract_roofs(self, minuend_index, subtrahend_indices, tolerance=0.01):
@@ -916,61 +982,46 @@ class RoofSpecification(object):
                 considered distinct from one another. (Default: 0.01; suitable
                 for objects in Meters).
         """
-        # get the minuend and subtrahend polygons
-        polygons, planes = self.boundary_geometry_2d, self.planes
-        minuend_poly = polygons[minuend_index]
+        # project the faces so that they all have the same Z coordinate
+        planes = self.planes
+        flat_faces = []
+        for face in self.geometry:
+            new_bound = [Point3D(pt.x, pt.y, 0) for pt in face.boundary]
+            new_holes = [[Point3D(p.x, p.y, 0) for p in h] for h in face.holes] \
+                if face.has_holes else None
+            flat_face = Face3D(new_bound, plane=Plane(), holes=new_holes)
+            flat_faces.append(flat_face)
+
+        # get the minuend and subtrahend geometries
+        minuend_geo = flat_faces[minuend_index]
         minuend_plane = planes[minuend_index]
-        subtrahend_polys = [polygons[s_i] for s_i in subtrahend_indices]
+        subtrahend_geos = [flat_faces[s_i] for s_i in subtrahend_indices]
 
-        # define the subtrahend boolean polygon
-        try:
-            minuend_poly = minuend_poly.remove_colinear_vertices(tolerance)
-        except AssertionError:  # degenerate roof geometry selected
-            return
-        minuend_bp = [(pb.BooleanPoint(pt.x, pt.y) for pt in minuend_poly.vertices)]
-        minuend_bp = pb.BooleanPolygon(minuend_bp)
-
-        # pre-process the roofs to be subtracted with
-        relevant_b_polys = []
-        for f2_poly in subtrahend_polys:
-            # test whether the two polygons have any overlap in 2D space
-            if minuend_poly.polygon_relationship(f2_poly, tolerance) == -1:
-                continue
-            # snap the polygons to one another to avoid tolerance issues
-            try:
-                f2_poly = f2_poly.remove_colinear_vertices(tolerance)
-            except AssertionError:  # degenerate polygon
-                continue
-            s2_poly = minuend_poly.snap_to_polygon(f2_poly, tolerance)
-            # create the BooleanPolygon
-            f2_polys = [(pb.BooleanPoint(pt.x, pt.y) for pt in s2_poly.vertices)]
-            b_poly2 = pb.BooleanPolygon(f2_polys)
-            relevant_b_polys.append(b_poly2)
-
-        # if no relevant polygons were found, don't perform any operation
-        if len(relevant_b_polys) == 0:
-            return
-
-        # loop through the boolean polygons and subtract them
-        int_tol = tolerance / 100
-        for b_poly2 in relevant_b_polys:
-            try:  # subtract the boolean polygons
-                minuend_bp = pb.difference(minuend_bp, b_poly2, int_tol)
-            except Exception:
-                return  # typically a tolerance issue causing failure
-        minuend_polys = Polygon2D._from_bool_poly(minuend_bp)
-        if len(minuend_polys) == 0:
-            return
+        # subtract the geometries from one another
+        ang_tol = math.radians(1)
+        new_geos = minuend_geo.coplanar_difference(subtrahend_geos, tolerance, ang_tol)
+        if len(new_geos) == 1 and new_geos[0] is minuend_geo:
+            return  # the geometry did not overlap with any of the others another
 
         # project the points back onto the roof
         proj_dir = Vector3D(0, 0, 1)
         new_geo = []
-        for poly in minuend_polys:
-            new_pts3d = []
-            for pt2 in poly:
+        for geo in new_geos:
+            new_bound = []
+            for pt2 in geo.boundary:
                 pt3 = minuend_plane.project_point(Point3D.from_point2d(pt2), proj_dir)
-                new_pts3d.append(pt3)
-            new_geo.append(Face3D(new_pts3d, plane=minuend_plane))
+                new_bound.append(pt3)
+            new_holes = None
+            if geo.has_holes:
+                new_holes = []
+                for hole in geo.holes:
+                    new_hole = []
+                    for pt2 in hole:
+                        pt3 = minuend_plane.project_point(
+                            Point3D.from_point2d(pt2), proj_dir)
+                        new_hole.append(pt3)
+                    new_holes.append(new_hole)
+            new_geo.append(Face3D(new_bound, plane=minuend_plane, holes=new_holes))
 
         # update the geometry
         updated_geo = list(self.geometry)
