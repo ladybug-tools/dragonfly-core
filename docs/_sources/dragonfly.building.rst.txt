@@ -1,0 +1,7 @@
+dragonfly.building module
+=========================
+
+.. automodule:: dragonfly.building
+   :members:
+   :undoc-members:
+   :show-inheritance:
