@@ -26,6 +26,7 @@ from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Gr
 from honeybee.facetype import Floor, Wall, AirBoundary, RoofCeiling
 from honeybee.facetype import face_types as ftyp
 from honeybee.door import Door
+from honeybee.aperture import Aperture
 from honeybee.face import Face
 from honeybee.room import Room
 
@@ -1286,8 +1287,8 @@ class Room2D(_BaseGeometry):
                 if seg_indices is None or i in seg_indices:
                     glz = glz.rectangularize(percent_area_change_threshold)
 
-    def assign_sub_faces(self, sub_faces, projection_distance=0, tolerance=0.01,
-                         angle_tolerance=1.0):
+    def assign_sub_faces(self, sub_faces, projection_distance=0, overwrite=True,
+                         tolerance=0.01, angle_tolerance=1.0):
         """Assign a list of orphaned SubFaces (Apertures and Doors) to this Room2D.
 
         The geometry of the SubFaces will automatically be converted to
@@ -1308,6 +1309,14 @@ class Room2D(_BaseGeometry):
                 then SubFaces within this distance of the parent wall will be
                 projected and added. Otherwise, Apertures/Doors will only be
                 added if they are coplanar with the parent wall segment.
+            overwrite: A boolean to note whether the existing window parameters
+                should be overwritten with the newly-supplied sub faces or
+                whether an attempt should be made to preserve existing windows/doors
+                in which case sub-faces will only be replaced if they are perfectly
+                duplicated between the current sub-faces and the newly-supplied
+                sub-faces. Note that setting this to False can significantly
+                increase the runtime since it requires translation to Honeybee
+                to be able to sense when windows/doors are duplicated. (Default: True).
             tolerance: The minimum difference in coordinate values for them
                 to be considered distinct from one another. (Default: 0.01,
                 suitable for objects in meters).
@@ -1347,6 +1356,28 @@ class Room2D(_BaseGeometry):
         for sf in sub_faces:
             if overlapping_bounding_boxes(bb_diagonal, sf.geometry, dist):
                 sf_to_add.append(sf)
+
+        # translate existing windows/doors and get a unique set if not overwrite
+        if not overwrite:
+            hb_room, _ = self.to_honeybee(tolerance=tolerance, enforce_bc=False,
+                                          enforce_solid=False)
+            unique_ap = []
+            for e_ap in hb_room.apertures:
+                for n_sf in sf_to_add:
+                    if isinstance(n_sf, Aperture) and \
+                            n_sf.is_centered_adjacent(e_ap, tolerance):
+                        break  # it's a duplicated in the input sub-faces
+                else:
+                    unique_ap.append(e_ap)
+            unique_dr = []
+            for e_dr in hb_room.doors:
+                for n_sf in sf_to_add:
+                    if isinstance(n_sf, Door) and \
+                            n_sf.is_centered_adjacent(e_dr, tolerance):
+                        break  # it's a duplicated in the input sub-faces
+                else:
+                    unique_dr.append(e_dr)
+            sf_to_add = unique_ap + unique_dr + sf_to_add
 
         # add the apertures to the room if any were found
         skylight_sfs = []
