@@ -3891,21 +3891,43 @@ class Room2D(_BaseGeometry):
                         msgs.append(' Segment ({}) - {}'.format(i, msg))
                         help_geo.extend(wp.self_intersecting_geometries(seg, tolerance))
         if isinstance(self._skylight_parameters, DetailedSkylights):
+            sky_help_geo = []
             sp = self._skylight_parameters
             m_vec = Vector3D(0, 0, self.floor_to_ceiling_height)
             roof_face = self.floor_geometry.move(m_vec)
-            msg = sp.check_valid_for_face(roof_face)
-            if msg != '':
-                msgs.append(' Skylights - {}'.format(msg))
-                help_geo.extend(sp.invalid_face_geometries(roof_face))
-            msg = sp.check_overlaps(tolerance)
-            if msg != '':
-                msgs.append(' Skylights - {}'.format(msg))
-                help_geo.extend(sp.overlapping_geometries(roof_face, tolerance))
-            msg = self._skylight_parameters.check_self_intersecting(tolerance)
-            if msg != '':
-                msgs.append(' Skylights - {}'.format(msg))
-                help_geo.extend(sp.self_intersecting_geometries(roof_face, tolerance))
+            msg1 = sp.check_valid_for_face(roof_face)
+            if msg1 != '':
+                msgs.append(' Skylights - {}'.format(msg1))
+                sky_help_geo.extend(sp.invalid_face_geometries(roof_face))
+            msg2 = sp.check_overlaps(tolerance)
+            if msg2 != '':
+                msgs.append(' Skylights - {}'.format(msg2))
+                sky_help_geo.extend(sp.overlapping_geometries(roof_face, tolerance))
+            msg3 = self._skylight_parameters.check_self_intersecting(tolerance)
+            if msg3 != '':
+                msgs.append(' Skylights - {}'.format(msg3))
+                sky_help_geo.extend(sp.self_intersecting_geometries(roof_face, tolerance))
+            if len(sky_help_geo) != 0 and self.is_top_exposed and self.has_parent and \
+                    self.parent.roof is not None:
+                # translate the model to 3D so that we get accurate helper geometry
+                hb_room, _ = self.to_honeybee(tolerance=tolerance, enforce_bc=False,
+                                              enforce_solid=False)
+                skylights, sky_polys = [], []
+                for face in hb_room.faces:
+                    if isinstance(face.type, RoofCeiling):
+                        for ap in face.apertures:
+                            skylights.append(ap.geometry)
+                            pts_2 = [Point2D(pt.x, pt.y) for pt in ap.geometry.boundary]
+                            sky_polys.append(Polygon2D(pts_2))
+                new_sky_help_geo = []
+                for h_geo in sky_help_geo:
+                    h_poly = Polygon2D([Point2D(p.x, p.y) for p in h_geo.boundary])
+                    for skylight, s_poly in zip(skylights, sky_polys):
+                        poly_rel = h_poly.polygon_relationship(s_poly, tolerance)
+                        if poly_rel >= 0:
+                            new_sky_help_geo.append(skylight)
+                sky_help_geo = list(set(new_sky_help_geo))
+            help_geo.extend(sky_help_geo)
         if len(msgs) == 0:
             return [] if detailed else ''
         full_msg = 'Room2D "{}" contains invalid window parameters.' \
