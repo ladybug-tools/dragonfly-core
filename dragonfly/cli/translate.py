@@ -34,15 +34,19 @@ def translate():
 @click.option('--plenum/--no-plenum', '-p/-np', help='Flag to indicate whether '
               'ceiling/floor plenum depths assigned to Room2Ds should generate '
               'distinct 3D Rooms in the translation.', default=True, show_default=True)
-@click.option('--no-cap/--cap', ' /-c', help='Flag to indicate whether context shade '
-              'buildings should be capped with a top face.',
-              default=True, show_default=True)
 @click.option('--no-ceil-adjacency/--ceil-adjacency', ' /-a', help='Flag to indicate '
               'whether adjacencies should be solved between interior stories when '
               'Room2D floor and ceiling geometries are coplanar. This ensures '
               'that Surface boundary conditions are used instead of Adiabatic ones. '
               'Note that this input has no effect when the object-per-model is Story.',
               default=True, show_default=True)
+@click.option('--merge-method', '-m', help='Text to describe how the Room2Ds should '
+              'be merged into individual Rooms during the translation. Specifying a '
+              'value here can be an effective way to reduce the number of Room '
+              'volumes in the resulting 3D Honeybee Model and, ultimately, yield '
+              'a faster simulation time in the destination engine with fewer results '
+              'to manage. Choose from: None, Zones, PlenumZones, Stories, PlenumStories.',
+              type=str, default='None', show_default=True)
 @click.option('--shade-dist', '-sd', help='An optional number to note the distance '
               'beyond which other buildings shade should not be exported into a Model. '
               'This can include the units of the distance (eg. 100ft) or, if no units '
@@ -50,6 +54,9 @@ def translate():
               'units. If None, all other buildings will be included as context shade in '
               'each and every Model. Set to 0 to exclude all neighboring buildings '
               'from the resulting models.', type=str, default=None, show_default=True)
+@click.option('--no-cap/--cap', ' /-c', help='Flag to indicate whether context shade '
+              'buildings should be capped with a top face.',
+              default=True, show_default=True)
 @click.option('--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
               'whether an exception should be raised if an adjacency between two '
               'Room2Ds is invalid or if the check should be bypassed and the invalid '
@@ -75,9 +82,9 @@ def translate():
               'including their file paths. By default the list will be printed out to '
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee_cli(
-        model_file, obj_per_model, multiplier, plenum, no_cap,
-        no_ceil_adjacency, shade_dist, enforce_adj_check, enforce_solid,
-        folder, log_file):
+    model_file, obj_per_model, multiplier, plenum, no_ceil_adjacency, merge_method,
+    shade_dist, no_cap, enforce_adj_check, enforce_solid, folder, log_file
+):
     """Translate a Dragonfly Model file into one or more Honeybee Models.
 
     \b
@@ -92,8 +99,9 @@ def model_to_honeybee_cli(
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
         model_to_honeybee(
-            model_file, obj_per_model, full_geometry, no_plenum, cap, ceil_adjacency,
-            shade_dist, bypass_adj_check, permit_non_solid, folder, log_file)
+            model_file, obj_per_model, full_geometry,
+            no_plenum, ceil_adjacency, merge_method, shade_dist, cap,
+            bypass_adj_check, permit_non_solid, folder, log_file)
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
         sys.exit(1)
@@ -103,7 +111,7 @@ def model_to_honeybee_cli(
 
 def model_to_honeybee(
         model_file, obj_per_model='Building', full_geometry=False, no_plenum=False,
-        cap=False, ceil_adjacency=False, shade_dist=None,
+        ceil_adjacency=False, merge_method='None', shade_dist=None, cap=False,
         bypass_adj_check=False, permit_non_solid=False,
         folder=None, log_file=None,
         multiplier=True, plenum=True, no_cap=True, no_ceil_adjacency=True,
@@ -112,6 +120,22 @@ def model_to_honeybee(
 
     Args:
         model_file: Full path to a Dragonfly Model JSON or Pkl file.
+        obj_per_model: Text to describe how the input Buildings should be
+            divided across the output Models. (Default: 'Building'). Choose from
+            the following options:
+
+            * District - All buildings will be added to a single Honeybee Model.
+                Such a Model can take a long time to simulate so this is only
+                recommended for small numbers of buildings or cases where
+                exchange of data between Buildings is necessary.
+            * Building - Each building will be exported into its own Model.
+                For each Model, the other buildings input to this component will
+                appear as context shade geometry.
+            * Story - Each Story of each Building will be exported into its
+                own Model. For each Honeybee Model, the other input Buildings
+                will appear as context shade geometry as will all of the other
+                stories of the same building.
+
         full_geometry: Boolean to note if the multipliers on each Story should
             be passed along to the generated Honeybee Room objects or if full
             geometry objects should be written for each story in the
@@ -119,12 +143,26 @@ def model_to_honeybee(
         no_plenum: Boolean to indicate whether ceiling/floor plenum depths
             assigned to Room2Ds should generate distinct 3D Rooms in the
             translation. (Default: False).
-        cap: Boolean to indicate whether context shade buildings should be
-            capped with a top face. (Default: False).
         ceil_adjacency: Boolean to indicate whether adjacencies should be solved
             between interior stories when Room2D floor and ceiling geometries
             are coplanar. This ensures that Surface boundary conditions are used
             instead of Adiabatic ones. (Default: False).
+        merge_method: An optional text string to describe how the Room2Ds should
+            be merged into individual Rooms during the translation. Specifying a
+            value here can be an effective way to reduce the number of Room
+            volumes in the resulting 3D Honeybee Model and, ultimately, yield
+            a faster simulation time in the destination engine with fewer results
+            to manage. Note that Room2Ds will only be merged if they form a
+            continuous volume. Otherwise, there will be multiple Rooms per
+            zone or story, each with an integer added at the end of their
+            identifiers. Choose from the following options:
+
+            * None - No merging of Room2Ds will occur
+            * Zones - Room2Ds in the same zone will be merged
+            * PlenumZones - Only plenums in the same zone will be merged
+            * Stories - Rooms in the same story will be merged
+            * PlenumStories - Only plenums in the same story will be merged
+
         shade_dist: An optional number to note the distance beyond which other
             buildings shade should not be exported into a Model. This can include
             the units of the distance (eg. 100ft) or, if no units are provided,
@@ -132,6 +170,8 @@ def model_to_honeybee(
             all other buildings will be included as context shade in each and
             every Model. Set to 0 to exclude all neighboring buildings from the
             resulting models. (Default: None).
+        cap: Boolean to indicate whether context shade buildings should be
+            capped with a top face. (Default: False).
         bypass_adj_check: Boolean to note whether an exception should be raised
             if an adjacency between two Room2Ds is invalid or if the check
             should be bypassed and the invalid Surface boundary condition should
@@ -169,7 +209,8 @@ def model_to_honeybee(
     enforce_adj_check = not bypass_adj_check
     enforce_solid = not permit_non_solid
     hb_models = model.to_honeybee(
-        obj_per_model, shade_dist, multiplier, no_plenum, cap, ceil_adjacency,
+        obj_per_model, shade_dist, multiplier, no_plenum, cap,
+        ceil_adjacency, merge_method,
         enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)
 
     # write out the honeybee JSONs and collect the info about them
@@ -208,6 +249,14 @@ def model_to_honeybee(
     'that Surface boundary conditions are used instead of Adiabatic ones.',
     default=True, show_default=True)
 @click.option(
+    '--merge-method', '-m', help='Text to describe how the Room2Ds should '
+    'be merged into individual Rooms during the translation. Specifying a '
+    'value here can be an effective way to reduce the number of Room '
+    'volumes in the resulting 3D Honeybee Model and, ultimately, yield '
+    'a faster simulation time in the destination engine with fewer results '
+    'to manage. Choose from: None, Zones, PlenumZones, Stories, PlenumStories.',
+    type=str, default='None', show_default=True)
+@click.option(
     '--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
     'whether an exception should be raised if an adjacency between two '
     'Room2Ds is invalid or if the check should be bypassed and the invalid '
@@ -228,8 +277,9 @@ def model_to_honeybee(
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def model_to_honeybee_file_cli(
-        model_file, multiplier, plenum, no_ceil_adjacency,
-        enforce_adj_check, enforce_solid, output_file):
+    model_file, multiplier, plenum, no_ceil_adjacency, merge_method,
+    enforce_adj_check, enforce_solid, output_file
+):
     """Translate a Dragonfly Model into a single Honeybee Model.
 
     \b
@@ -243,7 +293,7 @@ def model_to_honeybee_file_cli(
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
         model_to_honeybee_file(
-            model_file, full_geometry, no_plenum, ceil_adjacency,
+            model_file, full_geometry, no_plenum, ceil_adjacency, merge_method,
             bypass_adj_check, permit_non_solid, output_file)
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
@@ -253,7 +303,8 @@ def model_to_honeybee_file_cli(
 
 
 def model_to_honeybee_file(
-        model_file, full_geometry=False, no_plenum=False, ceil_adjacency=False,
+        model_file, full_geometry=False, no_plenum=False,
+        ceil_adjacency=False, merge_method='None',
         bypass_adj_check=False, permit_non_solid=False, output_file=None,
         multiplier=True, plenum=True, no_ceil_adjacency=True,
         enforce_adj_check=True, enforce_solid=True):
@@ -279,6 +330,22 @@ def model_to_honeybee_file(
             any Walls containing WindowParameters and an illegal boundary
             condition will also be replaced with an Outdoor boundary
             condition. (Default: False).
+        merge_method: An optional text string to describe how the Room2Ds should
+            be merged into individual Rooms during the translation. Specifying a
+            value here can be an effective way to reduce the number of Room
+            volumes in the resulting 3D Honeybee Model and, ultimately, yield
+            a faster simulation time in the destination engine with fewer results
+            to manage. Note that Room2Ds will only be merged if they form a
+            continuous volume. Otherwise, there will be multiple Rooms per
+            zone or story, each with an integer added at the end of their
+            identifiers. Choose from the following options:
+
+            * None - No merging of Room2Ds will occur
+            * Zones - Room2Ds in the same zone will be merged
+            * PlenumZones - Only plenums in the same zone will be merged
+            * Stories - Rooms in the same story will be merged
+            * PlenumStories - Only plenums in the same story will be merged
+
         permit_non_solid: Boolean to note whether rooms should be translated as
             solid extrusions whenever translating them with custom roof geometry
             produces a non-solid result or the non-solid room geometry should
@@ -297,6 +364,7 @@ def model_to_honeybee_file(
     hb_model = parsed_model.to_honeybee(
         object_per_model='District', use_multiplier=multiplier,
         exclude_plenums=no_plenum, solve_ceiling_adjacencies=ceil_adjacency,
+        merge_method=merge_method,
         enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
     # write the new model out to the file or stdout
     model_str = json.dumps(hb_model.to_dict())
@@ -334,6 +402,14 @@ def model_to_honeybee_file(
     'coplanar Faces to get matching areas, and setting Surface boundary conditions '
     'for all matching coplanar faces.', default=True, show_default=True)
 @click.option(
+    '--merge-method', '-m', help='Text to describe how the Room2Ds should '
+    'be merged into individual Rooms during the translation. Specifying a '
+    'value here can be an effective way to reduce the number of Room '
+    'volumes in the resulting 3D Honeybee Model and, ultimately, yield '
+    'a faster simulation time in the destination engine with fewer results '
+    'to manage. Choose from: None, Zones, PlenumZones, Stories, PlenumStories.',
+    type=str, default='None', show_default=True)
+@click.option(
     '--enforce-adj-check/--bypass-adj-check', ' /-bc', help='Flag to note '
     'whether an exception should be raised if an adjacency between two '
     'Room2Ds is invalid or if the check should be bypassed and the invalid '
@@ -355,7 +431,7 @@ def model_to_honeybee_file(
     type=click.File('w'), default='-')
 def merge_models_to_honeybee_cli(
         base_model, dragonfly_model, honeybee_model, multiplier, plenum,
-        default_adjacency, enforce_adj_check, enforce_solid, output_file):
+        default_adjacency, merge_method, enforce_adj_check, enforce_solid, output_file):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
     \b
@@ -371,7 +447,7 @@ def merge_models_to_honeybee_cli(
         permit_non_solid = not enforce_solid
         merge_models_to_honeybee(
             base_model, dragonfly_model, honeybee_model,
-            full_geometry, no_plenum, solve_adjacency,
+            full_geometry, no_plenum, solve_adjacency, merge_method,
             bypass_adj_check, permit_non_solid, output_file)
     except Exception as e:
         _logger.exception('Model merging failed.\n{}'.format(e))
@@ -382,7 +458,7 @@ def merge_models_to_honeybee_cli(
 
 def merge_models_to_honeybee(
         base_model, dragonfly_model=(), honeybee_model=(),
-        full_geometry=False, no_plenum=False, solve_adjacency=False,
+        full_geometry=False, no_plenum=False, solve_adjacency=False, merge_method='None',
         bypass_adj_check=False, permit_non_solid=False, output_file=None,
         multiplier=True, plenum=True, default_adjacency=True,
         enforce_adj_check=True, enforce_solid=True):
@@ -409,6 +485,22 @@ def merge_models_to_honeybee(
             coplanar faces across the Dragonfly/Honeybee Models, intersecting
             coplanar Faces to get matching areas, and setting Surface boundary
             conditions for all matching coplanar faces. (Default: False).
+        merge_method: An optional text string to describe how the Room2Ds should
+            be merged into individual Rooms during the translation. Specifying a
+            value here can be an effective way to reduce the number of Room
+            volumes in the resulting 3D Honeybee Model and, ultimately, yield
+            a faster simulation time in the destination engine with fewer results
+            to manage. Note that Room2Ds will only be merged if they form a
+            continuous volume. Otherwise, there will be multiple Rooms per
+            zone or story, each with an integer added at the end of their
+            identifiers. Choose from the following options:
+
+            * None - No merging of Room2Ds will occur
+            * Zones - Room2Ds in the same zone will be merged
+            * PlenumZones - Only plenums in the same zone will be merged
+            * Stories - Rooms in the same story will be merged
+            * PlenumStories - Only plenums in the same story will be merged
+
         bypass_adj_check: Boolean to note whether an exception should be raised
             if an adjacency between two Room2Ds is invalid or if the check
             should be bypassed and the invalid Surface boundary condition should
@@ -449,6 +541,7 @@ def merge_models_to_honeybee(
     hb_model = parsed_model.to_honeybee(
         object_per_model='District', use_multiplier=multiplier,
         exclude_plenums=no_plenum, solve_ceiling_adjacencies=solve_adjacency,
+        merge_method=merge_method,
         enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
 
     # merge the honeybee models

@@ -10,6 +10,7 @@ import datetime
 import tempfile
 import uuid
 import zipfile
+from collections import OrderedDict
 try:  # check if we are in IronPython
     import cPickle as pickle
 except ImportError:  # wea re in cPython
@@ -1815,7 +1816,7 @@ class Model(_BaseGeometry):
                 to manage. Note that Room2Ds will only be merged if they form a
                 continuous volume. Otherwise, there will be multiple Rooms per
                 zone or story, each with an integer added at the end of their
-                identifiers and names. Choose from the following options:
+                identifiers. Choose from the following options:
 
                 * None - No merging of Room2Ds will occur
                 * Zones - Room2Ds in the same zone will be merged
@@ -1850,7 +1851,7 @@ class Model(_BaseGeometry):
             'Model tolerance must be non-zero to use Model.to_honeybee.'
 
         # create a map of rooms to merge if the merge_method is not None
-        merge_map = self._extract_merge_map(merge_method, tolerance)
+        merge_map = self._extract_merge_map(merge_method, exclude_plenums, tolerance)
 
         # create the model objects
         opm = object_per_model.title()
@@ -2435,7 +2436,9 @@ class Model(_BaseGeometry):
                 filtered_model['context_shades'] = new_shades
         return filtered_model
 
-    def _extract_merge_map(self, merge_method=None, tolerance=None):
+    def _extract_merge_map(
+        self, merge_method=None, exclude_plenums=False, tolerance=None
+    ):
         """Extract dictionaries mapping Honeybee Rooms to be merged.
 
         Args:
@@ -2455,6 +2458,8 @@ class Model(_BaseGeometry):
                 * Stories - Rooms in the same story will be merged
                 * PlenumStories - Only plenums in the same story will be merged
 
+            exclude_plenums: Boolean to note whether plenums are being excluded
+                in the result. (Default: False).
             tolerance: The minimum distance between objects that is considered
                 meaningful. If None, the Model's tolerance will be used. (Default: None).
         """
@@ -2470,7 +2475,7 @@ class Model(_BaseGeometry):
             if merge_method == 'zones':
                 for room in self.room_2ds:
                     room_merge_map[room.identifier] = room.zone
-            if merge_method in ('zones', 'plenumzones'):
+            if not exclude_plenums and merge_method in ('zones', 'plenumzones'):
                 for room in self.room_2ds:
                     if room.ceiling_plenum_depth > tolerance:
                         room_id = '{}_Ceiling_Plenum'.format(room.identifier)
@@ -2485,7 +2490,7 @@ class Model(_BaseGeometry):
             if merge_method == 'stories':
                 for room in self.room_2ds:
                     room_merge_map[room.identifier] = room.parent.display_name
-            if merge_method in ('stories', 'plenumstories'):
+            if not exclude_plenums and merge_method in ('stories', 'plenumstories'):
                 for room in self.room_2ds:
                     if room.ceiling_plenum_depth > tolerance:
                         room_id = '{}_Ceiling_Plenum'.format(room.identifier)
@@ -2511,7 +2516,8 @@ class Model(_BaseGeometry):
             tolerance: The minimum distance between that is considered meaningful.
         """
         # use the merge map to gather the Room objects to be merged
-        merge_groups, remove_i = {}, set()
+        merge_groups, remove_i = OrderedDict(), set()
+        insert_i, insert_count = [], 0
         for i, room in enumerate(model.rooms):
             try:
                 merge_name = merge_map[room.identifier]
@@ -2519,20 +2525,58 @@ class Model(_BaseGeometry):
                     merge_groups[merge_name].append(room)
                 except KeyError:  # first item in the group
                     merge_groups[merge_name] = [room]
+                    insert_i.append(insert_count)
                 remove_i.add(i)
             except KeyError:  # not a room to be merged
-                continue
+                insert_count += 1
+
         # create the new rooms and assign them to the model
         new_rooms = [r for i, r in enumerate(model.rooms) if i not in remove_i]
-        group_ids = {}
-        for group_name, room_group in merge_groups.items():
+        group_ids, final_merge_map = {}, {}
+        zip_obj = zip(reversed(insert_i), reversed(merge_groups.items()))
+        for ins_i, (group_name, room_group) in zip_obj:
             merged_rooms = HBRoom.join_adjacent_rooms(room_group, tolerance)
             for room in merged_rooms:
                 room.identifier = clean_and_number_string(group_name, group_ids)
                 room.display_name = group_name
-                new_rooms.append(room)
+                new_rooms.insert(ins_i, room)
+            # build up a final map of old room IDs to the new merged IDs
+            if len(merged_rooms) == 1:
+                merged_id = merged_rooms[0].identifier
+                for rm in room_group:
+                    final_merge_map[rm.identifier] = merged_id
+            else:
+                for rm in room_group:
+                    room_mapped = False
+                    for merge_rm in merged_rooms:
+                        if room_mapped:
+                            break
+                        for old_face in rm.faces:
+                            if room_mapped:
+                                break
+                            for new_face in merge_rm.faces:
+                                if old_face.identifier == new_face.identifier:
+                                    final_merge_map[rm.identifier] = merge_rm.identifier
+                                    room_mapped = True
+                                    break
         model.rooms = new_rooms
-        # TODO: update any Surface boundary conditions with the new room IDs
+
+        # update any Surface boundary conditions with the new room IDs
+        for room in model.rooms:
+            for face in room.faces:
+                face_bc = face.boundary_condition
+                if isinstance(face_bc, Surface):
+                    bc_face, bc_room = face_bc.boundary_condition_objects
+                    try:
+                        new_bc_room = final_merge_map[bc_room]
+                        face.boundary_condition = Surface((bc_face, new_bc_room))
+                        for sf in face.sub_faces:
+                            sf_bc = sf.boundary_condition
+                            bc_sf, bc_face, bc_room = sf_bc.boundary_condition_objects
+                            new_bc_objs = (bc_sf, bc_face, new_bc_room)
+                            sf.boundary_condition = Surface(new_bc_objs, sub_face=True)
+                    except KeyError:  # not adjacent to a merged room
+                        insert_count += 1
 
     @staticmethod
     def _solve_ceil_adj(rooms, story_rel_types, has_floor_ceil,
