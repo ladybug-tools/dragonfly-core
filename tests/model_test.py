@@ -1148,22 +1148,27 @@ def test_to_honeybee_merge_method():
     hb_model = model.to_honeybee(
         'District', exclude_plenums=True, merge_method='Stories')[0]
     assert len(hb_model.rooms) == 3
+    assert hb_model.check_missing_adjacencies(False, False) == ''
 
     hb_model = model.to_honeybee(
         'District', exclude_plenums=False, merge_method='Stories')[0]
     assert len(hb_model.rooms) == 9
+    assert hb_model.check_missing_adjacencies(False, False) == ''
 
     hb_model = model.to_honeybee(
         'District', exclude_plenums=False, merge_method='PlenumStories')[0]
     assert len(hb_model.rooms) == 107
+    assert hb_model.check_missing_adjacencies(False, False) == ''
 
     hb_model = model.to_honeybee(
         'District', exclude_plenums=True, merge_method='Zones')[0]
     assert len(hb_model.rooms) == 46
+    assert hb_model.check_missing_adjacencies(False, False) == ''
 
     hb_model = model.to_honeybee(
         'District', exclude_plenums=False, merge_method='PlenumZones')[0]
     assert len(hb_model.rooms) == 136
+    assert hb_model.check_missing_adjacencies(False, False) == ''
 
 
 def test_to_honeybee_doors_skylights_roof():
