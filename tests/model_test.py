@@ -1140,6 +1140,32 @@ def test_remove_colinear_vertices_edge_case():
     assert len(cleaned_room.window_parameters[1]) == 50
 
 
+def test_to_honeybee_merge_method():
+    """Test the to_honeybee method with the different merge methods."""
+    model_file = './tests/json/model_for_merge_methods.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=True, merge_method='Stories')[0]
+    assert len(hb_model.rooms) == 3
+
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=False, merge_method='Stories')[0]
+    assert len(hb_model.rooms) == 9
+
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=False, merge_method='PlenumStories')[0]
+    assert len(hb_model.rooms) == 107
+
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=True, merge_method='Zones')[0]
+    assert len(hb_model.rooms) == 46
+
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=False, merge_method='PlenumZones')[0]
+    assert len(hb_model.rooms) == 136
+
+
 def test_to_honeybee_doors_skylights_roof():
     """Test the to_honeybee method with doors, skylights, and a sloped roof."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'

@@ -1755,10 +1755,12 @@ class Model(_BaseGeometry):
             return dummy_model.check_all(raise_exception, detailed)
         return [] if detailed else ''
 
-    def to_honeybee(self, object_per_model='Building', shade_distance=None,
-                    use_multiplier=True, exclude_plenums=False, cap=False,
-                    solve_ceiling_adjacencies=False, tolerance=None,
-                    enforce_adj=True, enforce_solid=True):
+    def to_honeybee(
+        self, object_per_model='Building', shade_distance=None,
+        use_multiplier=True, exclude_plenums=False, cap=False,
+        solve_ceiling_adjacencies=False, merge_method=None,
+        tolerance=None, enforce_adj=True, enforce_solid=True
+    ):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
         Args:
@@ -1805,6 +1807,22 @@ class Model(_BaseGeometry):
                 geometries are coplanar. This ensures that Surface boundary
                 conditions are used instead of Adiabatic ones. Note that this input
                 has no effect when the object_per_model is Story. (Default: False).
+            merge_method: An optional text string to describe how the Room2Ds should
+                be merged into individual Rooms during the translation. Specifying a
+                value here can be an effective way to reduce the number of Room
+                volumes in the resulting 3D Honeybee Model and, ultimately, yield
+                a faster simulation time in the destination engine with fewer results
+                to manage. Note that Room2Ds will only be merged if they form a
+                continuous volume. Otherwise, there will be multiple Rooms per
+                zone or story, each with an integer added at the end of their
+                identifiers and names. Choose from the following options:
+
+                * None - No merging of Room2Ds will occur
+                * Zones - Room2Ds in the same zone will be merged
+                * PlenumZones - Only plenums in the same zone will be merged
+                * Stories - Rooms in the same story will be merged
+                * PlenumStories - Only plenums in the same story will be merged
+
             tolerance: The minimum distance in z values of floor_height and
                 floor_to_ceiling_height at which adjacent Faces will be split.
                 This is also used in the generation of Windows. This must be a
@@ -1830,6 +1848,9 @@ class Model(_BaseGeometry):
         tolerance = self.tolerance if tolerance is None else tolerance
         assert tolerance != 0, \
             'Model tolerance must be non-zero to use Model.to_honeybee.'
+
+        # create a map of rooms to merge if the merge_method is not None
+        merge_map = self._extract_merge_map(merge_method, tolerance)
 
         # create the model objects
         opm = object_per_model.title()
@@ -1904,6 +1925,11 @@ class Model(_BaseGeometry):
         # transfer Model extension attributes to the honeybee models
         for h_model in models:
             h_model._properties = self.properties.to_honeybee(h_model)
+
+        # merge rooms in the models together if there is a merge_map
+        if merge_map is not None:
+            for model in models:
+                self._apply_merge_map(model, merge_map, tolerance)
 
         return models
 
@@ -2408,6 +2434,105 @@ class Model(_BaseGeometry):
                         new_shades.append(cs_dict)
                 filtered_model['context_shades'] = new_shades
         return filtered_model
+
+    def _extract_merge_map(self, merge_method=None, tolerance=None):
+        """Extract dictionaries mapping Honeybee Rooms to be merged.
+
+        Args:
+            merge_method: An optional text string to describe how the Room2Ds should
+                be merged into individual Rooms during the translation. Specifying a
+                value here can be an effective way to reduce the number of Room
+                volumes in the resulting 3D Honeybee Model and, ultimately, yield
+                a faster simulation time in the destination engine with fewer results
+                to manage. Note that Room2Ds will only be merged if they form a
+                continuous volume. Otherwise, there will be multiple Rooms per
+                zone or story, each with an integer added at the end of their
+                identifiers and names. Choose from the following options:
+
+                * None - No merging of Room2Ds will occur
+                * Zones - Room2Ds in the same zone will be merged
+                * PlenumZones - Only plenums in the same zone will be merged
+                * Stories - Rooms in the same story will be merged
+                * PlenumStories - Only plenums in the same story will be merged
+
+            tolerance: The minimum distance between objects that is considered
+                meaningful. If None, the Model's tolerance will be used. (Default: None).
+        """
+        # set up variables to be used to evaluate the mapping
+        tolerance = self.tolerance if tolerance is None else tolerance
+        room_merge_map = None
+        merge_method = str(merge_method).lower()
+        acceptable_methods = ('zones', 'plenumzones', 'stories', 'plenumstories')
+
+        # set up the mapping given the merge_method
+        if merge_method in acceptable_methods:
+            room_merge_map = {}
+            if merge_method == 'zones':
+                for room in self.room_2ds:
+                    room_merge_map[room.identifier] = room.zone
+            if merge_method in ('zones', 'plenumzones'):
+                for room in self.room_2ds:
+                    if room.ceiling_plenum_depth > tolerance:
+                        room_id = '{}_Ceiling_Plenum'.format(room.identifier)
+                        zone_id = room_id if room._zone is None else \
+                            '{} Ceiling Plenum'.format(room.zone)
+                        room_merge_map[room_id] = zone_id
+                    if room.floor_plenum_depth > tolerance:
+                        room_id = '{}_Floor_Plenum'.format(room.identifier)
+                        zone_id = room_id if room._zone is None else \
+                            '{} Floor Plenum'.format(room.zone)
+                        room_merge_map[room_id] = zone_id
+            if merge_method == 'stories':
+                for room in self.room_2ds:
+                    room_merge_map[room.identifier] = room.parent.display_name
+            if merge_method in ('stories', 'plenumstories'):
+                for room in self.room_2ds:
+                    if room.ceiling_plenum_depth > tolerance:
+                        room_id = '{}_Ceiling_Plenum'.format(room.identifier)
+                        story_id = '{}_CeilingPlenum'.format(room.parent.identifier) \
+                            if room.parent._display_name is None else \
+                            '{} Plenum'.format(room.parent.display_name)
+                        room_merge_map[room_id] = story_id
+                    if room.floor_plenum_depth > tolerance:
+                        room_id = '{}_Floor_Plenum'.format(room.identifier)
+                        story_id = '{}_FloorPlenum'.format(room.parent.identifier) \
+                            if room.parent._display_name is None else \
+                            '{} Plenum'.format(room.parent.display_name)
+                        room_merge_map[room_id] = story_id
+        return room_merge_map
+
+    @staticmethod
+    def _apply_merge_map(model, merge_map, tolerance):
+        """Merge Rooms of a Honeybee Model together using a merge_map dictionary.
+
+        Args:
+            model: A Honeybee Model for which Rooms will be merged.
+            merge_map: A dictionary with Honeybee Room
+            tolerance: The minimum distance between that is considered meaningful.
+        """
+        # use the merge map to gather the Room objects to be merged
+        merge_groups, remove_i = {}, set()
+        for i, room in enumerate(model.rooms):
+            try:
+                merge_name = merge_map[room.identifier]
+                try:
+                    merge_groups[merge_name].append(room)
+                except KeyError:  # first item in the group
+                    merge_groups[merge_name] = [room]
+                remove_i.add(i)
+            except KeyError:  # not a room to be merged
+                continue
+        # create the new rooms and assign them to the model
+        new_rooms = [r for i, r in enumerate(model.rooms) if i not in remove_i]
+        group_ids = {}
+        for group_name, room_group in merge_groups.items():
+            merged_rooms = HBRoom.join_adjacent_rooms(room_group, tolerance)
+            for room in merged_rooms:
+                room.identifier = clean_and_number_string(group_name, group_ids)
+                room.display_name = group_name
+                new_rooms.append(room)
+        model.rooms = new_rooms
+        # TODO: update any Surface boundary conditions with the new room IDs
 
     @staticmethod
     def _solve_ceil_adj(rooms, story_rel_types, has_floor_ceil,

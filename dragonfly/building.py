@@ -1079,7 +1079,7 @@ class Building(_BaseGeometry):
                 area that must be covered by a given roof geometry for it to be
                 considered overlapping with that room. This is intended to prevent
                 incorrect roof assignment in cases where roofs extend slightly
-                past the room they are intended for. (Default: 0.05).
+                past the room they are intended for.
         """
         # convert all roof geometries to clean 2D polygons
         roof_polygons, clean_roofs = [], []
