@@ -6234,6 +6234,8 @@ class Room2D(_BaseGeometry):
                     if lseg.length == 0:
                         continue
                     mid_dist = self.floor_to_ceiling_height - ciel_diff - flr_diff
+                    if mid_dist == 0:
+                        continue
                     vec1 = Vector3D(0, 0, flr_diff)
                     vec2 = Vector3D(0, 0, self.floor_to_ceiling_height - ciel_diff)
                     below = Face3D.from_extrusion(lseg, vec1)
@@ -6263,6 +6265,8 @@ class Room2D(_BaseGeometry):
                     if lseg.length == 0:
                         continue
                     mid_dist = self.floor_to_ceiling_height - flr_diff
+                    if mid_dist == 0:
+                        continue
                     vec1 = Vector3D(0, 0, flr_diff)
                     below = Face3D.from_extrusion(lseg, vec1)
                     mid = Face3D.from_extrusion(
@@ -6282,6 +6286,8 @@ class Room2D(_BaseGeometry):
                     if lseg.length == 0:
                         continue
                     mid_dist = self.floor_to_ceiling_height - ciel_diff
+                    if mid_dist == 0:
+                        continue
                     vec1 = Vector3D(0, 0, mid_dist)
                     mid = Face3D.from_extrusion(lseg, vec1)
                     above = Face3D.from_extrusion(
