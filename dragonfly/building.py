@@ -1373,7 +1373,7 @@ class Building(_BaseGeometry):
             rfs, skylights = [], []
             if method == 'extrudedonly':
                 for face in hb_room.roof_ceilings:
-                    if face.tilt > angle_tolerance:
+                    if angle_tolerance < face.tilt < 90 - angle_tolerance:
                         rfs.append(face.geometry)
             elif method == 'allroom2d':
                 for face in hb_room.faces:
@@ -2821,7 +2821,7 @@ class Building(_BaseGeometry):
                 elif isinstance(face.type, RoofCeiling):
                     if v_ang <= min_v_ang or v_ang >= max_v_ang:
                         continue
-                    elif v_ang <= min_h_ang:
+                    elif v_ang <= max_h_ang:
                         sloped_count += 1
                         continue
                 else:  # AirBoundary Faces must be vertical or horizontal
@@ -2833,9 +2833,6 @@ class Building(_BaseGeometry):
             except AssertionError:  # degenerate face to ignore
                 pass
 
-        # if there are too many roof faces (like a dome), just keep it 3D
-        if sloped_count > 25:
-            return False
         return True
 
     @staticmethod
