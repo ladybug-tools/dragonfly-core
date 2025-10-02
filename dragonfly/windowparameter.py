@@ -2478,9 +2478,12 @@ class DetailedWindows(_AsymmetricBase):
                 new_verts.append(Point2D(x_val, y_val))
             new_poly = Polygon2D(new_verts)
             if new_poly.area > sliver_tol:
-                new_polygons.append(new_poly)
-                new_are_doors.append(is_dr)
-                kept_i.append(i)
+                try:
+                    new_polygons.append(new_poly.remove_colinear_vertices(tolerance))
+                    new_are_doors.append(is_dr)
+                    kept_i.append(i)
+                except AssertionError:  # evaluated to an invalid geometry
+                    continue
 
         # return the final window parameters
         new_w_par = None

@@ -1365,7 +1365,7 @@ class Room2D(_BaseGeometry):
             for e_ap in hb_room.apertures:
                 for n_sf in sf_to_add:
                     if isinstance(n_sf, Aperture) and \
-                            n_sf.is_centered_adjacent(e_ap, tolerance):
+                            n_sf.geometry.is_centered_adjacent(e_ap.geometry, tolerance):
                         break  # it's a duplicated in the input sub-faces
                 else:
                     unique_ap.append(e_ap)
@@ -1373,7 +1373,7 @@ class Room2D(_BaseGeometry):
             for e_dr in hb_room.doors:
                 for n_sf in sf_to_add:
                     if isinstance(n_sf, Door) and \
-                            n_sf.is_centered_adjacent(e_dr, tolerance):
+                            n_sf.geometry.is_centered_adjacent(e_dr.geometry, tolerance):
                         break  # it's a duplicated in the input sub-faces
                 else:
                     unique_dr.append(e_dr)
@@ -1439,6 +1439,8 @@ class Room2D(_BaseGeometry):
                 are_doors.append(isd)
             self.skylight_parameters = DetailedSkylights(sky_poly, are_doors)
             self.offset_skylights_from_edges(5 * tolerance, tolerance)
+        elif overwrite:  # remove existing skylights
+            self.skylight_parameters = None
 
     def add_prefix(self, prefix):
         """Change the identifier of this object by inserting a prefix.
@@ -4163,13 +4165,23 @@ class Room2D(_BaseGeometry):
                     hb_face.remove_sub_faces()
                     glz_par.add_window_to_face(hb_face, tolerance)
                 if has_roof and isinstance(glz_par, _AsymmetricBase):
-                    valid_sf = []
+                    valid_sf, trim_sf = [], []
                     for sf in hb_face.sub_faces:
-                        if hb_face.geometry._is_sub_face(sf.geometry):
+                        p_geo, sf_geo = hb_face.geometry, sf.geometry
+                        verts2d = tuple(p_geo.plane.xyz_to_xy(v) for v in sf_geo.vertices)
+                        sub_poly = Polygon2D(verts2d)
+                        if p_geo.polygon2d.is_polygon_inside(sub_poly):
                             valid_sf.append(sf)
+                        elif not p_geo.polygon2d.is_polygon_outside(sub_poly):
+                            trim_sf.append(sf)
                     if len(hb_face.sub_faces) != len(valid_sf):
                         hb_face.remove_sub_faces()
-                        hb_face.add_sub_faces(valid_sf)
+                        hb_face.add_sub_faces(valid_sf + trim_sf)
+                        if len(trim_sf) != 0:
+                            hb_face.fix_invalid_sub_faces(
+                                trim_with_parent=True, union_overlaps=False,
+                                offset_distance=tolerance, tolerance=tolerance
+                            )
         skip = 0
         for i, shd_par in enumerate(self._shading_parameters):
             if ex_wall_i is not None and i in ex_wall_i:
