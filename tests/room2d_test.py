@@ -11,6 +11,7 @@ from honeybee.boundarycondition import Outdoors, Ground, Surface
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.facetype import AirBoundary
 from honeybee.room import Room
+from honeybee.model import Model as HBModel
 
 from dragonfly.room2d import Room2D
 from dragonfly.story import Story
@@ -549,6 +550,25 @@ def test_room2d_set_boundary_condition():
     assert room2d.window_parameters[1] is None
     with pytest.raises(AssertionError):
         room2d.set_boundary_condition(3, bcs.ground)
+
+
+def test_assign_sub_faces():
+    """Test the assign_sub_faces method."""
+    # set up the inputs
+    projection_distance = 0.5  # distance in model units where windows will be projected.
+    model_file = './tests/json/assign_sub_face_edge_case.dfjson'
+    aperture_file = './tests/json/assign_sub_face_edge_case.hbjson'
+
+    # load the line geometries, Dragonfly Room2Ds, and get the model tolerance
+    ap_model = HBModel.from_file(aperture_file)
+    model = Model.from_dfjson(model_file)
+
+    room_2d = model.room_2ds[0]
+    room_2d.assign_sub_faces(ap_model.apertures, projection_distance, tolerance=model.tolerance)
+    assert room_2d.exterior_window_area > 3
+
+    hb_room = model.to_honeybee('District')[0].rooms[0]
+    assert hb_room.exterior_aperture_area > 3
 
 
 def test_move():
