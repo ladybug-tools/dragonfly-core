@@ -1332,7 +1332,7 @@ class RoofSpecification(object):
             # get the roof faces using polygon boolean operations
             roof_faces = room._roof_faces(
                 all_room_poly, rel_rf_polys, rel_rf_planes, tolerance)
-            if roof_faces is None:  # invalid roof geometry
+            if roof_faces is None or len(roof_faces) == 0:  # invalid roof geometry
                 continue
             roof_min = min(f.min.z for f in roof_faces)
             if roof_min < hp_flr_hgt - tolerance:
