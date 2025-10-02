@@ -1231,11 +1231,22 @@ class Building(_BaseGeometry):
         for story in self._unique_stories:
             if story.display_name == hb_room.story:
                 story.add_room_2d(df_room)
+                rel_story = story
                 break
         else:  # a new Story object has to be initialized
             new_story = Story(clean_string(hb_room.story), (df_room,))
             new_story.display_name = hb_room.story
             self.add_stories([new_story])
+            rel_story = new_story
+        # process any roofs
+        roof_geos = []
+        for face in hb_room.roof_ceilings:
+            if 1 < face.tilt < 89:
+                roof_geos.append(face.geometry)
+        all_geo = rel_story.roof.geometry + tuple(roof_geos) \
+            if rel_story.roof is not None else roof_geos
+        if len(all_geo) != 0:
+            rel_story.roof = RoofSpecification.from_geometry_to_join(all_geo, tolerance)
         return df_room
 
     def convert_room_3ds_to_2d(self, room_3d_identifiers, tolerance=0.01):
@@ -1259,6 +1270,7 @@ class Building(_BaseGeometry):
         """
         df_rooms = []
         for r3_id in room_3d_identifiers:
+            # create the new Room2D
             new_r2 = self.convert_room_3d_to_2d(r3_id, tolerance)
             if new_r2 is not None:
                 df_rooms.append(new_r2)

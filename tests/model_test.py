@@ -777,7 +777,7 @@ def test_failing_roof_edge_case():
     model = Model.from_file(model_file)
 
     hb_models = model.to_honeybee('District', None, False,
-                                  tolerance=0.003, enforce_solid=False)
+                                  tolerance=0.003, enforce_solid=True)
     hb_model = hb_models[0]
     main_room = hb_model.rooms[0]
     assert len(main_room.roof_ceilings) > 1
@@ -790,7 +790,20 @@ def test_failing_roof_edge_case_2():
     model = Model.from_file(model_file)
 
     hb_models = model.to_honeybee('District', None, False,
-                                  tolerance=0.003, enforce_solid=False)
+                                  tolerance=0.003, enforce_solid=True)
+    hb_model = hb_models[0]
+    main_room = hb_model.rooms[0]
+    assert len(main_room.roof_ceilings) > 1
+    assert main_room.geometry.is_solid
+
+
+def test_failing_roof_edge_case_3():
+    """Test the translation of another room with a roof."""
+    model_file = './tests/json/wall_roof_bug.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_models = model.to_honeybee('District', None, False,
+                                  tolerance=0.003, enforce_solid=True)
     hb_model = hb_models[0]
     main_room = hb_model.rooms[0]
     assert len(main_room.roof_ceilings) > 1
