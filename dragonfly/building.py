@@ -1150,8 +1150,11 @@ class Building(_BaseGeometry):
                     story_roofs[i].append(rf_geo)
                     break
             else:  # if it did not overlap any story, just add it to the top
-                if rf_geo.max.z > st_ht:  # make sure it is not below all stories
-                    story_roofs[0].append(rf_geo)
+                try:
+                    if rf_geo.max.z > story_heights[-1]:  # make sure it is not below all stories
+                        story_roofs[0].append(rf_geo)
+                except IndexError:
+                    pass  # no stories in the building; must be made of 3D Room
 
         # create the RoofSpecification objects and assign them to the stories
         for story, roof_geos in zip(rev_stories, story_roofs):
