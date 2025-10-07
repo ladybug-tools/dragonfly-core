@@ -139,11 +139,16 @@ class Model(_BaseGeometry):
         self._properties = ModelProperties(self)
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, cleanup_irrational=False):
         """Initialize a Model from a dictionary.
 
         Args:
             data: A dictionary representation of a Model object.
+            cleanup_irrational: Boolean to note whether common types of irrational
+                objects should be cleaned or removed from the dictionary before
+                serializing the model to Python. Typical cases that are removed
+                this way include Face3Ds with fewer than 3 vertices, Stories that
+                have no Room2D geometry, etc. (Default: False).
         """
         # check the type of dictionary
         assert data['type'] == 'Model', 'Expected Model dictionary. ' \
@@ -159,6 +164,10 @@ class Model(_BaseGeometry):
         ref_vec = None if 'reference_vector' not in data or \
             data['reference_vector'] is None else \
             Vector3D.from_array(data['reference_vector'])
+
+        # clean the irrational objects out if requested
+        if cleanup_irrational:
+            cls.clean_irrational_geometry(data)
 
         # import all of the geometry
         buildings = None  # import buildings
@@ -214,7 +223,7 @@ class Model(_BaseGeometry):
         return model
 
     @classmethod
-    def from_file(cls, df_file):
+    def from_file(cls, df_file, cleanup_irrational=False):
         """Initialize a Model from a DFJSON or DFpkl file, auto-sensing the type.
 
         This will also sense if the input is a Honeybee Model and, if so,
@@ -223,11 +232,16 @@ class Model(_BaseGeometry):
         Args:
             df_file: Path to either a DFJSON or DFpkl file. This can also be a
                 HBJSON or a HBpkl from which a Dragonfly model should be derived.
+            cleanup_irrational: Boolean to note whether common types of irrational
+                objects should be cleaned or removed from the dictionary before
+                serializing the model to Python. Typical cases that are removed
+                this way include Face3Ds with fewer than 3 vertices, Stories that
+                have no Room2D geometry, etc. (Default: False).
         """
         assert os.path.isfile(df_file), 'Failed to find %s' % df_file
         # sense the file type by first checking it it's a zip file
         if zipfile.is_zipfile(df_file):
-            return cls.from_pomf(df_file)
+            return cls.from_pomf(df_file, cleanup_irrational)
         # check the first character to avoid maxing memory with JSON
         with io.open(df_file, encoding='utf-8') as inf:
             first_char = inf.read(1)
@@ -235,16 +249,21 @@ class Model(_BaseGeometry):
         is_json = True if first_char == '{' or second_char == '{' else False
         # load the file using either DFJSON pathway or DFpkl
         if is_json:
-            return cls.from_dfjson(df_file)
-        return cls.from_dfpkl(df_file)
+            return cls.from_dfjson(df_file, cleanup_irrational)
+        return cls.from_dfpkl(df_file, cleanup_irrational)
 
     @classmethod
-    def from_dfjson(cls, dfjson_file):
+    def from_dfjson(cls, dfjson_file, cleanup_irrational=False):
         """Initialize a Model from a DFJSON file.
 
         Args:
             dfjson_file: Path to DFJSON file. This can also be a HBJSON from which
                 a Dragonfly model should be derived.
+            cleanup_irrational: Boolean to note whether common types of irrational
+                objects should be cleaned or removed from the dictionary before
+                serializing the model to Python. Typical cases that are removed
+                this way include Face3Ds with fewer than 3 vertices, Stories that
+                have no Room2D geometry, etc. (Default: False).
         """
         assert os.path.isfile(dfjson_file), 'Failed to find %s' % dfjson_file
         with io.open(dfjson_file, encoding='utf-8') as inf:
@@ -255,34 +274,44 @@ class Model(_BaseGeometry):
                 inf.read(1)
             data = json.load(inf)
         if 'buildings' in data or 'context_shades' in data:
-            return cls.from_dict(data)
+            return cls.from_dict(data, cleanup_irrational)
         else:  # assume that it's a Honeybee Model to translate
-            hb_model = HBModel.from_dict(data)
+            hb_model = HBModel.from_dict(data, cleanup_irrational)
             return cls.from_honeybee(hb_model)
 
     @classmethod
-    def from_dfpkl(cls, dfpkl_file):
+    def from_dfpkl(cls, dfpkl_file, cleanup_irrational=False):
         """Initialize a Model from a DFpkl file.
 
         Args:
             dfpkl_file: Path to DFpkl file. This can also be a HBpkl from which
                 a Dragonfly model should be derived.
+            cleanup_irrational: Boolean to note whether common types of irrational
+                objects should be cleaned or removed from the dictionary before
+                serializing the model to Python. Typical cases that are removed
+                this way include Face3Ds with fewer than 3 vertices, Stories that
+                have no Room2D geometry, etc. (Default: False).
         """
         assert os.path.isfile(dfpkl_file), 'Failed to find %s' % dfpkl_file
         with open(dfpkl_file, 'rb') as inf:
             data = pickle.load(inf)
         if 'buildings' in data or 'context_shades' in data:
-            return cls.from_dict(data)
+            return cls.from_dict(data, cleanup_irrational)
         else:  # assume that it's a Honeybee Model to translate
-            hb_model = HBModel.from_dict(data)
+            hb_model = HBModel.from_dict(data, cleanup_irrational)
             return cls.from_honeybee(hb_model)
 
     @classmethod
-    def from_pomf(cls, pomf_file):
+    def from_pomf(cls, pomf_file, cleanup_irrational=False):
         """Initialize a Model from a Pollination Model File (POMF).
 
         Args:
             pomf_file: Path to POMF file containing a dragonfly Model.
+            cleanup_irrational: Boolean to note whether common types of irrational
+                objects should be cleaned or removed from the dictionary before
+                serializing the model to Python. Typical cases that are removed
+                this way include Face3Ds with fewer than 3 vertices, Stories that
+                have no Room2D geometry, etc. (Default: False).
         """
         folder_name = str(uuid.uuid4())[:6]
         temp_dir = tempfile.gettempdir()
@@ -290,7 +319,7 @@ class Model(_BaseGeometry):
         os.mkdir(folder_path)
         unzip_file(pomf_file, folder_path)
         df_file = os.path.join(folder_path, 'model.json')
-        return cls.from_dfjson(df_file)
+        return cls.from_dfjson(df_file, cleanup_irrational)
 
     @classmethod
     def from_honeybee(cls, model, conversion_method='AllRoom2D'):
@@ -2435,6 +2464,139 @@ class Model(_BaseGeometry):
                         new_shades.append(cs_dict)
                 filtered_model['context_shades'] = new_shades
         return filtered_model
+
+    @staticmethod
+    def clean_irrational_geometry(model_dict):
+        """Remove irrational geometry objects from a dragonfly Model dictionary.
+
+        This can be useful to run prior to serializing the Model object from a
+        dictionary if it was produced from a source other than the Python
+        core libraries, in which case the dictionary is necessarily rational
+        and serializable. This is because not all dragonfly-schema bindings
+        enforce fundamental definitions of geometry types upon initialization
+        of the geometry objects, leading to exceptions when an attempt is made
+        to serialize them to Python. Furthermore, it is possible that the dragonfly
+        Model dictionary did not originate from any schema bindings at all, in
+        which case it is highly recommended that this method be run.
+
+        Typical irrational geometry cases that are removed by this method include.
+
+            * Room2Ds with less than 3 vertices or holes with less than 3 vertices.
+            * RoofSpecification Face3Ds with less than 3 vertices.
+            * DetailedWindow polygons with less than 3 vertices.
+            * Stories that have no Room2D geometry.
+            * Buildings that have no Room2D or 3D Room geometry.
+            * ContextShade Face3Ds with less than 3 vertices.
+            * ContextShade Mesh3Ds with no faces or faces with less than 3 vertices.
+        """
+        # clean all of the building geometry in the model dictionary
+        if 'buildings' in model_dict and model_dict['buildings'] is not None:
+            for bi in range(len(model_dict['buildings']) - 1, -1, -1):
+                b_dict = model_dict['buildings'][bi]
+                bldg_geo_found = False
+                # clean all of the story geometry
+                if 'unique_stories' in b_dict and \
+                        b_dict['unique_stories'] is not None:
+                    for si in range(len(b_dict['unique_stories']) - 1, -1, -1):
+                        s_dict = b_dict['unique_stories'][si]
+                        # clean all of the Room2D geometry
+                        for ri in range(len(s_dict['room_2ds']) - 1, -1, -1):
+                            r_dict = s_dict['room_2ds'][ri]
+                            if len(r_dict['floor_boundary']) < 3:
+                                s_dict['room_2ds'].pop(ri)
+                                continue
+                            elif 'floor_holes' in r_dict:
+                                r_dict['floor_holes'] = \
+                                    [h for h in r_dict['floor_holes'] if len(h) >= 3]
+                            # clean all of the window geometry
+                            if 'window_parameters' in r_dict and \
+                                    r_dict['window_parameters'] is not None:
+                                wps = r_dict['window_parameters']
+                                for wi in range(len(wps) - 1, -1, -1):
+                                    wp = wps[wi]
+                                    if wp is not None and wp['type'] == 'DetailedWindows':
+                                        for pi in range(len(wp['polygons']) - 1, -1, -1):
+                                            if len(wp['polygons'][pi]) < 3:
+                                                wp['polygons'].pop(pi)
+                                        if len(wp['polygons']) == 0:
+                                            wps[wi] = None  # all polygons are irrational
+                        # clean all of the RoofSpecification geometry
+                        if 'roof' in s_dict and s_dict['roof'] is not None:
+                            rf_geo = s_dict['roof']['geometry']
+                            for fi in range(len(rf_geo) - 1, -1, -1):
+                                face_3d = rf_geo[fi]
+                                if len(face_3d['boundary']) < 3:
+                                    rf_geo.pop(fi)
+                                elif 'holes' in face_3d:
+                                    face_3d['holes'] = \
+                                        [h for h in face_3d['holes'] if len(h) >= 3]
+                            if len(rf_geo) == 0:  # the entire roof is irrational
+                                s_dict['roof'] = None
+                        # check to be sure the Story is still rational
+                        if len(s_dict['room_2ds']) == 0:  # remove the whole story
+                            b_dict['unique_stories'].pop(si)
+                        else:  # there are Room2Ds in the Building
+                            bldg_geo_found = True
+                # clean all of the 3D Room geometry
+                if 'room_3ds' in b_dict and b_dict['room_3ds'] is not None:
+                    units = 'Meters' if 'units' not in model_dict or \
+                        model_dict['units'] is None else model_dict['units']
+                    tol = UNITS_TOLERANCES[units] if 'tolerance' not in model_dict or \
+                        model_dict['tolerance'] is None else model_dict['tolerance']
+                    angle_tol = 1.0 if 'angle_tolerance' not in model_dict or \
+                        model_dict['angle_tolerance'] is None else \
+                        model_dict['angle_tolerance']
+                    hb_model_dict = {
+                        'type': 'Model',
+                        'identifier': model_dict['identifier'],
+                        'units': units,
+                        'tolerance': tol,
+                        'angle_tolerance': angle_tol,
+                        'rooms': b_dict['room_3ds']
+                    }
+                    HBModel.clean_irrational_geometry(hb_model_dict)
+                    # check to be sure the 3D Rooms are is still rational
+                    if len(hb_model_dict['rooms']) == 0:  # remove all 3D Rooms
+                        b_dict['room_3ds'] = None
+                    else:  # there are 3D Rooms in the Building
+                        b_dict['room_3ds'] = hb_model_dict['rooms']
+                        bldg_geo_found = True
+                # check to be sure the Building is still rational
+                if not bldg_geo_found:  # remove the whole Building
+                    model_dict['buildings'].pop(bi)
+
+        # clean all of the context shade geometry in the model dictionary
+        if 'context_shades' in model_dict and model_dict['context_shades'] is not None:
+            for ci in range(len(model_dict['context_shades']) - 1, -1, -1):
+                c_dict = model_dict['context_shades'][ci]
+                # clean all of the Face3D and Mesh3D geometry
+                for gi in range(len(c_dict['geometry']) - 1, -1, -1):
+                    geo_dict = c_dict['geometry'][gi]
+                    if geo_dict['type'] == 'Face3D':
+                        if len(geo_dict['boundary']) < 3:
+                            c_dict['geometry'].pop(gi)
+                        elif 'holes' in geo_dict:
+                            geo_dict['holes'] = \
+                                [h for h in geo_dict['holes'] if len(h) >= 3]
+                    elif geo_dict['type'] == 'Mesh3D':
+                        for mfi in range(len(geo_dict['faces']) - 1, -1, -1):
+                            mf = geo_dict['faces'][mfi]
+                            if len(mf) not in (3, 4):
+                                geo_dict['faces'].pop(mfi)
+                            else:
+                                for ind in mf:
+                                    try:
+                                        geo_dict['vertices'][ind]
+                                    except IndexError:
+                                        geo_dict['faces'].pop(mfi)
+                                        break
+                        if len(geo_dict['faces']) == 0:
+                            c_dict['geometry'].pop(gi)
+                    else:  # unrecognized geometry type
+                        c_dict['geometry'].pop(gi)
+                        continue
+                if len(c_dict['geometry']) == 0:  # the entire ContextShade is irrational
+                    model_dict['context_shades'].pop(ci)
 
     def _extract_merge_map(
         self, merge_method=None, exclude_plenums=False, tolerance=None
