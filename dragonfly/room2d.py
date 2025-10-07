@@ -5865,6 +5865,13 @@ class Room2D(_BaseGeometry):
                                 int_pts.append((int_pt, pi + 1))
                                 int_pls.append(o_pl)
 
+                # add a vertex for where the segment ends in the polygon
+                for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
+                    if rf_py.point_relationship(pt2, tolerance) >= 0:
+                        int_pts.append((pt2, 1 + 1))
+                        int_pls.append(rf_pl)
+                        break
+
                 # remove any duplicates among the intersection points
                 int_set, clean_int_pts, clean_int_pls = set(), [], []
                 for ipt, ipl in zip(int_pts, int_pls):
@@ -5894,6 +5901,7 @@ class Room2D(_BaseGeometry):
                     prev_dist = dist
 
                 # move through each group and connect the points along common roof polys
+                print(pt_groups)
                 rf_pts, rf_ids = [], []
                 for i, pt_grp in enumerate(pt_groups):
                     # determine the start point of the group
