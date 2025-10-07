@@ -452,7 +452,7 @@ def test_reflect():
 def test_reset_room_2d_boundaries():
     """Test the reset_room_2d_boundaries method on Stories."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     bound_dict = {
         "type": "Polygon2D",
         "vertices": [
@@ -477,7 +477,7 @@ def test_reset_room_2d_boundaries():
 def test_room_2ds_pulling_methods():
     """Test the methods that pull Room2Ds to target objects."""
     model_file = './tests/json/model_for_pulling.dfjson'
-    original_model = Model.from_file(model_file)
+    original_model = Model.from_file(model_file, cleanup_irrational=True)
 
     model = original_model.duplicate()
     all_rooms = model.room_2ds
@@ -526,7 +526,7 @@ def test_room_2ds_pulling_methods():
 def test_join_room_2ds():
     """Test the Room2d.join_room_2ds method."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     second_story = model.stories[1]
     joined_rooms = Room2D.join_room_2ds(second_story.room_2ds)
@@ -546,7 +546,7 @@ def test_join_room_2ds():
 def test_join_room_2ds_separation():
     """Test the Room2d.join_room_2ds method with a separation distance."""
     model_file = './tests/json/model_with_with_separation.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     second_story = model.stories[0]
     joined_room_2ds = Room2D.join_room_2ds(
@@ -561,7 +561,7 @@ def test_join_room_2ds_separation():
 def test_suggested_alignment_axes():
     """Test the suggested_alignment_axes method on Buildings and Stories."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     bldg = model.buildings[0]
     common_axes, axes_weights = bldg.suggested_alignment_axes(0.03)
@@ -577,7 +577,7 @@ def test_suggested_alignment_axes():
 def test_skylight_merge_and_simplify():
     """Test the merge_and_simplify method."""
     model_file = './tests/json/Room_with_complex_skylights.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     room = model.room_2ds[0]
     assert len(room.skylight_parameters) == 5
 
@@ -593,7 +593,7 @@ def test_skylight_merge_and_simplify():
 def test_skylight_merge_to_bounding_rectangle():
     """Test the merge_to_bounding_rectangle method."""
     model_file = './tests/json/overlapping_skylights.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     room = model.room_2ds[0]
     assert len(room.skylight_parameters) == 42
 
@@ -613,7 +613,7 @@ def test_skylight_merge_to_bounding_rectangle():
 def test_room2d_split_through_self_intersection():
     """Test the splitting of a Room2D through self intersection."""
     model_file = './tests/json/room_for_remove_short_segs.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     room = model.room_2ds[0]
 
     assert room.check_self_intersecting(0.003, False, False) == ''
@@ -635,7 +635,7 @@ def test_room2d_split_through_self_intersection():
 def test_snap_to_grid():
     """Test the snap_to_grid method on Room2Ds."""
     model_file = './tests/json/Level03.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     assert len(model.room_2ds) == 180
     for room in model.room_2ds:
@@ -647,7 +647,7 @@ def test_snap_to_grid():
 def test_process_alleys():
     """Test the Building.process_alleys method."""
     model_file = './tests/json/alleyway_detailed.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     Building.process_alleys(model.buildings, adiabatic=True)
 
     ad_count = 0
@@ -670,7 +670,7 @@ def test_process_alleys():
 def test_auto_zone():
     """Test the Building.automatically_zone method."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     building = model.buildings[0]
     assert not building.has_zones
@@ -686,7 +686,7 @@ def test_auto_zone():
 def test_remove_duplicate_roofs():
     """Test the serialization of a model with roofs assigned to the building."""
     model_file = './tests/json/Model_with_duplicated_roofs.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     all_roof_geos = []
     for story in model.stories:
@@ -709,7 +709,7 @@ def test_remove_duplicate_roofs():
 def test_building_assigned_roof():
     """Test the serialization of a model with roofs assigned to the building."""
     model_file = './tests/json/Model_with_building_roofs.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     stories = model.stories
 
     assert len(stories[0].roof) == 1
@@ -727,7 +727,7 @@ def test_building_assigned_roof():
 def test_building_assigned_roofs_2():
     """Test another serialization of a model with roofs assigned to the building."""
     model_file = './tests/json/model_with_bldg_roofs.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     stories = model.stories
 
     assert len(stories[0].roof) <= 31
@@ -736,7 +736,7 @@ def test_building_assigned_roofs_2():
 def test_roof_resolved_geometry():
     """Test the roof.resolved_geometry method."""
     model_file = './tests/json/roof_party_test.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     upper_story = model.buildings[0][-1]
     assert upper_story.roof is not None
 
@@ -749,7 +749,7 @@ def test_roof_resolved_geometry():
 def test_roof_resolved_geometry_2():
     """Test another case with the roof.resolved_geometry method."""
     model_file = './tests/json/model_with_bldg_roofs.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
     upper_story = model.buildings[0][-1]
 
     res_geo = upper_story.roof.resolved_geometry(0.003)
@@ -761,7 +761,7 @@ def test_large_room_with_roof():
     """Test the translation of a large room with a roof to test float tolerance limits.
     """
     model_file = './tests/json/ice_rink_with_roof.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=False)
@@ -774,7 +774,7 @@ def test_large_room_with_roof():
 def test_failing_roof_edge_case():
     """Test the translation of another room with a roof."""
     model_file = './tests/json/failing_roof.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -787,7 +787,7 @@ def test_failing_roof_edge_case():
 def test_failing_roof_edge_case_2():
     """Test the translation of another room with a roof."""
     model_file = './tests/json/wall_roof_fail.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -800,7 +800,7 @@ def test_failing_roof_edge_case_2():
 def test_failing_roof_edge_case_3():
     """Test the translation of another room with a roof."""
     model_file = './tests/json/wall_roof_bug.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -813,7 +813,7 @@ def test_failing_roof_edge_case_3():
 def test_failing_roof_edge_case_4():
     """Test the translation of another room with a roof."""
     model_file = './tests/json/wall_roof_bug_2.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -827,7 +827,7 @@ def test_failing_roof_edge_case_4():
 def test_complicated_roof_failure():
     """Test the translation of a complicated roof."""
     model_file = './tests/json/roof_failure.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -840,7 +840,7 @@ def test_complicated_roof_failure():
 def test_complicated_boolean_int_roof_failure():
     """Test the translation of a roof with a boolean intersection failure."""
     model_file = './tests/json/roof_boolean_int_fail.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -851,7 +851,7 @@ def test_complicated_boolean_int_roof_failure():
 def test_has_floor_ceilings():
     """Test the translation of a model without floors or ceilings."""
     model_file = './tests/json/has_floor_ceiling_model.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee(
         'District', None, False, solve_ceiling_adjacencies=True,
@@ -865,7 +865,7 @@ def test_has_floor_ceilings():
 def test_roof_party_failure():
     """Test the translation of another complicated roof."""
     model_file = './tests/json/roof_party.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -876,7 +876,7 @@ def test_roof_party_failure():
 def test_self_intersecting_roof_party():
     """Test the translation of another complicated roof."""
     model_file = './tests/json/self_intersecting_roof.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False, enforce_solid=True)
     room_1 = hb_models[0].rooms[0]
@@ -886,7 +886,7 @@ def test_self_intersecting_roof_party():
 def test_non_planar_roof():
     """Test the translation of another complicated roof."""
     model_file = './tests/json/non_planar_roof.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -897,7 +897,7 @@ def test_non_planar_roof():
 def test_wall_faces_with_roof_bug():
     """Test the translation of another complicated roof that caused a wall failure."""
     model_file = './tests/json/wall_faces_with_roof_bug.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -908,7 +908,7 @@ def test_wall_faces_with_roof_bug():
 def test_wall_faces_with_roof_bug_2():
     """Test the translation of another complicated roof that caused a wall failure."""
     model_file = './tests/json/roof_sliver_bug.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -920,7 +920,7 @@ def test_wall_faces_with_roof_bug_2():
 def test_roof_tolerance_fail_bug():
     """Test the translation of another complicated roof."""
     model_file = './tests/json/roof_tolerance_fail.dfjson'
-    model = Model.from_file(model_file)
+    model = Model.from_file(model_file, cleanup_irrational=True)
 
     hb_models = model.to_honeybee('District', None, False,
                                   tolerance=0.003, enforce_solid=True)
@@ -1575,6 +1575,98 @@ def test_to_from_dict_methods():
     model_dict = model.to_dict()
     new_model = Model.from_dict(model_dict)
     assert model_dict == new_model.to_dict()
+
+
+def test_cleanup_irrational():
+    """Test the cleanup_irrational method during serialization."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(0, 10, 3), Point3D(10, 10, 3), Point3D(10, 0, 3))
+    pts_2 = (Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(20, 10, 3), Point3D(20, 0, 3))
+    pts_3 = (Point3D(0, 10, 3), Point3D(0, 20, 3), Point3D(10, 20, 3), Point3D(10, 10, 3))
+    pts_4 = (Point3D(10, 10, 3), Point3D(10, 20, 3), Point3D(20, 20, 3), Point3D(20, 10, 3))
+    room2d_1 = Room2D('Office1', Face3D(pts_1), 3)
+    room2d_2 = Room2D('Office2', Face3D(pts_2), 3)
+    room2d_3 = Room2D('Office3', Face3D(pts_3), 3)
+    room2d_4 = Room2D('Office4', Face3D(pts_4), 3)
+    story = Story('OfficeFloor', [room2d_1, room2d_2, room2d_3, room2d_4])
+    story.solve_room_2d_adjacency(0.01)
+    story.set_outdoor_window_parameters(SimpleWindowRatio(0.4))
+    story.multiplier = 4
+    building = Building('OfficeBuilding', [story])
+    tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))
+    tree_canopy_geo2 = Face3D.from_regular_polygon(6, 2, Plane(o=Point3D(-5, -10, 3)))
+    tree_canopy = ContextShade('TreeCanopy', [tree_canopy_geo1, tree_canopy_geo2])
+
+    model = Model('NewDevelopment', [building], [tree_canopy])
+    model_dict = model.to_dict()
+
+    irrational_dict = {
+        'type': 'Model',
+        'identifier': 'irrational_model',
+        'units': 'Meters',
+        'tolerance': 0.001,
+        'angle_tolerance': 1.0,
+        'properties': model_dict['properties'],
+        'buildings': [
+            model_dict['buildings'][0],
+            {
+                'type': 'Building',
+                'identifier': 'irrational_building',
+                'unique_stories': [
+                    {
+                        'type': 'Story',
+                        'identifier': 'irrational_story',
+                        'room_2ds': [
+                            {
+                                'type': 'Room2D',
+                                'identifier': 'irrational_room',
+                                'floor_height': 3,
+                                'floor_boundary': [
+                                        (0, 0, 0.2), (0, 0, 0.8)
+                                    ]
+                            }
+                        ]
+                    },
+                ],
+                'room_3ds': [
+                    {
+                        'type': 'Room',
+                        'identifier': 'irrational_room',
+                        'faces': [
+                            {
+                                'type': 'Face',
+                                'identifier': 'irrational_face',
+                                'face_type': 'Wall',
+                                'geometry': {
+                                    'type': 'Face3D',
+                                    'boundary': [
+                                        (0, 0, 0), (0, 0, 1)
+                                    ]
+                                },
+                                'apertures': [
+                                    {
+                                        'type': 'Aperture',
+                                        'identifier': 'irrational_aperture',
+                                        'geometry': {
+                                            'type': 'Face3D',
+                                            'boundary': [
+                                                (0, 0, 0.2), (0, 0, 0.8)
+                                            ]
+                                        }
+                                    }
+                                ]
+                            },
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+
+    with pytest.raises(ValueError):
+        Model.from_dict(irrational_dict, cleanup_irrational=False)
+
+    clean_model = Model.from_dict(irrational_dict, cleanup_irrational=True)
+    assert len(clean_model.buildings) == 1
 
 
 def test_to_from_dfjson_methods():
