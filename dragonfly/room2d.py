@@ -5901,7 +5901,6 @@ class Room2D(_BaseGeometry):
                     prev_dist = dist
 
                 # move through each group and connect the points along common roof polys
-                print(pt_groups)
                 rf_pts, rf_ids = [], []
                 for i, pt_grp in enumerate(pt_groups):
                     # determine the start point of the group
