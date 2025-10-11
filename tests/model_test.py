@@ -1198,6 +1198,29 @@ def test_to_honeybee_merge_method():
     assert hb_model.check_missing_adjacencies(False, False) == ''
 
 
+def test_to_honeybee_merge_method_big_plenums():
+    """Test the to_honeybee method with different plenum depths."""
+    model_file = './tests/json/merge_plenum_test.dfjson'
+    model = Model.from_file(model_file)
+
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=False, merge_method='Zones')[0]
+    assert len(hb_model.rooms) == 2
+
+    for room in model.room_2ds:
+        room.ceiling_plenum_depth = 2
+    model.room_2ds[1].floor_to_ceiling_height = 15
+
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=False, merge_method='Zones')[0]
+    assert len(hb_model.rooms) == 4
+
+    model.room_2ds[0].floor_to_ceiling_height = 13.5
+    hb_model = model.to_honeybee(
+        'District', exclude_plenums=False, merge_method='Zones')[0]
+    assert len(hb_model.rooms) == 3
+
+
 def test_to_honeybee_doors_skylights_roof():
     """Test the to_honeybee method with doors, skylights, and a sloped roof."""
     model_file = './tests/json/model_with_doors_skylights.dfjson'

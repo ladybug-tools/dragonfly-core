@@ -1930,33 +1930,39 @@ class Building(_BaseGeometry):
                         else:
                             pln_story.add_room_2d(plenum_room)
 
+        # note the vertical domain of each room so we can correctly assign adjacencies
+        new_room_domains = {}
+        for room in new_rooms:
+            new_room_domains[room.identifier] = (room.floor_height, room.ceiling_height)
+
         # set up any adjacencies across the plenums
+        tol = tolerance
         try:  # get the boundary condition to be used for adiabatic cases
             ad_bc = bcs.adiabatic
         except AttributeError:
             ad_bc = bcs.outdoors  # honeybee_energy is not loaded; no adiabatic BC
         for new_room in new_rooms:
-            new_bcs = []
+            new_bcs, self_dom = [], new_room_domains[new_room.identifier]
             for i, bc in enumerate(new_room.boundary_conditions):
                 if isinstance(bc, Surface):
-                    if bc.boundary_condition_objects[-1] in plenum_rm_ids:
+                    adj_room_id = bc.boundary_condition_objects[-1]
+                    try:
+                        adj_dom = new_room_domains[adj_room_id]
+                        z_ov_1 = self_dom[1] < adj_dom[0] + tol
+                        z_ov_2 = adj_dom[1] < self_dom[0] + tol
+                        z_overlap = not (z_ov_1 or z_ov_2)
+                    except KeyError:  # missing adjacency
+                        z_overlap = False
+                    if adj_room_id in plenum_rm_ids and z_overlap:
                         clean_bc = bc
                     else:
-                        clean_bc = ad_bc
-                        if not isinstance(ad_bc, Outdoors):
+                        clean_bc = ad_bc if not new_room.is_top_exposed else bcs.outdoors
+                        if not isinstance(clean_bc, Outdoors):
                             new_room._window_parameters[i] = None
                     new_bcs.append(clean_bc)
                 else:
                     new_bcs.append(bc)
             new_room.boundary_conditions = new_bcs
-
-        # remove adjacencies if plenum floor heights differ too much to be adjacent
-        for story in new_stories:
-            if story.check_room2d_floor_heights_valid(raise_exception=False) != '':
-                min_ciel = min(rm.floor_to_ceiling_height for rm in story.room_2ds)
-                room_groups, _ = Room2D.group_by_floor_height(story.room_2ds, min_ciel)
-                for rm_group in room_groups:
-                    Room2D.patch_missing_adjacencies(rm_group)
 
         # insert any newly-created stories into the Building
         for n_st in new_stories:
