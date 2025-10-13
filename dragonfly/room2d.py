@@ -5344,7 +5344,7 @@ class Room2D(_BaseGeometry):
 
     @staticmethod
     def room_orientation_plane(room_2ds, angle_tolerance=1.0):
-        """Get a Plane from the most frequently-occuring right angle across Room2Ds.
+        """Get a Plane from the most frequently-occurring right angle across Room2Ds.
 
         Args:
             room_2ds: A list of Room2Ds which will have their right-angles analyzed
@@ -5357,7 +5357,7 @@ class Room2D(_BaseGeometry):
         Returns:
             A ladybug-geometry Plane object derived from the input Room2Ds. If there
             were not enough right angles among the input Room2Ds to determine a
-            plane, the Wolrd XY will be returned.
+            plane, the World XY will be returned.
         """
         # define variables to be used throughout the evaluation
         ang_tol = math.radians(angle_tolerance)
@@ -5369,6 +5369,8 @@ class Room2D(_BaseGeometry):
         for room in room_2ds:
             segments = room.floor_segments_2d
             for i, seg in enumerate(segments):
+                if seg.length == 0 or segments[i - 1].v.length == 0:
+                    continue
                 if min_ang < seg.v.angle(segments[i - 1].v) < max_ang:  # right angle!
                     if seg.v.x > 0 and seg.v.y >= 0:
                         x_vec = seg.v
