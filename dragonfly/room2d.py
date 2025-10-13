@@ -5369,7 +5369,7 @@ class Room2D(_BaseGeometry):
         for room in room_2ds:
             segments = room.floor_segments_2d
             for i, seg in enumerate(segments):
-                if seg.length == 0 or segments[i - 1].v.length == 0:
+                if seg.length == 0 or segments[i - 1].length == 0:
                     continue
                 if min_ang < seg.v.angle(segments[i - 1].v) < max_ang:  # right angle!
                     if seg.v.x > 0 and seg.v.y >= 0:
