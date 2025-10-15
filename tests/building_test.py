@@ -420,10 +420,10 @@ def test_honeybee_ceiling_plenum():
     # two rooms with different plenum depths
     room2d_full = Room2D(
         'R1-full', floor_geometry=Face3D(pts1), floor_to_ceiling_height=4,
-        is_ground_contact=True, is_top_exposed=True)
+        is_ground_contact=True, is_top_exposed=False)
     room2d_plenum = Room2D(
         'R2-plenum', floor_geometry=Face3D(pts2), floor_to_ceiling_height=4,
-        is_ground_contact=True, is_top_exposed=True)
+        is_ground_contact=True, is_top_exposed=False)
     room2d_plenum.ceiling_plenum_depth = 1
 
     story = Story('S1', [room2d_full, room2d_plenum])
@@ -462,7 +462,7 @@ def test_honeybee_ceiling_plenum():
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face4':
             assert _is_interior(face.boundary_condition)
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face5':
-            assert isinstance(face.boundary_condition, Outdoors)  # Roof exposed outdoors
+            assert _is_interior(face.boundary_condition)
         else:
             assert False
 
@@ -550,10 +550,10 @@ def test_honeybee_ceiling_and_floor_plenum():
     # Two rooms with different floor heights
     room2d_full = Room2D(
         'R1-full', floor_geometry=Face3D(pts1), floor_to_ceiling_height=4,
-        is_ground_contact=True, is_top_exposed=True)
+        is_ground_contact=True, is_top_exposed=False)
     room2d_plenum = Room2D(
         'R2-plenum', floor_geometry=Face3D(pts2), floor_to_ceiling_height=4,
-        is_ground_contact=True, is_top_exposed=True)
+        is_ground_contact=True, is_top_exposed=False)
     room2d_plenum.ceiling_plenum_depth = 0.5
     room2d_plenum.floor_plenum_depth = 0.5
 
@@ -611,7 +611,7 @@ def test_honeybee_ceiling_and_floor_plenum():
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face4':
             assert _is_interior(face.boundary_condition)
         elif face.identifier == 'R2-plenum_Ceiling_Plenum..Face5':
-            assert isinstance(face.boundary_condition, Outdoors)  # Roof exposed outdoors
+            assert _is_interior(face.boundary_condition)
         else:
             assert False
 

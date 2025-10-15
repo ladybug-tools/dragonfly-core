@@ -1476,6 +1476,7 @@ def test_model_with_room3ds():
     assert isinstance(model.max, Point2D)
 
     hb_models = model.to_honeybee('District', None, False, tolerance=0.01)
+    assert hb_models[0].exterior_aperture_area == pytest.approx(313.76, rel=1e-3)
     assert len(hb_models[0].rooms) == 10
 
     # test the properties of the model with a mix of Room2Ds and 3D Rooms
