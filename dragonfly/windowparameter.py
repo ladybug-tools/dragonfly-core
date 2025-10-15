@@ -3139,8 +3139,8 @@ class DetailedWindows(_AsymmetricBase):
                 rel_polygons.append(Polygon2D(new_v))
         # loop through the polygon vertices and trim them for the segment
         max_width = sub_segment.length - tolerance
-        new_polygons, new_dr, out_polygons, out_dr = [], [], [], []
-        for p_gon, is_dr in zip(rel_polygons, self.are_doors):
+        new_polygons, new_dr, out_polygons, out_dr, kept_i = [], [], [], [], []
+        for i, (p_gon, is_dr) in enumerate(zip(rel_polygons, self.are_doors)):
             new_verts, verts_moved = [], []
             for vert in p_gon:
                 x_val, v_moved = vert.x, False
@@ -3153,6 +3153,7 @@ class DetailedWindows(_AsymmetricBase):
             if not all(verts_moved):
                 new_polygons.append(Polygon2D(new_verts))
                 new_dr.append(is_dr)
+                kept_i.append(i)
                 if True in verts_moved:  # outside of the segment
                     out_polygons.append(p_gon)
                     out_dr.append(is_dr)
@@ -3162,7 +3163,20 @@ class DetailedWindows(_AsymmetricBase):
         # build the final window parameters from the adjusted polygons
         if len(new_polygons) == 0:
             return None
-        return DetailedWindows(new_polygons, new_dr)
+        new_w_par = DetailedWindows(new_polygons, new_dr)
+
+        # update user_data lists if some windows were not added
+        if self.user_data is not None:
+            clean_u = self.user_data
+            if len(new_polygons) != len(self.polygons):
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
+                        clean_u[key] = [val[j] for j in kept_i]
+                    else:
+                        clean_u[key] = val
+            new_w_par.user_data = clean_u
+        return new_w_par
 
     @staticmethod
     def merge(window_parameters, segments, floor_to_ceiling_height):
@@ -3283,21 +3297,30 @@ class DetailedWindows(_AsymmetricBase):
 
     def _reassign_are_doors(self, new_polys, tolerance=0.01):
         """Reset the are_doors property using a set of new polygons."""
-        if len(new_polys) != len(self._polygons):
-            if all(not dr for dr in self._are_doors):  # case of no doors
-                self._are_doors = (False,) * len(new_polys)
-            else:
-                new_are_doors = []
-                for n_poly in new_polys:
-                    np_center = n_poly.center if n_poly.is_convex else \
-                        n_poly.pole_of_inaccessibility(tolerance)
-                    for o_poly, is_door in zip(self.polygons, self.are_doors):
-                        if o_poly.is_point_inside_bound_rect(np_center):
-                            new_are_doors.append(is_door)
-                            break
+        if len(new_polys) != len(self.polygons):
+            # match the new polygons to the existing ones
+            new_are_doors, kept_i = [], []
+            for n_poly in new_polys:
+                np_center = n_poly.center if n_poly.is_convex else \
+                    n_poly.pole_of_inaccessibility(tolerance)
+                for i, (o_poly, is_door) in enumerate(zip(self.polygons, self.are_doors)):
+                    if o_poly.is_point_inside_bound_rect(np_center):
+                        new_are_doors.append(is_door)
+                        kept_i.append(i)
+                        break
+                else:
+                    new_are_doors.append(False)
+                    kept_i.append(0)
+            self._are_doors = tuple(new_are_doors)
+            # update user_data lists if some windows were not added
+            if self.user_data is not None:
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
+                        clean_u[key] = [val[j] for j in kept_i]
                     else:
-                        new_are_doors.append(False)
-                self._are_doors = tuple(new_are_doors)
+                        clean_u[key] = val
+                self.user_data = clean_u
 
     def __len__(self):
         return len(self._polygons)
