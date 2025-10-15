@@ -45,7 +45,7 @@ class _WindowParameterBase(object):
     @user_data.setter
     def user_data(self, value):
         if value is not None:
-            assert isinstance(value, dict), 'Expected dictionary for honeybee ' \
+            assert isinstance(value, dict), 'Expected dictionary for window parameter ' \
                 'object user_data. Got {}.'.format(type(value))
         self._user_data = value
 
@@ -159,6 +159,8 @@ class _WindowParameterBase(object):
                 u_dict = {}
                 for key, val in app_data.items():
                     if isinstance(val, (list, tuple)) and len(val) != 0:
+                        if key == '__identifier__' and len(val) == len(sub_faces):
+                            sub_f.identifier = val[i]
                         try:
                             u_dict[key] = val[i]
                         except IndexError:  # use longest list logic
@@ -2878,11 +2880,22 @@ class DetailedWindows(_AsymmetricBase):
                 poly.remove_colinear_vertices(tolerance)
             except (ValueError, AssertionError):
                 i_to_remove.append(i)
+
+        # update user_data lists if some windows were not added
+        if self.user_data is not None and len(i_to_remove) != 0:
+            clean_u = {}
+            kept_i = [i for i in range(len(flush_polys)) if i not in i_to_remove]
+            for key, val in self.user_data.items():
+                if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
+                    clean_u[key] = [val[j] for j in kept_i]
+                else:
+                    clean_u[key] = val
+            self._user_data = clean_u
+
+        # set the attributes of the object to the new cleaned polygons
         for del_i in reversed(i_to_remove):
             flush_polys.pop(del_i)
             grouped_are_doors.pop(del_i)
-
-        # set the attributes of the object to the new cleaned polygons
         self._polygons = tuple(flush_polys)
         self._are_doors = tuple(grouped_are_doors)
 
@@ -2923,7 +2936,7 @@ class DetailedWindows(_AsymmetricBase):
                     union_poly = Polygon2D.boolean_union_all(p_group, tolerance)
                     for new_poly in union_poly:
                         new_polys.append(new_poly.remove_colinear_vertices(tolerance))
-            self._reassign_are_doors(new_polys)
+            self._reassign_are_doors(new_polys, tolerance)
             self._polygons = tuple(new_polys)
 
     def merge_and_simplify(self, max_separation, tolerance=0.01):
@@ -2980,7 +2993,7 @@ class DetailedWindows(_AsymmetricBase):
 
         # bring everything together and reassign the door property
         new_polys = new_polys + door_polys
-        self._reassign_are_doors(new_polys)
+        self._reassign_are_doors(new_polys, tolerance)
         self._polygons = tuple(new_polys)
 
     def merge_to_bounding_rectangle(self, tolerance=0.01):
@@ -3006,7 +3019,7 @@ class DetailedWindows(_AsymmetricBase):
                         max_pt, Point2D(min_pt.x, max_pt.y))
                     rect_poly = Polygon2D(rect_verts)
                     new_polys.append(rect_poly)
-            self._reassign_are_doors(new_polys)
+            self._reassign_are_doors(new_polys, tolerance)
             self._polygons = tuple(new_polys)
 
     def remove_small_windows(self, area_threshold):
@@ -3268,7 +3281,7 @@ class DetailedWindows(_AsymmetricBase):
         seg_face = Face3D.from_rectangle(segment.length, height, plane)
         return seg_face.is_sub_face(face3d, tolerance, angle_tolerance)
 
-    def _reassign_are_doors(self, new_polys):
+    def _reassign_are_doors(self, new_polys, tolerance=0.01):
         """Reset the are_doors property using a set of new polygons."""
         if len(new_polys) != len(self._polygons):
             if all(not dr for dr in self._are_doors):  # case of no doors
@@ -3276,8 +3289,10 @@ class DetailedWindows(_AsymmetricBase):
             else:
                 new_are_doors = []
                 for n_poly in new_polys:
+                    np_center = n_poly.center if n_poly.is_convex else \
+                        n_poly.pole_of_inaccessibility(tolerance)
                     for o_poly, is_door in zip(self.polygons, self.are_doors):
-                        if n_poly.is_point_inside_bound_rect(o_poly.center):
+                        if o_poly.is_point_inside_bound_rect(np_center):
                             new_are_doors.append(is_door)
                             break
                     else:

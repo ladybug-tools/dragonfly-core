@@ -10,6 +10,7 @@ from ladybug_geometry.geometry3d import Point3D, Vector3D, LineSegment3D, Plane,
 from honeybee.boundarycondition import Outdoors, Ground, Surface
 from honeybee.boundarycondition import boundary_conditions as bcs
 from honeybee.facetype import AirBoundary
+from honeybee.aperture import Aperture
 from honeybee.room import Room
 from honeybee.model import Model as HBModel
 
@@ -569,6 +570,41 @@ def test_assign_sub_faces():
 
     hb_room = model.to_honeybee('District')[0].rooms[0]
     assert hb_room.exterior_aperture_area > 3
+    for face in hb_room.faces:
+        for ap in face.apertures:
+            assert ap.identifier in ('Aperture_95f5ee9e', 'Aperture_9f771858')
+
+
+def test_assign_sub_faces_skylight():
+    """Test the assign_sub_faces method with a skylight."""
+    # set up the inputs
+    projection_distance = 0.5  # distance in model units where windows will be projected
+    pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    boundarycs = (bcs.outdoors, bcs.ground, bcs.outdoors, bcs.ground)
+    room2d = Room2D('SquareShoebox', Face3D(pts), 3, boundarycs, is_top_exposed=True)
+
+    ap_id = 'Aperture_95f5ee9f'
+    sky_pts = (Point3D(1, 1, 3), Point3D(3, 1, 3), Point3D(3, 3, 3), Point3D(1, 3, 3))
+    sky_ap = Aperture(ap_id, Face3D(sky_pts))
+    room2d.assign_sub_faces([sky_ap], projection_distance)
+    assert room2d.exterior_aperture_area > 3
+
+    model = Model('test_model', [Building('test_bldg', [Story('test_level', [room2d])])])
+    hb_room = model.to_honeybee('District')[0].rooms[0]
+    assert hb_room.exterior_aperture_area > 3
+    for face in hb_room.faces:
+        for ap in face.apertures:
+            assert ap.identifier == 'Aperture_95f5ee9f'
+
+    split_line = LineSegment2D.from_end_points(Point2D(5, 0), Point2D(5, 10))
+    split_rms = room2d.split_with_line(split_line)
+
+    model = Model('test_model', [Building('test_bldg', [Story('test_level', split_rms)])])
+    hb_room = model.to_honeybee('District')[0].rooms[0]
+    assert hb_room.exterior_aperture_area > 3
+    for face in hb_room.faces:
+        for ap in face.apertures:
+            assert ap.identifier == 'Aperture_95f5ee9f'
 
 
 def test_move():

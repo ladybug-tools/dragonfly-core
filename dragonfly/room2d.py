@@ -411,16 +411,13 @@ class Room2D(_BaseGeometry):
             room_2d.zone = room.zone
 
         # check if there are any skylights to be added
-        skylights, are_doors = [], []
+        skylights = []
         for f in room.faces:
             if isinstance(f.type, RoofCeiling) and f.tilt < 89:
                 sf_objs = f._apertures + f._doors
-                for sf in sf_objs:
-                    verts2d = tuple(Point2D(pt.x, pt.y) for pt in sf.geometry.boundary)
-                    skylights.append(Polygon2D(verts2d))
-                    are_doors.append(isinstance(sf, Door) and not sf.is_glass)
+                skylights.extend(sf_objs)
         if len(skylights) != 0:
-            room_2d.skylight_parameters = DetailedSkylights(skylights, are_doors)
+            room_2d.skylight_parameters = DetailedSkylights.from_honeybee(skylights)
 
         # add the extra optional attributes
         final_ab = []
@@ -1380,8 +1377,10 @@ class Room2D(_BaseGeometry):
             sf_to_add = unique_ap + unique_dr + sf_to_add
 
         # add the apertures to the room if any were found
-        skylight_sfs = []
-        wps = [[] for _ in floor_segments]
+        wps, skylight_sfs, user_dts = [], [], []
+        for _ in floor_segments:
+            wps.append([])
+            user_dts.append({'__identifier__': []})
         if len(sf_to_add) != 0:
             ext_vec = Vector3D(0, 0, ftc)
             walls = []
@@ -1415,29 +1414,32 @@ class Room2D(_BaseGeometry):
                                             and not sf.is_glass else False
                                         wps[i].append((pj_geo, isd))
                                         already_assigned[i].append(pj_geo.center)
+                                        ud = user_dts[i]
+                                        ud['__identifier__'].append(sf.identifier)
+                                        if sf.user_data is not None:
+                                            for key, val in sf.user_data.items():
+                                                try:
+                                                    ud[key].append(val)
+                                                except KeyError:  # first time attribute
+                                                    ud[key] = [val]
 
         # convert any projected Face3Ds to DetailedWindows and assign them
         sliver_tol = 3 * tolerance
         new_win_pars = []
-        for wp, seg in zip(wps, floor_segments):
+        for wp, u_data, seg in zip(wps, user_dts, floor_segments):
             if len(wp) == 0:
                 new_win_pars.append(None)
             else:
                 win_to_add, are_doors = zip(*wp)
                 det_win = DetailedWindows.from_face3ds(win_to_add, seg, are_doors)
                 det_win = det_win.adjust_for_segment(seg, ftc, tolerance, sliver_tol)
+                det_win.user_data = u_data
                 new_win_pars.append(det_win)
         self.window_parameters = new_win_pars
 
         # search the remaining un-assigned sub-faces to see if they should be a skylight
         if len(skylight_sfs) != 0:
-            sky_poly, are_doors = [], []
-            for sf in skylight_sfs:
-                bnd_pts = sf.geometry.boundary
-                sky_poly.append(Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in bnd_pts)))
-                isd = True if isinstance(sf, Door) and not sf.is_glass else False
-                are_doors.append(isd)
-            self.skylight_parameters = DetailedSkylights(sky_poly, are_doors)
+            self.skylight_parameters = DetailedSkylights.from_honeybee(skylight_sfs)
             self.offset_skylights_from_edges(5 * tolerance, tolerance)
         elif overwrite:  # remove existing skylights
             self.skylight_parameters = None
