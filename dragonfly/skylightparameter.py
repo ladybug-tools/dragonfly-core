@@ -1335,37 +1335,52 @@ class DetailedSkylights(_SkylightParameterBase):
         assert data['type'] == 'DetailedSkylights', \
             'Expected DetailedSkylights dictionary. Got {}.'.format(data['type'])
         are_doors = data['are_doors'] if 'are_doors' in data else None
-        return cls(
+        new_s_par = cls(
             tuple(Polygon2D(tuple(Point2D.from_array(pt) for pt in poly))
                   for poly in data['polygons']),
             are_doors
         )
+        if 'user_data' in data and data['user_data'] is not None:
+            new_s_par.user_data = data['user_data']
+        return new_s_par
 
     def to_dict(self):
         """Get DetailedSkylights as a dictionary."""
-        return {
+        base = {
             'type': 'DetailedSkylights',
             'polygons': [[pt.to_array() for pt in poly] for poly in self.polygons],
             'are_doors': self.are_doors
         }
+        if self.user_data is not None:
+            base['user_data'] = self.user_data
+        return base
 
     def _reassign_are_doors(self, new_polys, tolerance=0.01):
         """Reset the are_doors property using a set of new polygons."""
         if len(new_polys) != len(self._polygons):
-            if all(not dr for dr in self._are_doors):  # common case of no overhead doors
-                self._are_doors = (False,) * len(new_polys)
-            else:
-                new_are_doors = []
-                for n_poly in new_polys:
-                    np_center = n_poly.center if n_poly.is_convex else \
-                        n_poly.pole_of_inaccessibility(tolerance)
-                    for o_poly, is_door in zip(self.polygons, self.are_doors):
-                        if o_poly.is_point_inside_bound_rect(np_center):
-                            new_are_doors.append(is_door)
-                            break
+            # match the new polygons to the existing ones
+            new_are_doors, kept_i = [], []
+            for n_poly in new_polys:
+                np_center = n_poly.center if n_poly.is_convex else \
+                    n_poly.pole_of_inaccessibility(tolerance)
+                for i, (o_poly, is_door) in enumerate(zip(self.polygons, self.are_doors)):
+                    if o_poly.is_point_inside_bound_rect(np_center):
+                        new_are_doors.append(is_door)
+                        kept_i.append(i)
+                        break
+                else:
+                    new_are_doors.append(False)
+                    kept_i.append(0)
+            self._are_doors = tuple(new_are_doors)
+            # update user_data lists if some windows were not added
+            if self.user_data is not None:
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
+                        clean_u[key] = [val[j] for j in kept_i]
                     else:
-                        new_are_doors.append(False)
-                self._are_doors = tuple(new_are_doors)
+                        clean_u[key] = val
+                self.user_data = clean_u
 
     @staticmethod
     def _is_sub_polygon(sub_poly, parent_poly, parent_holes=None):
@@ -1439,7 +1454,9 @@ class DetailedSkylights(_SkylightParameterBase):
         return iter(self._polygons)
 
     def __copy__(self):
-        return DetailedSkylights(self._polygons, self._are_doors)
+        new_s = DetailedSkylights(self._polygons, self._are_doors)
+        new_s._user_data = None if self.user_data is None else self.user_data.copy()
+        return new_s
 
     def __key(self):
         """A tuple based on the object properties, useful for hashing."""
