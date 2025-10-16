@@ -1433,7 +1433,8 @@ class Room2D(_BaseGeometry):
                 win_to_add, are_doors = zip(*wp)
                 det_win = DetailedWindows.from_face3ds(win_to_add, seg, are_doors)
                 det_win = det_win.adjust_for_segment(seg, ftc, tolerance, sliver_tol)
-                det_win.user_data = u_data
+                if det_win is not None:
+                    det_win.user_data = u_data
                 new_win_pars.append(det_win)
         self.window_parameters = new_win_pars
 
