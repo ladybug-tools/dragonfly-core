@@ -3085,9 +3085,15 @@ class Room2D(_BaseGeometry):
                     h_verts, h_bcs, h_w_par = self._remove_colinear_props(
                         pts_3d, pts_2d, segs_2d, bound_cds, win_pars,
                         ftc_height, tolerance)
+                    if h_verts is None:
+                        continue
                     holes.append(h_verts)
                     new_bcs.extend(h_bcs)
                     new_w_par.extend(h_w_par)
+            if bound_verts is None:
+                raise ValueError(
+                    'Room2D "{}" is degenerate with dimensions less than the '
+                    'tolerance.'.format(self.display_name))
 
             # create the new Room2D
             new_geo = Face3D(bound_verts, holes=holes)
@@ -6497,6 +6503,9 @@ class Room2D(_BaseGeometry):
                 m_bcs, m_w_par, m_segs = [], [], []
             else:  # vertex is colinear; continue
                 skip += 1
+        # catch the case of degenerate rooms
+        if len(new_vertices) < 3:
+            return None, None, None
         # catch case of last few vertices being equal but distinct from first point
         if skip != 0 and first_skip != -1:
             _v2, _v1, _v = pts_2d[-2 - skip], pts_2d[-1], pts_2d[first_skip]
