@@ -431,9 +431,11 @@ class ContextShade(_BaseGeometry):
                 World XY coordinate system will be used. (Default: None).
         """
         # if the base plane is specified, convert to the plane's coordinate system
-        pl_ang = None
+        pl_ang, t_vec, r_vec = None, None, None
         if isinstance(base_plane, Plane) and base_plane.n.z != 0:
             origin = base_plane.o
+            t_vec = Vector3D(-origin.x, -origin.y)
+            r_vec = -t_vec
             x_axis = Vector2D(base_plane.x.x, base_plane.x.y)
             pl_ang = x_axis.angle_counterclockwise(Vector2D(1, 0))
 
@@ -443,10 +445,13 @@ class ContextShade(_BaseGeometry):
             if isinstance(geo, Face3D):
                 boundary, holes = geo.boundary, geo.holes
                 if pl_ang is not None:
-                    boundary = [pt.rotate_xy(pl_ang, origin) for pt in boundary]
+                    boundary = [pt.rotate_xy(pl_ang, origin).move(t_vec)
+                                for pt in boundary]
                     if holes is not None:
-                        holes = [[pt.rotate_xy(pl_ang, origin) for pt in hole]
-                                 for hole in holes]
+                        holes = [
+                            [pt.rotate_xy(pl_ang, origin).move(t_vec) for pt in hole]
+                            for hole in holes
+                        ]
                 new_boundary, new_holes = [], None
                 for pt in boundary:
                     new_x = grid_increment * round(pt.x / grid_increment)
@@ -462,23 +467,28 @@ class ContextShade(_BaseGeometry):
                             new_hole.append(Point3D(new_x, new_y, pt.z))
                         new_holes.append(new_hole)
                 if pl_ang is not None:
-                    new_boundary = [pt.rotate_xy(-pl_ang, origin) for pt in new_boundary]
+                    new_boundary = [pt.move(r_vec).rotate_xy(-pl_ang, origin)
+                                    for pt in new_boundary]
                     if new_holes is not None:
-                        new_holes = [[pt.rotate_xy(-pl_ang, origin) for pt in hole]
-                                     for hole in new_holes]
+                        new_holes = [
+                            [pt.move(r_vec).rotate_xy(-pl_ang, origin) for pt in hole]
+                            for hole in new_holes
+                        ]
                 n_geo = Face3D(new_boundary, geo.plane, new_holes)
                 new_geometry.append(n_geo)
             elif isinstance(geo, Mesh3D):
                 vertices = geo.vertices
                 if pl_ang is not None:
-                    vertices = [pt.rotate_xy(pl_ang, origin) for pt in vertices]
+                    vertices = [pt.rotate_xy(pl_ang, origin).move(t_vec)
+                                for pt in vertices]
                 new_vertices = []
                 for pt in vertices:
                     new_x = grid_increment * round(pt.x / grid_increment)
                     new_y = grid_increment * round(pt.y / grid_increment)
                     new_vertices.append(Point3D(new_x, new_y, pt.z))
                 if pl_ang is not None:
-                    new_vertices = [pt.rotate_xy(-pl_ang, origin) for pt in new_vertices]
+                    new_vertices = [pt.move(r_vec).rotate_xy(-pl_ang, origin)
+                                    for pt in new_vertices]
                 n_geo = Mesh3D(new_vertices, geo.faces)
                 new_geometry.append(n_geo)
 
