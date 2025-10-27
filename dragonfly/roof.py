@@ -728,12 +728,14 @@ class RoofSpecification(object):
                 suitable for objects in meters).
         """
         # if the base plane is specified, convert to the plane's coordinate system
-        pl_ang = None
+        pl_ang, t_vec = None, None
         if isinstance(base_plane, Plane) and base_plane.n.z != 0:
             origin = base_plane.o
+            t_vec = Vector3D(-origin.x, -origin.y)
             x_axis = Vector2D(base_plane.x.x, base_plane.x.y)
             pl_ang = x_axis.angle_counterclockwise(Vector2D(1, 0))
-            self.geometry = [f.rotate_xy(pl_ang, origin) for f in self.geometry]
+            self.geometry = [f.rotate_xy(pl_ang, origin).move(t_vec)
+                             for f in self.geometry]
 
         # get the ridge lines of the roof to determine if snapping is possible
         poly_ridge_info = self._compute_ridge_line_info(tolerance)
@@ -775,7 +777,8 @@ class RoofSpecification(object):
 
         # rotate the geometry back to normal if a base plane was used
         if pl_ang is not None:
-            new_geo = [f.rotate_xy(-pl_ang, origin) for f in new_geo]
+            r_vec = -t_vec
+            new_geo = [f.move(r_vec).rotate_xy(-pl_ang, origin) for f in new_geo]
         self.geometry = new_geo
 
     def align(self, line_ray, distance, tolerance=0.01):
