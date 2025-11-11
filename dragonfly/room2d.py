@@ -17,7 +17,8 @@ from ladybug_geometry.bounding import bounding_box, overlapping_bounding_boxes, 
 import ladybug_geometry.boolean as pb
 from ladybug_geometry_polyskel.polysplit import perimeter_core_subfaces
 
-from honeybee.typing import float_positive, clean_string, clean_and_id_string
+from honeybee.typing import float_positive, float_in_range, \
+    clean_string, clean_and_id_string
 from honeybee.orientation import angles_from_num_orient, orient_index
 from honeybee.search import get_attr_nested
 import honeybee.boundarycondition as hbc
@@ -101,7 +102,9 @@ class Room2D(_BaseGeometry):
         * segment_count
         * segment_normals
         * floor_height
+        * floor_elevation
         * ceiling_height
+        * ceiling_elevation
         * highest_plenum_floor_height
         * volume
         * floor_area
@@ -788,13 +791,54 @@ class Room2D(_BaseGeometry):
 
     @property
     def floor_height(self):
-        """Get a number for the height of the floor above the ground."""
+        """Get or set a number for the elevation of the floor above the ground."""
         return self._floor_geometry[0].z
+
+    @floor_height.setter
+    def floor_height(self, value):
+        value = float_in_range(value, input_name='floor height')
+        height_diff = value - self.floor_height
+        self.move(Vector3D(0, 0, height_diff))
+
+    @property
+    def floor_elevation(self):
+        """Get or set a number for the elevation of the floor above the ground.
+
+        Note that this property is exactly the same as floor_height but just
+        repeated under a different name for ease of use.
+        """
+        return self.floor_height
+
+    @floor_elevation.setter
+    def floor_elevation(self, value):
+        self.floor_height = value
 
     @property
     def ceiling_height(self):
-        """Get a number for the height of the ceiling above the ground."""
+        """Get or set a number for the elevation of the ceiling above the ground.
+
+        Note that setting this value will only adjust the floor_to_ceiling_height
+        of the Room2D and not the floor elevation.
+        """
         return self.floor_height + self.floor_to_ceiling_height
+
+    @ceiling_height.setter
+    def ceiling_height(self, value):
+        value = float_in_range(value, input_name='ceiling height')
+        self.floor_to_ceiling_height = value - self.floor_height
+
+    @property
+    def ceiling_elevation(self):
+        """Get or set a number for the elevation of the ceiling above the ground.
+
+        Note that setting this value will only adjust the floor_to_ceiling_height
+        of the Room2D and not the floor elevation.
+        """
+        return self.ceiling_height
+
+    @ceiling_elevation.setter
+    def ceiling_elevation(self, value):
+        self.ceiling_height = value
 
     @property
     def highest_plenum_floor_height(self):
