@@ -62,6 +62,27 @@ def test_room2d_init():
     assert room2d.zone == 'Closets'
 
 
+def test_room2d_setability():
+    """Test the setability of Room2D basic properties."""
+    pts = (Point3D(1, 1, 2), Point3D(1, 2, 2), Point3D(2, 2, 2), Point3D(2, 1, 2))
+    plane = Plane(Vector3D(0, 0, 1), Point3D(0, 0, 2))
+    room2d = Room2D('ZoneCLOSET920980', Face3D(pts, plane), 3)
+
+    assert room2d.floor_elevation == 2
+    assert room2d.floor_to_ceiling_height == 3
+    assert room2d.ceiling_elevation == 5
+
+    room2d.floor_elevation = 4
+    assert room2d.floor_elevation == 4
+    assert room2d.floor_to_ceiling_height == 3
+    assert room2d.ceiling_elevation == 7
+
+    room2d.ceiling_elevation = 8
+    assert room2d.floor_elevation == 4
+    assert room2d.floor_to_ceiling_height == 4
+    assert room2d.ceiling_elevation == 8
+
+
 def test_room2d_init_with_windows():
     """Test the initialization of Room2D objects with windows."""
     pts = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
