@@ -6576,12 +6576,18 @@ class Room2D(_BaseGeometry):
                 new_w_par.append(new_wp)
             else:
                 new_w_par[0] = new_wp
+                new_bcs[0] = new_bc
         elif skip != 0:
             w_par_for_merge = m_w_par + [new_w_par[0]]
-            if not all(wp is None for wp in w_par_for_merge):
-                segs_for_merge = m_segs + [segs_2d[-1]]
-                new_w_par[0] = DetailedWindows.merge(
-                    w_par_for_merge, segs_for_merge, ftc_height)
+            bcs_for_merge = m_bcs + [new_bcs[0]]
+            if all(not isinstance(bc, Ground) for bc in bcs_for_merge):
+                if not all(wp is None for wp in w_par_for_merge):
+                    segs_for_merge = m_segs + [segs_2d[-1]]
+                    new_w_par[0] = DetailedWindows.merge(
+                        w_par_for_merge, segs_for_merge, ftc_height)
+            else:
+                new_w_par[0] = None
+                new_bcs[0] = bcs.ground
         # move the first properties to the end to match with the vertices
         new_bcs.append(new_bcs.pop(0))
         new_w_par.append(new_w_par.pop(0))
