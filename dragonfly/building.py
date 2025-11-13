@@ -1712,6 +1712,9 @@ class Building(_BaseGeometry):
         property on all relevant Room2Ds that are a basement or have a basement
         story below them.
 
+        This method will also ensure that all floors above the basement have
+        outdoor boundary conditions.
+
         Args:
             basement_count: A positive integer for the number of unique Stories
                 on this Building to make into basements. (Default: 1).
@@ -1727,13 +1730,14 @@ class Building(_BaseGeometry):
                 suitable for objects in meters.
         """
         # check that the basement count is appropriate
-        if basement_count <= 0:
-            return
         if basement_count > len(self._unique_stories):
             basement_count = len(self._unique_stories)
         # assign underground walls to all basement stories
         for story in self._unique_stories[:basement_count]:
             story.make_underground(remove_windows)
+        for story in self._unique_stories[basement_count:]:
+            story.make_aboveground()
+            story.set_ground_contact(False)
         # set the ground contact property for basement Room2Ds
         self._unique_stories[0].set_ground_contact()
         max_gnd_count = basement_count + 1 \

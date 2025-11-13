@@ -10,7 +10,7 @@ from ladybug_geometry.geometry3d import Vector3D, Point3D, Ray3D, Polyline3D, \
 from honeybee.typing import float_positive, int_in_range, clean_string, \
     clean_and_id_string, valid_string, invalid_dict_error
 from honeybee.boundarycondition import boundary_conditions as bcs
-from honeybee.boundarycondition import Outdoors, Surface
+from honeybee.boundarycondition import Outdoors, Surface, Ground
 from honeybee.facetype import AirBoundary
 from honeybee.facetype import face_types as ftyp
 from honeybee.altnumber import autocalculate
@@ -1581,6 +1581,19 @@ using-multipliers-zone-and-or-window.html
                 for i, (bc, wp) in enumerate(zip_obj):
                     if wp is None and isinstance(bc, Outdoors):
                         room.set_boundary_condition(i, bcs.ground)
+
+    def make_aboveground(self):
+        """Make this Story aboveground by setting all Room2D segments to have Outdoor BCs.
+
+        Note that this method only changes the ground contact walls of the Room2Ds
+        to have Outdoor boundary conditions and, if the floors of the story are
+        also exposed, the set_ground_contact method should be used in addition
+        to this method.
+        """
+        for room in self._room_2ds:
+            for i, bc in enumerate(room._boundary_conditions):
+                if isinstance(bc, Ground):
+                    room.set_boundary_condition(i, bcs.outdoors)
 
     def automatically_zone(self, orient_count=None, north_vector=Vector2D(0, 1),
                            attr_name=None):

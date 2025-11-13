@@ -320,6 +320,20 @@ def test_make_basement_stories():
         for bc in room_2d.boundary_conditions:
             assert isinstance(bc, (Ground, Surface))
 
+    building.make_basement_stories(0, True, 0.01)
+    for room_2d in building.unique_stories[0].room_2ds:
+        assert room_2d.is_ground_contact
+        for bc in room_2d.boundary_conditions:
+            assert isinstance(bc, (Outdoors, Surface))
+    for room_2d in building.unique_stories[1].room_2ds:
+        for bc in room_2d.boundary_conditions:
+            assert isinstance(bc, (Outdoors, Surface))
+
+    building.make_basement_stories(5, True, 0.01)
+    for room_2d in building.unique_stories[-1].room_2ds:
+        for bc in room_2d.boundary_conditions:
+            assert isinstance(bc, (Ground, Surface))
+
 
 def test_building_separate_room_2d_plenums():
     """Test the Building separate_room_2d_plenums method."""
