@@ -5927,7 +5927,7 @@ class Room2D(_BaseGeometry):
                 # add a vertex for where the segment ends in the polygon
                 for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
                     if rf_py.point_relationship(pt2, tolerance) >= 0:
-                        int_pts.append((pt2, 1 + 1))
+                        int_pts.append((pt2, i + 1))
                         int_pls.append(rf_pl)
                         break
 
@@ -5963,8 +5963,17 @@ class Room2D(_BaseGeometry):
                 rf_pts, rf_ids = [], []
                 for i, pt_grp in enumerate(pt_groups):
                     # determine the start point of the group
-                    if i == 0:  # we can just pick the very first vertex
-                        st_pt, rf_id = pt_grp[0]
+                    if i == 0:  # check if there is a point in the next group to connect
+                        st_pt = None
+                        if len(pt_groups) > 1:
+                            for c_pt in pt_grp:
+                                for p_pt in pt_groups[1]:
+                                    if c_pt[1] == p_pt[1]:
+                                        st_pt = c_pt[0]
+                                        rf_id = c_pt[1]
+                                        break
+                        if st_pt is None:  # otherwise, we can just pick the first vertex
+                            st_pt, rf_id = pt_grp[0]
                     else:  # base it on the previous group
                         st_pts, pt_ids = [], []
                         for c_pt in pt_grp:
@@ -5986,11 +5995,13 @@ class Room2D(_BaseGeometry):
                     rf_pts.append(st_pt)
                     rf_ids.append(rf_id)
                     # add an extra point if there are any vertical jumps in the group
-                    z_diffs = [abs(st_pt.z - pt3.z) for (pt3, _) in pt_grp]
-                    sort_z = sorted(zip(z_diffs, pt_grp), key=lambda pair: pair[0])
-                    if sort_z[-1][0] > tolerance:
-                        rf_pts.append(sort_z[-1][1][0])
-                        rf_ids.append(sort_z[-1][1][1])
+                    if i != 0:
+                        z_diffs = [abs(st_pt.z - pt3.z) for (pt3, _) in pt_grp]
+                        sort_z = sorted(zip(z_diffs, pt_grp), key=lambda pair: pair[0])
+                        if sort_z[-1][0] > tolerance:
+                            rf_pts.append(sort_z[-1][1][0])
+                            rf_ids.append(sort_z[-1][1][1])
+
                 # add the points to the Face3D vertices
                 rf_pts.reverse()
                 face_pts.extend(rf_pts)
