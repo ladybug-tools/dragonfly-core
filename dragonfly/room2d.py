@@ -8,8 +8,7 @@ from ladybug_geometry.geometry2d import Point2D, Vector2D, Ray2D, LineSegment2D,
     Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D, \
     Plane, Polyline3D, Face3D, Polyface3D
-from ladybug_geometry.intersection2d import closest_point2d_between_line2d, \
-    closest_point2d_on_line2d
+from ladybug_geometry.intersection2d import closest_point2d_on_line2d
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
 from ladybug_geometry.bounding import bounding_box, overlapping_bounding_boxes, \
@@ -5877,29 +5876,47 @@ class Room2D(_BaseGeometry):
                 face_pts = [seg.p1, seg.p2]
                 seg_2d = LineSegment2D.from_array(((pt1.x, pt1.y), (pt2.x, pt2.y)))
                 int_pts, int_pls = [(seg_2d.p1, 0)], [current_plane]
-                # find where the segment leaves the polygon
+
+                # find if the room segment leaves the start roof polygon
                 for rf_seg in current_poly.segments:
-                    int_pt = seg_2d.intersect_line_ray(rf_seg)
-                    if int_pt is None:
-                        dist, cls_pts = closest_point2d_between_line2d(seg_2d, rf_seg)
-                        if dist <= tolerance:
-                            int_pt = cls_pts[0]
-                    if int_pt is not None:
-                        int_pts.append((int_pt, 0))
-                        int_pls.append(current_plane)
+                    dist_1 = rf_seg.distance_to_point(seg_2d.p1)
+                    dist_2 = rf_seg.distance_to_point(seg_2d.p2)
+                    dist_3 = seg_2d.distance_to_point(rf_seg.p1)
+                    dist_4 = seg_2d.distance_to_point(rf_seg.p2)
+                    dists = [dist_1, dist_2, dist_3, dist_4]
+                    pts = [seg_2d.p1, seg_2d.p2, rf_seg.p1, rf_seg.p2]
+                    co_pts = [pt for pt, d in zip(pts, dists) if d < tolerance]
+                    if len(co_pts) > 1:
+                        # segments are colinear and overlap; add all relevant points
+                        for co_pt in co_pts:
+                            int_pts.append((co_pt, 0))
+                            int_pls.append(current_plane)
+                    else:  # check to see if the line segments directly intersect
+                        int_pt = seg_2d.intersect_line_ray(rf_seg)
+                        if int_pt is not None:
+                            int_pts.append((int_pt, 0))
+                            int_pls.append(current_plane)
 
-                # if the segment ends in the same face it starts, the solution is simple
-                pts_set = set(str((round(pt[0].x, rtol), round(pt[0].y, rtol)))
-                              for pt in int_pts)
-                if len(pts_set) <= 2 and \
-                        current_poly.point_relationship(pt2, tolerance) >= 0:
-                    face_pts.append(current_plane.project_point(seg.p2, proj_dir))
-                    face_pts.append(current_plane.project_point(seg.p1, proj_dir))
-                    wall_faces.append(Face3D(face_pts))  # make the final Face3D
-                    pt1 = pt2  # increment for next segment
-                    continue
+                # if the segment ends in same polygon it starts, add the end point
+                starts_where_ends = False
+                if current_poly.point_relationship(pt2, tolerance) >= 0:
+                    int_pts.append((pt2, 0))
+                    int_pls.append(current_plane)
+                    starts_where_ends = True
 
-                # otherwise, we must find where it intersects the other roof polygons
+                # if the segment never leaves the start polygon, then solution is simple
+                if starts_where_ends:
+                    pts_set = set(str((round(pt[0].x, rtol), round(pt[0].y, rtol)))
+                                  for pt in int_pts)
+                    if len(pts_set) <= 2:
+                        face_pts.append(current_plane.project_point(seg.p2, proj_dir))
+                        face_pts.append(current_plane.project_point(seg.p1, proj_dir))
+                        wall_faces.append(Face3D(face_pts))  # make the final Face3D
+                        pt1 = pt2  # increment for next segment
+                        continue
+
+                # the room segment interacts with multiple roof polygons
+                # find where the room segment intersects the other roof polygons
                 for pi, (o_poly, o_pl) in enumerate(zip(other_poly, other_planes)):
                     for o_seg in o_poly.segments:
                         dist_1 = o_seg.distance_to_point(seg_2d.p1)
@@ -5910,26 +5927,23 @@ class Room2D(_BaseGeometry):
                         pts = [seg_2d.p1, seg_2d.p2, o_seg.p1, o_seg.p2]
                         co_pts = [pt for pt, d in zip(pts, dists) if d < tolerance]
                         if len(co_pts) > 1:
-                            # segments are colinear and overlap; add both points
+                            # segments are colinear and overlap; add all relevant points
                             for co_pt in co_pts:
                                 int_pts.append((co_pt, pi + 1))
                                 int_pls.append(o_pl)
-                        else:
+                        else:  # check to see if the line segments directly intersect
                             int_pt = seg_2d.intersect_line_ray(o_seg)
-                            if int_pt is None:
-                                d, cls_pts = closest_point2d_between_line2d(seg_2d, o_seg)
-                                if d <= tolerance:
-                                    int_pt = cls_pts[0]
                             if int_pt is not None:
                                 int_pts.append((int_pt, pi + 1))
                                 int_pls.append(o_pl)
 
                 # add a vertex for where the segment ends in the polygon
-                for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
-                    if rf_py.point_relationship(pt2, tolerance) >= 0:
-                        int_pts.append((pt2, i + 1))
-                        int_pls.append(rf_pl)
-                        break
+                if not starts_where_ends:
+                    for i, (rf_py, rf_pl) in enumerate(zip(other_poly, other_planes)):
+                        if rf_py.point_relationship(pt2, tolerance) >= 0:
+                            int_pts.append((pt2, i + 1))
+                            int_pls.append(rf_pl)
+                            break
 
                 # remove any duplicates among the intersection points
                 int_set, clean_int_pts, clean_int_pls = set(), [], []
