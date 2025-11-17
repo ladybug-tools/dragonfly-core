@@ -5629,11 +5629,11 @@ class Room2D(_BaseGeometry):
             return None, None, None
 
         # create the walls from the segments by intersecting them with the roof
-        if len(roof_faces) > len(rel_rf_polys):  # new roofs added; rebuild polygons
-            rel_rf_polys = [
-                Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))
-                for geo in roof_faces]
-            rel_rf_planes = [geo.plane for geo in roof_faces]
+        # rebuild the relevant roof polygons from the output
+        rel_rf_polys = [
+            Polygon2D(tuple(Point2D(pt.x, pt.y) for pt in geo.boundary))
+            for geo in roof_faces]
+        rel_rf_planes = [geo.plane for geo in roof_faces]
         walls = self._wall_faces_with_roof(
             all_room_poly, all_segments, rel_rf_polys, rel_rf_planes, tolerance)
         if walls is None:  # invalid roof geometry
@@ -5891,16 +5891,16 @@ class Room2D(_BaseGeometry):
                     dists = [dist_1, dist_2, dist_3, dist_4]
                     pts = [seg_2d.p1, seg_2d.p2, rf_seg.p1, rf_seg.p2]
                     co_pts = [pt for pt, d in zip(pts, dists) if d < tolerance]
-                    if len(co_pts) > 1:
+                    if len(co_pts) > 0:
                         # segments are colinear and overlap; add all relevant points
                         for co_pt in co_pts:
                             int_pts.append((co_pt, 0))
                             int_pls.append(current_plane)
-                    else:  # check to see if the line segments directly intersect
-                        int_pt = seg_2d.intersect_line_ray(rf_seg)
-                        if int_pt is not None:
-                            int_pts.append((int_pt, 0))
-                            int_pls.append(current_plane)
+                    # check to see if the line segments directly intersect
+                    int_pt = seg_2d.intersect_line_ray(rf_seg)
+                    if int_pt is not None:
+                        int_pts.append((int_pt, 0))
+                        int_pls.append(current_plane)
 
                 # if the segment ends in same polygon it starts, add the end point
                 starts_where_ends = False
@@ -5931,16 +5931,16 @@ class Room2D(_BaseGeometry):
                         dists = [dist_1, dist_2, dist_3, dist_4]
                         pts = [seg_2d.p1, seg_2d.p2, o_seg.p1, o_seg.p2]
                         co_pts = [pt for pt, d in zip(pts, dists) if d < tolerance]
-                        if len(co_pts) > 1:
+                        if len(co_pts) > 0:
                             # segments are colinear and overlap; add all relevant points
                             for co_pt in co_pts:
                                 int_pts.append((co_pt, pi + 1))
                                 int_pls.append(o_pl)
-                        else:  # check to see if the line segments directly intersect
-                            int_pt = seg_2d.intersect_line_ray(o_seg)
-                            if int_pt is not None:
-                                int_pts.append((int_pt, pi + 1))
-                                int_pls.append(o_pl)
+                        # check to see if the line segments directly intersect
+                        int_pt = seg_2d.intersect_line_ray(o_seg)
+                        if int_pt is not None:
+                            int_pts.append((int_pt, pi + 1))
+                            int_pls.append(o_pl)
 
                 # add a vertex for where the segment ends in the polygon
                 if not starts_where_ends:
