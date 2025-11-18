@@ -126,7 +126,7 @@ class _SkylightParameterBase(object):
                 u_dict = {}
                 for key, val in app_data.items():
                     if isinstance(val, (list, tuple)) and len(val) != 0:
-                        if key == '__identifier__' and len(val) == len(sub_faces):
+                        if key == 'identifier' and len(val) == len(sub_faces):
                             sub_f.identifier = val[i]
                         try:
                             u_dict[key] = val[i]
@@ -499,13 +499,13 @@ class DetailedSkylights(_SkylightParameterBase):
             sub_faces: A list of Honeybee Apertures and/or Doors to be converted
                 to Dragonfly DetailedSkylights.
         """
-        polygons, are_doors, user_dt = [], [], {'__identifier__': []}
+        polygons, are_doors, user_dt = [], [], {'identifier': []}
         for sf in sub_faces:
             verts2d = tuple(Point2D(pt.x, pt.y) for pt in sf.geometry.boundary)
             polygons.append(Polygon2D(verts2d))
             isd = True if isinstance(sf, Door) and not sf.is_glass else False
             are_doors.append(isd)
-            user_dt['__identifier__'].append(sf.identifier)
+            user_dt['identifier'].append(sf.identifier)
             if sf.user_data is not None:
                 for key, val in sf.user_data.items():
                     try:
