@@ -159,7 +159,7 @@ class _WindowParameterBase(object):
                 u_dict = {}
                 for key, val in app_data.items():
                     if isinstance(val, (list, tuple)) and len(val) != 0:
-                        if key == '__identifier__' and len(val) == len(sub_faces):
+                        if key == 'identifier' and len(val) == len(sub_faces):
                             sub_f.identifier = val[i]
                         try:
                             u_dict[key] = val[i]

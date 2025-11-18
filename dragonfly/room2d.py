@@ -1423,7 +1423,7 @@ class Room2D(_BaseGeometry):
         wps, skylight_sfs, user_dts = [], [], []
         for _ in floor_segments:
             wps.append([])
-            user_dts.append({'__identifier__': []})
+            user_dts.append({'identifier': []})
         if len(sf_to_add) != 0:
             ext_vec = Vector3D(0, 0, ftc)
             walls = []
@@ -1458,7 +1458,7 @@ class Room2D(_BaseGeometry):
                                         wps[i].append((pj_geo, isd))
                                         already_assigned[i].append(pj_geo.center)
                                         ud = user_dts[i]
-                                        ud['__identifier__'].append(sf.identifier)
+                                        ud['identifier'].append(sf.identifier)
                                         if sf.user_data is not None:
                                             for key, val in sf.user_data.items():
                                                 try:
@@ -1581,9 +1581,8 @@ class Room2D(_BaseGeometry):
                         self._window_parameters[self_seg_index] = wp2.flip(seg1.length) \
                             if isinstance(wp2, _AsymmetricBase) else wp2
                         u_data = self._window_parameters[self_seg_index].user_data
-                    if u_data is not None and '__identifier__' in u_data:
-                        u_data['__identifier__'] = \
-                            '{}_Rev'.format(u_data['__identifier__'])
+                    if u_data is not None and 'identifier' in u_data:
+                        u_data['identifier'] = '{}_Rev'.format(u_data['identifier'])
                 else:
                     if wp1 != wp2:
                         msg = 'Window parameters do not match between adjacent ' \
