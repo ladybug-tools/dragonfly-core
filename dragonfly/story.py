@@ -78,6 +78,7 @@ class Story(_BaseGeometry):
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * sub_face_area
         * volume
         * is_above_ground
         * min
@@ -457,14 +458,8 @@ using-multipliers-zone-and-or-window.html
         """Get a number for the total floor area in the Story.
 
         Note that this property is for one Story and does NOT use the multiplier.
-        However, if this Story is assigned to a parent Building with room_3ds,
-        it will include the floor area of these 3D Rooms (without the room multiplier).
         """
         flr_area = sum([room.floor_area for room in self._room_2ds])
-        if self.has_parent and self.parent.has_room_3ds:
-            for r in self.parent.room_3ds_by_story(self.display_name):
-                if not r.exclude_floor_area:
-                    flr_area += r.floor_area
         return flr_area
 
     @property
@@ -472,13 +467,8 @@ using-multipliers-zone-and-or-window.html
         """Get a number for the total exterior wall area in the Story.
 
         Note that this property is for one story and does NOT use the multiplier.
-        However, if this Story is assigned to a parent Building with room_3ds,
-        it will include the wall area of these 3D Rooms (without the room multiplier).
         """
         ewa = sum([room.exterior_wall_area for room in self._room_2ds])
-        if self.has_parent and self.parent.has_room_3ds:
-            for r in self.parent.room_3ds_by_story(self.display_name):
-                ewa += r.exterior_wall_area
         return ewa
 
     @property
@@ -486,14 +476,17 @@ using-multipliers-zone-and-or-window.html
         """Get a number for the total exterior aperture area in the Story.
 
         Note that this property is for one story and does NOT use the multiplier.
-        However, if this Story is assigned to a parent Building with room_3ds,
-        it will include the exterior wall aperture area of these 3D Rooms (without
-        the room multiplier).
         """
         eaa = sum([room.exterior_aperture_area for room in self._room_2ds])
-        if self.has_parent and self.parent.has_room_3ds:
-            for r in self.parent.room_3ds_by_story(self.display_name):
-                eaa += r.exterior_wall_aperture_area
+        return eaa
+
+    @property
+    def sub_face_area(self):
+        """Get a number for the total sub-face area.
+
+        Note that this property is for one story and does NOT use the multiplier.
+        """
+        eaa = sum([room.sub_face_area for room in self._room_2ds])
         return eaa
 
     @property

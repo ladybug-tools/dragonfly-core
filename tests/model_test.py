@@ -282,6 +282,11 @@ def test_reset_ids():
     assert new_model.room_2ds[0].identifier != parsed_model.room_2ds[0].identifier
     assert new_model.check_missing_adjacencies() == ''
 
+    original_area = parsed_model.sub_face_area
+    for room in parsed_model.room_2ds:
+        room.remove_doors()
+    assert parsed_model.sub_face_area < original_area
+
 
 def test_move():
     """Test the Model move method."""

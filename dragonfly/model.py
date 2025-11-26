@@ -97,6 +97,7 @@ class Model(_BaseGeometry):
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * sub_face_area
         * volume
         * min
         * max
@@ -642,6 +643,12 @@ class Model(_BaseGeometry):
         """Get a number for the total exterior aperture area for all Buildings.
         """
         return sum([bldg.exterior_aperture_area for bldg in self._buildings])
+
+    @property
+    def sub_face_area(self):
+        """Get a number for the total sub-face area for all Buildings.
+        """
+        return sum([bldg.sub_face_area for bldg in self._buildings])
 
     @property
     def volume(self):
