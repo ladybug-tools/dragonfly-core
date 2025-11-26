@@ -711,12 +711,26 @@ class DetailedSkylights(_SkylightParameterBase):
         return ''
 
     def remove_doors(self):
-        """Remove all door polygons from this object."""
+        """Get a version of this object with all door polygons removed."""
+        return self._remove_sub_faces(False)
+
+    def remove_windows(self):
+        """Get a version of this object with all window polygons removed."""
+        return self._remove_sub_faces(True)
+
+    def _remove_sub_faces(self, windows=False):
+        """Remove a type of subface from this object (either windows or doors)."""
         new_polygons, kept_i = [], []
-        for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
-            if not is_dr:
-                new_polygons.append(poly)
-                kept_i.append(i)
+        if windows:
+            for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
+                if is_dr:
+                    new_polygons.append(poly)
+                    kept_i.append(i)
+        else:
+            for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
+                if not is_dr:
+                    new_polygons.append(poly)
+                    kept_i.append(i)
         # create the final window parameters
         new_s_par = None
         if len(new_polygons) != 0:

@@ -93,6 +93,7 @@ class Building(_BaseGeometry):
         * floor_area
         * exterior_wall_area
         * exterior_aperture_area
+        * sub_face_area
         * volume
         * min
         * max
@@ -690,6 +691,22 @@ class Building(_BaseGeometry):
                       for story in self._unique_stories])
         eaa_r3 = sum([room.exterior_wall_aperture_area * room.multiplier
                       for room in self._room_3ds])
+        return eaa_r2 + eaa_r3
+
+    @property
+    def sub_face_area(self):
+        """Get a number for the total sub-face area in the Building.
+
+        This property uses both the 2D Story multipliers and the 3D Room multipliers
+        to determine the total sub-face area.
+        """
+        eaa_r2 = sum([story.sub_face_area * story.multiplier
+                      for story in self._unique_stories])
+        eaa_r3 = 0
+        for r in self.room_3ds:
+            for face in r.faces:
+                eaa_r3 += sum(ap.area for ap in face.apertures) * r.multiplier
+                eaa_r3 += sum(dr.area for dr in face.doors) * r.multiplier
         return eaa_r2 + eaa_r3
 
     @property

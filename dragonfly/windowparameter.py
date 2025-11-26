@@ -1680,13 +1680,28 @@ class RectangularWindows(_AsymmetricBase):
 
     def remove_doors(self):
         """Get a version of these window parameters with all doors removed."""
+        return self._remove_sub_faces(False)
+
+    def remove_windows(self):
+        """Get a version of these window parameters with all windows removed."""
+        return self._remove_sub_faces(True)
+
+    def _remove_sub_faces(self, windows=False):
+        """Remove a type of subface from this object (either windows or doors)."""
         new_origins, new_widths, new_heights, kept_i = [], [], [], []
         zip_obj = zip(self.origins, self.widths, self.heights, self.are_doors)
-        for o, w, h, isd in zip_obj:
-            if not isd:
-                new_origins.append(o)
-                new_widths.append(w)
-                new_heights.append(h)
+        if windows:
+            for o, w, h, isd in zip_obj:
+                if isd:
+                    new_origins.append(o)
+                    new_widths.append(w)
+                    new_heights.append(h)
+        else:
+            for o, w, h, isd in zip_obj:
+                if not isd:
+                    new_origins.append(o)
+                    new_widths.append(w)
+                    new_heights.append(h)
         # return the final window parameters
         new_w_par = None
         if len(new_origins) != 0:
@@ -2507,11 +2522,25 @@ class DetailedWindows(_AsymmetricBase):
 
     def remove_doors(self):
         """Get a version of these window parameters with all doors removed."""
+        return self._remove_sub_faces(False)
+
+    def remove_windows(self):
+        """Get a version of these window parameters with all windows removed."""
+        return self._remove_sub_faces(True)
+
+    def _remove_sub_faces(self, windows=False):
+        """Remove a type of subface from this object (either windows or doors)."""
         new_polygons, kept_i = [], []
-        for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
-            if not is_dr:
-                new_polygons.append(poly)
-                kept_i.append(i)
+        if windows:
+            for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
+                if is_dr:
+                    new_polygons.append(poly)
+                    kept_i.append(i)
+        else:
+            for i, (poly, is_dr) in enumerate(zip(self.polygons, self.are_doors)):
+                if not is_dr:
+                    new_polygons.append(poly)
+                    kept_i.append(i)
 
         # return the final window parameters
         new_w_par = None
