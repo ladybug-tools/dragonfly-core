@@ -165,7 +165,7 @@ class Story(_BaseGeometry):
         s_type = data['story_type'] if 'story_type' in data else 'Standard'
 
         # process the roof specification if it exists
-        roof = RoofSpecification.from_dict(data['roof']) if 'roof' in data \
+        roof = RoofSpecification.from_dict(data['roof'], tolerance) if 'roof' in data \
             and data['roof'] is not None else None
 
         # create the story object

@@ -6,7 +6,7 @@ import math
 from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
     Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
-    Plane, Polyline3D, Face3D, Polyface3D
+    Plane, Polyline3D, Face3D, Mesh3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
 
@@ -142,16 +142,33 @@ class RoofSpecification(object):
         return cls(all_geos)
 
     @classmethod
-    def from_dict(cls, data):
+    def from_dict(cls, data, tolerance=0):
         """Initialize RoofSpecification from a dictionary.
 
         Args:
             data: A dictionary representation of an RoofSpecification object.
+            tolerance: The maximum difference between z values at which point vertices
+                are considered equivalent. This is used to triangulate non-planar
+                mesh quads if they are found in the geometry. Default is 0, which
+                will not perform any check.
         """
         # check the type of dictionary
         assert data['type'] == 'RoofSpecification', 'Expected RoofSpecification ' \
             'dictionary. Got {}.'.format(data['type'])
-        geometry = tuple(Face3D.from_dict(shd_geo) for shd_geo in data['geometry'])
+        geometry = []
+        for rf_geo in data['geometry']:
+            if rf_geo['type'] == 'Face3D':
+                geometry.append(Face3D.from_dict(rf_geo))
+            else:  # it is a Mesh3D
+                mesh = Mesh3D.from_dict(rf_geo)
+                for face_pts in mesh.face_vertices:
+                    geo = Face3D(face_pts)
+                    if tolerance != 0 and len(geo.vertices) == 4 and not \
+                            geo.check_planar(tolerance, False):
+                        geometry.append(Face3D((geo[0], geo[1], geo[2])))
+                        geometry.append(Face3D((geo[2], geo[3], geo[0])))
+                    else:
+                        geometry.append(geo)
         return cls(geometry)
 
     @property

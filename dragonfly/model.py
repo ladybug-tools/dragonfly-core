@@ -187,7 +187,7 @@ class Model(_BaseGeometry):
                     if 'roof' in bldg and bldg['roof'] is not None \
                             and 'geometry' in bldg['roof'] \
                             and len(bldg['roof']['geometry']) > 0:
-                        roof = RoofSpecification.from_dict(bldg['roof'])
+                        roof = RoofSpecification.from_dict(bldg['roof'], tol)
                         building_roofs.append(roof.geometry)
                         bldg['roof'] = None
                     else:
