@@ -313,13 +313,13 @@ class Building(_BaseGeometry):
         # assign all other properties that are not a part of initializer
         if 'roof' in data and data['roof'] is not None and 'geometry' in data['roof'] \
                 and len(data['roof']['geometry']) > 0:
-            roof = RoofSpecification.from_dict(data['roof'])
+            roof = RoofSpecification.from_dict(data['roof'], tolerance)
             building.add_roof_geometry(roof.geometry, tolerance)
         if '_roofs' in data and data['_roofs'] is not None:  # secret for filtered roofs
             bldg_roofs = []
             for st_id, r_spec in data['_roofs']:
                 if r_spec is not None:
-                    roof = RoofSpecification.from_dict(r_spec)
+                    roof = RoofSpecification.from_dict(r_spec, tolerance)
                     rf_height = (roof.max_height + roof.min_height) / 2
                     bldg_roofs.append((st_id, rf_height, roof))
                 else:

@@ -4,7 +4,8 @@ import math
 import json
 
 from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polyline2D, Polygon2D
-from ladybug_geometry.geometry3d import Vector3D, Point3D, Plane, Face3D, LineSegment3D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
+    Plane, Face3D, Mesh3D
 
 from dragonfly.roof import RoofSpecification
 
@@ -41,6 +42,23 @@ def test_roof_init():
     assert roof.tilts[0] == pytest.approx(45.0, abs=1e-3)
     assert roof.tilts[1] == pytest.approx(45.0, abs=1e-3)
     assert roof.tilts[2] == pytest.approx(0.0, abs=1e-3)
+
+
+def test_init_from_mesh():
+    """Test the initialization of a RoofSpecification from a dictionary with a mesh."""
+    pts_1 = (Point3D(0, 0, 0), Point3D(10, 0, 0), Point3D(10, 5, 5), Point3D(0, 5, 5))
+    face = Face3D(pts_1)
+    pts_2 = (Point3D(0, 0, 4), Point3D(0, 2, 4), Point3D(2, 2, 4),
+             Point3D(2, 0, 4), Point3D(4, 0, 4))
+    mesh = Mesh3D(pts_2, [(0, 1, 2, 3), (2, 3, 4)])
+
+    roof_dict = {
+        'type': 'RoofSpecification',
+        'geometry': [face.to_dict(), mesh.to_dict()]
+    }
+
+    roof = RoofSpecification.from_dict(roof_dict, tolerance=0.01)
+    assert len(roof) == 3
 
 
 def test_resolved_geometry():
