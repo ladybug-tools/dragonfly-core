@@ -12,7 +12,7 @@ from ladybug_geometry.geometry3d import LineSegment3D, Plane, Face3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d
 from ladybug_geometry.bounding import bounding_rectangle
 
-from honeybee.typing import float_in_range, float_positive
+from honeybee.typing import float_in_range, float_positive, clean_string
 from honeybee.boundarycondition import Surface
 from honeybee.aperture import Aperture
 from honeybee.door import Door
@@ -160,13 +160,15 @@ class _WindowParameterBase(object):
                 for key, val in app_data.items():
                     if isinstance(val, (list, tuple)) and len(val) != 0:
                         if key == 'identifier' and len(val) == len(sub_faces):
-                            sub_f.identifier = val[i]
-                        try:
-                            u_dict[key] = val[i]
-                        except IndexError:  # use longest list logic
-                            u_dict[key] = val[-1]
+                            sub_f.identifier = clean_string(str(val[i]))
+                        if key != 'identifier':
+                            try:
+                                u_dict[key] = val[i]
+                            except IndexError:  # use longest list logic
+                                u_dict[key] = val[-1]
                     else:
-                        u_dict[key] = val
+                        if key != 'identifier':
+                            u_dict[key] = val
                 sub_f.user_data = u_dict
 
     def __copy__(self):

@@ -1581,8 +1581,10 @@ class Room2D(_BaseGeometry):
                         self._window_parameters[self_seg_index] = wp2.flip(seg1.length) \
                             if isinstance(wp2, _AsymmetricBase) else wp2
                         u_data = self._window_parameters[self_seg_index].user_data
-                    if u_data is not None and 'identifier' in u_data:
-                        u_data['identifier'] = '{}_Rev'.format(u_data['identifier'])
+                    if u_data is not None and 'identifier' in u_data and \
+                            isinstance(u_data['identifier'], (list, tuple)):
+                        u_data['identifier'] = \
+                            ['{}_Rev'.format(wid) for wid in u_data['identifier']]
                 else:
                     if wp1 != wp2:
                         msg = 'Window parameters do not match between adjacent ' \

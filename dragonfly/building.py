@@ -2357,7 +2357,8 @@ class Building(_BaseGeometry):
         if self._roofs is not None:  # secret key used for filtered dictionaries
             rf_dicts = []
             for st_id, _, roof in self._roofs:
-                rf_dicts.append((st_id, roof.to_dict()))
+                r_dict = roof.to_dict() if roof is not None else None
+                rf_dicts.append((st_id, r_dict))
             base['_roofs'] = rf_dicts
         return base
 
