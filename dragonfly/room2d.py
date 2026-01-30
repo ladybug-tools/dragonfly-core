@@ -3855,15 +3855,27 @@ class Room2D(_BaseGeometry):
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
-        if self.floor_geometry.is_self_intersecting:
+        # first, determine if the geometry is truly self-intersecting
+        is_intersecting = False
+        flr_geo = self.floor_geometry
+        if flr_geo.is_self_intersecting:
+            try:  # see if it is self-intersecting because of a duplicate vertex
+                flr_geo = self.floor_geometry.remove_duplicate_vertices(tolerance)
+                if flr_geo.is_self_intersecting:
+                    is_intersecting = True
+            except AssertionError:
+                is_intersecting = True  # zero area face; treat it as self-intersecting
+        if not is_intersecting and self.floor_geometry.has_holes:
+            all_loops = [flr_geo.boundary_polygon2d] + flr_geo.hole_polygon2d
+            snap_loops = Polygon2D.snap_polygons(all_loops, tolerance)
+            for start_loop, snap_loop in zip(all_loops, snap_loops):
+                if start_loop.vertices != snap_loop.vertices:  # self-intersection found
+                    is_intersecting = True
+                    break
+        # assemble the message if it is intersecting
+        if is_intersecting:
             msg = 'Room2D "{}" has floor geometry with self-intersecting ' \
                 'edges.'.format(self.display_name)
-            try:  # see if it is self-intersecting because of a duplicate vertex
-                new_geo = self.floor_geometry.remove_duplicate_vertices(tolerance)
-                if not new_geo.is_self_intersecting:
-                    return [] if detailed else ''  # valid with removed dup vertex
-            except AssertionError:
-                pass  # zero area face; treat it as self-intersecting
             full_msg = self._validation_message_child(
                 msg, self, detailed, '100102',
                 error_type='Self-Intersecting Room Geometry')
