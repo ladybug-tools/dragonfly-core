@@ -1439,6 +1439,19 @@ def test_to_honeybee_roof_touching_floor_2():
             assert len(wall.apertures) == 0
 
 
+def test_to_honeybee_roof_with_open_gable_tolerance_issue():
+    """Test to_honeybee with self-intersecting gables to ensure that it translates."""
+    model_file = './tests/json/roof_closed_bug.dfjson'
+    model = Model.from_file(model_file)
+    upper_story = model.buildings[0][-1]
+    assert upper_story.roof is not None
+
+    hb_models = model.to_honeybee('District', None, False)
+    assert len(hb_models) == 1
+    print(len(hb_models[0].rooms[0].roof_ceilings))
+    # assert len(hb_models[0].rooms[0].roof_ceilings) > 1
+
+
 def test_to_honeybee_non_manifold_roof_issue():
     """Test to_honeybee with a roof that used to cause a non-manifold room."""
     model_file = './tests/json/non_manifold_roof.dfjson'

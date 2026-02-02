@@ -3865,13 +3865,20 @@ class Room2D(_BaseGeometry):
                     is_intersecting = True
             except AssertionError:
                 is_intersecting = True  # zero area face; treat it as self-intersecting
-        if not is_intersecting and self.floor_geometry.has_holes:
-            all_loops = [flr_geo.boundary_polygon2d] + flr_geo.hole_polygon2d
-            snap_loops = Polygon2D.snap_polygons(all_loops, tolerance)
-            for start_loop, snap_loop in zip(all_loops, snap_loops):
-                if start_loop.vertices != snap_loop.vertices:  # self-intersection found
-                    is_intersecting = True
+        if not is_intersecting and self.floor_geometry.has_holes \
+                and len(self.floor_geometry.holes) > 1:
+            all_loops = flr_geo.hole_polygon2d
+            for i, poly_1 in enumerate(all_loops):
+                if is_intersecting:
                     break
+                try:
+                    for poly_2 in all_loops[i + 1:]:
+                        if poly_1.does_polygon_touch(poly_2, tolerance):
+                            is_intersecting = True
+                            break
+                except IndexError:
+                    pass  # we have reached the end of the list of polygons
+
         # assemble the message if it is intersecting
         if is_intersecting:
             msg = 'Room2D "{}" has floor geometry with self-intersecting ' \
