@@ -1448,8 +1448,7 @@ def test_to_honeybee_roof_with_open_gable_tolerance_issue():
 
     hb_models = model.to_honeybee('District', None, False)
     assert len(hb_models) == 1
-    print(len(hb_models[0].rooms[0].roof_ceilings))
-    # assert len(hb_models[0].rooms[0].roof_ceilings) > 1
+    assert len(hb_models[0].rooms[0].roof_ceilings) > 1
 
 
 def test_to_honeybee_non_manifold_roof_issue():

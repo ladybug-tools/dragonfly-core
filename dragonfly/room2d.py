@@ -6150,8 +6150,9 @@ class Room2D(_BaseGeometry):
         for loop in joined_loops:
             if isinstance(loop, Polyline3D) and loop.is_closed(tolerance):
                 cap_face = Face3D(loop.vertices[:-1])
-                try:
+                try:  # remove colinear vertices and re-compute plane
                     cap_face = cap_face.remove_colinear_vertices(tolerance)
+                    cap_face = Face3D(cap_face.boundary, holes=cap_face.holes)
                 except AssertionError:  # degenerate geometry
                     continue
                 if not cap_face.check_planar(tolerance, raise_exception=False):
