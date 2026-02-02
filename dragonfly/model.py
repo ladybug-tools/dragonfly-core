@@ -1971,6 +1971,12 @@ class Model(_BaseGeometry):
             for model in models:
                 self._apply_merge_map(model, merge_map, tolerance)
 
+        # rename all of the faces, apertures and doors to be human-readable
+        for model in models:
+            for room in model.rooms:
+                room.rename_faces_by_attribute()
+                room.rename_apertures_by_attribute()
+                room.rename_doors_by_attribute()
         return models
 
     def to_geojson_dict(self, location, point=Point2D(0, 0), tolerance=None):
