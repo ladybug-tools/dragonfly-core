@@ -1296,11 +1296,14 @@ class Model(_BaseGeometry):
         # set up defaults to ensure the method runs correctly
         detailed = False if raise_exception else detailed
         msgs = []
+        assert self.tolerance != 0, \
+            'Model must have a non-zero tolerance in order to perform geometry checks.'
+        tol = self.tolerance
         # perform checks for duplicate identifiers
-        msgs.append(self.check_degenerate_room_2ds(False, detailed))
-        msgs.append(self.check_self_intersecting_room_2ds(False, detailed))
-        msgs.append(self.check_no_room2d_overlaps(False, detailed))
-        msgs.append(self.check_collisions_between_stories(False, detailed))
+        msgs.append(self.check_degenerate_room_2ds(tol, False, detailed))
+        msgs.append(self.check_self_intersecting_room_2ds(tol, False, detailed))
+        msgs.append(self.check_no_room2d_overlaps(tol, False, detailed))
+        msgs.append(self.check_collisions_between_stories(tol, False, detailed))
         # output a final report of errors or raise an exception
         full_msgs = [msg for msg in msgs if msg]
         if detailed:
