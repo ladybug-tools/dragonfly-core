@@ -1301,6 +1301,48 @@ class DetailedSkylights(_SkylightParameterBase):
             self._reassign_are_doors(new_polys, tolerance)
             self._polygons = tuple(new_polys)
 
+    def remove_duplicate_skylights(self, tolerance=0.01):
+        """Get a version of these skylight parameters with duplicate geometries removed.
+
+        Args:
+            tolerance: The minimum distance between points for them to be
+                considered distinct. (Default: 0.01, suitable for
+                objects in meters).
+        """
+        # gather the indices of all the duplicates
+        new_polygons, new_are_doors = list(self.polygons), list(self.are_doors)
+        removed_i = set()
+        for i, poly_1 in enumerate(new_polygons):
+            try:
+                for j, poly_2 in enumerate(new_polygons[i + 1:]):
+                    if poly_1.center.is_equivalent(poly_2.center, tolerance):
+                        if all(poly_1.is_point_on_edge(pt, tolerance) for pt in poly_2):
+                            removed_i.add(i + j + 1)
+            except IndexError:
+                pass  # we have reached the end of the list of rooms
+
+        # remove the items from the new_polygons and new_are_doors lists
+        kept_i = [i for i in range(len(new_polygons)) if i not in removed_i]
+        for ri in reversed(sorted(removed_i)):
+            new_polygons.pop(ri)
+            new_are_doors.pop(ri)
+
+        # return the final window parameters
+        new_s_par = DetailedSkylights(new_polygons, new_are_doors)
+
+        # update user_data lists if some windows were not added
+        if self.user_data is not None:
+            clean_u = self.user_data
+            if len(new_polygons) != len(self.polygons):
+                clean_u = {}
+                for key, val in self.user_data.items():
+                    if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
+                        clean_u[key] = [val[j] for j in kept_i]
+                    else:
+                        clean_u[key] = val
+            new_s_par.user_data = clean_u
+        return new_s_par
+
     def remove_small_skylights(self, area_threshold):
         """Get a version of these skylight parameters with small geometries removed.
 

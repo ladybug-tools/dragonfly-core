@@ -26,7 +26,6 @@ from honeybee.boundarycondition import _BoundaryCondition, Outdoors, Surface, Gr
 from honeybee.facetype import Floor, Wall, AirBoundary, RoofCeiling
 from honeybee.facetype import face_types as ftyp
 from honeybee.door import Door
-from honeybee.aperture import Aperture
 from honeybee.face import Face
 from honeybee.room import Room
 
@@ -1396,75 +1395,79 @@ class Room2D(_BaseGeometry):
         for sf in sub_faces:
             if overlapping_bounding_boxes(bb_diagonal, sf.geometry, dist):
                 sf_to_add.append(sf)
+        if len(sf_to_add) == 0:
+            return
 
-        # translate existing windows/doors and get a unique set if not overwrite
-        if not overwrite:
-            hb_room, _ = self.to_honeybee(tolerance=tolerance, enforce_bc=False,
-                                          enforce_solid=False)
-            unique_ap = []
-            for e_ap in hb_room.apertures:
-                for n_sf in sf_to_add:
-                    if isinstance(n_sf, Aperture) and \
-                            n_sf.geometry.is_centered_adjacent(e_ap.geometry, tolerance):
-                        break  # it's a duplicated in the input sub-faces
-                else:
-                    unique_ap.append(e_ap)
-            unique_dr = []
-            for e_dr in hb_room.doors:
-                for n_sf in sf_to_add:
-                    if isinstance(n_sf, Door) and \
-                            n_sf.geometry.is_centered_adjacent(e_dr.geometry, tolerance):
-                        break  # it's a duplicated in the input sub-faces
-                else:
-                    unique_dr.append(e_dr)
-            sf_to_add = unique_ap + unique_dr + sf_to_add
+        # create Face3Ds for all of the room walls
+        ext_vec = Vector3D(0, 0, ftc)
+        walls = []
+        for seg in floor_segments:
+            if seg.length > tolerance:
+                walls.append(Face3D.from_extrusion(seg, ext_vec))
+            else:  # sliver wall to ignore
+                walls.append(None)
 
-        # add the apertures to the room if any were found
-        wps, skylight_sfs, user_dts = [], [], []
-        for _ in floor_segments:
-            wps.append([])
-            user_dts.append({'identifier': []})
-        if len(sf_to_add) != 0:
-            ext_vec = Vector3D(0, 0, ftc)
-            walls = []
-            for seg in floor_segments:
-                if seg.length > tolerance:
-                    walls.append(Face3D.from_extrusion(seg, ext_vec))
-                else:  # sliver wall to ignore
-                    walls.append(None)
-            already_assigned = [[] for _ in walls]
-            for sf in sf_to_add:
-                # first check if the sub-face might be a skylight
-                v_ang = sf.normal.angle(ext_vec)
-                if v_ang < perp_min or v_ang > perp_max:
-                    skylight_sfs.append(sf)
-                else:  # check if the sub-face belongs in any of the walls
-                    for i, face in enumerate(walls):
-                        if face is None:
-                            continue
-                        if overlapping_bounding_boxes(sf.geometry, face, dist):
-                            ang = sf.normal.angle(face.normal)
-                            if ang < a_tol_min or ang > a_tol_max:
-                                bpts = sf.geometry.boundary
-                                clean_pts = [face.plane.project_point(pt) for pt in bpts]
-                                if clean_pts[0].distance_to_point(bpts[0]) <= dist:
-                                    pj_geo = Face3D(clean_pts)
-                                    if any(pj_geo.center.distance_to_point(p) < tolerance
-                                           for p in already_assigned[i]):
-                                        continue
-                                    else:
-                                        isd = True if isinstance(sf, Door) \
-                                            and not sf.is_glass else False
-                                        wps[i].append((pj_geo, isd))
-                                        already_assigned[i].append(pj_geo.center)
-                                        ud = user_dts[i]
-                                        ud['identifier'].append(sf.identifier)
-                                        if sf.user_data is not None:
-                                            for key, val in sf.user_data.items():
-                                                try:
-                                                    ud[key].append(val)
-                                                except KeyError:  # first time attribute
-                                                    ud[key] = [val]
+        # set up initial lists
+        skylight_sfs = []
+        if overwrite:
+            wps = [[] for _ in floor_segments]
+            user_dts = [{'identifier': []} for _ in floor_segments]
+        else:
+            # process the existing windows assigned to walls
+            wps, user_dts = [], []
+            for (face, seg, ewp) in zip(walls, floor_segments, self.window_parameters):
+                if ewp is None:
+                    wps.append([])
+                    user_dts.append({'identifier': []})
+                else:
+                    if not isinstance(ewp, DetailedWindows):
+                        rew = ewp.to_rectangular_windows(seg, ftc)
+                        ewp = rew.to_detailed_windows()
+                    wall_plane = face.plane
+                    wall_plane = wall_plane.rotate(wall_plane.n, math.pi, wall_plane.o)
+                    f_wp = []
+                    for i, (polygon, isd) in enumerate(zip(ewp.polygons, ewp.are_doors)):
+                        pt3d = tuple(wall_plane.xy_to_xyz(pt) for pt in polygon)
+                        f_wp.append((Face3D(pt3d), isd))
+                    wps.append(f_wp)
+                    ud = ewp.user_data if ewp.user_data is not None else {}
+                    if 'identifier' not in ud:
+                        ud['identifier'] = []
+                    user_dts.append(ud)
+            # set up any skylight surfaces
+            if isinstance(self.skylight_parameters, DetailedSkylights):
+                roof = Face('{}_roof'.format(self.identifier), self.floor_geometry.flip())
+                self.skylight_parameters.add_skylight_to_face(roof, tolerance)
+                skylight_sfs.extend(roof.sub_faces)
+
+        # evaluate each input geometry against the room walls
+        for sf in sf_to_add:
+            # first check if the sub-face might be a skylight
+            v_ang = sf.normal.angle(ext_vec)
+            if v_ang < perp_min or v_ang > perp_max:
+                skylight_sfs.append(sf)
+            else:  # check if the sub-face belongs in any of the walls
+                for i, face in enumerate(walls):
+                    if face is None:
+                        continue
+                    if overlapping_bounding_boxes(sf.geometry, face, dist):
+                        ang = sf.normal.angle(face.normal)
+                        if ang < a_tol_min or ang > a_tol_max:
+                            bpts = sf.geometry.boundary
+                            clean_pts = [face.plane.project_point(pt) for pt in bpts]
+                            if clean_pts[0].distance_to_point(bpts[0]) <= dist:
+                                pj_geo = Face3D(clean_pts)
+                                isd = True if isinstance(sf, Door) \
+                                    and not sf.is_glass else False
+                                wps[i].append((pj_geo, isd))
+                                ud = user_dts[i]
+                                ud['identifier'].append(sf.identifier)
+                                if sf.user_data is not None:
+                                    for key, val in sf.user_data.items():
+                                        try:
+                                            ud[key].append(val)
+                                        except KeyError:  # first time attribute
+                                            ud[key] = [val]
 
         # convert any projected Face3Ds to DetailedWindows and assign them
         sliver_tol = 3 * tolerance
@@ -1475,17 +1478,18 @@ class Room2D(_BaseGeometry):
             else:
                 win_to_add, are_doors = zip(*wp)
                 det_win = DetailedWindows.from_face3ds(win_to_add, seg, are_doors)
+                det_win.user_data = u_data
+                det_win.remove_duplicate_windows(tolerance)
                 det_win = det_win.adjust_for_segment(seg, ftc, tolerance, sliver_tol)
-                if det_win is not None:
-                    det_win.user_data = u_data
                 new_win_pars.append(det_win)
         self.window_parameters = new_win_pars
 
         # search the remaining un-assigned sub-faces to see if they should be a skylight
         if len(skylight_sfs) != 0:
             self.skylight_parameters = DetailedSkylights.from_honeybee(skylight_sfs)
-            self.offset_skylights_from_edges(5 * tolerance, tolerance)
-        elif overwrite:  # remove existing skylights
+            self.skylight_parameters.remove_duplicate_skylights(tolerance)
+            self.offset_skylights_from_edges(2 * tolerance, tolerance)
+        elif overwrite:  # remove existing skylights if we are overwriting
             self.skylight_parameters = None
 
     def add_prefix(self, prefix):
