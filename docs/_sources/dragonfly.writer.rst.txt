@@ -1,0 +1,22 @@
+dragonfly.writer package
+========================
+
+Submodules
+----------
+
+.. toctree::
+   :maxdepth: 4
+
+   dragonfly.writer.building
+   dragonfly.writer.context
+   dragonfly.writer.model
+   dragonfly.writer.room2d
+   dragonfly.writer.story
+
+Module contents
+---------------
+
+.. automodule:: dragonfly.writer
+   :members:
+   :undoc-members:
+   :show-inheritance:
