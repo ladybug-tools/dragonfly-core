@@ -896,6 +896,19 @@ using-multipliers-zone-and-or-window.html
         return Room2D.generate_alignment_axes(
             self._room_2ds, distance, direction, angle_tolerance)
 
+    def snap_axes(self, axes, distance):
+        """Snap a set of LineSegment2Ds to the Room2Ds of this story.
+
+        Args:
+            axes: A set of LineSegment2Ds to be snapped to this story.
+            distance: A number for the maximum distance that the axes will be
+                moved in order to snap them to this story.
+
+            Returns:
+                A list of the input axes snapped to this story.
+        """
+        return Room2D.snap_axes_to_room_2ds(axes, self._room_2ds, distance)
+
     def align_room_2ds(self, line_ray, distance):
         """Move Room2D vertices within a given distance of a line to be on that line.
 

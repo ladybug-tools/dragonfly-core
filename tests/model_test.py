@@ -574,6 +574,8 @@ def test_suggested_alignment_axes():
     assert max(axes_weights) > 20
 
     story = bldg.unique_stories[0]
+    snapped_axes = story.snap_axes(common_axes, 0.03)
+    assert len(snapped_axes) == len(common_axes)
     common_axes, axes_weights = story.suggested_alignment_axes(0.03)
     assert len(common_axes) == len(axes_weights)
     assert max(axes_weights) < 20
