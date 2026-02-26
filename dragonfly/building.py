@@ -1457,6 +1457,59 @@ class Building(_BaseGeometry):
         self._room_3ds = tuple(new_room_3ds)
         return df_rooms
 
+    def pull_to_story(
+            self, distance, base_story_id, pulled_story_ids=None,
+            coordinate_vertices=True, constrain_edges=False, tolerance=0.01):
+        """Pull the Room2Ds of stories in the building to a base story in the building.
+
+        This method is intended for the case that several stories with similar
+        Room2D geometry exist on the building. However, only one story represents
+        the clean room floor plates such that a desired building can be achieved
+        by simply pulling the room geometry of the other stories to that of the
+        base story.
+
+        Args:
+            distance: The maximum distance between a Room2D vertex and another
+                Room2D where the vertex will be moved to lie on the other Room2D.
+                Vertices beyond this distance will be left as they are.
+            base_story_id: Text for the identifier of the Story in this building
+                that represents the clean Room2D geometry to be used as a base
+                for all of the stories to be pulled.
+            pulled_story_ids: An optional list of text strings for the identifiers
+                of Stories to have their Room2D geometries pulled with the
+                base Story geometry. If None, the Room2D geometries of all Stories
+                in the Building with be pulled. (Default: None).
+            coordinate_vertices: A boolean to note whether Room2D vertices that are
+                close to the other Room2D vertices within the distance should be snapped
+                to the Room2D vertex instead of simply being aligned to the nearest
+                Room2D segment. Additionally, any vertices of the neighboring room_2d
+                that are within the specified distance but cannot be matched to a vertex
+                on this Room2D within the tolerance will be inserted into this Room2D,
+                splitting the wall segment in the process. (Default: True).
+            constrain_edges: A boolean to note whether all axes of the edges that
+                were not pulled to the Room2D should be preserved. This is
+                accomplished by evaluating the changed vertices after all pulling
+                operations are performed and identifying stretches of vertices
+                that changed. For each stretch of changed vertices, the start and end
+                points of this stretch will be moved to the intersection between
+                the new pulled room segment and the adjacent original room
+                segment whose axis is to be preserved. (Default: False).
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # get the base story and stories to be replaced
+        base_story = self.stories_by_identifier([base_story_id])[0]
+        if pulled_story_ids is not None:
+            replaced_stories = self.stories_by_identifier(pulled_story_ids)
+        else:
+            replaced_stories = [s for s in self.unique_stories
+                                if s.identifier != base_story_id]
+        # pull the stories to the base story
+        for story in replaced_stories:
+            story.pull_to_story(base_story, distance, coordinate_vertices,
+                                constrain_edges, tolerance)
+
     def match_and_replace_room_2d_floor_geometry(
             self, base_story_id, replaced_story_ids=None,
             overlap_percent=50, projection_distance=0,
