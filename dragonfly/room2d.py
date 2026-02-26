@@ -8,7 +8,8 @@ from ladybug_geometry.geometry2d import Point2D, Vector2D, Ray2D, LineSegment2D,
     Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Point3D, Vector3D, Ray3D, LineSegment3D, \
     Plane, Polyline3D, Face3D, Polyface3D
-from ladybug_geometry.intersection2d import closest_point2d_on_line2d
+from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
+    closest_point2d_on_line2d_infinite
 from ladybug_geometry.intersection3d import closest_point3d_on_line3d, \
     closest_point3d_on_line3d_infinite, intersect_line3d_plane_infinite
 from ladybug_geometry.bounding import bounding_box, overlapping_bounding_boxes, \
@@ -5536,6 +5537,39 @@ class Room2D(_BaseGeometry):
         # return the common axes and values
         return Polygon2D.common_axes(
             polygons, direction, min_distance, merge_distance, ang_tol, filter_tolerance)
+
+    @staticmethod
+    def snap_axes_to_room_2ds(axes, room_2ds, distance):
+        """Snap a set of LineSegment2Ds to the nearest segment among Room2Ds.
+
+        Args:
+            axes: A set of LineSegment2Ds to be snapped to Room2Ds.
+            room_2ds: A list of Room2D to which the axes will be snapped.
+            distance: A number for the maximum distance that the axes will be
+                moved in order to snap them to the Room2Ds.
+
+            Returns:
+                A list of the input axes snapped to the Room2Ds.
+        """
+        # snap common axes to the nearest polygon segment
+        mid_pts = [seg.midpoint for room in room_2ds for seg in room.floor_segments_2d]
+        snapped_axes = []
+        for com_ax in axes:
+            dists, m_vecs = [], []
+            for pt in mid_pts:
+                close_pt = closest_point2d_on_line2d_infinite(pt, com_ax)
+                dist = close_pt.distance_to_point(pt)
+                if dist <= distance:
+                    dists.append(dist)
+                    m_vecs.append(pt - close_pt)
+            sort_vecs = [v for _, v in sorted(zip(dists, m_vecs),
+                                              key=lambda pair: pair[0])]
+            if len(sort_vecs) != 0:
+                m_vec = sort_vecs[0]  # snap to the closest segment
+                snapped_axes.append(com_ax.move(m_vec))
+            else:  # nothing to snap the axis to
+                snapped_axes.append(com_ax)
+        return snapped_axes
 
     @staticmethod
     def floor_segment_by_index(geometry, segment_index):
