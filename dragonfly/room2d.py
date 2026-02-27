@@ -4872,9 +4872,10 @@ class Room2D(_BaseGeometry):
 
             -   core_rooms - A list of Room2Ds with no identifiable orientation.
 
-            -   orientations - A list of numbers between 0 and 360 with one orientation
-                for each sub-list of the output grouped_rooms. This will be a list of
-                angle ranges if a value is input for group_count.
+            -   orientations - A list of text strings of number ranges between
+                0 and 360 with one orientation for each sub-list of the output
+                grouped_rooms. This will be a list of angle ranges if a value
+                is input for group_count.
         """
         # loop through each of the rooms and get the orientation
         orient_dict = {}
@@ -4930,8 +4931,9 @@ class Room2D(_BaseGeometry):
             -   grouped_rooms - A list of lists of rooms with each sub-list
                 representing a different orientation plane.
 
-            -   orientations - A list of numbers between 0 and 45 with one orientation
-                for each sub-list of the output grouped_rooms.
+            -   orientations - A list of text strings with number ranged between
+                0 and 45 with one orientation for each sub-list of the output
+                grouped_rooms.
         """
         # loop through each of the rooms and get the orientation
         orient_dict, north_vec = {}, Vector3D(0, 1, 0)
@@ -5552,10 +5554,10 @@ class Room2D(_BaseGeometry):
             return Plane()
         median_i = int(len(plane_x_axes) / 2)
         x_vals = [vec.x for vec in plane_x_axes]
-        y_vals = [vec.y for vec in plane_x_axes]
-        x_vals.sort()
-        y_vals.sort()
-        median_x_axis = Vector3D(x_vals[median_i], y_vals[median_i])
+        x_vecs = [v for _, v in sorted(zip(x_vals, plane_x_axes),
+                  key=lambda pair: pair[0])]
+        med_vec = x_vecs[median_i]
+        median_x_axis = Vector3D(med_vec.x, med_vec.y)
 
         # determine a suitable plane origin
         min_pt, _ = bounding_box([r.floor_geometry for r in room_2ds])
