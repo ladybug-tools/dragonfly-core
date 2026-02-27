@@ -1046,6 +1046,22 @@ class Room2D(_BaseGeometry):
                 seg_lengths += seg.length
         return orientations / seg_lengths if seg_lengths != 0 else None
 
+    def orientation_plane(self, angle_tolerance=1.0):
+        """Get a Plane from the most frequently-occurring right angle in this room.
+
+        Args:
+            angle_tolerance: A number in degrees for the maximum difference that
+                a pair of Room2D segments can differ from a true right angle for
+                it to be counted towards the computation of the orientation
+                plane. (Default: 1 degree).
+
+        Returns:
+            A ladybug-geometry Plane object derived from this Room2D's segments.
+            If there were not enough right angles among the input Room2Ds to
+            determine a plane, the World XY will be returned.
+        """
+        return Room2D.room_orientation_plane((self,), angle_tolerance)
+
     def segment_indices_by_guide_lines(self, lines, tolerance=0.01):
         """Get the indices of segments in this Room2D that lie along given guide lines.
 
@@ -4811,7 +4827,7 @@ class Room2D(_BaseGeometry):
         Returns:
             A tuple with two items.
 
-            -   grouped_rooms - A list of lists of honeybee rooms with each sub-list
+            -   grouped_rooms - A list of lists of rooms with each sub-list
                 representing a different value for the attribute.
 
             -   values - A list of text strings for the value associated with each
@@ -4854,10 +4870,10 @@ class Room2D(_BaseGeometry):
             -   grouped_rooms - A list of lists of Room2Ds with each sub-list
                 representing a different orientation.
 
-            -   core_rooms - A list of honeybee Room2Ds with no identifiable orientation.
+            -   core_rooms - A list of Room2Ds with no identifiable orientation.
 
             -   orientations - A list of numbers between 0 and 360 with one orientation
-                for each branch of the output grouped_rooms. This will be a list of
+                for each sub-list of the output grouped_rooms. This will be a list of
                 angle ranges if a value is input for group_count.
         """
         # loop through each of the rooms and get the orientation
@@ -4890,6 +4906,69 @@ class Room2D(_BaseGeometry):
                             for i in range(group_count)]
             grouped_rooms = p_rooms
         return grouped_rooms, core_rooms, orientations
+
+    @staticmethod
+    def group_by_orientation_plane(rooms, angle_tolerance=5.0):
+        """Group Room2Ds together their most frequently-occurring right angles.
+
+        This is useful when attempting to select rooms for alignment to a common
+        underlying structural grid.
+
+        Args:
+            rooms: A list of Room2Ds to be grouped by their orientation plane.
+            angle_tolerance: A number in degrees for the maximum difference that
+                a pair of Room2D segments can differ from a true right angle for
+                it to be counted towards the computation of the orientation
+                plane. This also puts an upper limit on the number of groups
+                that can be returned given that 45 divided by this angle tolerance
+                yields the maximum number of categories the rooms can be
+                grouped into. (Default: 5 degrees).
+
+        Returns:
+            A tuple with two items.
+
+            -   grouped_rooms - A list of lists of rooms with each sub-list
+                representing a different orientation plane.
+
+            -   orientations - A list of numbers between 0 and 45 with one orientation
+                for each sub-list of the output grouped_rooms.
+        """
+        # loop through each of the rooms and get the orientation
+        orient_dict, north_vec = {}, Vector3D(0, 1, 0)
+        for room in rooms:
+            ori_plane = room.orientation_plane(angle_tolerance)
+            ori = int(math.degrees(north_vec.angle(ori_plane.y)))
+            if ori > 90:
+                ori = ori - 90
+            if ori > 45:
+                ori = ori - 45
+            try:
+                orient_dict[ori].append(room)
+            except KeyError:
+                orient_dict[ori] = []
+                orient_dict[ori].append(room)
+
+        # sort the rooms by orientation values
+        room_mtx = sorted(orient_dict.items(), key=lambda d: float(d[0]))
+        orientations = [r_tup[0] for r_tup in room_mtx]
+        grouped_rooms = [r_tup[1] for r_tup in room_mtx]
+
+        # group orientations by the angle tolerance
+        group_count = int(45 / angle_tolerance)
+        step = 45.0 / group_count
+        start = step / 2.0
+        angles = []
+        while start < 45:
+            angles.append(start)
+            start += step
+        p_rooms = [[] for i in range(group_count)]
+        for ori, rm in zip(orientations, grouped_rooms):
+            or_ind = orient_index(ori, angles)
+            p_rooms[or_ind].extend(rm)
+        orientations = ['{} - {}'.format(int(angles[i - 1]), int(angles[i]))
+                        for i in range(group_count)]
+        grouped_rooms = p_rooms
+        return grouped_rooms, orientations
 
     @staticmethod
     def automatically_zone(rooms, orient_count=None, north_vector=Vector2D(0, 1),
