@@ -1714,8 +1714,27 @@ using-multipliers-zone-and-or-window.html
         Args:
             plane: A ladybug_geometry Plane across which the object will be reflected.
         """
+        # reflect the rooms and track the changes in wall IDs
+        face_map = {}
         for room in self._room_2ds:
             room.reflect(plane)
+            for i in range(len(room)):
+                orig_id = '{}..Face{}'.format(room.identifier, i + 1)
+                new_int = len(room) - i
+                new_int = new_int - 1 if new_int != 1 else len(room)
+                new_id = '{}..Face{}'.format(room.identifier, new_int)
+                face_map[orig_id] = new_id
+        # reassign the IDs of any surface boundary conditions
+        for room in self._room_2ds:
+            for i, nbc in enumerate(room._boundary_conditions):
+                if isinstance(nbc, Surface):
+                    adj_f_id, adj_r_id = nbc.boundary_condition_objects
+                    try:
+                        new_ids = (face_map[adj_f_id], adj_r_id)
+                        room._boundary_conditions[i] = Surface(new_ids)
+                    except KeyError:
+                        pass  # the original model has a missing adjacency
+        # reflect the roof geometry and the properties
         if self._roof is not None:
             self._roof.reflect(plane)
         self.properties.reflect(plane)
