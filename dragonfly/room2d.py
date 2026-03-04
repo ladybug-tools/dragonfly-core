@@ -1860,20 +1860,28 @@ class Room2D(_BaseGeometry):
         Args:
             plane: A ladybug_geometry Plane across which the object will be reflected.
         """
+        # reflect the room floor geometry
         assert plane.n.z == 0, \
             'Plane normal must be in XY plane to use it on Room2D.reflect.'
-        self._floor_geometry = self._floor_geometry.reflect(plane.n, plane.o)
-        if self._floor_geometry.normal.z < 0:  # ensure upward-facing Face3D
-            new_bcs, new_win_pars, new_shd_pars = Room2D._flip_wall_assigned_objects(
-                self._floor_geometry, self._boundary_conditions,
-                self._window_parameters, self._shading_parameters)
-            self._boundary_conditions = new_bcs
-            self._window_parameters = new_win_pars
-            self._shading_parameters = new_shd_pars
-            self._floor_geometry = self._floor_geometry.flip()
+        new_floor_geo = self._floor_geometry.reflect(plane.n, plane.o).flip()
         o_pl = Plane(Vector3D(0, 0, 1), Point3D(0, 0, self._floor_geometry.plane.o.z))
-        self._floor_geometry = Face3D(self._floor_geometry.boundary, o_pl,
-                                      self._floor_geometry.holes)
+        new_bound = list(new_floor_geo.boundary)
+        new_bound.append(new_bound.pop(0))
+        new_floor_geo = Face3D(new_floor_geo.boundary, o_pl, self._floor_geometry.holes)
+
+        # coordinate the wall assigned objects with the reflected geometry
+        new_bcs, new_win_pars, new_shd_pars = Room2D._flip_wall_assigned_objects(
+            self._floor_geometry, self._boundary_conditions,
+            self._window_parameters, self._shading_parameters)
+        new_bcs.append(new_bcs.pop(0))
+        new_win_pars.append(new_win_pars.pop(0))
+        new_shd_pars.append(new_shd_pars.pop(0))
+        self._boundary_conditions = new_bcs
+        self._window_parameters = new_win_pars
+        self._shading_parameters = new_shd_pars
+
+        # assign the final floor geometry and flip the skylight geometry if necessary
+        self._floor_geometry = new_floor_geo
         if isinstance(self._skylight_parameters, DetailedSkylights):
             self._skylight_parameters = self._skylight_parameters.reflect(plane)
         self.properties.reflect(plane)
