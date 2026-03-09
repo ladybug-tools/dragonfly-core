@@ -130,6 +130,19 @@ def test_align():
     assert new_awning.area > awning_canopy.area
 
 
+def test_split_with_lines():
+    """Test the ContextShade align method."""
+    shade_box = Polyface3D.from_box(2, 2, 0.5, Plane(o=Point3D(0, 0, 3)))
+    awning_canopy = ContextShade('Awning_Canopy', shade_box.faces)
+
+    split_line = LineSegment2D.from_end_points(Point2D(1, -1), Point2D(1, 3))
+    new_awning = awning_canopy.duplicate()
+    new_awning.split_with_lines([split_line], 0.01)
+    assert len(awning_canopy) == 6
+    assert len(new_awning) >= 8
+    assert new_awning.area == pytest.approx(awning_canopy.area, rel=1e-3)
+
+
 def test_to_honeybee():
     """Test the to_honeybee method."""
     tree_canopy_geo1 = Face3D.from_regular_polygon(6, 6, Plane(o=Point3D(5, -10, 6)))

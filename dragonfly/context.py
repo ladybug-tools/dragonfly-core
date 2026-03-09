@@ -5,7 +5,8 @@ import math
 
 from ladybug_geometry.geometry2d import Vector2D, Point2D, Ray2D, LineSegment2D, \
     Polygon2D
-from ladybug_geometry.geometry3d import Vector3D, Point3D, Plane, Face3D, Mesh3D
+from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
+    Plane, Face3D, Mesh3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
 
@@ -583,6 +584,41 @@ class ContextShade(_BaseGeometry):
             else:  # meshes are never aligned
                 new_geo.append(geo)
         self._geometry = tuple(new_geo)
+
+    def split_with_lines(self, lines, tolerance=0.01):
+        """Split the geometry of this ContextShade with multiple line segments together.
+
+        Args:
+            lines: A list of LineSegment2D objects that will be used to split
+                this ContextShade geometry.
+            tolerance: The maximum difference between point values for them to be
+                considered distinct from one another. (Default: 0.01; suitable
+                for objects in Meters).
+        """
+        # create 3D versions of the lines for the closest point calculation
+        lines_3d = []
+        for line in lines:
+            if isinstance(line, LineSegment2D):
+                line_3d = LineSegment3D(Point3D(line.p.x, line.p.y, 0),
+                                        Vector3D(line.v.x, line.v.y, 0))
+                lines_3d.append(line_3d)
+            else:
+                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+                raise TypeError(msg)
+        # split the ContextShade with the lines
+        new_geos = []
+        proj_dir = Vector3D(0, 0, 1)
+        for geo in self._geometry:
+            if isinstance(geo, Face3D):
+                proj_lines = geo.plane.project_lines(lines_3d, proj_dir)
+                new_geo = geo.split_with_lines(proj_lines, tolerance)
+                if new_geo is not None:
+                    new_geos.extend(new_geo)
+                else:
+                    new_geos.append(geo)
+            else:  # meshes are never split
+                new_geos.append(geo)
+        self._geometry = tuple(new_geos)
 
     def to_honeybee(self):
         """Convert Dragonfly ContextShade to a list of Honeybee Shades and ShadeMeshes.
