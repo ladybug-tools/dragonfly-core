@@ -1374,6 +1374,7 @@ class RepeatingWindowWidthHeight(_WindowParameterBase):
 class _AsymmetricBase(_WindowParameterBase):
     """Base class for WindowParameters that can make asymmetric windows on a wall.
     """
+    __slots__ = ()
 
     def flip(self, seg_length):
         """Flip the direction of the windows along a wall segment.
@@ -2889,15 +2890,17 @@ class DetailedWindows(_AsymmetricBase):
 
         # first group the windows together if they lie within 2 times frame_distance
         grouped_polys = Polygon2D.group_by_touching(self.polygons, touch_dist)
-        grouped_are_doors = []
+        grouped_are_doors, grouped_indices = [], []
         for pg_grp in grouped_polys:
             for p_gon1 in pg_grp:
-                for p_gon2, isd in zip(self.polygons, self.are_doors):
+                for pin, (p_gon2, isd) in enumerate(zip(self.polygons, self.are_doors)):
                     if p_gon1.center.is_equivalent(p_gon2.center, tolerance):
                         grouped_are_doors.append(isd)
+                        grouped_indices.append(pin)
                         break
-                else:
+                else:  # failed to match it with the group
                     grouped_are_doors.append(False)
+                    grouped_indices.append(0)
 
         # for each window group, generate axes for aligning them flush
         flush_polys = []
@@ -2962,12 +2965,13 @@ class DetailedWindows(_AsymmetricBase):
                 i_to_remove.append(i)
 
         # update user_data lists if some windows were not added
-        if self.user_data is not None and len(i_to_remove) != 0:
+        if self.user_data is not None:
+            for del_i in reversed(i_to_remove):
+                grouped_indices.pop(del_i)
             clean_u = {}
-            kept_i = [i for i in range(len(flush_polys)) if i not in i_to_remove]
             for key, val in self.user_data.items():
                 if isinstance(val, (list, tuple)) and len(val) >= len(self.polygons):
-                    clean_u[key] = [val[j] for j in kept_i]
+                    clean_u[key] = [val[j] for j in grouped_indices]
                 else:
                     clean_u[key] = val
             self._user_data = clean_u
