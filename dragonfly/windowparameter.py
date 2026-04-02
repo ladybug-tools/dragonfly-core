@@ -2986,6 +2986,8 @@ class DetailedWindows(_AsymmetricBase):
     @staticmethod
     def _pull_to_segments(polygon, line_segments, distance):
         """Pull a Polygon2D to a list of LineSegment2Ds."""
+        if len(line_segments) == 0:
+            return polygon  # nothing to pull to
         new_vertices = []
         for pt in polygon.vertices:
             dists, c_pts = [], []
