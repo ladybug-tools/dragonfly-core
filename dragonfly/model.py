@@ -2042,13 +2042,18 @@ class Model(_BaseGeometry):
                     self._face3d_to_geojson_coordinates(
                         footprint[0], origin_lon_lat, convert_facs)
             else:
-                feature_dict['geometry']['type'] = 'MultiPolygon'
-                all_coords = []
-                for floor in footprint:
-                    all_coords.append(
-                        self._face3d_to_geojson_coordinates(
-                            floor, origin_lon_lat, convert_facs))
-                feature_dict['geometry']['coordinates'] = all_coords
+                # TODO: uncomment once URBANopt supports MultiPolygon
+                # feature_dict['geometry']['type'] = 'MultiPolygon'
+                # all_coords = []
+                # for floor in footprint:
+                #     coord = self._face3d_to_geojson_coordinates(
+                #         floor, origin_lon_lat, convert_facs)
+                #     all_coords.append(coord)
+                # feature_dict['geometry']['coordinates'] = all_coords
+                feature_dict['geometry']['type'] = 'Polygon'
+                feature_dict['geometry']['coordinates'] = \
+                    self._face3d_to_geojson_coordinates(
+                        footprint[0], origin_lon_lat, convert_facs)
 
             # add several of the properties to the geoJSON
             feature_dict['properties']['building_type'] = 'Mixed use'
