@@ -1708,7 +1708,9 @@ class RectangularWindows(_AsymmetricBase):
         # return the final window parameters
         new_w_par = None
         if len(new_origins) != 0:
-            new_w_par = RectangularWindows(new_origins, new_widths, new_heights)
+            are_doors = [False] * len(new_origins) \
+                if windows else [True] * len(new_origins)
+            new_w_par = RectangularWindows(new_origins, new_widths, new_heights, are_doors)
 
         # update user_data lists if some windows were not added
         if new_w_par is not None and self.user_data is not None:
@@ -2297,7 +2299,7 @@ class DetailedWindows(_AsymmetricBase):
                 model. (Default: None).
         """
         plane = Plane(Vector3D(segment.v.y, -segment.v.x, 0), segment.p, segment.v)
-        pt3d = tuple(tuple(pt for pt in face.vertices) for face in face3ds)
+        pt3d = tuple(tuple(pt for pt in face.boundary) for face in face3ds)
         return cls(
             tuple(Polygon2D(tuple(plane.xyz_to_xy(pt) for pt in poly))
                   for poly in pt3d),
@@ -2597,7 +2599,9 @@ class DetailedWindows(_AsymmetricBase):
         # return the final window parameters
         new_w_par = None
         if len(new_polygons) != 0:
-            new_w_par = DetailedWindows(new_polygons)
+            are_doors = [False] * len(new_polygons) \
+                if windows else [True] * len(new_polygons)
+            new_w_par = DetailedWindows(new_polygons, are_doors)
 
         # update user_data lists if some windows were not added
         if new_w_par is not None and self.user_data is not None:
@@ -2678,7 +2682,7 @@ class DetailedWindows(_AsymmetricBase):
         return new_w
 
     def add_window_to_face(self, face, tolerance=0.01):
-        """Add Apertures to a Honeybee Face using these Window Parameters.
+        """Add Apertures/Doors to a Honeybee Face using these Window Parameters.
 
         Args:
             face: A honeybee-core Face object.
@@ -3025,7 +3029,7 @@ class DetailedWindows(_AsymmetricBase):
             self._reassign_are_doors(new_polys, tolerance)
             self._polygons = tuple(new_polys)
 
-    def merge_and_simplify(self, max_separation, tolerance=0.01):
+    def merge_and_simplify(self, max_separation, tolerance=0.01, ignore_doors=False):
         """Merge window polygons that are close to one another into a single polygon.
 
         This can be used to create a simpler set of windows that is easier to
@@ -3039,6 +3043,9 @@ class DetailedWindows(_AsymmetricBase):
                 simply join neighboring windows together.
             tolerance: The maximum difference between point values for them to be
                 considered distinct. (Default: 0.01, suitable for objects in meters).
+            ignore_doors: Boolean to note whether all doors should be left
+                exactly as they are (True) or doors that are next to one
+                another should be merged into one door (False).
         """
         # gather a clean version of the polygons with colinear vertices removed
         clean_polys, door_polys = [], []
@@ -3053,6 +3060,18 @@ class DetailedWindows(_AsymmetricBase):
                 pass
 
         # join the polygons together
+        new_polys = self._merge_polygons(clean_polys, max_separation, tolerance)
+        if not ignore_doors:
+            door_polys = self._merge_polygons(door_polys, max_separation, tolerance)
+
+        # bring everything together and reassign the door property
+        new_polys = new_polys + door_polys
+        self._reassign_are_doors(new_polys, tolerance)
+        self._polygons = tuple(new_polys)
+
+    @staticmethod
+    def _merge_polygons(clean_polys, max_separation, tolerance):
+        """Join polygons together and resolve resulting intersections."""
         if max_separation <= tolerance:
             new_polys = Polygon2D.joined_intersected_boundary(clean_polys, tolerance)
         else:
@@ -3076,11 +3095,7 @@ class DetailedWindows(_AsymmetricBase):
                         is_self_intersect = True
                 if is_self_intersect:
                     new_polys = clean_polys
-
-        # bring everything together and reassign the door property
-        new_polys = new_polys + door_polys
-        self._reassign_are_doors(new_polys, tolerance)
-        self._polygons = tuple(new_polys)
+        return new_polys
 
     def merge_to_bounding_rectangle(self, tolerance=0.01):
         """Merge window polygons that touch or overlap with one another to a rectangle.
@@ -3355,7 +3370,7 @@ class DetailedWindows(_AsymmetricBase):
             "type": "DetailedWindows",
             "polygons": [((0.5, 0.5), (2, 0.5), (2, 2), (0.5, 2)),
                          ((3, 1), (4, 1), (4, 2))],
-            "are_doors": [False]
+            "are_doors": [False, False]
             }
         """
         assert data['type'] == 'DetailedWindows', \
@@ -3426,13 +3441,17 @@ class DetailedWindows(_AsymmetricBase):
     def _reassign_are_doors(self, new_polys, tolerance=0.01):
         """Reset the are_doors property using a set of new polygons."""
         if len(new_polys) != len(self.polygons):
+            # get the centers of the original polygons
+            o_poly_pts = []
+            for o_poly in self.polygons:
+                op_center = o_poly.center if o_poly.is_convex else \
+                    o_poly.pole_of_inaccessibility(tolerance)
+                o_poly_pts.append(op_center)
             # match the new polygons to the existing ones
             new_are_doors, kept_i = [], []
             for n_poly in new_polys:
-                np_center = n_poly.center if n_poly.is_convex else \
-                    n_poly.pole_of_inaccessibility(tolerance)
-                for i, (o_poly, is_door) in enumerate(zip(self.polygons, self.are_doors)):
-                    if o_poly.is_point_inside_bound_rect(np_center):
+                for i, (o_pt, is_door) in enumerate(zip(o_poly_pts, self.are_doors)):
+                    if n_poly.is_point_inside_bound_rect(o_pt):
                         new_are_doors.append(is_door)
                         kept_i.append(i)
                         break
