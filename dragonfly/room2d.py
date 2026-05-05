@@ -60,17 +60,17 @@ class Room2D(_BaseGeometry):
             boundary conditions to each of the walls of the Room in the resulting
             model. If None, all boundary conditions will be Outdoors or Ground
             depending on whether ceiling of the room is below 0 (the assumed
-            ground plane). Default: None.
+            ground plane). (Default: None).
         window_parameters: A list of WindowParameter objects that dictate how the
             window geometries will be generated for each of the walls. If None,
-            no windows will exist over the entire Room2D. Default: None.
+            no windows will exist over the entire Room2D. (Default: None).
         shading_parameters: A list of ShadingParameter objects that dictate how the
             shade geometries will be generated for each of the walls. If None,
-            no shades will exist over the entire Room2D. Default: None.
+            no shades will exist over the entire Room2D. (Default: None).
         is_ground_contact: A boolean noting whether this Room2D has its floor
-            in contact with the ground. Default: False.
+            in contact with the ground. (Default: False).
         is_top_exposed: A boolean noting whether this Room2D has its ceiling
-            exposed to the outdoors. Default: False.
+            exposed to the outdoors. (Default: False).
         tolerance: The maximum difference between z values at which point vertices
             are considered to be in the same horizontal plane. This is used to check
             that all vertices of the input floor_geometry lie in the same horizontal
