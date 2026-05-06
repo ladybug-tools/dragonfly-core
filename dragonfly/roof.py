@@ -10,6 +10,8 @@ from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
 
+import dragonfly.clearstoryparameter as clear_par
+
 
 class RoofSpecification(object):
     """A roof specification with instructions for generating sloped roofs over a Story.
@@ -19,12 +21,17 @@ class RoofSpecification(object):
             Cases where Room2Ds are only partially covered by these roof geometries
             will result in those portions of the Room2Ds being extruded to their
             floor_to_ceiling_height.
+        clearstory_parameters: A list of ClearstoryParameter objects that dictate
+            how to generate window geometries for any vertical walls that result
+            from the translation of roof geometry. If None, no clearstory windows
+            will exist over the roof. (Default: None).
 
     Properties:
         * geometry
         * geometry_2d
         * boundary_geometry_2d
         * planes
+        * clearstory_parameters
         * parent
         * has_parent
         * min
@@ -36,12 +43,13 @@ class RoofSpecification(object):
         * altitudes
         * tilts
     """
-    __slots__ = ('_geometry', '_parent', '_is_resolved')
+    __slots__ = ('_geometry', '_clearstory_parameters', '_parent', '_is_resolved')
     _ANG_TOL = 0.0174533  # angle tolerance in radians for determining X or Y alignment
 
-    def __init__(self, geometry):
+    def __init__(self, geometry, clearstory_parameters=None):
         """Initialize RoofSpecification."""
         self.geometry = geometry
+        self.clearstory_parameters = clearstory_parameters
         self._parent = None  # will be set when RoofSpecification is added to a Story
         self._is_resolved = False  # will be set during the serialization process
 
@@ -155,6 +163,7 @@ class RoofSpecification(object):
         # check the type of dictionary
         assert data['type'] == 'RoofSpecification', 'Expected RoofSpecification ' \
             'dictionary. Got {}.'.format(data['type'])
+        # serialize the geometry
         geometry = []
         for rf_geo in data['geometry']:
             if rf_geo['type'] == 'Face3D':
@@ -169,7 +178,19 @@ class RoofSpecification(object):
                         geometry.append(Face3D((geo[2], geo[3], geo[0])))
                     else:
                         geometry.append(geo)
-        return cls(geometry)
+        # serialize any clearstory windows
+        if 'clearstory_parameters' in data and data['clearstory_parameters'] is not None:
+            clear_pars = []
+            for cd in data['clearstory_parameters']:
+                try:
+                    clear_class = getattr(clear_par, cd['type'])
+                except AttributeError:
+                    msg = 'Clearstory parameter "{}" is not recognized.'.format(cd['type'])
+                    raise ValueError(msg)
+                clear_pars.append(clear_class.from_dict(cd))
+        else:
+            clear_pars = None
+        return cls(geometry, clear_pars)
 
     @property
     def geometry(self):
@@ -223,6 +244,24 @@ class RoofSpecification(object):
         """Get a tuple of Planes for each Face3D in geometry.
         """
         return tuple(geo.plane for geo in self._geometry)
+
+    @property
+    def clearstory_parameters(self):
+        """Get or set a tuple of ClearstoryParameter objects for windows in the roof.
+        """
+        return self._clearstory_parameters
+
+    @clearstory_parameters.setter
+    def clearstory_parameters(self, value):
+        if value is not None:
+            if not isinstance(value, tuple):
+                value = tuple(value)
+            for cp in value:
+                assert isinstance(cp, clear_par._ClearstoryParameterBase), 'Expected ' \
+                    'ClearstoryParameter for RoofSpecification. Got {}'.format(type(cp))
+            self._clearstory_parameters = value
+        else:
+            self._clearstory_parameters = ()
 
     @property
     def parent(self):
@@ -594,6 +633,8 @@ class RoofSpecification(object):
                 to move the object.
         """
         self._geometry = tuple(geo.move(moving_vec) for geo in self._geometry)
+        self._clearstory_parameters = \
+            tuple(cp.move(moving_vec) for cp in self._clearstory_parameters)
 
     def rotate_xy(self, angle, origin):
         """Rotate RoofSpecification counterclockwise in the XY plane by a certain angle.
@@ -605,6 +646,8 @@ class RoofSpecification(object):
         """
         self._geometry = tuple(geo.rotate_xy(math.radians(angle), origin)
                                for geo in self._geometry)
+        self._clearstory_parameters = \
+            tuple(cp.rotate(angle, origin) for cp in self._clearstory_parameters)
 
     def reflect(self, plane):
         """Reflect this RoofSpecification across a plane.
@@ -613,6 +656,8 @@ class RoofSpecification(object):
             plane: A ladybug_geometry Plane across which the object will be reflected.
         """
         self._geometry = tuple(geo.reflect(plane.n, plane.o) for geo in self._geometry)
+        self._clearstory_parameters = \
+            tuple(cp.reflect(plane) for cp in self._clearstory_parameters)
 
     def scale(self, factor, origin=None):
         """Scale this RoofSpecification by a factor from an origin point.
@@ -623,6 +668,8 @@ class RoofSpecification(object):
                 to scale. If None, it will be scaled from the World origin (0, 0, 0).
         """
         self._geometry = tuple(geo.scale(factor, origin) for geo in self._geometry)
+        self._clearstory_parameters = \
+            tuple(cp.scale(factor, origin) for cp in self._clearstory_parameters)
 
     def update_geometry_3d(self, new_face_3d, face_index):
         """Change one of the Face3D in this RoofSpecification.geometry.
@@ -740,6 +787,8 @@ class RoofSpecification(object):
             selected_indices: An optional list of indices for specific roof
                 geometries to be snapped to the grid. If None, all of the roof
                 geometry will be snapped. (Default: None).
+            base_plane: A ladybug-geometry Plane object to set the plane in
+                which snapping will occur.
             tolerance: The minimum distance between vertices below which they are
                 considered co-located. (Default: 0.01,
                 suitable for objects in meters).
@@ -1370,6 +1419,9 @@ class RoofSpecification(object):
         """Return RoofSpecification as a dictionary."""
         base = {'type': 'RoofSpecification'}
         base['geometry'] = [geo.to_dict() for geo in self._geometry]
+        if len(self._clearstory_parameters) != 0:
+            base['clearstory_parameters'] = \
+                [cp.to_dict() for cp in self._clearstory_parameters]
         return base
 
     def duplicate(self):
@@ -1529,7 +1581,8 @@ class RoofSpecification(object):
         return Point2D(max_pt[0], max_pt[1])
 
     def __copy__(self):
-        return RoofSpecification(self._geometry)
+        new_cp = tuple(cp.duplicate() for cp in self._clearstory_parameters)
+        return RoofSpecification(self._geometry, new_cp)
 
     def __len__(self):
         return len(self._geometry)
