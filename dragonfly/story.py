@@ -2219,7 +2219,7 @@ using-multipliers-zone-and-or-window.html
                 original_roof = self.roof
                 res_roof_geo = self.roof.resolved_geometry(
                     tolerance, split_through_holes=True)
-                res_roof = RoofSpecification(res_roof_geo)
+                res_roof = RoofSpecification(res_roof_geo, self.roof.clearstory_parameters)
                 res_roof._is_resolved = True
                 self.roof = res_roof
 
@@ -2354,14 +2354,16 @@ using-multipliers-zone-and-or-window.html
                 return room_roofs[0]
             else:  # the roof of another story; we must resolve it
                 res_roof_geo = room_roofs[0].resolved_geometry(tolerance)
-                res_roof = RoofSpecification(res_roof_geo)
+                res_roof = RoofSpecification(
+                    res_roof_geo, room_roofs[0].clearstory_parameters)
                 res_roof._is_resolved = True
                 return res_roof
         # if we have multiple roofs, create a new roof with everything resolved
         all_geo = [g for roof in room_roofs for g in roof]
-        base_roof = RoofSpecification(all_geo)
+        all_clear = [cp for roof in room_roofs for cp in roof.clearstory_parameters]
+        base_roof = RoofSpecification(all_geo, all_clear)
         res_roof_geo = base_roof.resolved_geometry(tolerance)
-        res_roof = RoofSpecification(res_roof_geo)
+        res_roof = RoofSpecification(res_roof_geo, all_clear)
         res_roof._is_resolved = True
         return res_roof
 

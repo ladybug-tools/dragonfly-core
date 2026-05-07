@@ -4186,7 +4186,7 @@ class Room2D(_BaseGeometry):
                 tuple of Surface.boundary_condition_objects as the second item.
         """
         # create the honeybee Room
-        has_roof, ex_wall_i = False, None
+        has_roof, ex_wall_i, roof_spec = False, None, None
         if self._parent is not None:
             # get a roof specification for the room
             roof_spec = self._parent._room_roofs(self, tolerance)
@@ -4199,10 +4199,10 @@ class Room2D(_BaseGeometry):
                     pass
                 room_polyface, roof_face_i, ex_wall_i = \
                     self._room_volume_with_roof(roof_spec, tolerance)
-                if room_polyface is None:  # complete failure to interpret roof
-                    has_roof = False
+                if room_polyface is None:
+                    has_roof = False  # complete failure to interpret roof
                 elif enforce_solid and not room_polyface.is_solid:
-                    has_roof = False
+                    has_roof = False  # accounting for roofs failed to make a solid room
                 else:
                     has_roof = True
         if not has_roof:  # generate the Room volume normally through extrusion
@@ -4336,6 +4336,24 @@ class Room2D(_BaseGeometry):
             if self._skylight_parameters is not None:
                 for rf in roof_faces:
                     self._skylight_parameters.add_skylight_to_face(rf, tolerance)
+            # set clearstory windows if they exist on the roof
+            if roof_spec is not None and roof_spec.has_clearstory:
+                # get all wall Faces of the Room that can host clearstory windows
+                roof_i_pos, total_face_count = [], len(hb_room)
+                for ri in roof_face_i:
+                    ri_pos = ri + total_face_count if ri < 0 else ri
+                    roof_i_pos.append(ri_pos)
+                roof_i_pos.sort()
+                roof_st = roof_i_pos[0]
+                clear_faces = [face for face in hb_room.faces[roof_st:]
+                               if isinstance(face.type, Wall)]
+                for cf in clear_faces:
+                    pts_2d = [Point2D(pt.x, pt.y) for pt in cf.geometry.boundary]
+                    for cs_par in roof_spec.clearstory_parameters:
+                        touching = [cs_par.base_line.distance_to_point(p) < tolerance
+                                    for p in pts_2d]
+                        if any(touching):
+                            cs_par.add_clearstory_to_face(cf, tolerance)
 
         # set the story, multiplier, display_name, and user_data
         if self.has_parent:
@@ -5695,9 +5713,10 @@ class Room2D(_BaseGeometry):
                 the roof is not successfully applied to the Room.
 
             * ex_wall_i -- A set of integers for the indices of the wall segments
-                that were excluded from the room polyface. This can be used to
-                ensure that windows and boundary conditions are assigned to the
-                correct Face of the polyface.
+                that were excluded from the room polyface. This happens when a
+                roof perfectly touches the floor of a room. This list of integers
+                can be used to ensure that windows and boundary conditions are
+                assigned to the correct Face of the polyface.
         """
         # get the roof polygons and the bounding Room2D polygon
         roof_polys = roof_spec.boundary_geometry_2d
@@ -6236,6 +6255,10 @@ class Room2D(_BaseGeometry):
                             new_face3d.area > tolerance ** 2:
                         vertical_faces.append(new_face3d)
 
+        # if no vertical faces were created this is not the issue
+        if len(vertical_faces) == 0:
+            return room_polyface, roof_face_i
+
         # remove duplicated vertices in the resulting vertical faces
         clean_vert_faces = []
         for f in vertical_faces:
@@ -6243,6 +6266,27 @@ class Room2D(_BaseGeometry):
                 clean_vert_faces.append(f.remove_duplicate_vertices(tolerance))
             except AssertionError:
                 pass  # invalid sliver face
+
+        # merge coplanar vertical walls together
+        if len(clean_vert_faces) != 1:
+            ang_tol = math.radians(1)
+            coplanar_dict = {clean_vert_faces[0].plane: [clean_vert_faces[0]]}
+            for face in clean_vert_faces[1:]:
+                for pln, f_list in coplanar_dict.items():
+                    if face.plane.is_coplanar_tolerance(pln, tolerance, ang_tol):
+                        f_list.append(face)
+                        break
+                else:  # the first face with this type of plane
+                    coplanar_dict[face.plane] = [face]
+            joined_faces = []
+            for face_list in coplanar_dict.values():
+                if len(face_list) == 1:  # no faces to merge
+                    joined_faces.append(face_list[0])
+                else:  # there are faces to merge
+                    joined_geos = Face3D.join_coplanar_faces(face_list, tolerance)
+                    joined_faces.extend(joined_geos)
+                if len(joined_faces) != len(clean_vert_faces):
+                    clean_vert_faces = joined_faces
 
         # rebuild the room polyface
         st_v = -len(clean_vert_faces) - 1
