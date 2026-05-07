@@ -911,20 +911,6 @@ def test_complicated_boolean_int_roof_failure():
     assert len(room_1.roof_ceilings) > 1
 
 
-def test_has_floor_ceilings():
-    """Test the translation of a model without floors or ceilings."""
-    model_file = './tests/json/has_floor_ceiling_model.dfjson'
-    model = Model.from_file(model_file, cleanup_irrational=True)
-
-    hb_models = model.to_honeybee(
-        'District', None, False, solve_ceiling_adjacencies=True,
-        tolerance=0.003, enforce_solid=True)
-    room_1 = hb_models[0].rooms[0]
-    room_2 = hb_models[0].rooms[1]
-    assert len(room_1.air_boundaries) == 1
-    assert len(room_2.air_boundaries) == 1
-
-
 def test_roof_party_failure():
     """Test the translation of another complicated roof."""
     model_file = './tests/json/roof_party.dfjson'
@@ -989,6 +975,34 @@ def test_roof_tolerance_fail_bug():
                                   tolerance=0.003, enforce_solid=True)
     room_1 = hb_models[0].rooms[0]
     assert len(room_1.roof_ceilings) > 1
+
+
+def test_model_with_clearstory_windows():
+    """Test the translation of a model with clearstory windows."""
+    model_file = './tests/json/cape_cod_house.dfjson'
+    model = Model.from_file(model_file, cleanup_irrational=True)
+
+    hb_models = model.to_honeybee('District', None, False,
+                                  tolerance=0.001, enforce_solid=False)
+    hb_model = hb_models[0]
+    main_room = hb_model.rooms[0]
+    assert len(main_room.roof_ceilings) > 1
+    assert main_room.geometry.is_solid
+    print(len(main_room.apertures))
+
+
+def test_has_floor_ceilings():
+    """Test the translation of a model without floors or ceilings."""
+    model_file = './tests/json/has_floor_ceiling_model.dfjson'
+    model = Model.from_file(model_file, cleanup_irrational=True)
+
+    hb_models = model.to_honeybee(
+        'District', None, False, solve_ceiling_adjacencies=True,
+        tolerance=0.003, enforce_solid=True)
+    room_1 = hb_models[0].rooms[0]
+    room_2 = hb_models[0].rooms[1]
+    assert len(room_1.air_boundaries) == 1
+    assert len(room_2.air_boundaries) == 1
 
 
 def test_check_duplicate_identifiers():

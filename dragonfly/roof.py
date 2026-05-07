@@ -33,6 +33,7 @@ class RoofSpecification(object):
         * boundary_geometry_2d
         * planes
         * clearstory_parameters
+        * has_clearstory
         * parent
         * has_parent
         * min
@@ -263,6 +264,11 @@ class RoofSpecification(object):
             self._clearstory_parameters = value
         else:
             self._clearstory_parameters = ()
+
+    @property
+    def has_clearstory(self):
+        """Boolean noting whether this RoofSpecification has clearstory windows."""
+        return len(self._clearstory_parameters) != 0
 
     @property
     def parent(self):

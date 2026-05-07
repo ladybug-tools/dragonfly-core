@@ -211,26 +211,9 @@ class DetailedClearstory(_ClearstoryParameterBase):
                 must all be within the same plane for the resulting
                 DetailedClearstory object to be valid.
         """
-        # start by using the plane of the first Face3D to get the base_line
-        ref_plane = sub_faces[0].geometry.plane
-        elevation, max_z = bounding_domain_z([sf.geometry for sf in sub_faces])
-        ref_plane = Plane(ref_plane.n, Point3D(ref_plane.o.x, ref_plane.o.y, elevation))
-        if ref_plane.y.z < 0:  # ensure the Y-axis of the plane is pointing up
-            ref_plane = ref_plane.rotate(ref_plane.n, math.pi, ref_plane.o)
-        point_2ds = []
-        for sf in sub_faces:
-            for pt3 in sf.geometry.boundary:
-                point_2ds.append(ref_plane.xyz_to_xy(pt3))
-        min_pt_2d, max_pt_2d = bounding_rectangle(point_2ds)
-        origin_3d = ref_plane.xy_to_xyz(min_pt_2d)
-        max_pt_3d = ref_plane.xy_to_xyz(max_pt_2d)
-        seg_end_pt = Point3D(max_pt_3d.x, max_pt_3d.y, elevation)
-        bl = LineSegment3D.from_end_points(seg_end_pt, origin_3d)
-        base_plane = Plane(n=ref_plane.n, o=origin_3d)
-        if base_plane.y.z < 0:  # ensure the Y-axis of the plane is pointing up
-            base_plane = base_plane.rotate(base_plane.n, math.pi, base_plane.o)
-        base_line = LineSegment2D.from_array([(bl.p1.x, bl.p1.y), (bl.p2.x, bl.p2.y)])
-
+        # get the base plane from the subface geometry
+        face3ds = [sf.geometry for sf in sub_faces]
+        base_plane, base_line, elevation = cls._evaluate_face3d_base_plane(face3ds)
         # convert all of the subface geometry to be polygons in the base_plane
         polygons, are_doors, user_dt = [], [], {'identifier': []}
         for sf in sub_faces:
@@ -251,6 +234,52 @@ class DetailedClearstory(_ClearstoryParameterBase):
                 user_dt.pop(key)
         clear_par.user_data = user_dt
         return clear_par
+
+    @classmethod
+    def from_face3ds(cls, face3ds, are_doors=None):
+        """Create DetailedClearstory from Face3Ds.
+
+        Args:
+            face3ds: A list of Face3D objects for the detailed clearstory windows.
+            are_doors: An array of booleans that align with the face3ds and note whether
+                each of the polygons represents a door (True) or a window (False).
+                If None, it will be assumed that all polygons represent windows and
+                they will be translated to Apertures in any resulting Honeybee
+                model. (Default: None).
+        """
+        # get the base plane from the subface geometry
+        base_plane, base_line, elevation = cls._evaluate_face3d_base_plane(face3ds)
+        # convert all of the Face3Ds to be polygons in the base_plane
+        polygons = []
+        for geo in face3ds:
+            verts2d = tuple(base_plane.xyz_to_xy(pt) for pt in geo.boundary)
+            polygons.append(Polygon2D(verts2d))
+        return cls(base_line, elevation, polygons, are_doors)
+
+    @staticmethod
+    def _evaluate_face3d_base_plane(face3ds):
+        """Get the base plane to be used to convert Face3Ds into clearstory polygons."""
+        # get a plane derived from the first geometry with an upward Y
+        ref_plane = face3ds[0].plane
+        elevation, max_z = bounding_domain_z(face3ds)
+        ref_plane = Plane(ref_plane.n, Point3D(ref_plane.o.x, ref_plane.o.y, elevation))
+        if ref_plane.y.z < 0:  # ensure the Y-axis of the plane is pointing up
+            ref_plane = ref_plane.rotate(ref_plane.n, math.pi, ref_plane.o)
+        # use the bounding rectangle in the plane to place an origin at lower left corner
+        point_2ds = []
+        for geo in face3ds:
+            for pt3 in geo.boundary:
+                point_2ds.append(ref_plane.xyz_to_xy(pt3))
+        min_pt_2d, max_pt_2d = bounding_rectangle(point_2ds)
+        origin_3d = ref_plane.xy_to_xyz(min_pt_2d)
+        max_pt_3d = ref_plane.xy_to_xyz(max_pt_2d)
+        seg_end_pt = Point3D(max_pt_3d.x, max_pt_3d.y, elevation)
+        bl = LineSegment3D.from_end_points(seg_end_pt, origin_3d)
+        base_plane = Plane(n=ref_plane.n, o=origin_3d)
+        if base_plane.y.z < 0:  # ensure the Y-axis of the plane is pointing up
+            base_plane = base_plane.rotate(base_plane.n, math.pi, base_plane.o)
+        base_line = LineSegment2D.from_array([(bl.p1.x, bl.p1.y), (bl.p2.x, bl.p2.y)])
+        return base_plane, base_line, elevation
 
     @property
     def base_line(self):
