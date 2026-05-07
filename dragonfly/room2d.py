@@ -6267,27 +6267,6 @@ class Room2D(_BaseGeometry):
             except AssertionError:
                 pass  # invalid sliver face
 
-        # merge coplanar vertical walls together
-        if len(clean_vert_faces) != 1:
-            ang_tol = math.radians(1)
-            coplanar_dict = {clean_vert_faces[0].plane: [clean_vert_faces[0]]}
-            for face in clean_vert_faces[1:]:
-                for pln, f_list in coplanar_dict.items():
-                    if face.plane.is_coplanar_tolerance(pln, tolerance, ang_tol):
-                        f_list.append(face)
-                        break
-                else:  # the first face with this type of plane
-                    coplanar_dict[face.plane] = [face]
-            joined_faces = []
-            for face_list in coplanar_dict.values():
-                if len(face_list) == 1:  # no faces to merge
-                    joined_faces.append(face_list[0])
-                else:  # there are faces to merge
-                    joined_geos = Face3D.join_coplanar_faces(face_list, tolerance)
-                    joined_faces.extend(joined_geos)
-                if len(joined_faces) != len(clean_vert_faces):
-                    clean_vert_faces = joined_faces
-
         # rebuild the room polyface
         st_v = -len(clean_vert_faces) - 1
         roof_face_i = list(range(st_v, st_v - len(roof_face_i), -1))
