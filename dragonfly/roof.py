@@ -9,6 +9,7 @@ from ladybug_geometry.geometry3d import Vector3D, Point3D, LineSegment3D, \
     Plane, Polyline3D, Face3D, Mesh3D, Polyface3D
 from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
+from ladybug_geometry.bounding import overlapping_bounding_boxes
 
 import dragonfly.clearstoryparameter as clear_par
 
@@ -624,6 +625,116 @@ class RoofSpecification(object):
             except IndexError:
                 pass  # we have reached the end of the list of rooms
         return gap_points
+
+    def assign_sub_faces(self, sub_faces, projection_distance=0, overwrite=True,
+                         tolerance=0.01, angle_tolerance=1.0):
+        """Assign a list of SubFaces (Apertures and Doors) to this RoofSpecification.
+
+        The geometry of the SubFaces will automatically be converted to
+        ClearstoryParameters in the plane of each roof segment and appropriate is_door
+        properties will be used to denote whether the projected SubFace is an
+        Aperture vs. a Door. Doors with True is_glass properties will get a
+        False is_door property such that they will transmit light in destination
+        simulation engines.
+
+        Args:
+            sub_faces: A list of orphaned Honeybee Apertures and/or Doors to be
+                assigned to this Room2D as ClearstoryParameters. Large lists of
+                all Apertures/Doors in a building can be plugged in here since
+                fast bounding box checks are used to rule out any un-applicable
+                geometries.
+            projection_distance: An optional number to be used to project the
+                Aperture/Door geometry onto the roof segments. If specified,
+                then SubFaces within this distance of the parent wall will be
+                projected and added. Otherwise, Apertures/Doors will only be
+                added if they are coplanar with the parent roof segment.
+            overwrite: A boolean to note whether the existing window parameters
+                should be overwritten with the newly-supplied sub faces or
+                whether an attempt should be made to preserve existing windows/doors
+                in which case sub-faces will only be replaced if they are perfectly
+                duplicated between the current sub-faces and the newly-supplied
+                sub-faces. (Default: True).
+            tolerance: The minimum difference in coordinate values for them
+                to be considered distinct from one another. (Default: 0.01,
+                suitable for objects in meters).
+            angle_tolerance: The max angle difference in degrees that wall segments
+                and sub-faces can differ from one another in order for the sub-face
+                to be projected onto the geometry. (Default: 1).
+        """
+        # process the angle tolerance into criteria to be used to categorize sub-faces
+        a_tol_min = math.radians(angle_tolerance)
+        a_tol_max = math.pi - a_tol_min
+        perp = math.pi / 2
+        perp_min, perp_max = perp - a_tol_min, perp + a_tol_min
+        up_vec = Vector3D(0, 0, 1)
+
+        # determine criteria for the bounding box around the RoofSpecification
+        min_2d, max_2d = self.min, self.max
+        min_height, max_height = self.min_height, self.max_height
+        min_3d = Point3D(min_2d.x, min_2d.y, min_height)
+        max_3d = Point3D(max_2d.x, max_2d.y, max_height)
+        bb_diagonal = LineSegment3D.from_end_points(min_3d, max_3d)
+
+        # search all of the sub-faces that could be relevant
+        dist = projection_distance if projection_distance > tolerance else tolerance
+        sf_to_add = []
+        for sf in sub_faces:
+            # first check if the subface is within the roof bounding box
+            if overlapping_bounding_boxes(bb_diagonal, sf.geometry, dist):
+                # then check if the subface is vertical and not a skylight
+                if perp_min <= up_vec.angle(sf.normal) <= perp_max:
+                    sf_to_add.append(sf)
+        if len(sf_to_add) == 0:
+            return
+
+        # figure out all roof edges that could host sub faces as clearstory windows
+        proj_faces = []
+        for face in self.geometry:
+            proj_boundary = [Point3D(pt.x, pt.y, min_height) for pt in face.boundary]
+            proj_holes = None
+            if face.has_holes:
+                proj_holes = [
+                    [Point3D(pt.x, pt.y, min_height) for pt in hole]
+                    for hole in face.holes
+                ]
+            proj_face = Face3D(proj_boundary, holes=proj_holes)
+            proj_faces.append(proj_face)
+        roof_p_face = Polyface3D.from_faces(proj_faces, tolerance)
+        roof_p_face = roof_p_face.merge_overlapping_edges(tolerance)
+        internal_ed = roof_p_face.internal_edges
+
+        # create Face3Ds for all of the walls that might host clearstory windows
+        ext_vec = Vector3D(0, 0, max_3d.z - min_3d.z)
+        walls = []
+        for seg in internal_ed:
+            if seg.length > tolerance:
+                walls.append(Face3D.from_extrusion(seg, ext_vec))
+
+        # evaluate each input geometry against the possible clearstory walls
+        sf_per_wall = [[] for _ in walls]
+        for sf in sf_to_add:
+            # check if the sub-face belongs in any of the walls
+            for i, face in enumerate(walls):
+                if overlapping_bounding_boxes(sf.geometry, face, dist):
+                    ang = sf.normal.angle(face.normal)
+                    if ang < a_tol_min or ang > a_tol_max:
+                        bpts = sf.geometry.boundary
+                        clean_pts = [face.plane.project_point(pt) for pt in bpts]
+                        if clean_pts[0].distance_to_point(bpts[0]) <= dist:
+                            pj_geo = Face3D(clean_pts)
+                            dup_sf = sf.duplicate()
+                            dup_sf._geometry = pj_geo
+                            sf_per_wall[i].append(dup_sf)
+
+        # convert any projected Face3Ds to DetailedClearstory and assign them
+        new_clear_pars = []
+        for clear_sf in sf_per_wall:
+            if len(clear_sf) != 0:
+                new_clear_pars.append(clear_par.DetailedClearstory.from_honeybee(clear_sf))
+
+        # assign the clearstory parameters
+        self.clearstory_parameters = new_clear_pars if overwrite else \
+            self.clearstory_parameters + tuple(new_clear_pars)
 
     def move(self, moving_vec):
         """Move this RoofSpecification along a vector.

@@ -1345,7 +1345,7 @@ class Room2D(_BaseGeometry):
 
     def assign_sub_faces(self, sub_faces, projection_distance=0, overwrite=True,
                          tolerance=0.01, angle_tolerance=1.0):
-        """Assign a list of orphaned SubFaces (Apertures and Doors) to this Room2D.
+        """Assign a list of SubFaces (Apertures and Doors) to this Room2D.
 
         The geometry of the SubFaces will automatically be converted to
         WindowParameters in the plane of each wall segment and appropriate is_door
@@ -1370,9 +1370,7 @@ class Room2D(_BaseGeometry):
                 whether an attempt should be made to preserve existing windows/doors
                 in which case sub-faces will only be replaced if they are perfectly
                 duplicated between the current sub-faces and the newly-supplied
-                sub-faces. Note that setting this to False can significantly
-                increase the runtime since it requires translation to Honeybee
-                to be able to sense when windows/doors are duplicated. (Default: True).
+                sub-faces. (Default: True).
             tolerance: The minimum difference in coordinate values for them
                 to be considered distinct from one another. (Default: 0.01,
                 suitable for objects in meters).
