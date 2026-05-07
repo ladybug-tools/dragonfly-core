@@ -731,6 +731,7 @@ class RoofSpecification(object):
                             dup_sf = sf.duplicate()
                             dup_sf._geometry = pj_geo
                             sf_per_wall[i].append(dup_sf)
+                            break
 
         # convert any projected Face3Ds to DetailedClearstory and assign them
         new_clear_pars = []
