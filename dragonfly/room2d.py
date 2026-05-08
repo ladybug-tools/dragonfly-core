@@ -38,6 +38,7 @@ from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
 import dragonfly.skylightparameter as skypar
 from dragonfly.skylightparameter import _SkylightParameterBase, DetailedSkylights, \
     GriddedSkylightArea, GriddedSkylightRatio
+from dragonfly.clearstoryparameter import DetailedClearstory
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 import dragonfly.writer.room2d as writer
@@ -1377,6 +1378,15 @@ class Room2D(_BaseGeometry):
             angle_tolerance: The max angle difference in degrees that wall segments
                 and sub-faces can differ from one another in order for the sub-face
                 to be projected onto the geometry. (Default: 1).
+
+        Returns:
+            A list of Apertures/Doors for the subset of the input sub_faces that were
+            assigned to this Room2D as DetailedWindows and DetailedSkylights.
+            This can be used to help ensure the Apertures/Doors are not added
+            again to the model in a way that creates duplicate geometries or
+            identifiers. For example, a case of an Aperture spanning two Room2Ds
+            where distinct IDs are desired or as a pre-step to determine whether
+            Apertures should be evaluated as clearstory windows.
         """
         # process the angle tolerance into criteria to be used to categorize sub-faces
         a_tol_min = math.radians(angle_tolerance)
@@ -1456,11 +1466,13 @@ class Room2D(_BaseGeometry):
                 skylight_sfs.extend(roof.sub_faces)
 
         # evaluate each input geometry against the room walls
+        assigned_sfs = []
         for sf in sf_to_add:
             # first check if the sub-face might be a skylight
             v_ang = sf.normal.angle(ext_vec)
-            if v_ang < perp_min or v_ang > perp_max:
+            if v_ang < perp_min or v_ang > perp_max:  # a horizontal or sloped skylight
                 skylight_sfs.append(sf)
+                assigned_sfs.append(sf)
             else:  # check if the sub-face belongs in any of the walls
                 for i, face in enumerate(walls):
                     if face is None:
@@ -1471,6 +1483,7 @@ class Room2D(_BaseGeometry):
                             bpts = sf.geometry.boundary
                             clean_pts = [face.plane.project_point(pt) for pt in bpts]
                             if clean_pts[0].distance_to_point(bpts[0]) <= dist:
+                                assigned_sfs.append(sf)
                                 pj_geo = Face3D(clean_pts)
                                 isd = True if isinstance(sf, Door) \
                                     and not sf.is_glass else False
@@ -1506,6 +1519,9 @@ class Room2D(_BaseGeometry):
             self.offset_skylights_from_edges(2 * tolerance, tolerance)
         elif overwrite:  # remove existing skylights if we are overwriting
             self.skylight_parameters = None
+
+        # return the sub-faces that were assigned to the Room2D
+        return assigned_sfs
 
     def add_prefix(self, prefix):
         """Change the identifier of this object by inserting a prefix.
@@ -4347,13 +4363,16 @@ class Room2D(_BaseGeometry):
                 roof_st = roof_i_pos[0]
                 clear_faces = [face for face in hb_room.faces[roof_st:]
                                if isinstance(face.type, Wall)]
-                for cf in clear_faces:
-                    pts_2d = [Point2D(pt.x, pt.y) for pt in cf.geometry.boundary]
+                ang_tol = math.radians(1)
+                for wf in clear_faces:
+                    wg = [wf.geometry]
+                    _, wf_bl, _ = DetailedClearstory._evaluate_face3d_base_plane(wg)
                     for cs_par in roof_spec.clearstory_parameters:
-                        touching = [cs_par.base_line.distance_to_point(p) < tolerance
-                                    for p in pts_2d]
-                        if any(touching):
-                            cs_par.add_clearstory_to_face(cf, tolerance)
+                        cs_bl = cs_par.base_line
+                        orient_ang = wf_bl.v.angle(cs_bl.v)
+                        if (orient_ang < ang_tol or orient_ang > math.pi - ang_tol) and \
+                                cs_bl.distance_to_line(wf_bl) < tolerance:
+                            cs_par.add_clearstory_to_face(wf, tolerance)
 
         # set the story, multiplier, display_name, and user_data
         if self.has_parent:

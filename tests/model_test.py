@@ -988,7 +988,7 @@ def test_model_with_clearstory_windows():
     main_room = hb_model.rooms[0]
     assert len(main_room.roof_ceilings) > 1
     assert main_room.geometry.is_solid
-    assert len(main_room.apertures) in (2, 4)
+    assert len(main_room.apertures) == 5
 
 
 def test_has_floor_ceilings():
