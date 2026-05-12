@@ -1956,23 +1956,30 @@ class Model(_BaseGeometry):
                 self._solve_ceil_adj(model.rooms, story_rel_types, flr_ceil,
                                      tolerance, self.angle_tolerance)
 
-        # change the tolerance and units systems to match the dragonfly model
+        # transfer tolerance, units system and Model extension attributes
         for model in models:
             model.units = self.units
             model.tolerance = tolerance
             model.angle_tolerance = self.angle_tolerance
-
-        # transfer Model extension attributes to the honeybee models
-        for h_model in models:
-            h_model._properties = self.properties.to_honeybee(h_model)
+            model._properties = self.properties.to_honeybee(model)
 
         # merge rooms in the models together if there is a merge_map
         if merge_map is not None:
             for model in models:
                 self._apply_merge_map(model, merge_map, tolerance)
 
-        # rename all of the faces, apertures and doors to be human-readable
+        # ensure all sub-face IDs are unique and rename them to be human-readable
         for model in models:
+            existing_dict = {}
+            for room in model._rooms:
+                for face in room._faces:
+                    for sf in face._apertures + face._doors:
+                        val = sf.identifier
+                        if val in existing_dict:
+                            existing_dict[val] += 1
+                            sf.identifier = val + '__' + str(existing_dict[val])
+                        else:
+                            existing_dict[val] = 1
             for room in model.rooms:
                 room.rename_faces_by_attribute()
                 room.rename_apertures_by_attribute()

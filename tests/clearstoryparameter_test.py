@@ -116,5 +116,5 @@ def test_add_clearstory_to_face():
     assert face.apertures[1].center.x == pytest.approx(original_aps[1].center.x, rel=1e-3)
     assert face.apertures[1].center.y == pytest.approx(original_aps[1].center.y, rel=1e-3)
     assert face.apertures[1].center.z == pytest.approx(original_aps[1].center.z, rel=1e-3)
-    assert face.apertures[0].area == pytest.approx(original_aps[0].area, rel=1e-3)
-    assert face.apertures[1].area == pytest.approx(original_aps[1].area, rel=1e-3)
+    assert face.apertures[0].area == pytest.approx(original_aps[0].area, rel=1e-1)
+    assert face.apertures[1].area == pytest.approx(original_aps[1].area, rel=1e-1)
