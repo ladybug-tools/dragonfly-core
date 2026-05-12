@@ -145,7 +145,7 @@ class DetailedClearstory(_ClearstoryParameterBase):
             clearstory geometries exist.
         polygons: An array of ladybug_geometry Polygon2D objects within the plane
             of the base_line with one polygon for each clearstory window. The base_line
-            plane is assumed to have an origin at the first point of the line
+            plane is assumed to have an origin at the end point of the line
             segment and an X-axis extending along the length of the segment. The
             plane's Y-axis always points upwards. Therefore, both X and Y
             values of each point in the polygon should always be positive.
@@ -537,6 +537,7 @@ class DetailedClearstory(_ClearstoryParameterBase):
                                res.boundary_polygon2d.offset(tolerance * 2)]
                     s_geos.append(Face3D(new_pts))
             for s_geo in s_geos:
+                s_geo = s_geo.offset_edges(tolerance)
                 if isd:
                     sub_f = Door('{}_Door{}'.format(face.identifier, sub_count), s_geo)
                     face.add_door(sub_f)

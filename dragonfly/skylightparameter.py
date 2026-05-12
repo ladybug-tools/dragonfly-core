@@ -796,6 +796,7 @@ class DetailedSkylights(_SkylightParameterBase):
                                res.boundary_polygon2d.offset(tolerance * 2)]
                     s_geos.append(Face3D(new_pts))
             for s_geo in s_geos:
+                s_geo = s_geo.offset_edges(tolerance)
                 if isd:
                     sub_f = Door('{}_Door{}'.format(face.identifier, sub_count), s_geo)
                     face.add_door(sub_f)
