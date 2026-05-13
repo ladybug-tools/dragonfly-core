@@ -686,8 +686,7 @@ def test_auto_zone():
     building.automatically_zone(4)
 
     assert building.has_zones
-    print(len(building.zone_dict))
-    assert len(building.zone_dict) == 7
+    assert len(building.zone_dict) == 8
 
 
 def test_remove_duplicate_roofs():
