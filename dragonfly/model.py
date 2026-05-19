@@ -1970,6 +1970,7 @@ class Model(_BaseGeometry):
 
         # ensure all sub-face IDs are unique and rename them to be human-readable
         for model in models:
+            # set all window/door identifiers to be unique
             existing_dict = {}
             for room in model._rooms:
                 for face in room._faces:
@@ -1980,6 +1981,7 @@ class Model(_BaseGeometry):
                             sf.identifier = val + '__' + str(existing_dict[val])
                         else:
                             existing_dict[val] = 1
+            # rename all objects to have human-readable names
             for room in model.rooms:
                 room.rename_faces_by_attribute()
                 room.rename_apertures_by_attribute()

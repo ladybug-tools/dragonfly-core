@@ -221,9 +221,22 @@ class DetailedClearstory(_ClearstoryParameterBase):
             polygons.append(Polygon2D(verts2d))
             isd = True if isinstance(sf, Door) and not sf.is_glass else False
             are_doors.append(isd)
-            user_dt['identifier'].append(sf.identifier)
+            sf_ud = sf.user_data
+            if sf_ud is not None and '__exist_count__' in sf_ud:
+                sf_ud['__exist_count__'] += 1
+                sf_id = '{}__{}'.format(
+                    sf.identifier, sf_ud['__exist_count__'])
+            else:
+                sf_id = sf.identifier
+                if sf_ud is None:
+                    sf.user_data = {'__exist_count__': 1}
+                else:
+                    sf.user_data['__exist_count__'] = 1
+            user_dt['identifier'].append(sf_id)
             if sf.user_data is not None:
                 for key, val in sf.user_data.items():
+                    if key == '__exist_count__':
+                        continue
                     try:
                         user_dt[key].append(val)
                     except KeyError:  # first time attribute
