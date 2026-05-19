@@ -1490,7 +1490,18 @@ class Room2D(_BaseGeometry):
                                     and not sf.is_glass else False
                                 wps[i].append((pj_geo, isd))
                                 ud = user_dts[i]
-                                ud['identifier'].append(sf.identifier)
+                                sf_ud = sf.user_data
+                                if sf_ud is not None and '__exist_count__' in sf_ud:
+                                    sf_ud['__exist_count__'] += 1
+                                    sf_id = '{}__{}'.format(
+                                        sf.identifier, sf_ud['__exist_count__'])
+                                else:
+                                    sf_id = sf.identifier
+                                    if sf_ud is None:
+                                        sf.user_data = {'__exist_count__': 1}
+                                    else:
+                                        sf.user_data['__exist_count__'] = 1
+                                ud['identifier'].append(sf_id)
                                 if sf.user_data is not None:
                                     for key, val in sf.user_data.items():
                                         try:
