@@ -2200,7 +2200,7 @@ using-multipliers-zone-and-or-window.html
             # check if the polygon lies inside a room
             warning_type, rel_rooms = None, []
             for j, r_poly in enumerate(room_polys):
-                if r_poly.is_point_inside_bound_rect(g_poly[0]):
+                if r_poly.is_polygon_inside(g_poly):
                     warning_type = 'Small Hole in Room Floor'
                     rel_rooms.append(self._room_2ds[j])
                     break
