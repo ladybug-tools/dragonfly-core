@@ -3877,7 +3877,7 @@ class Room2D(_BaseGeometry):
             degenerate = True
 
         if degenerate:
-            msg = 'Room2D "{}" has degenerate floor geometry with zero ' \
+            msg = 'Room "{}" has degenerate floor geometry with zero ' \
                 'area.'.format(self.display_name)
             if raise_exception:
                 raise ValueError(msg)
@@ -3936,7 +3936,7 @@ class Room2D(_BaseGeometry):
 
         # assemble the message if it is intersecting
         if is_intersecting:
-            msg = 'Room2D "{}" has floor geometry with self-intersecting ' \
+            msg = 'Room "{}" has floor geometry with self-intersecting ' \
                 'edges.'.format(self.display_name)
             full_msg = self._validation_message_child(
                 msg, self, detailed, '100102',
@@ -4068,7 +4068,7 @@ class Room2D(_BaseGeometry):
             help_geo.extend(sky_help_geo)
         if len(msgs) == 0:
             return [] if detailed else ''
-        full_msg = 'Room2D "{}" contains invalid window parameters.' \
+        full_msg = 'Room "{}" contains invalid window parameters.' \
             '\n  {}'.format(self.display_name, '\n  '.join(msgs))
         full_msg = self._validation_message_child(
             full_msg, self, detailed, '100103', error_type='Invalid Window Parameters')
@@ -5467,11 +5467,9 @@ class Room2D(_BaseGeometry):
     def grouped_horizontal_boundary(room_2ds, min_separation=0, tolerance=0.01):
         """Get a list of Face3D for the horizontal boundary around several Room2Ds.
 
-        This method will attempt to produce a boundary that follows along the
-        walls of the Room2Ds and it is not suitable for groups of Room2Ds that
-        overlap one another in plan. This method may return an empty list if the
-        min_separation is so large that a continuous boundary could not be determined
-        or if overlaps between input Room2Ds result in failure.
+        This method will attempt to produce a boundary that follows along the walls
+        of the Room2Ds. This method may return an empty list if the min_separation
+        is so large that a continuous boundary could not be determined.
 
         Args:
             room_2ds: A list of Room2Ds for which the horizontal boundary will
@@ -5537,6 +5535,7 @@ class Room2D(_BaseGeometry):
         z_min = min(z_vals)
 
         # if the min_separation is small, use the more reliable intersection method
+        union_used = False
         if min_separation <= tolerance:
             closed_polys = Polygon2D.joined_intersected_boundary(floor_polys, tolerance)
         else:  # otherwise, use the more intense gap crossing methods
@@ -5568,7 +5567,7 @@ class Room2D(_BaseGeometry):
 
             # if we have not gotten a result from gap_crossing_boundary, use boolean union
             if closed_polys is None:
-                bound_polys, hole_polys = [], []
+                union_used, bound_polys, hole_polys = True, [], []
                 for geo in floor_geos:
                     bound_polys.append(geo.boundary_polygon2d)
                     if geo.has_holes:
@@ -5600,7 +5599,18 @@ class Room2D(_BaseGeometry):
             for poly in clean_polys:
                 pts3d = tuple(Point3D(pt.x, pt.y, z_min) for pt in poly)
                 bound_faces.append(Face3D(pts3d))
-            return Face3D.merge_faces_to_holes(bound_faces, tolerance)
+            bound_result = Face3D.merge_faces_to_holes(bound_faces, tolerance)
+            # if boolean union was used, do an extra check to remove incorrect faces
+            if union_used:
+                correct_faces = []
+                for i, face in enumerate(bound_result):
+                    f_poly = Polygon2D([Point2D(p.x, p.y) for p in face.boundary])
+                    for pi, pt in enumerate(room_centers):
+                        if f_poly.is_point_inside_bound_rect(pt):
+                            correct_faces.append(face)
+                            break
+                return correct_faces
+            return bound_result
 
     @staticmethod
     def room_orientation_plane(room_2ds, angle_tolerance=1.0):
@@ -7010,7 +7020,7 @@ class Room2D(_BaseGeometry):
 
     @staticmethod
     def _intersect_line2d_infinite(line_ray_a, line_ray_b):
-        """Get the intersection between a Ray2Ds extended infinitely.
+        """Get the intersection between two Ray2Ds both extended infinitely.
 
         Args:
             line_ray_a: A Ray2D object.

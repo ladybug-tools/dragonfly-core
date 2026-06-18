@@ -121,7 +121,10 @@ class Model(_BaseGeometry):
         '100108': 'check_collisions_between_stories',
         '100201': 'check_missing_adjacencies',
         '100202': 'check_missing_adjacencies',
-        '100203': 'check_missing_adjacencies'
+        '100203': 'check_missing_adjacencies',
+        '101001': 'check_small_gaps_in_floor_plate',
+        '101002': 'check_small_gaps_in_floor_plate',
+        '101003': 'check_small_gaps_in_floor_plate'
     }
 
     def __init__(self, identifier, buildings=None, context_shades=None,
@@ -1107,8 +1110,10 @@ class Model(_BaseGeometry):
         else:
             self.reference_vector = self.reference_vector + ref_vec
 
-    def check_for_extension(self, extension_name='Generic',
-                            raise_exception=True, detailed=False):
+    def check_for_extension(
+        self, extension_name='Generic', raise_exception=True, detailed=False,
+        include_warnings=False, gap_distance='0.4m'
+    ):
         """Check that the Model is valid for a specific Dragonfly extension.
 
         This process will typically include both dragonfly-core checks as well
@@ -1146,6 +1151,20 @@ class Model(_BaseGeometry):
                 return a text string with all errors that were found. (Default: True).
             detailed: Boolean for whether the returned object is a detailed list of
                 dicts with error info or a string with a message. (Default: False).
+            include_warnings: Boolean to note whether checks should be run for
+                cases that are not true validation errors that make the model
+                un-simulate-able but are probably still indicative of poor modeling
+                that should be fixed. An example of a check that runs when this
+                argument is set to True is a check for small gaps between rooms,
+                which does not make the model invalid but will probably result in
+                interior boundary conditions not being assigned in cases where
+                they are expected. (Default: False).
+            gap_distance: A number for the minimum distance between Room2Ds that
+                is considered a intentional separation. Gaps that are larger than
+                this distance may be considered large/intentional. This is only used
+                when include_warnings is set to True. This input can include the
+                units of the distance (eg. 1ft) or, if no units are provided, the
+                value will be interpreted in the dragonfly model units. (Default: 0.4m).
 
         Returns:
             A text string with all errors that were found or a list if detailed is True.
@@ -1156,7 +1175,8 @@ class Model(_BaseGeometry):
         extension_name = extension_name.lower()
         if extension_name in ('all', 'generic'):
             all_ext_checks = extension_name == 'all'
-            return self.check_all(raise_exception, detailed, all_ext_checks)
+            return self.check_all(raise_exception, detailed, all_ext_checks,
+                                  include_warnings, gap_distance)
         energy_extensions = ('energyplus', 'openstudio', 'designbuilder')
         if extension_name in energy_extensions:
             extension_name = 'energy'
@@ -1169,10 +1189,13 @@ class Model(_BaseGeometry):
         assert self.angle_tolerance != 0, \
             'Model must have a non-zero angle_tolerance to perform geometry checks.'
         msgs = self._properties._check_for_extension(extension_name, detailed)
-        if detailed:
-            msgs = [m for m in msgs if isinstance(m, list)]
+        if include_warnings:
+            wrn = self.check_small_gaps_in_floor_plate(gap_distance, None, False, detailed)
+            msgs.append(wrn)
 
         # output a final report of errors or raise an exception
+        if detailed:
+            msgs = [m for m in msgs if isinstance(m, list)]
         full_msgs = [msg for msg in msgs if msg]
         if detailed:
             return [m for msg in full_msgs for m in msg]
@@ -1224,7 +1247,8 @@ class Model(_BaseGeometry):
         # run the check function
         return check_func(raise_exception=raise_exception, detailed=detailed)
 
-    def check_all(self, raise_exception=True, detailed=False, all_ext_checks=False):
+    def check_all(self, raise_exception=True, detailed=False,
+                  all_ext_checks=False, include_warnings=False, gap_distance='0.4m'):
         """Check all of the aspects of the Model for validation errors.
 
         Args:
@@ -1236,9 +1260,23 @@ class Model(_BaseGeometry):
             all_ext_checks: Boolean to note whether every single check that is
                 available for all installed extensions should be run (True) or only
                 generic checks that cover all except the most limiting of
-                cases should be run (False). Examples of checks that are skipped
-                when this argument is False include a check for any courtyards
+                cases should be run (False). An example of a check that runs
+                when this argument is set to True is a check for any courtyards
                 in buildings, which are not supported in DOE2. (Default: False).
+            include_warnings: Boolean to note whether checks should be run for
+                cases that are not true validation errors that make the model
+                un-simulate-able but are probably still indicative of poor modeling
+                that should be fixed. An example of a check that runs when this
+                argument is set to True is a check for small gaps between rooms,
+                which does not make the model invalid but will probably result in
+                interior boundary conditions not being assigned in cases where
+                they are expected. (Default: False).
+            gap_distance: A number for the minimum distance between Room2Ds that
+                is considered a intentional separation. Gaps that are larger than
+                this distance may be considered large/intentional. This is only used
+                when include_warnings is set to True. This input can include the
+                units of the distance (eg. 1ft) or, if no units are provided, the
+                value will be interpreted in the dragonfly model units. (Default: 0.4m).
 
         Returns:
             A text string with all errors that were found or a list if detailed is True.
@@ -1262,6 +1300,9 @@ class Model(_BaseGeometry):
         msgs.append(self.check_room2d_floor_heights_valid(False, detailed))
         msgs.append(self.check_missing_adjacencies(False, detailed))
         msgs.append(self.check_all_room3d(tol, a_tol, False, detailed))
+        if include_warnings:
+            wrn = self.check_small_gaps_in_floor_plate(gap_distance, tol, False, detailed)
+            msgs.append(wrn)
         # check the extension attributes
         ext_msgs = self._properties._check_all_extension_attr(detailed, all_ext_checks)
         if detailed:
@@ -1794,6 +1835,59 @@ class Model(_BaseGeometry):
                 tolerance=tol, angle_tolerance=a_tol)
             return dummy_model.check_all(raise_exception, detailed)
         return [] if detailed else ''
+
+    def check_small_gaps_in_floor_plate(
+        self, gap_distance='0.4m', tolerance=None, raise_exception=True, detailed=False
+    ):
+        """Check for small gaps or holes within or between the rooms of each story.
+
+        This is NOT a requirement for the Model to be valid or simulate-able
+        but small gaps and holes are frequently associated with cases where the
+        intention was to have interior boundary conditions but the small gap
+        prevents these from being assigned.
+
+        Args:
+            gap_distance: A number for the minimum distance between Room2Ds that
+                is considered a intentional separation. Gaps that are larger than
+                this distance may be considered large/intentional. This input can include
+                the units of the distance (eg. 1ft) or, if no units are provided, the
+                value will be interpreted in the dragonfly model units. (Default: 0.4m).
+            tolerance: The minimum distance between coordinate values that is
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if overlapping geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        # evaluate the tolerance and gap distance
+        tolerance = self.tolerance if tolerance is None else tolerance
+        gap_distance = parse_distance_string(gap_distance, self.units)
+
+        # run the check to find small gaps and holes
+        bldg_ids = []
+        for bldg in self._buildings:
+            for story in bldg._unique_stories:
+                ov_msg = story.check_small_gaps_in_floor_plate(
+                    gap_distance, tolerance, False, detailed
+                )
+                if ov_msg:
+                    if detailed:
+                        bldg_ids.extend(ov_msg)
+                    else:
+                        bldg_ids.append('{}\n {}'.format(bldg.full_id, ov_msg))
+
+        if detailed:
+            return bldg_ids
+        if bldg_ids != []:
+            msg = 'The following Buildings have small gaps or holes' \
+                ':\n{}'.format('\n'.join(bldg_ids))
+            if raise_exception:
+                raise ValueError(msg)
+            return msg
+        return ''
 
     def to_honeybee(
         self, object_per_model='Building', shade_distance=None,

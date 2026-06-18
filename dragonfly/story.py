@@ -3,7 +3,7 @@
 from __future__ import division
 import math
 
-from ladybug_geometry.geometry2d import Vector2D, Polygon2D
+from ladybug_geometry.geometry2d import Vector2D, Point2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, Ray3D, Polyline3D, \
     Face3D, Polyface3D
 
@@ -1876,7 +1876,7 @@ using-multipliers-zone-and-or-window.html
                             r1, r2 = rid_map[val[0]], rid_map[rm_id]
                         except KeyError:  # completely missing from the model
                             r1, r2 = val[0], rm_id
-                        msg = 'Room2D "{}" has an adjacency referencing a missing ' \
+                        msg = 'Room "{}" has an adjacency referencing a missing ' \
                             'wall segment on Room2D "{}".'.format(r1, r2)
                         msg = self._validation_message_child(
                             msg, val[3], detailed, '100203',
@@ -1892,7 +1892,7 @@ using-multipliers-zone-and-or-window.html
                             r1, r2 = rid_map[rm_id], rid_map[val[1]]
                         except KeyError:  # completely missing from the model
                             r1, r2 = rm_id, val[1]
-                        msg = 'Room2D "{}" does not have a Surface boundary condition ' \
+                        msg = 'Room "{}" does not have a Surface boundary condition ' \
                             'at "{}" but its adjacent object does.'.format(r1, r2)
                         msg = self._validation_message_child(
                             msg, room, detailed, '100201',
@@ -1908,7 +1908,7 @@ using-multipliers-zone-and-or-window.html
                         except KeyError:  # completely missing from the model
                             r1, r2 = val[0], rm_id
                         msg = 'Window parameters do not match between ' \
-                            'adjacent Room2Ds "{}" and "{}".'.format(r1, r2)
+                            'adjacent Rooms "{}" and "{}".'.format(r1, r2)
                         msg = self._validation_message_child(
                             msg, room, detailed, '100202',
                             error_type='Mismatched WindowParameter Adjacency')
@@ -1955,6 +1955,7 @@ using-multipliers-zone-and-or-window.html
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
+        detailed = False if raise_exception else detailed
         # find the number of overlaps across the Room2Ds
         msgs = []
         rooms = self.room_2ds
@@ -1979,7 +1980,7 @@ using-multipliers-zone-and-or-window.html
                                     break
                         # if the room is not in a hole, then they overlap
                         if not inside_hole:
-                            msg = 'Room2D "{}" overlaps with Room2D "{}" more than ' \
+                            msg = 'Room "{}" overlaps with Room2D "{}" more than ' \
                                 'the tolerance ({}) on Story "{}".'.format(
                                     room_1.display_name, room_2.display_name,
                                     tolerance, self.display_name)
@@ -2031,6 +2032,7 @@ using-multipliers-zone-and-or-window.html
         Returns:
             A string with the message or a list with dictionaries if detailed is True.
         """
+        detailed = False if raise_exception else detailed
         # find the number of cases where the roof is below the story floor
         msgs = []
         if self.multiplier == 1 and self.roof is not None:
@@ -2072,6 +2074,7 @@ using-multipliers-zone-and-or-window.html
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
+        detailed = False if raise_exception else detailed
         # find the collisions across the Room2Ds
         msgs = []
         for room_1 in self.room_2ds:
@@ -2103,7 +2106,7 @@ using-multipliers-zone-and-or-window.html
                                     break
                         # if the room is not in a hole, then they collide
                         if not inside_hole:
-                            msg = 'Room2D "{}" on Story "{}" collides with Room2D "{}"' \
+                            msg = 'Room "{}" on Story "{}" collides with Room2D "{}"' \
                                 ' on Story "{}" with a vertical overlap of {}.'.format(
                                     room_1.display_name, self.display_name,
                                     room_2.display_name, other_story.display_name,
@@ -2133,6 +2136,117 @@ using-multipliers-zone-and-or-window.html
                                     msg['helper_geometry'] = \
                                         [f.to_dict() for f in help_geo]
                             msgs.append(msg)
+        # report any errors
+        if detailed:
+            return msgs
+        full_msg = '\n '.join(msgs)
+        if raise_exception and len(msgs) != 0:
+            raise ValueError(full_msg)
+        return full_msg
+
+    def check_small_gaps_in_floor_plate(
+        self, gap_distance=0.4, tolerance=0.01, raise_exception=True, detailed=False
+    ):
+        """Check that there are no small gaps or holes within or between rooms.
+
+        This is NOT a requirement for the Model to be valid or simulate-able
+        but small gaps and holes are frequently associated with cases where the
+        intention was to have interior boundary conditions but the small gap
+        prevents these from being assigned.
+
+        Args:
+            gap_distance: A number for the minimum distance between Room2Ds that
+                is considered a intentional separation. Gaps that are larger than
+                this distance may be considered large/intentional. (Default: 0.4,
+                suitable for objects in meters).
+            tolerance: The minimum distance between coordinate values that is
+                considered distinct. (Default: 0.01, suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if overlapping geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        detailed = False if raise_exception else detailed
+        # first get the horizontal boundaries around the story
+        h_bounds = Room2D.grouped_horizontal_boundary(self.room_2ds, gap_distance, tolerance)
+        z_val = h_bounds[0][0].z
+        tol, ang_tol = tolerance, math.radians(1)
+
+        # boolean subtract the room geometry the overall story boundary
+        bound_faces, room_faces, gap_faces = [], [], []
+        for room in self.room_2ds:
+            m_vec = Vector3D(0, 0, z_val - room.floor_geometry[0].z)
+            room_faces.append(room.floor_geometry.move(m_vec))
+        for bound in h_bounds:
+            bound = Face3D(bound.boundary)  # remove any courtyard holes for now
+            bound_faces.append(bound)
+            gap_faces.extend(bound.coplanar_difference(room_faces, tol, ang_tol))
+        if len(gap_faces) == 0:
+            return [] if detailed else ''
+
+        # convert the faces to polygons for further analysis and classification
+        bound_polys = [Polygon2D(Point2D(p.x, p.y) for p in f.boundary) for f in bound_faces]
+        room_polys = [Polygon2D(Point2D(p.x, p.y) for p in f.boundary) for f in room_faces]
+        gap_polys = [Polygon2D(Point2D(p.x, p.y) for p in f.boundary) for f in gap_faces]
+
+        # classify the resulting problem areas into holes, interior gaps, and exposed gaps
+        msgs = []
+        for i, g_poly in enumerate(gap_polys):
+            if g_poly.area < tol:
+                continue
+            # check if the polygon lies inside a room
+            warning_type, rel_rooms = None, []
+            for j, r_poly in enumerate(room_polys):
+                if r_poly.is_point_inside_bound_rect(g_poly[0]):
+                    warning_type = 'Small Hole in Room Floor'
+                    rel_rooms.append(self._room_2ds[j])
+                    break
+
+            if warning_type is None:
+                # evaluate whether the polygon touches the outer boundary
+                for b_poly in bound_polys:
+                    for pt in g_poly:
+                        if b_poly.point_relationship(pt, tolerance) == 0:
+                            warning_type = 'Small Exposed Gap'
+                            break
+                    if warning_type is not None:
+                        break
+                # if it did not touch the boundary, it's an interior gap
+                if warning_type is None:
+                    warning_type = 'Small Gap Between Rooms'
+                # gather all of the rooms that are next to the gap
+                for j, r_poly in enumerate(room_polys):
+                    if Polygon2D.overlapping_bounding_rect(g_poly, r_poly, tol):
+                        rel_rooms.append(self._room_2ds[j])
+
+            # assemble a warning message based on the input
+            if warning_type == 'Small Hole in Room Floor':
+                mt = 'Room "{}" on Story "{}" contains a small hole with an area of {}.'
+                msg = mt.format(rel_rooms[0].display_name, self.display_name, g_poly.area)
+                warn_code = '101001'
+            elif warning_type == 'Small Gap Between Rooms':
+                mt = 'Story "{}" contains a small gap between {} Rooms with an area of {}.'
+                msg = mt.format(self.display_name, len(rel_rooms), g_poly.area)
+                warn_code = '101002'
+            else:
+                mt = 'Story "{}" contains a small exposed gap between with an area of {}.'
+                msg = mt.format(self.display_name, g_poly.area)
+                warn_code = '101003'
+
+            # add relevant rooms and helper geometry if detailed is requested
+            msg = self._validation_message_child(
+                msg, rel_rooms[0], detailed, warn_code, error_type=warning_type)
+            if detailed:
+                for r in rel_rooms[1:]:
+                    msg['element_id'].append(r.identifier)
+                    msg['element_name'].append(r.display_name)
+                    msg['parents'].append(msg['parents'][0])
+                msg['helper_geometry'] = [gap_faces[i].to_dict()]
+            msgs.append(msg)
+
         # report any errors
         if detailed:
             return msgs
