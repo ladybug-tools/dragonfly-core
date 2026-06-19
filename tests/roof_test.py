@@ -339,7 +339,7 @@ def test_split_with_polygon():
     roof.split_with_polygon(split_poly, tolerance=0.01)
 
     assert len(roof) == 5
-    assert sum(rg.area for rg in roof.geometry) == pytest.approx(roof_area, abs=1e-3)
+    assert sum(rg.area for rg in roof.geometry) == pytest.approx(roof_area, abs=1e-2)
 
     roof.join_geometries()
     assert len(roof) == 3

@@ -1864,7 +1864,7 @@ class Model(_BaseGeometry):
         """
         # evaluate the tolerance and gap distance
         tolerance = self.tolerance if tolerance is None else tolerance
-        gap_distance = parse_distance_string(gap_distance, self.units)
+        gap_distance = parse_distance_string(str(gap_distance), self.units)
 
         # run the check to find small gaps and holes
         bldg_ids = []

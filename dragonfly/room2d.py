@@ -5560,7 +5560,7 @@ class Room2D(_BaseGeometry):
                     for pi, pt in enumerate(room_centers):
                         if poly.is_point_inside_bound_rect(pt):
                             rooms_included[pi] = 1
-                    if sum(rooms_included) >= len(rooms_included) * 0.8:
+                    if sum(rooms_included) == len(rooms_included):
                         break  # we have done a good job finding the boundary
                 else:
                     closed_polys = None  # we have not found a good boundary
@@ -5580,13 +5580,17 @@ class Room2D(_BaseGeometry):
                     if hole.area > hole_thresh:
                         closed_polys.append(hole)
 
-        # remove colinear vertices from the resulting polygons
+        # remove colinear vertices and clean up self intersections in the polygons
         clean_polys = []
         for poly in closed_polys:
             try:
-                clean_polys.append(poly.remove_colinear_vertices(tolerance))
+                poly = poly.remove_colinear_vertices(tolerance)
             except AssertionError:
-                pass  # degenerate polygon to ignore
+                continue  # degenerate polygon to ignore
+            if poly.is_self_intersecting:
+                polys = poly.split_through_self_intersection(tolerance)
+                poly = max(polys, key=lambda p: p.area)
+            clean_polys.append(poly)
 
         # figure out if polygons represent holes in the others and make Face3D
         if len(clean_polys) == 0:
@@ -5935,32 +5939,38 @@ class Room2D(_BaseGeometry):
         roof_faces = []
         proj_dir = Vector3D(0, 0, 1)  # direction to project onto Roof planes
 
-        # create a BooleanPolygon for the Room2D
-        room_polys = []
-        for rom_poly in all_room_poly:
-            try:
-                rom_poly = rom_poly.remove_colinear_vertices(tolerance)
-            except AssertionError:
-                continue  # degenerate polygon to ignore (usually degenerate hole)
-            room_polys.append((pb.BooleanPoint(pt.x, pt.y) for pt in rom_poly.vertices))
-        if len(room_polys) == 0:  # completely degenerate room
+        # check that the inputs are not degenerate
+        try:  # check that the input room is not degenerate
+            f1_poly = all_room_poly[0].remove_colinear_vertices(tolerance)
+        except AssertionError:  # degenerate faces input
             return None
-        b_room_poly = pb.BooleanPolygon(room_polys)
-        room_poly_area = all_room_poly[0].area - sum(h.area for h in all_room_poly[1:])
-
-        # find the boolean intersection with each roof polygon and project the result
-        int_tol = tolerance / 100  # intersection tolerance must be finer
-        roof_poly_area = 0
+        all_poly, are_holes, hole_area = [f1_poly], [False], 0
+        for hole_poly in all_room_poly[1:]:
+            all_poly.append(hole_poly)
+            are_holes.append(True)
+            hole_area += hole_poly.area
+        room_poly_area = f1_poly.area - hole_area
+        # check that the roof polygons are not degenerate
+        clean_rf_planes = []
         for rf_poly, rf_plane in zip(rel_rf_polys, rel_rf_planes):
-            # snap the polygons to one another to avoid tolerance issues
             try:
                 rf_poly = rf_poly.remove_colinear_vertices(tolerance)
+                all_poly.append(rf_poly)
+                are_holes.append(False)
+                clean_rf_planes.append(rf_plane)
             except AssertionError:
                 continue  # degenerate roof polygon to ignore
-            for rom_poly in all_room_poly:
-                rf_poly = rom_poly.snap_to_polygon(rf_poly, tolerance)
-            rf_pts = (pb.BooleanPoint(pt.x, pt.y) for pt in rf_poly.vertices)
-            b_rf_poly = pb.BooleanPolygon([rf_pts])
+
+        # preprocess the polygons for a boolean operation
+        b_polys = Polygon2D.preprocess_polygons_for_boolean(all_poly, tolerance, are_holes)
+        if len(b_polys) <= 1:
+            return None
+        b_room_poly, rel_rf_b_polys = b_polys[0], b_polys[1:]
+
+        # find boolean intersection with each roof polygon and project onto plane
+        int_tol = tolerance / 1000  # intersection tolerance must be finer
+        roof_poly_area = 0
+        for b_rf_poly, rf_plane in zip(rel_rf_b_polys, clean_rf_planes):
             try:
                 int_result = pb.intersect(b_room_poly, b_rf_poly, int_tol)
             except Exception:  # intersection failed for some reason
