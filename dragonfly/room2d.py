@@ -108,6 +108,7 @@ class Room2D(_BaseGeometry):
         * highest_plenum_floor_height
         * volume
         * floor_area
+        * exterior_area
         * exterior_wall_area
         * interior_wall_area
         * exterior_window_area
@@ -864,6 +865,13 @@ class Room2D(_BaseGeometry):
     def floor_area(self):
         """Get a number for the floor area of the Room."""
         return self._floor_geometry.area
+
+    @property
+    def exterior_area(self):
+        """Get the total area with outdoors boundary condition (including walls and roof).
+        """
+        ext_area = self.exterior_wall_area
+        return ext_area if not self.is_top_exposed else ext_area + self.floor_area
 
     @property
     def exterior_wall_area(self):
