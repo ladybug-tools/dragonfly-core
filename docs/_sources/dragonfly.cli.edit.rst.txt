@@ -1,0 +1,7 @@
+dragonfly.cli.edit module
+=========================
+
+.. automodule:: dragonfly.cli.edit
+   :members:
+   :undoc-members:
+   :show-inheritance:
