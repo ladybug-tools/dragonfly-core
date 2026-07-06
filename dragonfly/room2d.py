@@ -117,6 +117,8 @@ class Room2D(_BaseGeometry):
         * wall_sub_face_area
         * roof_sub_face_area
         * sub_face_area
+        * floor_condition
+        * ceiling_condition
         * is_core
         * is_perimeter
         * min
@@ -962,6 +964,34 @@ class Room2D(_BaseGeometry):
         accepted boundary conditions.
         """
         return self.wall_sub_face_area + self.roof_sub_face_area
+
+    @property
+    def floor_condition(self):
+        """Get a text value for the floor condition. It will be one of the following.
+
+        * Ground Contact
+        * Interior Floor
+        * Open to Level Below
+        * Mixed: Ground & Open
+        """
+        if self.is_ground_contact:
+            return 'Ground Contact' if self.has_floor else 'Mixed: Ground & Open'
+        else:
+            return 'Interior Floor' if self.has_floor else 'Open to Level Below'
+
+    @property
+    def ceiling_condition(self):
+        """Get a text value for the ceiling condition. It will be one of the following.
+
+        * Exterior Roof
+        * Interior Ceiling
+        * Open to Level Above
+        * Mixed: Exterior & Open
+        """
+        if self.is_top_exposed:
+            return 'Exterior Roof' if self.has_ceiling else 'Mixed: Exterior & Open'
+        else:
+            return 'Interior Ceiling' if self.has_ceiling else 'Open to Level Above'
 
     @property
     def is_core(self):
@@ -4703,7 +4733,7 @@ class Room2D(_BaseGeometry):
             move_dists.append(dist)  # record all distances moved
             is_holes.append(False)  # record that first Polygon doesn't have holes
             polygon_2ds.append(room._floor_geometry.boundary_polygon2d)
-            # of there are holes in the face, add them as their own polygons
+            # if there are holes in the face, add them as their own polygons
             if room._floor_geometry.has_holes:
                 for hole in room._floor_geometry.hole_polygon2d:
                     move_dists.append(dist)  # record all distances moved
