@@ -972,10 +972,10 @@ class Room2D(_BaseGeometry):
         * Ground Contact
         * Interior Floor
         * Open to Level Below
-        * Mixed: Ground & Open
+        * Partial Ground / Open Below
         """
         if self.is_ground_contact:
-            return 'Ground Contact' if self.has_floor else 'Mixed: Ground & Open'
+            return 'Ground Contact' if self.has_floor else 'Partial Ground / Open Below'
         else:
             return 'Interior Floor' if self.has_floor else 'Open to Level Below'
 
@@ -986,10 +986,10 @@ class Room2D(_BaseGeometry):
         * Exterior Roof
         * Interior Ceiling
         * Open to Level Above
-        * Mixed: Exterior & Open
+        * Partial Exterior / Open Above
         """
         if self.is_top_exposed:
-            return 'Exterior Roof' if self.has_ceiling else 'Mixed: Exterior & Open'
+            return 'Exterior Roof' if self.has_ceiling else 'Partial Exterior / Open Above'
         else:
             return 'Interior Ceiling' if self.has_ceiling else 'Open to Level Above'
 
