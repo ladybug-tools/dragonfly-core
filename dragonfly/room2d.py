@@ -4876,6 +4876,38 @@ class Room2D(_BaseGeometry):
         return grouped_rooms, floor_heights
 
     @staticmethod
+    def group_by_proximity(rooms, distance=6.0):
+        """Group Room2Ds according to their proximity in the horizontal dimension.
+
+        Args:
+            rooms: A list of Room2Ds to be grouped by floor height.
+            distance: An float value to denote the minimum distance between rooms
+                for them to be added to a different group. Default: 6.0, which
+                may be appropriate for either Meters or Feet.
+
+        Returns:
+            A tuple with two items.
+
+            -   grouped_rooms - A list of lists of Room2Ds with each sub-list
+                representing a different proximity group.
+        """
+        # get all of the boundary polygons and group them by proximity
+        b_poly = [room.floor_geometry.boundary_polygon2d for room in rooms]
+        grouped_polys = Polygon2D.group_by_touching(b_poly, distance)
+
+        # figure out which rooms correspond to which polygons and return grouped rooms
+        grouped_rooms = []
+        for poly_group in grouped_polys:
+            room_group = []
+            for poly in poly_group:
+                for room in rooms:
+                    if room.floor_geometry.boundary_polygon2d == poly:
+                        room_group.append(room)
+                        break
+            grouped_rooms.append(room_group)
+        return grouped_rooms
+
+    @staticmethod
     def group_by_adjacency(rooms):
         """Group Room2Ds together that are connected by adjacencies.
 
@@ -5035,8 +5067,6 @@ class Room2D(_BaseGeometry):
             ori = int(math.degrees(north_vec.angle(ori_plane.y)))
             if ori > 90:
                 ori = ori - 90
-            if ori > 45:
-                ori = ori - 45
             try:
                 orient_dict[ori].append(room)
             except KeyError:
@@ -5049,11 +5079,11 @@ class Room2D(_BaseGeometry):
         grouped_rooms = [r_tup[1] for r_tup in room_mtx]
 
         # group orientations by the angle tolerance
-        group_count = int(45 / angle_tolerance)
-        step = 45.0 / group_count
+        group_count = int(90 / angle_tolerance)
+        step = 90.0 / group_count
         start = step / 2.0
         angles = []
-        while start < 45:
+        while start < 90:
             angles.append(start)
             start += step
         p_rooms = [[] for i in range(group_count)]
