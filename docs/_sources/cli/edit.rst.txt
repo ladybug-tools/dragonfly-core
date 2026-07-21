@@ -1,0 +1,6 @@
+edit
+====
+
+.. click:: dragonfly.cli.edit:edit
+   :prog: dragonfly edit
+   :show-nested:

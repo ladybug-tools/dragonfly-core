@@ -1,0 +1,6 @@
+validate
+========
+
+.. click:: dragonfly.cli.validate:validate
+   :prog: dragonfly validate
+   :show-nested:
