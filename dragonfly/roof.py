@@ -11,7 +11,7 @@ from ladybug_geometry.intersection2d import closest_point2d_on_line2d, \
     closest_point2d_on_line2d_infinite
 from ladybug_geometry.bounding import overlapping_bounding_boxes
 
-import dragonfly.clearstoryparameter as clear_par
+import dragonfly.clerestoryparameter as clear_par
 
 
 class RoofSpecification(object):
@@ -22,9 +22,9 @@ class RoofSpecification(object):
             Cases where Room2Ds are only partially covered by these roof geometries
             will result in those portions of the Room2Ds being extruded to their
             floor_to_ceiling_height.
-        clearstory_parameters: A list of ClearstoryParameter objects that dictate
+        clerestory_parameters: A list of ClerestoryParameter objects that dictate
             how to generate window geometries for any vertical walls that result
-            from the translation of roof geometry. If None, no clearstory windows
+            from the translation of roof geometry. If None, no clerestory windows
             will exist over the roof. (Default: None).
 
     Properties:
@@ -32,8 +32,8 @@ class RoofSpecification(object):
         * geometry_2d
         * boundary_geometry_2d
         * planes
-        * clearstory_parameters
-        * has_clearstory
+        * clerestory_parameters
+        * has_clerestory
         * parent
         * has_parent
         * min
@@ -45,13 +45,13 @@ class RoofSpecification(object):
         * altitudes
         * tilts
     """
-    __slots__ = ('_geometry', '_clearstory_parameters', '_parent', '_is_resolved')
+    __slots__ = ('_geometry', '_clerestory_parameters', '_parent', '_is_resolved')
     _ANG_TOL = 0.0174533  # angle tolerance in radians for determining X or Y alignment
 
-    def __init__(self, geometry, clearstory_parameters=None):
+    def __init__(self, geometry, clerestory_parameters=None):
         """Initialize RoofSpecification."""
         self.geometry = geometry
-        self.clearstory_parameters = clearstory_parameters
+        self.clerestory_parameters = clerestory_parameters
         self._parent = None  # will be set when RoofSpecification is added to a Story
         self._is_resolved = False  # will be set during the serialization process
 
@@ -180,14 +180,14 @@ class RoofSpecification(object):
                         geometry.append(Face3D((geo[2], geo[3], geo[0])))
                     else:
                         geometry.append(geo)
-        # serialize any clearstory windows
-        if 'clearstory_parameters' in data and data['clearstory_parameters'] is not None:
+        # serialize any clerestory windows
+        if 'clerestory_parameters' in data and data['clerestory_parameters'] is not None:
             clear_pars = []
-            for cd in data['clearstory_parameters']:
+            for cd in data['clerestory_parameters']:
                 try:
                     clear_class = getattr(clear_par, cd['type'])
                 except AttributeError:
-                    msg = 'Clearstory parameter "{}" is not recognized.'.format(cd['type'])
+                    msg = 'Clerestory parameter "{}" is not recognized.'.format(cd['type'])
                     raise ValueError(msg)
                 clear_pars.append(clear_class.from_dict(cd))
         else:
@@ -248,27 +248,27 @@ class RoofSpecification(object):
         return tuple(geo.plane for geo in self._geometry)
 
     @property
-    def clearstory_parameters(self):
-        """Get or set a tuple of ClearstoryParameter objects for windows in the roof.
+    def clerestory_parameters(self):
+        """Get or set a tuple of ClerestoryParameter objects for windows in the roof.
         """
-        return self._clearstory_parameters
+        return self._clerestory_parameters
 
-    @clearstory_parameters.setter
-    def clearstory_parameters(self, value):
+    @clerestory_parameters.setter
+    def clerestory_parameters(self, value):
         if value is not None:
             if not isinstance(value, tuple):
                 value = tuple(value)
             for cp in value:
-                assert isinstance(cp, clear_par._ClearstoryParameterBase), 'Expected ' \
-                    'ClearstoryParameter for RoofSpecification. Got {}'.format(type(cp))
-            self._clearstory_parameters = value
+                assert isinstance(cp, clear_par._ClerestoryParameterBase), 'Expected ' \
+                    'ClerestoryParameter for RoofSpecification. Got {}'.format(type(cp))
+            self._clerestory_parameters = value
         else:
-            self._clearstory_parameters = ()
+            self._clerestory_parameters = ()
 
     @property
-    def has_clearstory(self):
-        """Boolean noting whether this RoofSpecification has clearstory windows."""
-        return len(self._clearstory_parameters) != 0
+    def has_clerestory(self):
+        """Boolean noting whether this RoofSpecification has clerestory windows."""
+        return len(self._clerestory_parameters) != 0
 
     @property
     def parent(self):
@@ -637,7 +637,7 @@ class RoofSpecification(object):
         """Assign a list of SubFaces (Apertures and Doors) to this RoofSpecification.
 
         The geometry of the SubFaces will automatically be converted to
-        ClearstoryParameters in the plane of each roof segment and appropriate is_door
+        ClerestoryParameters in the plane of each roof segment and appropriate is_door
         properties will be used to denote whether the projected SubFace is an
         Aperture vs. a Door. Doors with True is_glass properties will get a
         False is_door property such that they will transmit light in destination
@@ -645,7 +645,7 @@ class RoofSpecification(object):
 
         Args:
             sub_faces: A list of orphaned Honeybee Apertures and/or Doors to be
-                assigned to this Room2D as ClearstoryParameters. Large lists of
+                assigned to this Room2D as ClerestoryParameters. Large lists of
                 all Apertures/Doors in a building can be plugged in here since
                 fast bounding box checks are used to rule out any un-applicable
                 geometries.
@@ -693,7 +693,7 @@ class RoofSpecification(object):
         if len(sf_to_add) == 0:
             return
 
-        # figure out all roof edges that could host sub faces as clearstory windows
+        # figure out all roof edges that could host sub faces as clerestory windows
         proj_faces = []
         for face in self.geometry:
             proj_boundary = [Point3D(pt.x, pt.y, min_height) for pt in face.boundary]
@@ -709,14 +709,14 @@ class RoofSpecification(object):
         roof_p_face = roof_p_face.merge_overlapping_edges(tolerance)
         internal_ed = roof_p_face.internal_edges
 
-        # create Face3Ds for all of the walls that might host clearstory windows
+        # create Face3Ds for all of the walls that might host clerestory windows
         ext_vec = Vector3D(0, 0, max_3d.z - min_3d.z)
         walls = []
         for seg in internal_ed:
             if seg.length > tolerance:
                 walls.append(Face3D.from_extrusion(seg, ext_vec))
 
-        # evaluate each input geometry against the possible clearstory walls
+        # evaluate each input geometry against the possible clerestory walls
         sf_per_wall = [[] for _ in walls]
         for sf in sf_to_add:
             # check if the sub-face belongs in any of the walls
@@ -733,15 +733,15 @@ class RoofSpecification(object):
                             sf_per_wall[i].append(dup_sf)
                             break
 
-        # convert any projected Face3Ds to DetailedClearstory and assign them
+        # convert any projected Face3Ds to DetailedClerestory and assign them
         new_clear_pars = []
         for clear_sf in sf_per_wall:
             if len(clear_sf) != 0:
-                new_clear_pars.append(clear_par.DetailedClearstory.from_honeybee(clear_sf))
+                new_clear_pars.append(clear_par.DetailedClerestory.from_honeybee(clear_sf))
 
-        # assign the clearstory parameters
-        self.clearstory_parameters = new_clear_pars if overwrite else \
-            self.clearstory_parameters + tuple(new_clear_pars)
+        # assign the clerestory parameters
+        self.clerestory_parameters = new_clear_pars if overwrite else \
+            self.clerestory_parameters + tuple(new_clear_pars)
 
     def move(self, moving_vec):
         """Move this RoofSpecification along a vector.
@@ -751,8 +751,8 @@ class RoofSpecification(object):
                 to move the object.
         """
         self._geometry = tuple(geo.move(moving_vec) for geo in self._geometry)
-        self._clearstory_parameters = \
-            tuple(cp.move(moving_vec) for cp in self._clearstory_parameters)
+        self._clerestory_parameters = \
+            tuple(cp.move(moving_vec) for cp in self._clerestory_parameters)
 
     def rotate_xy(self, angle, origin):
         """Rotate RoofSpecification counterclockwise in the XY plane by a certain angle.
@@ -764,8 +764,8 @@ class RoofSpecification(object):
         """
         self._geometry = tuple(geo.rotate_xy(math.radians(angle), origin)
                                for geo in self._geometry)
-        self._clearstory_parameters = \
-            tuple(cp.rotate(angle, origin) for cp in self._clearstory_parameters)
+        self._clerestory_parameters = \
+            tuple(cp.rotate(angle, origin) for cp in self._clerestory_parameters)
 
     def reflect(self, plane):
         """Reflect this RoofSpecification across a plane.
@@ -774,8 +774,8 @@ class RoofSpecification(object):
             plane: A ladybug_geometry Plane across which the object will be reflected.
         """
         self._geometry = tuple(geo.reflect(plane.n, plane.o) for geo in self._geometry)
-        self._clearstory_parameters = \
-            tuple(cp.reflect(plane) for cp in self._clearstory_parameters)
+        self._clerestory_parameters = \
+            tuple(cp.reflect(plane) for cp in self._clerestory_parameters)
 
     def scale(self, factor, origin=None):
         """Scale this RoofSpecification by a factor from an origin point.
@@ -786,8 +786,8 @@ class RoofSpecification(object):
                 to scale. If None, it will be scaled from the World origin (0, 0, 0).
         """
         self._geometry = tuple(geo.scale(factor, origin) for geo in self._geometry)
-        self._clearstory_parameters = \
-            tuple(cp.scale(factor, origin) for cp in self._clearstory_parameters)
+        self._clerestory_parameters = \
+            tuple(cp.scale(factor, origin) for cp in self._clerestory_parameters)
 
     def update_geometry_3d(self, new_face_3d, face_index):
         """Change one of the Face3D in this RoofSpecification.geometry.
@@ -1537,9 +1537,9 @@ class RoofSpecification(object):
         """Return RoofSpecification as a dictionary."""
         base = {'type': 'RoofSpecification'}
         base['geometry'] = [geo.to_dict() for geo in self._geometry]
-        if len(self._clearstory_parameters) != 0:
-            base['clearstory_parameters'] = \
-                [cp.to_dict() for cp in self._clearstory_parameters]
+        if len(self._clerestory_parameters) != 0:
+            base['clerestory_parameters'] = \
+                [cp.to_dict() for cp in self._clerestory_parameters]
         return base
 
     def duplicate(self):
@@ -1699,7 +1699,7 @@ class RoofSpecification(object):
         return Point2D(max_pt[0], max_pt[1])
 
     def __copy__(self):
-        new_cp = tuple(cp.duplicate() for cp in self._clearstory_parameters)
+        new_cp = tuple(cp.duplicate() for cp in self._clerestory_parameters)
         return RoofSpecification(self._geometry, new_cp)
 
     def __len__(self):

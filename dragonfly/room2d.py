@@ -38,7 +38,7 @@ from dragonfly.windowparameter import _WindowParameterBase, _AsymmetricBase, \
 import dragonfly.skylightparameter as skypar
 from dragonfly.skylightparameter import _SkylightParameterBase, DetailedSkylights, \
     GriddedSkylightArea, GriddedSkylightRatio
-from dragonfly.clearstoryparameter import DetailedClearstory
+from dragonfly.clerestoryparameter import DetailedClerestory
 import dragonfly.shadingparameter as shdpar
 from dragonfly.shadingparameter import _ShadingParameterBase
 import dragonfly.writer.room2d as writer
@@ -1425,7 +1425,7 @@ class Room2D(_BaseGeometry):
             again to the model in a way that creates duplicate geometries or
             identifiers. For example, a case of an Aperture spanning two Room2Ds
             where distinct IDs are desired or as a pre-step to determine whether
-            Apertures should be evaluated as clearstory windows.
+            Apertures should be evaluated as clerestory windows.
         """
         # process the angle tolerance into criteria to be used to categorize sub-faces
         a_tol_min = math.radians(angle_tolerance)
@@ -4402,9 +4402,9 @@ class Room2D(_BaseGeometry):
             if self._skylight_parameters is not None:
                 for rf in roof_faces:
                     self._skylight_parameters.add_skylight_to_face(rf, tolerance)
-            # set clearstory windows if they exist on the roof
-            if roof_spec is not None and roof_spec.has_clearstory:
-                # get all wall Faces of the Room that can host clearstory windows
+            # set clerestory windows if they exist on the roof
+            if roof_spec is not None and roof_spec.has_clerestory:
+                # get all wall Faces of the Room that can host clerestory windows
                 roof_i_pos, total_face_count = [], len(hb_room)
                 for ri in roof_face_i:
                     ri_pos = ri + total_face_count if ri < 0 else ri
@@ -4416,13 +4416,13 @@ class Room2D(_BaseGeometry):
                 ang_tol = math.radians(1)
                 for wf in clear_faces:
                     wg = [wf.geometry]
-                    _, wf_bl, _ = DetailedClearstory._evaluate_face3d_base_plane(wg)
-                    for cs_par in roof_spec.clearstory_parameters:
+                    _, wf_bl, _ = DetailedClerestory._evaluate_face3d_base_plane(wg)
+                    for cs_par in roof_spec.clerestory_parameters:
                         cs_bl = cs_par.base_line
                         orient_ang = wf_bl.v.angle(cs_bl.v)
                         if (orient_ang < ang_tol or orient_ang > math.pi - ang_tol) and \
                                 cs_bl.distance_to_line(wf_bl) < tolerance:
-                            cs_par.add_clearstory_to_face(wf, tolerance)
+                            cs_par.add_clerestory_to_face(wf, tolerance)
 
         # set the story, multiplier, display_name, and user_data
         if self.has_parent:

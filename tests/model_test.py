@@ -976,8 +976,8 @@ def test_roof_tolerance_fail_bug():
     assert len(room_1.roof_ceilings) > 1
 
 
-def test_model_with_clearstory_windows():
-    """Test the translation of a model with clearstory windows."""
+def test_model_with_clerestory_windows():
+    """Test the translation of a model with clerestory windows."""
     model_file = './tests/json/cape_cod_house.dfjson'
     model = Model.from_file(model_file, cleanup_irrational=True)
 
