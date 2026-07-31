@@ -977,8 +977,11 @@ class DetailedClearstory(_ClearstoryParameterBase):
         else:
             new_polys = Polygon2D.gap_crossing_boundary(
                 clean_polys, max_separation, tolerance)
+        if len(new_polys) == 0:
+            return None
         self._reassign_are_doors(new_polys, tolerance)
         self._polygons = tuple(new_polys)
+        return self
 
     def merge_to_bounding_rectangle(self, tolerance=0.01):
         """Merge clearstory polygons that touch or overlap with one another to a rectangle.
@@ -1227,6 +1230,8 @@ class DetailedClearstory(_ClearstoryParameterBase):
         return iter(self._polygons)
 
     def __copy__(self):
+        if len(self._polygons) == 0:
+            return None
         new_s = DetailedClearstory(
             self.base_line, self.elevation, self._polygons, self._are_doors
         )

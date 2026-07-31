@@ -1298,8 +1298,11 @@ class DetailedSkylights(_SkylightParameterBase):
 
         # bring everything together and reassign the door property
         new_polys = new_polys + door_polys
+        if len(new_polys) == 0:
+            return None
         self._reassign_are_doors(new_polys, tolerance)
         self._polygons = tuple(new_polys)
+        return self
 
     @staticmethod
     def _merge_polygons(clean_polys, max_separation, tolerance):
@@ -1570,6 +1573,8 @@ class DetailedSkylights(_SkylightParameterBase):
         return iter(self._polygons)
 
     def __copy__(self):
+        if len(self._polygons) == 0:
+            return None
         new_s = DetailedSkylights(self._polygons, self._are_doors)
         new_s._user_data = None if self.user_data is None else self.user_data.copy()
         return new_s
