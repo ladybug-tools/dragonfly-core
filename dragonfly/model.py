@@ -1177,11 +1177,13 @@ class Model(_BaseGeometry):
             all_ext_checks = extension_name == 'all'
             return self.check_all(raise_exception, detailed, all_ext_checks,
                                   include_warnings, gap_distance)
-        energy_extensions = ('energyplus', 'openstudio', 'designbuilder')
+        energy_extensions = ('energyplus', 'openstudio', 'designbuilder', 'trace700')
         if extension_name in energy_extensions:
             extension_name = 'energy'
         elif extension_name == 'ies':
             extension_name = 'iesve'
+        elif extension_name == 'trace3dplus':
+            extension_name = 'trace'
 
         # check the extension attributes
         assert self.tolerance != 0, \
