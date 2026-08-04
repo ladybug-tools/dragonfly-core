@@ -1893,7 +1893,9 @@ class Model(_BaseGeometry):
         self, object_per_model='Building', shade_distance=None,
         use_multiplier=True, exclude_plenums=False, cap=False,
         solve_ceiling_adjacencies=False, merge_method=None,
-        tolerance=None, enforce_adj=True, enforce_solid=True
+        tolerance=None, enforce_adj=True, enforce_solid=True,
+        face_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}',
+        subface_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}'
     ):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
@@ -1974,6 +1976,23 @@ class Model(_BaseGeometry):
                 room geometry should be allowed to remain in the result (False).
                 The latter is useful for understanding why a particular roof
                 geometry has produced a non-solid result. (Default: True).
+            face_rename_format: An optional text string for the pattern with which
+                faces will be renamed. Any property on the honeybee Face class may be
+                used (eg. gbxml_str) and each property should be put in curly brackets.
+                Nested properties can be specified by using "." to denote nesting levels
+                (eg. properties.energy.construction.display_name). Functions that
+                return string outputs can also be passed here as long as these
+                functions defaults specified for all arguments. If None, the names
+                of sub-faces will match the identifiers.
+            subface_rename_format: An optional text string for the pattern with which
+                apertures and doors will be renamed. Any property that exists on both
+                the honeybee Aperture and honeybee Door class may be used (eg. gbxml_str)
+                and each property should be put in curly brackets. Nested
+                properties can be specified by using "." to denote nesting levels
+                (eg. properties.energy.construction.display_name). Functions that
+                return string outputs can also be passed here as long as these
+                functions defaults specified for all arguments. If None, the names
+                of sub-faces will match the identifiers.
 
         Returns:
             An array of Honeybee Models that together represent this Dragonfly Model.
@@ -2076,10 +2095,11 @@ class Model(_BaseGeometry):
                         else:
                             existing_dict[val] = 1
             # rename all objects to have human-readable names
-            for room in model.rooms:
-                room.rename_faces_by_attribute()
-                room.rename_apertures_by_attribute()
-                room.rename_doors_by_attribute()
+            if face_rename_format:
+                model.rename_faces_by_attribute(face_rename_format)
+            if subface_rename_format:
+                model.rename_apertures_by_attribute(subface_rename_format)
+                model.rename_doors_by_attribute(subface_rename_format)
         return models
 
     def to_geojson_dict(self, location, point=Point2D(0, 0), tolerance=None):
