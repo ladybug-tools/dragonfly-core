@@ -3,7 +3,7 @@
 from __future__ import division
 import math
 
-from ladybug_geometry.geometry2d import Vector2D, Point2D, Polygon2D
+from ladybug_geometry.geometry2d import Vector2D, Point2D, LineSegment2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, Ray3D, Polyline3D, \
     Face3D, Polyface3D
 
@@ -1358,6 +1358,44 @@ using-multipliers-zone-and-or-window.html
             room._window_parameters = new_w_pars
             if rebuild_skylights:
                 room.offset_skylights_from_edges(tolerance * 2, tolerance)
+
+    def modify_wall_properties(self, line_geometries, properties, tolerance=0.01):
+        """Modify the properties of this Story's Room2D walls using line geometry.
+
+        Args:
+            line_geometries: A list of ladybug_geometry LineSegment2D, Polyline2D
+                or Polygon2D, which will be used to customize the properties of
+                this Story's Room2D walls.
+            properties: A list boundary condition object instances with one condition
+                for each of the line_geometries. These will be used to set the
+                boundary condition of the Room2D walls. Alternatively, this
+                can be a list of text strings that relate to a given boundary
+                condition or type of property. These text strings must be one
+                of the following:
+
+                * AirBoundary
+                * Ground
+                * Adiabatic
+
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # unpack the line geometries into individual segments
+        line_segs, line_props = [], []
+        for geo, prop in zip(line_geometries, properties):
+            if isinstance(geo, LineSegment2D):
+                line_segs.append(geo)
+                line_props.append(prop)
+            else:  # polygon or polyline
+                all_segs = geo.segments
+                line_segs.extend(all_segs)
+                for _ in all_segs:
+                    line_props.append(prop)
+
+        # use the line segments to assign properties to the Room2Ds
+        for room in self.room_2ds:
+            room.modify_wall_properties(line_segs, line_props, tolerance)
 
     def reset_adjacency(self):
         """Set all Surface boundary conditions on the Story to be Outdoors."""
