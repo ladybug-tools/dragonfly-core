@@ -1615,6 +1615,58 @@ class Room2D(_BaseGeometry):
         """
         return self.floor_geometry.mesh_grid(x_dim, y_dim, offset, False)
 
+    def modify_wall_properties(self, line_segments, properties, tolerance=0.01):
+        """Modify the properties of this Room2D's walls using lines.
+
+        Args:
+            line_segments: A list of ladybug_geometry LineSegment2D which will
+                be used to customize the properties of this Room2D's walls.
+            properties: A list boundary condition object instances with one condition
+                for each of the line_segments. These will be used to set the
+                boundary condition of the Room2D walls. Alternatively, this
+                can be a list of text strings that relate to a given boundary
+                condition or type of property. These text strings must be one
+                of the following:
+
+                * AirBoundary
+                * Ground
+                * Adiabatic
+
+            tolerance: The minimum difference between the coordinate values of two
+                faces at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # get the adiabatic boundary condition in case it is requested via text string
+        try:
+            ad_bc = bcs.adiabatic
+        except AttributeError:
+            ad_bc = bcs.outdoors  # honeybee_energy is not loaded; no adiabatic BC
+
+        # get the segments for evaluation
+        b_poly = self.floor_geometry.boundary_polygon2d
+        room_segments = self.floor_segments_2d
+
+        # loop through the line_segments and use them to assign properties
+        for i, m_seg in enumerate(line_segments):
+            if overlapping_bounding_rect(b_poly, m_seg, tolerance):
+                for seg_index, r_seg in enumerate(room_segments):
+                    if m_seg.distance_to_point(r_seg.p1) < tolerance and \
+                            m_seg.distance_to_point(r_seg.p2) < tolerance:
+                        # remove windows so that they do not trigger exceptions
+                        if self._window_parameters[seg_index] is not None:
+                            self._window_parameters[seg_index] = None
+                        # assign the boundary condition or air boundary
+                        prop = properties[i]
+                        if isinstance(prop, str):
+                            if prop == 'AirBoundary':
+                                self.set_air_boundary(seg_index)
+                            elif prop == 'Ground':
+                                self.set_boundary_condition(seg_index, bcs.ground)
+                            elif prop == 'Adiabatic':
+                                self.set_boundary_condition(seg_index, ad_bc)
+                        else:  # assume that it's a boundary condition object
+                            self.set_boundary_condition(seg_index, prop)
+
     def set_adjacency(
             self, other_room_2d, self_seg_index, other_seg_index,
             resolve_window_conflicts=True):

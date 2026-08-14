@@ -16,7 +16,7 @@ try:  # check if we are in IronPython
 except ImportError:  # wea re in cPython
     import pickle
 
-from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polyline2D
+from ladybug_geometry.geometry2d import Point2D, LineSegment2D, Polyline2D, Polygon2D
 from ladybug_geometry.geometry3d import Vector3D, Point3D, Plane, Face3D, Polyface3D
 from ladybug.futil import preparedir, unzip_file
 from ladybug.location import Location
@@ -970,14 +970,83 @@ class Model(_BaseGeometry):
         """Remove any roof geometries that appear more than once in each building.
 
         This includes duplicated roof geometries assigned to different stories.
-
-        Args:
-            tolerance: The maximum difference between values at which point vertices
-                are considered to be the same. (Default: 0.01, suitable for
-                objects in Meters).
         """
         for bldg in self._buildings:
             bldg.remove_duplicate_roofs(self.tolerance)
+
+    def resolve_wall_properties(self, wall_modifiers=None):
+        """Intersect and solve adjacency across the model with an option to modify walls.
+
+        Args:
+            wall_modifiers: An optional dictionary with the identifiers of stories
+                in the model as keys and each value is a list of two sub-lists.
+                The first sub-list contains 2D line-like geometries (LineSegment2D,
+                Polyline2D, or Polygon2D) that are meant to customize properties of
+                the walls of the story. The second sub-list contains boundary
+                condition object instances with one condition for each of the
+                line-like geometries. These will be used to set the boundary
+                condition of the Room2D walls. Alternatively, this second sub-list
+                can be a list of text strings that relate to a given boundary
+                condition or type of property. These text strings must be one
+                of the following:
+
+                * AirBoundary
+                * Ground
+                * Adiabatic
+        """
+        tol = self.tolerance
+        for story in self.stories:
+            # first intersect and solve adjacency across the rooms
+            story.solve_room_2d_adjacency(tolerance=tol, intersect=True)
+            # apply any wall_modifiers if specified
+            if wall_modifiers is not None:
+                try:
+                    line_geometries, properties = wall_modifiers[story.identifier]
+                except KeyError:
+                    continue  # no modifiers present for this story
+                story.modify_wall_properties(line_geometries, properties, tol)
+
+    def deserialize_wall_modifiers(self, wall_modifier_data):
+        """Deserialize wall modifier data to a format that resolve_wall_properties accepts.
+
+        Args:
+            wall_modifier_data: An array of dictionaries for wall modifiers with
+                each dictionary in the format below.
+
+        .. code-block:: python
+
+            {
+            "type": "Line",  # either Line or Polygon (if geometry is closed)
+            "geometry": [[0, 0], [10, 0], [10, 10]],  # XY coordinates of geometry
+            "boundary_property": "Ground",  # text for the modification to the boundary
+            "story": "Story_1396c96e-ccb9-4d53-9965-40a8f2fbd7a2"  # story identifier
+            }
+        """
+        tolerance = self.tolerance
+        modifier_dict = {}
+        for w_mod in wall_modifier_data:
+            # get the lists of line geometries and properties for the story
+            try:
+                line_geometries, properties = modifier_dict[w_mod['story']]
+            except KeyError:  # the first time encountering this story
+                modifier_dict[w_mod['story']] = ([], [])
+                line_geometries, properties = modifier_dict[w_mod['story']]
+            # add the geometry and boundary property
+            geo_obj = None
+            if w_mod['type'] == 'Polygon':
+                geo_obj = Polygon2D.from_array(w_mod['geometry'])
+                geo_obj = geo_obj.remove_colinear_vertices(tolerance)
+            elif len(w_mod['geometry']) == 2:  # line segment
+                geo_obj = LineSegment2D.from_array(w_mod['geometry'])
+                if geo_obj.length < tolerance:
+                    geo_obj = None
+            elif len(w_mod['geometry']) > 2:  # polyline with multiple segments
+                geo_obj = Polyline2D.from_array(w_mod['geometry'])
+                geo_obj = geo_obj.remove_colinear_vertices(tolerance)
+            if geo_obj is not None:
+                line_geometries.append(geo_obj)
+                properties.append(w_mod['boundary_property'])
+        return modifier_dict
 
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all outdoor walls of the Buildings to have the same window parameters."""
@@ -2477,7 +2546,7 @@ class Model(_BaseGeometry):
         scale_factor = 10  # converter between canvas and CAD
         line_objs = []
         for geo_item in data:
-            if 'type' in geo_item and geo_item['type'] == 'construction-line':
+            if 'type' in geo_item and geo_item['type'] == 'polyline':
                 points = geo_item['props']['points']
                 # convert points from web canvas to CAD space
                 for i, pt in enumerate(points):
