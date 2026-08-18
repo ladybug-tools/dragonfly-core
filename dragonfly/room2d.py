@@ -1658,7 +1658,8 @@ class Room2D(_BaseGeometry):
                         # assign the boundary condition or air boundary
                         prop = properties[i]
                         if isinstance(prop, str):
-                            if prop == 'AirBoundary':
+                            if prop == 'AirBoundary' and \
+                                    isinstance(self._boundary_conditions[seg_index], Surface):
                                 self.set_air_boundary(seg_index)
                             elif prop == 'Ground':
                                 self.set_boundary_condition(seg_index, bcs.ground)
