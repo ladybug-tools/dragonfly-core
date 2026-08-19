@@ -1,0 +1,7 @@
+dragonfly.properties module
+===========================
+
+.. automodule:: dragonfly.properties
+   :members:
+   :undoc-members:
+   :show-inheritance:
