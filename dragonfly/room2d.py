@@ -1668,6 +1668,42 @@ class Room2D(_BaseGeometry):
                         else:  # assume that it's a boundary condition object
                             self.set_boundary_condition(seg_index, prop)
 
+    def extract_wall_modifiers(self):
+        """Extract wall modifier segments for special boundary conditions and air boundaries.
+
+        Returns:
+            A tuple with two elements.
+
+            -   lines: A list of LineSegment2D objects for the segments of this
+                Room2D that represent air boundaries or non-standard types of
+                boundary conditions (eg. Ground or Adiabatic).
+
+            -   properties: A list of dictionaries that are coordinated with the
+                lines and contain properties about each line.
+        """
+        lines, properties = [], []
+        zo = zip(self.floor_segments_2d, self.air_boundaries, self.boundary_conditions)
+        for seg, ab, bc, in zo:
+            if not isinstance(bc, (Outdoors, Surface)):
+                wm = {
+                    'type': 'Line',
+                    'boundary_property': bc.name
+                }
+                if self.has_parent:
+                    wm['story'] = self.parent.identifier
+                properties.append(wm)
+                lines.append(seg)
+            elif ab:
+                wm = {
+                    'type': 'Line',
+                    'boundary_property': 'AirBoundary'
+                }
+                if self.has_parent:
+                    wm['story'] = self.parent.identifier
+                properties.append(wm)
+                lines.append(seg)
+        return lines, properties
+
     def set_adjacency(
             self, other_room_2d, self_seg_index, other_seg_index,
             resolve_window_conflicts=True):
