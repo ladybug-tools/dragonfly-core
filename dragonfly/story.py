@@ -1397,6 +1397,41 @@ using-multipliers-zone-and-or-window.html
         for room in self.room_2ds:
             room.modify_wall_properties(line_segs, line_props, tolerance)
 
+    def extract_wall_modifiers(self, tolerance=0.01):
+        """Extract wall modifier segments for special boundary conditions and air boundaries.
+
+        Calling the method on this story will ensure that lines that impact
+        multiple rooms will appear only once (eg. a line segment for air boundaries).
+
+        Args:
+            tolerance: The minimum difference between the coordinate values of two
+                at which they can be considered adjacent. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A tuple with two elements.
+
+            -   lines: A list of LineSegment2D objects for the segments of this
+                story that represent air boundaries or non-standard types of
+                boundary conditions (eg. Ground or Adiabatic).
+
+            -   properties: A list of dictionaries that are coordinated with the
+                lines and contain properties about each line.
+        """
+        lines, properties = [], []
+        for room in self.room_2ds:
+            r_lines, r_props = room.extract_wall_modifiers()
+            # remove any duplicate line segments that were already captured
+            for i, seg_1 in enumerate(r_lines):
+                for seg_2 in lines:
+                    if seg_1.distance_to_point(seg_2.p1) <= tolerance and \
+                            seg_1.distance_to_point(seg_2.p2) <= tolerance:
+                        break
+                else:  # not a wall modifier that is already represented
+                    properties.append(r_props[i])
+                    lines.append(seg_1)
+        return lines, properties
+
     def reset_adjacency(self):
         """Set all Surface boundary conditions on the Story to be Outdoors."""
         for room in self.room_2ds:
