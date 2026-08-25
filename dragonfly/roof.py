@@ -666,6 +666,12 @@ class RoofSpecification(object):
             angle_tolerance: The max angle difference in degrees that wall segments
                 and sub-faces can differ from one another in order for the sub-face
                 to be projected onto the geometry. (Default: 1).
+
+        Returns:
+            A list of Apertures/Doors for the subset of the input sub_faces that were
+            assigned to this RoofSpecification as DetailedClerestory. This can
+            be used to help ensure the Apertures/Doors are not added again to the
+            model in a way that creates duplicate geometries or identifiers.
         """
         # process the angle tolerance into criteria to be used to categorize sub-faces
         a_tol_min = math.radians(angle_tolerance)
@@ -742,6 +748,8 @@ class RoofSpecification(object):
         # assign the clerestory parameters
         self.clerestory_parameters = new_clear_pars if overwrite else \
             self.clerestory_parameters + tuple(new_clear_pars)
+
+        return clear_sf
 
     def move(self, moving_vec):
         """Move this RoofSpecification along a vector.
