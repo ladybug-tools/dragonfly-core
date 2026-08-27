@@ -2251,7 +2251,8 @@ class Building(_BaseGeometry):
         return has_flr_ceil
 
     def check_collisions_between_stories(
-            self, tolerance=0.01, raise_exception=True, detailed=False):
+        self, tolerance=0.01, raise_exception=True, detailed=False, sliver_distance=None
+    ):
         """Check that Room2Ds of each Story do not collide with others in the Building.
 
         Args:
@@ -2262,6 +2263,12 @@ class Building(_BaseGeometry):
                 if colliding geometries are found. (Default: True).
             detailed: Boolean for whether the returned object is a detailed list of
                 dicts with error info or a string with a message. (Default: False).
+            sliver_distance: An optional number to force this check to only report
+                collisions that are smaller than a certain distance. This can be
+                useful since larger collisions are automatically resolved during
+                translation of dragonfly to honeybee. Setting to None will result
+                in all collisions between stories to be reported in the
+                output. (Default: None).
 
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
@@ -2285,7 +2292,9 @@ class Building(_BaseGeometry):
                             v_overlap = ch2 - fh1
                         if v_overlap != 0:
                             col_msg = story1.check_collision_with_story(
-                                story2, tolerance, False, detailed)
+                                story2, tolerance, False, detailed,
+                                sliver_distance=sliver_distance
+                            )
                             if col_msg:
                                 if detailed:
                                     msgs.extend(col_msg)

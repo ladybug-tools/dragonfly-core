@@ -1759,7 +1759,9 @@ class Model(_BaseGeometry):
         return ''
 
     def check_collisions_between_stories(
-            self, tolerance=None, raise_exception=True, detailed=False):
+        self, tolerance=None, raise_exception=True, detailed=False,
+        sliver_distance='0.02m'
+    ):
         """Check that Room2Ds of each Story do not collide with others in each Building.
 
         Args:
@@ -1770,14 +1772,26 @@ class Model(_BaseGeometry):
                 if colliding geometries are found. (Default: True).
             detailed: Boolean for whether the returned object is a detailed list of
                 dicts with error info or a string with a message. (Default: False).
+            sliver_distance: An optional number to force this check to only report
+                collisions that are smaller than a certain distance. This can be
+                useful since larger collisions are automatically resolved during
+                translation of dragonfly to honeybee. Setting to None will result
+                in all collisions between stories to be reported in the
+                output. This input can include the units of the distance (eg. 1ft)
+                or, if no units are provided, the value will be interpreted in
+                the dragonfly model units. (Default: 0.02m).
 
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
         """
         tolerance = self.tolerance if tolerance is None else tolerance
+        if sliver_distance is not None:
+            sliver_distance = parse_distance_string(str(sliver_distance), self.units)
         bldg_msgs = []
         for bldg in self._buildings:
-            ov_msg = bldg.check_collisions_between_stories(tolerance, False, detailed)
+            ov_msg = bldg.check_collisions_between_stories(
+                tolerance, False, detailed, sliver_distance=sliver_distance
+            )
             if ov_msg:
                 if detailed:
                     bldg_msgs.extend(ov_msg)
