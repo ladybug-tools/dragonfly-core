@@ -1719,6 +1719,81 @@ using-multipliers-zone-and-or-window.html
                 if isinstance(bc, Ground):
                     room.set_boundary_condition(i, bcs.outdoors)
 
+    def resolve_story_collisions(self, other_story, tolerance=0.01):
+        """Get Resolving cases where this story collides vertically with one above.
+
+        TChecks for collisions are performed by first determining whether the
+        rooms have any overlap in vertical space, which is greater than the tolerance.
+        If so, a check is performed to evaluate whether the two room polygons
+        overlap in plan, thereby indicating a collision.
+
+        When a collision is found, the overlap between the floor plates is computed
+        and set at the floor height of the upper room. This way, the geometry
+        can be assigned as a roof of the lower floor and will carve out the
+        upper room from the roof volume during translation to 3D.
+
+        Args:
+            other_story: The other Story object above this one for which collisions
+                with this Story will be evaluated.
+            tolerance: The minimum distance that two Room2Ds geometries can collide
+                with one another and still be considered valid. (Default: 0.01,
+                suitable for objects in meters).
+
+        Returns:
+            A list of Face3D that have been assigned to this story as roof geometry
+            in order to resolve collisions.
+        """
+        # find the collisions across the Room2Ds
+        roof_geos = []
+        for room_1 in self.room_2ds:
+            fh1, ch1 = room_1.floor_height, room_1.ceiling_height
+            poly_1 = room_1.floor_geometry.boundary_polygon2d
+            # first check whether the rooms have any vertical overlap
+            for room_2 in other_story.room_2ds:
+                fh2, ch2 = room_2.floor_height, room_2.ceiling_height
+                v_overlap = 0
+                if fh1 < fh2 and ch1 - tolerance > fh2:
+                    v_overlap = ch1 - fh2
+                elif fh2 < fh1 and ch2 - tolerance > fh1:
+                    v_overlap = ch2 - fh1
+                if v_overlap != 0:
+                    # check whether the boundaries of the rooms overlap
+                    poly_2 = room_2.floor_geometry.boundary_polygon2d
+                    if poly_1.polygon_relationship(poly_2, tolerance) >= 0:
+                        # check that one room is not inside the hole of another
+                        inside_hole = False
+                        if room_1.floor_geometry.has_holes:
+                            for hole in room_1.floor_geometry.hole_polygon2d:
+                                if hole.polygon_relationship(poly_2, tolerance) == 1:
+                                    inside_hole = True
+                                    break
+                        if not inside_hole and room_2.floor_geometry.has_holes:
+                            for hole in room_2.floor_geometry.hole_polygon2d:
+                                if hole.polygon_relationship(poly_1, tolerance) == 1:
+                                    inside_hole = True
+                                    break
+                        # if the room is not in a hole, then they collide
+                        if not inside_hole:
+                            m_z = room_2.floor_geometry[0].z - \
+                                room_1.floor_geometry[0].z
+                            m_vec = Vector3D(0, 0, m_z)
+                            room_1_geo = room_1.floor_geometry.move(m_vec)
+                            room_2_geo = room_2.floor_geometry
+                            roof_geo = Face3D.coplanar_intersection(
+                                room_1_geo, room_2_geo, tolerance, 0.017)
+                            roof_geos.extend(roof_geo)
+                            room_1._has_room_above = True
+                            room_1.ceiling_plenum_depth = 0
+
+        # assign the resolution geometry to this story as roofs
+        if len(roof_geos) != 0:
+            if self.roof is not None:
+                r_geo = self.roof.geometry + tuple(roof_geos)
+                self.roof = RoofSpecification(r_geo, self.roof.clerestory_parameters)
+            else:
+                self.roof = RoofSpecification(roof_geos)
+        return roof_geos
+
     def automatically_zone(self, orient_count=None, north_vector=Vector2D(0, 1),
                            attr_name=None):
         """Automatically group the rooms of this Story into zones.
@@ -2521,7 +2596,8 @@ using-multipliers-zone-and-or-window.html
                 will be evaluated.
         """
         # first check whether it's possible for the room to be shaped by a roof
-        if not room_2d.is_top_exposed or self.multiplier != 1:
+        roof_permitted = room_2d.is_top_exposed or room_2d._has_room_above
+        if not roof_permitted or self.multiplier != 1:
             return None  # it's impossible for the room to be shaped by a roof
         # determine all roof specifications that can influence the Room2D
         room_roofs = []

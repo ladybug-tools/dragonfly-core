@@ -2123,6 +2123,45 @@ class Building(_BaseGeometry):
                 floor_rm_ids, floor_targets, True, tolerance)
         return ceil_plenums, floor_plenums
 
+    def resolve_story_collisions(self, tolerance=0.01):
+        """Resolve collisions between stories using floors as roofs of the stories below.
+
+        By assigning room floor_geometry as roofs of the below stories, this
+        effectively takes chunks out of the rooms on lower stories to make room
+        for the rooms that lie above them.
+
+        Args:
+            tolerance: The minimum distance that two Room2Ds geometries can collide
+                with one another and still be considered valid. (Default: 0.01,
+                suitable for objects in meters).
+            raise_exception: Boolean to note whether a ValueError should be raised
+                if colliding geometries are found. (Default: True).
+            detailed: Boolean for whether the returned object is a detailed list of
+                dicts with error info or a string with a message. (Default: False).
+
+        Returns:
+            A string with the message or a list with a dictionary if detailed is True.
+        """
+        # loop through the stories and test for collisions
+        if len(self._unique_stories) > 1:
+            stories = self._unique_stories
+            for i, story1 in enumerate(stories):
+                fh1 = story1.min_room_2d_floor_height
+                ch1 = story1.max_room_2d_ceiling_height
+                try:
+                    for story2 in stories[i + 1:]:
+                        fh2 = story2.min_room_2d_floor_height
+                        ch2 = story2.max_room_2d_ceiling_height
+                        v_overlap = 0
+                        if fh1 < fh2 and ch1 - tolerance > fh2:
+                            v_overlap = ch1 - fh2
+                        elif fh2 < fh1 and ch2 - tolerance > fh1:
+                            v_overlap = ch2 - fh1
+                        if v_overlap != 0:
+                            story1.resolve_story_collisions(story2, tolerance)
+                except IndexError:
+                    pass  # we have reached the end of the list of stories
+
     def set_outdoor_window_parameters(self, window_parameter):
         """Set all of the outdoor walls to have the same window parameters."""
         for story in self._unique_stories:
@@ -2300,6 +2339,9 @@ class Building(_BaseGeometry):
         Returns:
             A honeybee Model that represent the Building.
         """
+        # resolve vertical collisions between stories
+        self.resolve_story_collisions(tolerance)
+
         # separate the plenums unless they are excluded
         ceil_plenums, floor_plenums = [], []
         if not exclude_plenums and self.has_room_2d_plenums:

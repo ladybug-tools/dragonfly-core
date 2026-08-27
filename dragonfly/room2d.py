@@ -129,9 +129,9 @@ class Room2D(_BaseGeometry):
     __slots__ = (
         '_floor_geometry', '_segment_count', '_floor_to_ceiling_height',
         '_boundary_conditions', '_window_parameters', '_shading_parameters',
-        '_air_boundaries', '_is_ground_contact', '_is_top_exposed', '_has_floor',
-        '_has_ceiling', '_ceiling_plenum_depth', '_floor_plenum_depth', '_zone',
-        '_skylight_parameters', '_parent', '_abridged_properties'
+        '_air_boundaries', '_is_ground_contact', '_is_top_exposed', '_has_room_above',
+        '_has_floor', '_has_ceiling', '_ceiling_plenum_depth', '_floor_plenum_depth',
+        '_zone', '_skylight_parameters', '_parent', '_abridged_properties'
     )
 
     def __init__(self, identifier, floor_geometry, floor_to_ceiling_height,
@@ -196,6 +196,7 @@ class Room2D(_BaseGeometry):
         self._has_ceiling = True
         self._ceiling_plenum_depth = 0
         self._floor_plenum_depth = 0
+        self._has_room_above = False  # hidden property for resolving story collisions
         self._zone = None
         self._skylight_parameters = None
         self._air_boundaries = None  # will be set if it's ever used
@@ -3343,6 +3344,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._has_ceiling = self._has_ceiling
         rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
         rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+        rebuilt_room._has_room_above = self._has_room_above
         rebuilt_room._zone = self._zone
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
@@ -3470,6 +3472,7 @@ class Room2D(_BaseGeometry):
         rebuilt_room._has_ceiling = self._has_ceiling
         rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
         rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+        rebuilt_room._has_room_above = self._has_room_above
         rebuilt_room._zone = self._zone
         rebuilt_room._skylight_parameters = self._skylight_parameters
         rebuilt_room._display_name = self._display_name
@@ -3532,6 +3535,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._has_ceiling = self._has_ceiling
             rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
             rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+            rebuilt_room._has_room_above = self._has_room_above
             rebuilt_room._zone = self._zone
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
@@ -3843,6 +3847,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._has_ceiling = self._has_ceiling
             rebuilt_room._ceiling_plenum_depth = self._ceiling_plenum_depth
             rebuilt_room._floor_plenum_depth = self._floor_plenum_depth
+            rebuilt_room._has_room_above = self._has_room_above
             rebuilt_room._zone = self._zone
             rebuilt_room._display_name = self._display_name
             rebuilt_room._user_data = self._user_data
@@ -4283,6 +4288,7 @@ class Room2D(_BaseGeometry):
             new_room._has_ceiling = self._has_ceiling
             new_room._ceiling_plenum_depth = self._ceiling_plenum_depth
             new_room._floor_plenum_depth = self._floor_plenum_depth
+            new_room._has_room_above = self._has_room_above
             new_room.display_name = '{}_{}'.format(self.display_name, i)
             new_room._properties._duplicate_extension_attr(self._properties)
             new_rooms.append(new_room)
@@ -4859,6 +4865,7 @@ class Room2D(_BaseGeometry):
             rebuilt_room._has_ceiling = room_2ds[i]._has_ceiling
             rebuilt_room._ceiling_plenum_depth = room_2ds[i]._ceiling_plenum_depth
             rebuilt_room._floor_plenum_depth = room_2ds[i]._floor_plenum_depth
+            rebuilt_room._has_room_above = room_2ds[i]._has_room_above
             rebuilt_room._zone = room_2ds[i]._zone
             rebuilt_room._skylight_parameters = room_2ds[i].skylight_parameters
             rebuilt_room._display_name = room_2ds[i]._display_name
@@ -7226,6 +7233,7 @@ class Room2D(_BaseGeometry):
         new_r._has_ceiling = self._has_ceiling
         new_r._ceiling_plenum_depth = self._ceiling_plenum_depth
         new_r._floor_plenum_depth = self._floor_plenum_depth
+        new_r._has_room_above = self._has_room_above
         new_r._zone = self._zone
         new_r._skylight_parameters = self._skylight_parameters.duplicate() \
             if self._skylight_parameters is not None else None
