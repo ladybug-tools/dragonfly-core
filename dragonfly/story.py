@@ -2199,8 +2199,10 @@ using-multipliers-zone-and-or-window.html
             raise ValueError(full_msg)
         return full_msg
 
-    def check_collision_with_story(self, other_story, tolerance=0.01,
-                                   raise_exception=True, detailed=False):
+    def check_collision_with_story(
+        self, other_story, tolerance=0.01, raise_exception=True, detailed=False,
+        sliver_distance=None
+    ):
         """Check that the Room2Ds of this Story do not collide with those on another.
 
         The check is performed by first determining whether the rooms have any overlap
@@ -2218,6 +2220,12 @@ using-multipliers-zone-and-or-window.html
                 if colliding geometries are found. (Default: True).
             detailed: Boolean for whether the returned object is a detailed list of
                 dicts with error info or a string with a message. (Default: False).
+            sliver_distance: An optional number to force this check to only report
+                collisions that are smaller than a certain distance. This can be
+                useful since larger collisions are automatically resolved during
+                translation of dragonfly to honeybee. Setting to None will result
+                in all collisions between stories to be reported in the
+                output. (Default: None).
 
         Returns:
             A string with the message or a list with a dictionary if detailed is True.
@@ -2254,6 +2262,30 @@ using-multipliers-zone-and-or-window.html
                                     break
                         # if the room is not in a hole, then they collide
                         if not inside_hole:
+                            if fh1 > fh2:
+                                m_z = room_1.floor_geometry[0].z - room_2.floor_geometry[0].z
+                                m_vec = Vector3D(0, 0, m_z)
+                                room_1_geo = room_1.floor_geometry
+                                room_2_geo = room_2.floor_geometry.move(m_vec)
+                            else:
+                                m_z = room_2.floor_geometry[0].z - \
+                                    room_1.floor_geometry[0].z
+                                m_vec = Vector3D(0, 0, m_z)
+                                room_1_geo = room_1.floor_geometry.move(m_vec)
+                                room_2_geo = room_2.floor_geometry
+                            help_geo = Face3D.coplanar_intersection(
+                                room_1_geo, room_2_geo, tolerance, 0.017
+                            )
+                            if sliver_distance is not None and help_geo is not None:
+                                sliver_geos = []
+                                for hlp_geo in help_geo:
+                                    try:
+                                        hlp_geo.remove_colinear_vertices(sliver_distance)
+                                    except AssertionError:
+                                        sliver_geos.append(hlp_geo)
+                                if len(sliver_geos) == 0:  # overlap handled automatically
+                                    continue
+                                help_geo = sliver_geos
                             msg = 'Room "{}" on Story "{}" collides with Room2D "{}"' \
                                 ' on Story "{}" with a vertical overlap of {}.'.format(
                                     room_1.display_name, self.display_name,
@@ -2266,20 +2298,6 @@ using-multipliers-zone-and-or-window.html
                                 msg['element_id'].append(room_2.identifier)
                                 msg['element_name'].append(room_2.display_name)
                                 msg['parents'].append(msg['parents'][0])
-                                if fh1 > fh2:
-                                    m_z = room_1.floor_geometry[0].z - \
-                                        room_2.floor_geometry[0].z
-                                    m_vec = Vector3D(0, 0, m_z)
-                                    room_1_geo = room_1.floor_geometry
-                                    room_2_geo = room_2.floor_geometry.move(m_vec)
-                                else:
-                                    m_z = room_2.floor_geometry[0].z - \
-                                        room_1.floor_geometry[0].z
-                                    m_vec = Vector3D(0, 0, m_z)
-                                    room_1_geo = room_1.floor_geometry.move(m_vec)
-                                    room_2_geo = room_2.floor_geometry
-                                help_geo = Face3D.coplanar_intersection(
-                                    room_1_geo, room_2_geo, tolerance, 0.017)
                                 if help_geo is not None:
                                     msg['helper_geometry'] = \
                                         [f.to_dict() for f in help_geo]
