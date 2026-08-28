@@ -1263,6 +1263,11 @@ class Model(_BaseGeometry):
         if include_warnings:
             wrn = self.check_small_gaps_in_floor_plate(gap_distance, None, False, detailed)
             msgs.append(wrn)
+            if extension_name == 'iesve':  # include warning for sliver collisions
+                wrn2 = self.check_collisions_between_stories(
+                    raise_exception=False, detailed=detailed
+                )
+                msgs.append(wrn2)
 
         # output a final report of errors or raise an exception
         if detailed:
