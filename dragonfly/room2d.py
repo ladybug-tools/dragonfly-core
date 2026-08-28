@@ -5712,13 +5712,15 @@ class Room2D(_BaseGeometry):
                 closed_polys = Polygon2D.gap_crossing_boundary(
                     floor_polys, min_separation, tolerance)
 
+            # compute room centers to evaluate how good of a boundary it is
+            room_centers = []
+            for geo in floor_geos:
+                center = geo.center if geo.is_convex else \
+                    geo.pole_of_inaccessibility(min_separation)
+                room_centers.append(Point2D(center.x, center.y))
+
             # check to see if gap_crossing_boundary is a good boundary
             if closed_polys is not None:
-                room_centers = []
-                for geo in floor_geos:
-                    center = geo.center if geo.is_convex else \
-                        geo.pole_of_inaccessibility(min_separation)
-                    room_centers.append(Point2D(center.x, center.y))
                 rooms_included = [0] * len(room_centers)
                 for poly in closed_polys:
                     for pi, pt in enumerate(room_centers):
