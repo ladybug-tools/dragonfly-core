@@ -1461,7 +1461,7 @@ class Room2D(_BaseGeometry):
             if overlapping_bounding_boxes(bb_diagonal, sf.geometry, dist):
                 sf_to_add.append(sf)
         if len(sf_to_add) == 0:
-            return
+            return []
 
         # create Face3Ds for all of the room walls
         ext_vec = Vector3D(0, 0, ftc)
