@@ -1,0 +1,7 @@
+dragonfly.colorobj module
+=========================
+
+.. automodule:: dragonfly.colorobj
+   :members:
+   :undoc-members:
+   :show-inheritance:
