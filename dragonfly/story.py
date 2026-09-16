@@ -2386,7 +2386,11 @@ using-multipliers-zone-and-or-window.html
                 # gather all of the rooms that are next to the gap
                 for j, r_poly in enumerate(room_polys):
                     if Polygon2D.overlapping_bounding_rect(g_poly, r_poly, tol):
-                        rel_rooms.append(self._room_2ds[j])
+                        # evaluate whether the polygon touches the room boundary
+                        for pt in g_poly:
+                            if r_poly.point_relationship(pt, tol) == 0:
+                                rel_rooms.append(self._room_2ds[j])
+                                break
 
             # assemble a warning message based on the input
             if warning_type == 'Small Hole in Room Floor':
