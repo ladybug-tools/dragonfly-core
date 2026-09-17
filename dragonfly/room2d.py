@@ -2610,6 +2610,104 @@ class Room2D(_BaseGeometry):
             pull_segments = [s for poly in other_room_polys for s in poly.segments]
             self._constrain_edges(original_geo, pull_segments, tolerance)
 
+    def pull_to_segments_in_region(self, line_segments, distance, region, tolerance=0.01):
+        """Pull this Room2D's vertices within a region to several LineSegment2D.
+
+        Only vertices of this Room2D that lie on or within the region polygon will
+        be moved. All vertices outside of the region will remain as they are and
+        all properties assigned to this Room2D will be preserved.
+
+        Args:
+            line_segments: A list of ladybug_geometry LineSegment2D to which this
+                Room2D's vertices will be pulled.
+            distance: The maximum distance between a Room2D vertex and the line_segments
+                where the vertex will be moved to lie on the segments. Vertices beyond
+                this distance will be left as they are.
+            region: A Polygon2D that limits which Room2D vertices can be moved as a
+                result of the pulling operation. Only vertices on or within this
+                polygon can be moved.
+            tolerance: The minimum difference between the coordinate values at
+                which they are considered co-located. (Default: 0.01,
+                suitable for objects in meters).
+        """
+        # evaluate which Room2D vertices are inside the region
+        inside_i, pt_count = [], 0
+        for pt in self._floor_geometry.boundary_polygon2d:
+            if region.point_relationship(pt, tolerance) >= 0:
+                inside_i.append(pt_count)
+            pt_count += 1
+        if self._floor_geometry.has_holes:
+            for hole in self._floor_geometry.hole_polygon2d:
+                for pt in hole:
+                    if region.point_relationship(pt, tolerance) >= 0:
+                        inside_i.append(pt_count)
+                    pt_count += 1
+
+        # create a 3D version of the relevant line segments
+        lines_3d = []
+        for line in line_segments:
+            if isinstance(line, LineSegment2D):
+                line_3d = LineSegment3D(
+                    Point3D(line.p.x, line.p.y, self.floor_height),
+                    Vector3D(line.v.x, line.v.y, 0)
+                )
+                lines_3d.append(line_3d)
+            else:
+                msg = 'Expected LineSegment2D. Got {}.'.format(type(line))
+                raise TypeError(msg)
+        if len(lines_3d) == 0:
+            return
+
+        # get lists of vertices for the Room2D.floor_geometry to be edited
+        edit_boundary = self._floor_geometry.boundary
+        edit_holes = self._floor_geometry.holes \
+            if self._floor_geometry.has_holes else None
+
+        # loop through the Room2D vertices and align them to the segments
+        pt_count = -1
+        new_boundary = []
+        for pt in edit_boundary:
+            pt_count += 1
+            if pt_count not in inside_i:
+                new_boundary.append(pt)
+                continue
+            dists, c_pts = [], []
+            for line_ray_3d in lines_3d:
+                close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
+                c_pts.append(close_pt)
+                dists.append(pt.distance_to_point(close_pt))
+            sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+            if sort_pt[0][0] <= distance:
+                new_boundary.append(sort_pt[0][1])
+            else:
+                new_boundary.append(pt)
+        edit_boundary = new_boundary
+        if edit_holes is not None:
+            new_holes = []
+            for hole in edit_holes:
+                new_hole = []
+                for pt in hole:
+                    pt_count += 1
+                    if pt_count not in inside_i:
+                        new_hole.append(pt)
+                        continue
+                    dists, c_pts = [], []
+                    for line_ray_3d in lines_3d:
+                        close_pt = closest_point3d_on_line3d(pt, line_ray_3d)
+                        c_pts.append(close_pt)
+                        dists.append(pt.distance_to_point(close_pt))
+                    sort_pt = sorted(zip(dists, c_pts), key=lambda pair: pair[0])
+                    if sort_pt[0][0] <= distance:
+                        new_hole.append(sort_pt[0][1])
+                    else:
+                        new_hole.append(pt)
+                new_holes.append(new_hole)
+            edit_holes = new_holes
+
+        # rebuild the new floor geometry and assign it to the Room2D
+        f_geo = self._floor_geometry
+        self._floor_geometry = Face3D(edit_boundary, f_geo.plane, edit_holes)
+
     def _pull_to_poly_segments(self, line_segments, distance, snap_vertices=True,
                                constrain_edges=False, tolerance=0.01):
         """Pull this Room2D's vertices to LineSegment3D originating from a poly-line/gon.
