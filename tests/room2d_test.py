@@ -904,6 +904,22 @@ def test_pull_to_room_2d():
     assert new_room.floor_geometry[2].y == pytest.approx(10.0, abs=1e-3)
 
 
+def test_pull_to_segments_in_region():
+    """Test the pull_to_segments_in_region method."""
+    pts_1 = (Point3D(0, 0, 3), Point3D(10, 0, 3), Point3D(10, 10, 3), Point3D(0, 10, 3))
+    pts_2 = (Point3D(3, 3, 3), Point3D(7, 3, 3), Point3D(7, 7, 3),
+             Point3D(5, 7, 3), Point3D(5, 7.5, 3), Point3D(3, 7.5, 3))
+    room = Room2D('DonutShoebox1', Face3D(pts_1, holes=[pts_2]), 3)
+
+    line = LineSegment2D.from_end_points(Point2D(3, 6.5), Point2D(7, 6.5))
+    region = Polygon2D([Point2D(3, 3), Point2D(7, 3), Point2D(7, 7), Point2D(3, 7)])
+
+    room.pull_to_segments_in_region([line], 1.5, region)
+    assert str(room.floor_geometry.holes[0]) == '(Point3D (3.00, 3.00, 3.00), ' \
+        'Point3D (7.00, 3.00, 3.00), Point3D (7.00, 6.50, 3.00), ' \
+        'Point3D (5.00, 6.50, 3.00), Point3D (5.00, 7.50, 3.00), Point3D (3.00, 7.50, 3.00))'
+
+
 def test_subtract_room_2ds():
     """Test the Room2D subtract_room_2ds method."""
     f_pts = (Point3D(0, 0, 2), Point3D(2, 0, 2), Point3D(2, 2, 2), Point3D(0, 2, 2))
