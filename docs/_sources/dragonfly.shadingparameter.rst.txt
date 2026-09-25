@@ -1,0 +1,7 @@
+dragonfly.shadingparameter module
+=================================
+
+.. automodule:: dragonfly.shadingparameter
+   :members:
+   :undoc-members:
+   :show-inheritance:

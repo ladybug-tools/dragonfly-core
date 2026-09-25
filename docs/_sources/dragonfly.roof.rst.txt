@@ -1,0 +1,7 @@
+dragonfly.roof module
+=====================
+
+.. automodule:: dragonfly.roof
+   :members:
+   :undoc-members:
+   :show-inheritance:
