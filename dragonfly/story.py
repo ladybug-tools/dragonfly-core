@@ -2369,6 +2369,26 @@ using-multipliers-zone-and-or-window.html
                 if r_poly.is_polygon_inside(g_poly):
                     warning_type = 'Small Hole in Room Floor'
                     rel_rooms.append(self._room_2ds[j])
+
+                    # check for any other gap bordering rooms (rooms inside holes of room j)
+                    for k, f_k in enumerate(room_faces):
+                        if k == j:
+                            continue
+                        r_polys_k = [room_polys[k]]
+                        if f_k.holes:
+                            r_polys_k.extend([Polygon2D(Point2D(p.x, p.y) for p in h) for h in f_k.holes])
+
+                        room_touches = False
+                        for r_p in r_polys_k:
+                            if Polygon2D.overlapping_bounding_rect(g_poly, r_p, tol):
+                                for pt in g_poly:
+                                    if r_p.point_relationship(pt, tol) == 0:
+                                        if self._room_2ds[k] not in rel_rooms:
+                                            rel_rooms.append(self._room_2ds[k])
+                                        room_touches = True
+                                        break
+                            if room_touches:
+                                break
                     break
 
             if warning_type is None:
