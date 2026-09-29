@@ -1078,14 +1078,17 @@ class Room2D(_BaseGeometry):
         """
         orient_vecs = []
         for seg, bc in zip(self.floor_segments, self.boundary_conditions):
-            if isinstance(bc, Outdoors):
+            if isinstance(bc, Outdoors) and seg.length != 0:
                 orient_vecs.append(Vector2D(seg.v.y, -seg.v.x))
         if len(orient_vecs) == 0:
             return None
         orient_vec = orient_vecs[0]
         for o_vec in orient_vecs[1:]:
             orient_vec += o_vec
-        return math.degrees(north_vector.angle_clockwise(orient_vec.normalize()))
+        try:
+            return math.degrees(north_vector.angle_clockwise(orient_vec.normalize()))
+        except ZeroDivisionError:  # no orientation; eg. perfect square
+            return 0
 
     def orientation_plane(self, angle_tolerance=1.0):
         """Get a Plane from the most frequently-occurring right angle in this room.
@@ -5962,7 +5965,7 @@ class Room2D(_BaseGeometry):
                 segments are not factored into this calculation of common axes.
             filter_tolerance: A number that can be used to filter out axes in the
                 result, which are already perfectly aligned with the input polygon
-                segments. Setting this to zero wil guarantee that no axes are
+                segments. Setting this to zero will guarantee that no axes are
                 filtered out no matter how close they are to the existing polygon
                 segments. (Default: 0).
 
