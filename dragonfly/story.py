@@ -2355,8 +2355,14 @@ using-multipliers-zone-and-or-window.html
 
         # convert the faces to polygons for further analysis and classification
         bound_polys = [Polygon2D(Point2D(p.x, p.y) for p in f.boundary) for f in bound_faces]
-        room_polys = [Polygon2D(Point2D(p.x, p.y) for p in f.boundary) for f in room_faces]
         gap_polys = [Polygon2D(Point2D(p.x, p.y) for p in f.boundary) for f in gap_faces]
+        room_polys = []
+        for f in room_faces:
+            r_polys = [Polygon2D(Point2D(p.x, p.y) for p in f.boundary)]
+            if f.has_holes:
+                for hole in f.holes:
+                    r_polys.append(Polygon2D(Point2D(p.x, p.y) for p in hole))
+            room_polys.append(r_polys)
 
         # classify the resulting problem areas into holes, interior gaps, and exposed gaps
         msgs = []
@@ -2365,13 +2371,12 @@ using-multipliers-zone-and-or-window.html
                 continue
             # check if the polygon lies inside a room
             warning_type, rel_rooms = None, []
-            for j, r_poly in enumerate(room_polys):
-                if r_poly.is_polygon_inside(g_poly):
+            for j, r_polys in enumerate(room_polys):
+                if r_polys[0].is_polygon_inside(g_poly):
                     # ensure that the gap perfectly matches a hole in the room floor plate
-                    if room_faces[j].has_holes:
+                    if len(r_polys) > 1:
                         hole_matched = False
-                        for hole in room_faces[j].holes:
-                            hp = Polygon2D(Point2D(p.x, p.y) for p in hole)
+                        for hp in r_polys[1:]:
                             if g_poly.center.is_equivalent(hp.center, tol):
                                 if all(g_poly.point_relationship(p, tol) == 0 for p in hp):
                                     hole_matched = True
@@ -2394,13 +2399,18 @@ using-multipliers-zone-and-or-window.html
                 if warning_type is None:
                     warning_type = 'Small Gap Between Rooms'
                 # gather all of the rooms that are next to the gap
-                for j, r_poly in enumerate(room_polys):
-                    if Polygon2D.overlapping_bounding_rect(g_poly, r_poly, tol):
+                for j, r_polys in enumerate(room_polys):
+                    if Polygon2D.overlapping_bounding_rect(g_poly, r_polys[0], tol):
                         # evaluate whether the polygon touches the room boundary
-                        for pt in g_poly:
-                            if r_poly.point_relationship(pt, tol) == 0:
-                                rel_rooms.append(self._room_2ds[j])
+                        r_matched = False
+                        for r_poly in r_polys:
+                            if r_matched:
                                 break
+                            for pt in g_poly:
+                                if r_poly.point_relationship(pt, tol) == 0:
+                                    rel_rooms.append(self._room_2ds[j])
+                                    r_matched = True
+                                    break
 
             # assemble a warning message based on the input
             if warning_type == 'Small Hole in Room Floor':
