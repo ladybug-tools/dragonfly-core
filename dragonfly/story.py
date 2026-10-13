@@ -2402,15 +2402,15 @@ using-multipliers-zone-and-or-window.html
                 for j, r_polys in enumerate(room_polys):
                     if Polygon2D.overlapping_bounding_rect(g_poly, r_polys[0], tol):
                         # evaluate whether the polygon touches the room boundary
-                        r_matched = False
-                        for r_poly in r_polys:
-                            if r_matched:
+                        r_pts = [pt for r_poly in r_polys for pt in r_poly]
+                        r_pts = sorted(
+                            r_pts,
+                            key=lambda pt: g_poly.center.distance_to_point(pt)
+                        )
+                        for pt in r_pts:
+                            if g_poly.point_relationship(pt, tol) == 0:
+                                rel_rooms.append(self._room_2ds[j])
                                 break
-                            for pt in g_poly:
-                                if r_poly.point_relationship(pt, tol) == 0:
-                                    rel_rooms.append(self._room_2ds[j])
-                                    r_matched = True
-                                    break
 
             # assemble a warning message based on the input
             if warning_type == 'Small Hole in Room Floor':
