@@ -1,0 +1,7 @@
+dragonfly.dictutil module
+=========================
+
+.. automodule:: dragonfly.dictutil
+   :members:
+   :undoc-members:
+   :show-inheritance:
