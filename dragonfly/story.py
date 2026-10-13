@@ -2406,11 +2406,14 @@ using-multipliers-zone-and-or-window.html
                         for r_poly in r_polys:
                             if r_matched:
                                 break
-                            for pt in g_poly:
-                                if r_poly.point_relationship(pt, tol) == 0:
-                                    rel_rooms.append(self._room_2ds[j])
-                                    r_matched = True
+                            for r_seg in r_poly.segments:
+                                if r_matched:
                                     break
+                                for g_seg in g_poly.segments:
+                                    if g_seg.distance_to_line(r_seg) <= tol:
+                                        rel_rooms.append(self._room_2ds[j])
+                                        r_matched = True
+                                        break
 
             # assemble a warning message based on the input
             if warning_type == 'Small Hole in Room Floor':
