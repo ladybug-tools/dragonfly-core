@@ -1985,7 +1985,8 @@ class Model(_BaseGeometry):
         solve_ceiling_adjacencies=False, merge_method=None,
         tolerance=None, enforce_adj=True, enforce_solid=True,
         face_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}',
-        subface_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}'
+        subface_rename_format='{parent.parent.display_name} - {gbxml_type} - {cardinal_direction}',
+        north_angle=0
     ):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
@@ -2083,6 +2084,14 @@ class Model(_BaseGeometry):
                 return string outputs can also be passed here as long as these
                 functions defaults specified for all arguments. If None, the names
                 of sub-faces will match the identifiers.
+            north_angle: An optional number for the north angle in degrees, which
+                can be specified to customize renaming of Face/SubFace geometry
+                attributes that relate to orientation like cardinal_direction. Note that
+                horizontal_orientation is affected by this input but pure geometry
+                attributes like azimuth are not. Also note this is number should be
+                between -360 and 360 for the counterclockwise difference between
+                the North and the positive Y-axis in degrees. 90 rotates the
+                compass West and -90 rotates it East. (Default: 0).
 
         Returns:
             An array of Honeybee Models that together represent this Dragonfly Model.
@@ -2186,10 +2195,16 @@ class Model(_BaseGeometry):
                             existing_dict[val] = 1
             # rename all objects to have human-readable names
             if face_rename_format:
-                model.rename_faces_by_attribute(face_rename_format)
+                model.rename_faces_by_attribute(
+                    face_rename_format, north_angle=north_angle
+                    )
             if subface_rename_format:
-                model.rename_apertures_by_attribute(subface_rename_format)
-                model.rename_doors_by_attribute(subface_rename_format)
+                model.rename_apertures_by_attribute(
+                    subface_rename_format, north_angle=north_angle
+                )
+                model.rename_doors_by_attribute(
+                    subface_rename_format, north_angle=north_angle
+                )
         return models
 
     def to_geojson_dict(self, location, point=Point2D(0, 0), tolerance=None):
