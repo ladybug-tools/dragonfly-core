@@ -1985,7 +1985,7 @@ class Model(_BaseGeometry):
         solve_ceiling_adjacencies=False, merge_method=None,
         tolerance=None, enforce_adj=True, enforce_solid=True,
         face_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}',
-        subface_rename_format='{parent.parent.display_name} - {gbxml_type} - {cardinal_direction}',
+        subface_rename_format='{parent.parent.display_name} - {type} - {cardinal_direction}',
         north_angle=0
     ):
         """Convert Dragonfly Model to an array of Honeybee Models.
@@ -2077,7 +2077,7 @@ class Model(_BaseGeometry):
                 of sub-faces will match the identifiers.
             subface_rename_format: An optional text string for the pattern with which
                 apertures and doors will be renamed. Any property that exists on both
-                the honeybee Aperture and honeybee Door class may be used (eg. gbxml_str)
+                the honeybee Aperture and honeybee Door class may be used (eg. gbxml_type)
                 and each property should be put in curly brackets. Nested
                 properties can be specified by using "." to denote nesting levels
                 (eg. properties.energy.construction.display_name). Functions that
