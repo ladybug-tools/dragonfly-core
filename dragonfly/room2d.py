@@ -1546,10 +1546,11 @@ class Room2D(_BaseGeometry):
                                 ud['identifier'].append(sf_id)
                                 if sf.user_data is not None:
                                     for key, val in sf.user_data.items():
-                                        try:
-                                            ud[key].append(val)
-                                        except KeyError:  # first time attribute
-                                            ud[key] = [val]
+                                        if key != '__exist_count__':
+                                            try:
+                                                ud[key].append(val)
+                                            except KeyError:  # first time attribute
+                                                ud[key] = [val]
 
         # convert any projected Face3Ds to DetailedWindows and assign them
         sliver_tol = 3 * tolerance

@@ -71,6 +71,32 @@ def translate():
               'in the result. The latter is useful for understanding why a '
               'particular roof geometry has produced a non-solid result.',
               default=True, show_default=True)
+@click.option('--face-rename-format', '-fn', help='Optional text for the pattern '
+              'with which faces will be renamed. Any property on the honeybee Face class '
+              'may be used (eg. gbxml_str) and each property should be put in curly '
+              'brackets. Nested properties can be specified by using "." to denote '
+              'nesting levels (eg. properties.energy.construction.display_name). '
+              'Functions that return string outputs can also be passed here as long '
+              'as these functions defaults specified for all arguments. If None, the '
+              'names will match the identifiers.', type=str, show_default=True,
+              default="{parent.display_name} - {gbxml_type} - {cardinal_direction}")
+@click.option('--subface-rename-format', '-sfn', help='Optional text for the pattern '
+              'with which apertures and doors will be renamed. Any property that exists '
+              'on both the honeybee Aperture and honeybee Door class may be used '
+              '(eg. type) and each property should be put in curly brackets. Nested '
+              'properties can be specified by using "." to denote nesting levels '
+              '(eg. properties.energy.construction.display_name). Functions that '
+              'return string outputs can also be passed here as long as these '
+              'functions defaults specified for all arguments. If None, the names '
+              'will match the identifiers.', type=str, show_default=True,
+              default="{parent.parent.display_name} - {type} - {cardinal_direction}")
+@click.option('--name-decimal-count', '-dc', help='An integer to set the number of '
+              'decimal places that appear in face and sub-face names for all numerical '
+              'properties. If None, the number of decimal places are determined by the '
+              'model tolerance.', type=int, default=None, show_default=True)
+@click.option('--include-units-in-name/--exclude-units-in-name', ' /-xu', help='Flag '
+              'to note whether the units should be excluded from all length, area '
+              'and volume attributes.', default=True, show_default=True)
 @click.option('--folder', '-f', help='Folder on this computer, into which the HBJSON '
               'files will be written. By default, the files will be output '
               'to the honeybee default simulation folder and placed in a project '
@@ -83,7 +109,9 @@ def translate():
               'stdout', type=click.File('w'), default='-', show_default=True)
 def model_to_honeybee_cli(
     model_file, obj_per_model, multiplier, plenum, no_ceil_adjacency, merge_method,
-    shade_dist, no_cap, enforce_adj_check, enforce_solid, folder, log_file
+    shade_dist, no_cap, enforce_adj_check, enforce_solid,
+    face_rename_format, subface_rename_format, name_decimal_count, include_units_in_name,
+    folder, log_file
 ):
     """Translate a Dragonfly Model file into one or more Honeybee Models.
 
@@ -98,10 +126,13 @@ def model_to_honeybee_cli(
         ceil_adjacency = not no_ceil_adjacency
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
+        exclude_units_in_name = not include_units_in_name
         model_to_honeybee(
             model_file, obj_per_model, full_geometry,
             no_plenum, ceil_adjacency, merge_method, shade_dist, cap,
-            bypass_adj_check, permit_non_solid, folder, log_file)
+            bypass_adj_check, permit_non_solid, face_rename_format, subface_rename_format,
+            name_decimal_count, exclude_units_in_name, folder, log_file
+        )
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
         sys.exit(1)
@@ -110,12 +141,15 @@ def model_to_honeybee_cli(
 
 
 def model_to_honeybee(
-        model_file, obj_per_model='Building', full_geometry=False, no_plenum=False,
-        ceil_adjacency=False, merge_method='None', shade_dist=None, cap=False,
-        bypass_adj_check=False, permit_non_solid=False,
-        folder=None, log_file=None,
-        multiplier=True, plenum=True, no_cap=True, no_ceil_adjacency=True,
-        enforce_adj_check=True, enforce_solid=True):
+    model_file, obj_per_model='Building', full_geometry=False, no_plenum=False,
+    ceil_adjacency=False, merge_method='None', shade_dist=None, cap=False,
+    bypass_adj_check=False, permit_non_solid=False,
+    face_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}',
+    subface_rename_format='{parent.parent.display_name} - {type} - {cardinal_direction}',
+    name_decimal_count=None, exclude_units_in_name=False, folder=None, log_file=None,
+    multiplier=True, plenum=True, no_cap=True, no_ceil_adjacency=True,
+    enforce_adj_check=True, enforce_solid=True, include_units_in_name=True
+):
     """Translate a Dragonfly Model file into one or more Honeybee Models.
 
     Args:
@@ -185,6 +219,29 @@ def model_to_honeybee(
             be allowed to remain in the result. The latter is useful for
             understanding why a particular roof geometry has produced a
             non-solid result. (Default: False).
+        face_rename_format: An optional text string for the pattern with which
+            faces will be renamed. Any property on the honeybee Face class may be
+            used (eg. gbxml_str) and each property should be put in curly brackets.
+            Nested properties can be specified by using "." to denote nesting levels
+            (eg. properties.energy.construction.display_name). Functions that
+            return string outputs can also be passed here as long as these
+            functions defaults specified for all arguments. If None, the names
+            will match the identifiers.
+        subface_rename_format: An optional text string for the pattern with which
+            apertures and doors will be renamed. Any property that exists on both
+            the honeybee Aperture and honeybee Door class may be used (eg. gbxml_type)
+            and each property should be put in curly brackets. Nested
+            properties can be specified by using "." to denote nesting levels
+            (eg. properties.energy.construction.display_name). Functions that
+            return string outputs can also be passed here as long as these
+            functions defaults specified for all arguments. If None, the names
+            will match the identifiers.
+        name_decimal_count: An integer to set the number of decimal places that
+            appear in face and opening names for all numerical properties.
+            If None, the number of decimal places are determined by the
+            model tolerance. (Default: None).
+        exclude_units_in_name: Boolean for wether the units should be
+            excluded from all length, area and volume attributes. (Default: False).
         folder: Folder on this computer, into which the HBJSON files will be written.
             If None, the files will be output to the honeybee default simulation
             folder and placed in a project folder with the same name as the
@@ -211,7 +268,10 @@ def model_to_honeybee(
     hb_models = model.to_honeybee(
         obj_per_model, shade_dist, multiplier, no_plenum, cap,
         ceil_adjacency, merge_method,
-        enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)
+        enforce_adj=enforce_adj_check, enforce_solid=enforce_solid,
+        face_rename_format=face_rename_format, subface_rename_format=subface_rename_format,
+        name_decimal_count=name_decimal_count, exclude_units_in_name=exclude_units_in_name
+    )
 
     # write out the honeybee JSONs and collect the info about them
     hb_jsons = []
@@ -273,12 +333,43 @@ def model_to_honeybee(
     'particular roof geometry has produced a non-solid result.',
     default=True, show_default=True)
 @click.option(
+    '--face-rename-format', '-fn', help='Optional text for the pattern '
+    'with which faces will be renamed. Any property on the honeybee Face class '
+    'may be used (eg. gbxml_str) and each property should be put in curly '
+    'brackets. Nested properties can be specified by using "." to denote '
+    'nesting levels (eg. properties.energy.construction.display_name). '
+    'Functions that return string outputs can also be passed here as long '
+    'as these functions defaults specified for all arguments. If None, the '
+    'names will match the identifiers.', type=str, show_default=True,
+    default="{parent.display_name} - {gbxml_type} - {cardinal_direction}")
+@click.option(
+    '--subface-rename-format', '-sfn', help='Optional text for the pattern '
+    'with which apertures and doors will be renamed. Any property that exists '
+    'on both the honeybee Aperture and honeybee Door class may be used '
+    '(eg. type) and each property should be put in curly brackets. Nested '
+    'properties can be specified by using "." to denote nesting levels '
+    '(eg. properties.energy.construction.display_name). Functions that '
+    'return string outputs can also be passed here as long as these '
+    'functions defaults specified for all arguments. If None, the names '
+    'will match the identifiers.', type=str, show_default=True,
+    default="{parent.parent.display_name} - {type} - {cardinal_direction}")
+@click.option(
+    '--name-decimal-count', '-dc', help='An integer to set the number of '
+    'decimal places that appear in face and sub-face names for all numerical '
+    'properties. If None, the number of decimal places are determined by the '
+    'model tolerance.', type=int, default=None, show_default=True)
+@click.option(
+    '--include-units-in-name/--exclude-units-in-name', ' /-xu', help='Flag '
+    'to note whether the units should be excluded from all length, area '
+    'and volume attributes.', default=True, show_default=True)
+@click.option(
     '--output-file', '-f', help='Optional file to output the Honeybee Model JSON string'
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def model_to_honeybee_file_cli(
     model_file, multiplier, plenum, no_ceil_adjacency, merge_method,
-    enforce_adj_check, enforce_solid, output_file
+    enforce_adj_check, enforce_solid, face_rename_format, subface_rename_format,
+    name_decimal_count, include_units_in_name, output_file
 ):
     """Translate a Dragonfly Model into a single Honeybee Model.
 
@@ -292,9 +383,11 @@ def model_to_honeybee_file_cli(
         ceil_adjacency = not no_ceil_adjacency
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
+        exclude_units_in_name = not include_units_in_name
         model_to_honeybee_file(
             model_file, full_geometry, no_plenum, ceil_adjacency, merge_method,
-            bypass_adj_check, permit_non_solid, output_file)
+            bypass_adj_check, permit_non_solid, face_rename_format, subface_rename_format,
+            name_decimal_count, exclude_units_in_name, output_file)
     except Exception as e:
         _logger.exception('Model translation failed.\n{}'.format(e))
         sys.exit(1)
@@ -303,11 +396,15 @@ def model_to_honeybee_file_cli(
 
 
 def model_to_honeybee_file(
-        model_file, full_geometry=False, no_plenum=False,
-        ceil_adjacency=False, merge_method='None',
-        bypass_adj_check=False, permit_non_solid=False, output_file=None,
-        multiplier=True, plenum=True, no_ceil_adjacency=True,
-        enforce_adj_check=True, enforce_solid=True):
+    model_file, full_geometry=False, no_plenum=False,
+    ceil_adjacency=False, merge_method='None',
+    bypass_adj_check=False, permit_non_solid=False,
+    face_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}',
+    subface_rename_format='{parent.parent.display_name} - {type} - {cardinal_direction}',
+    name_decimal_count=None, exclude_units_in_name=False, output_file=None,
+    multiplier=True, plenum=True, no_ceil_adjacency=True,
+    enforce_adj_check=True, enforce_solid=True, include_units_in_name=True
+):
     """Translate a Dragonfly Model into a single Honeybee Model.
 
     Args:
@@ -352,6 +449,29 @@ def model_to_honeybee_file(
             be allowed to remain in the result. The latter is useful for
             understanding why a particular roof geometry has produced a
             non-solid result. (Default: False).
+        face_rename_format: An optional text string for the pattern with which
+            faces will be renamed. Any property on the honeybee Face class may be
+            used (eg. gbxml_str) and each property should be put in curly brackets.
+            Nested properties can be specified by using "." to denote nesting levels
+            (eg. properties.energy.construction.display_name). Functions that
+            return string outputs can also be passed here as long as these
+            functions defaults specified for all arguments. If None, the names
+            will match the identifiers.
+        subface_rename_format: An optional text string for the pattern with which
+            apertures and doors will be renamed. Any property that exists on both
+            the honeybee Aperture and honeybee Door class may be used (eg. gbxml_type)
+            and each property should be put in curly brackets. Nested
+            properties can be specified by using "." to denote nesting levels
+            (eg. properties.energy.construction.display_name). Functions that
+            return string outputs can also be passed here as long as these
+            functions defaults specified for all arguments. If None, the names
+            will match the identifiers.
+        name_decimal_count: An integer to set the number of decimal places that
+            appear in face and opening names for all numerical properties.
+            If None, the number of decimal places are determined by the
+            model tolerance. (Default: None).
+        exclude_units_in_name: Boolean for wether the units should be
+            excluded from all length, area and volume attributes. (Default: False).
         output_file: Optional file to output the string of the HBJSON. If None,
             the string will simply be returned from this method.
     """
@@ -365,7 +485,10 @@ def model_to_honeybee_file(
         object_per_model='District', use_multiplier=multiplier,
         exclude_plenums=no_plenum, solve_ceiling_adjacencies=ceil_adjacency,
         merge_method=merge_method,
-        enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
+        enforce_adj=enforce_adj_check, enforce_solid=enforce_solid,
+        face_rename_format=face_rename_format, subface_rename_format=subface_rename_format,
+        name_decimal_count=name_decimal_count, exclude_units_in_name=exclude_units_in_name
+    )[0]
     # write the new model out to the file or stdout
     model_str = json.dumps(hb_model.to_dict())
     return process_content_to_output(model_str, output_file)
@@ -426,12 +549,45 @@ def model_to_honeybee_file(
     'particular roof geometry has produced a non-solid result.',
     default=True, show_default=True)
 @click.option(
+    '--face-rename-format', '-fn', help='Optional text for the pattern '
+    'with which faces will be renamed. Any property on the honeybee Face class '
+    'may be used (eg. gbxml_str) and each property should be put in curly '
+    'brackets. Nested properties can be specified by using "." to denote '
+    'nesting levels (eg. properties.energy.construction.display_name). '
+    'Functions that return string outputs can also be passed here as long '
+    'as these functions defaults specified for all arguments. If None, the '
+    'names will match the identifiers.', type=str, show_default=True,
+    default="{parent.display_name} - {gbxml_type} - {cardinal_direction}")
+@click.option(
+    '--subface-rename-format', '-sfn', help='Optional text for the pattern '
+    'with which apertures and doors will be renamed. Any property that exists '
+    'on both the honeybee Aperture and honeybee Door class may be used '
+    '(eg. type) and each property should be put in curly brackets. Nested '
+    'properties can be specified by using "." to denote nesting levels '
+    '(eg. properties.energy.construction.display_name). Functions that '
+    'return string outputs can also be passed here as long as these '
+    'functions defaults specified for all arguments. If None, the names '
+    'will match the identifiers.', type=str, show_default=True,
+    default="{parent.parent.display_name} - {type} - {cardinal_direction}")
+@click.option(
+    '--name-decimal-count', '-dc', help='An integer to set the number of '
+    'decimal places that appear in face and sub-face names for all numerical '
+    'properties. If None, the number of decimal places are determined by the '
+    'model tolerance.', type=int, default=None, show_default=True)
+@click.option(
+    '--include-units-in-name/--exclude-units-in-name', ' /-xu', help='Flag '
+    'to note whether the units should be excluded from all length, area '
+    'and volume attributes.', default=True, show_default=True)
+@click.option(
     '--output-file', '-f', help='Optional file to output the Honeybee Model JSON string'
     ' with solved adjacency. By default it will be printed out to stdout',
     type=click.File('w'), default='-')
 def merge_models_to_honeybee_cli(
-        base_model, dragonfly_model, honeybee_model, multiplier, plenum,
-        default_adjacency, merge_method, enforce_adj_check, enforce_solid, output_file):
+    base_model, dragonfly_model, honeybee_model, multiplier, plenum,
+    default_adjacency, merge_method, enforce_adj_check, enforce_solid,
+    face_rename_format, subface_rename_format,
+    name_decimal_count, include_units_in_name, output_file
+):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
     \b
@@ -445,10 +601,12 @@ def merge_models_to_honeybee_cli(
         solve_adjacency = not default_adjacency
         bypass_adj_check = not enforce_adj_check
         permit_non_solid = not enforce_solid
+        exclude_units_in_name = not include_units_in_name
         merge_models_to_honeybee(
             base_model, dragonfly_model, honeybee_model,
             full_geometry, no_plenum, solve_adjacency, merge_method,
-            bypass_adj_check, permit_non_solid, output_file)
+            bypass_adj_check, permit_non_solid, face_rename_format, subface_rename_format,
+            name_decimal_count, exclude_units_in_name, output_file)
     except Exception as e:
         _logger.exception('Model merging failed.\n{}'.format(e))
         sys.exit(1)
@@ -457,11 +615,15 @@ def merge_models_to_honeybee_cli(
 
 
 def merge_models_to_honeybee(
-        base_model, dragonfly_model=(), honeybee_model=(),
-        full_geometry=False, no_plenum=False, solve_adjacency=False, merge_method='None',
-        bypass_adj_check=False, permit_non_solid=False, output_file=None,
-        multiplier=True, plenum=True, default_adjacency=True,
-        enforce_adj_check=True, enforce_solid=True):
+    base_model, dragonfly_model=(), honeybee_model=(),
+    full_geometry=False, no_plenum=False, solve_adjacency=False, merge_method='None',
+    bypass_adj_check=False, permit_non_solid=False,
+    face_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}',
+    subface_rename_format='{parent.parent.display_name} - {type} - {cardinal_direction}',
+    name_decimal_count=None, exclude_units_in_name=False, output_file=None,
+    multiplier=True, plenum=True, default_adjacency=True,
+    enforce_adj_check=True, enforce_solid=True, include_units_in_name=True
+):
     """Merge multiple Dragonfly and/or Honeybee Models into a single Honeybee Model.
 
     Args:
@@ -514,6 +676,29 @@ def merge_models_to_honeybee(
             be allowed to remain in the result. The latter is useful for
             understanding why a particular roof geometry has produced a
             non-solid result. (Default: False).
+        face_rename_format: An optional text string for the pattern with which
+            faces will be renamed. Any property on the honeybee Face class may be
+            used (eg. gbxml_str) and each property should be put in curly brackets.
+            Nested properties can be specified by using "." to denote nesting levels
+            (eg. properties.energy.construction.display_name). Functions that
+            return string outputs can also be passed here as long as these
+            functions defaults specified for all arguments. If None, the names
+            will match the identifiers.
+        subface_rename_format: An optional text string for the pattern with which
+            apertures and doors will be renamed. Any property that exists on both
+            the honeybee Aperture and honeybee Door class may be used (eg. gbxml_type)
+            and each property should be put in curly brackets. Nested
+            properties can be specified by using "." to denote nesting levels
+            (eg. properties.energy.construction.display_name). Functions that
+            return string outputs can also be passed here as long as these
+            functions defaults specified for all arguments. If None, the names
+            will match the identifiers.
+        name_decimal_count: An integer to set the number of decimal places that
+            appear in face and opening names for all numerical properties.
+            If None, the number of decimal places are determined by the
+            model tolerance. (Default: None).
+        exclude_units_in_name: Boolean for wether the units should be
+            excluded from all length, area and volume attributes. (Default: False).
         output_file: Optional file to output the string of the HBJSON. If None,
             the string will simply be returned from this method.
     """
@@ -542,7 +727,10 @@ def merge_models_to_honeybee(
         object_per_model='District', use_multiplier=multiplier,
         exclude_plenums=no_plenum, solve_ceiling_adjacencies=solve_adjacency,
         merge_method=merge_method,
-        enforce_adj=enforce_adj_check, enforce_solid=enforce_solid)[0]
+        enforce_adj=enforce_adj_check, enforce_solid=enforce_solid,
+        face_rename_format=face_rename_format, subface_rename_format=subface_rename_format,
+        name_decimal_count=name_decimal_count, exclude_units_in_name=exclude_units_in_name
+    )[0]
 
     # merge the honeybee models
     other_hb_models = [HBModel.from_file(m) for m in honeybee_model]

@@ -1986,7 +1986,7 @@ class Model(_BaseGeometry):
         tolerance=None, enforce_adj=True, enforce_solid=True,
         face_rename_format='{parent.display_name} - {gbxml_type} - {cardinal_direction}',
         subface_rename_format='{parent.parent.display_name} - {type} - {cardinal_direction}',
-        north_angle=0
+        name_decimal_count=None, exclude_units_in_name=False, north_angle=0
     ):
         """Convert Dragonfly Model to an array of Honeybee Models.
 
@@ -2074,7 +2074,7 @@ class Model(_BaseGeometry):
                 (eg. properties.energy.construction.display_name). Functions that
                 return string outputs can also be passed here as long as these
                 functions defaults specified for all arguments. If None, the names
-                of sub-faces will match the identifiers.
+                will match the identifiers.
             subface_rename_format: An optional text string for the pattern with which
                 apertures and doors will be renamed. Any property that exists on both
                 the honeybee Aperture and honeybee Door class may be used (eg. gbxml_type)
@@ -2083,7 +2083,13 @@ class Model(_BaseGeometry):
                 (eg. properties.energy.construction.display_name). Functions that
                 return string outputs can also be passed here as long as these
                 functions defaults specified for all arguments. If None, the names
-                of sub-faces will match the identifiers.
+                will match the identifiers.
+            name_decimal_count: An integer to set the number of decimal places that
+                appear in face and opening names for all numerical properties.
+                If None, the number of decimal places are determined by the
+                model tolerance. (Default: None).
+            exclude_units_in_name: Boolean for whether the units should be
+                excluded from all length, area and volume attributes. (Default: False).
             north_angle: An optional number for the north angle in degrees, which
                 can be specified to customize renaming of Face/SubFace geometry
                 attributes that relate to orientation like cardinal_direction. Note that
@@ -2180,30 +2186,22 @@ class Model(_BaseGeometry):
             for model in models:
                 self._apply_merge_map(model, merge_map, tolerance)
 
-        # ensure all sub-face IDs are unique and rename them to be human-readable
+        # rename all objects to have human-readable names
+        include_units = not exclude_units_in_name
         for model in models:
-            # set all window/door identifiers to be unique
-            existing_dict = {}
-            for room in model._rooms:
-                for face in room._faces:
-                    for sf in face._apertures + face._doors:
-                        val = sf.identifier
-                        if val in existing_dict:
-                            existing_dict[val] += 1
-                            sf.identifier = val + '__' + str(existing_dict[val])
-                        else:
-                            existing_dict[val] = 1
-            # rename all objects to have human-readable names
             if face_rename_format:
                 model.rename_faces_by_attribute(
-                    face_rename_format, north_angle=north_angle
-                    )
+                    face_rename_format, decimal_count=name_decimal_count,
+                    include_units=include_units, north_angle=north_angle
+                )
             if subface_rename_format:
                 model.rename_apertures_by_attribute(
-                    subface_rename_format, north_angle=north_angle
+                    subface_rename_format, decimal_count=name_decimal_count,
+                    include_units=include_units, north_angle=north_angle
                 )
                 model.rename_doors_by_attribute(
-                    subface_rename_format, north_angle=north_angle
+                    subface_rename_format, decimal_count=name_decimal_count,
+                    include_units=include_units, north_angle=north_angle
                 )
         return models
 
