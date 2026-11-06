@@ -1,0 +1,6 @@
+create
+======
+
+.. click:: dragonfly.cli.create:create
+   :prog: dragonfly create
+   :show-nested:
