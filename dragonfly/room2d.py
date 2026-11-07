@@ -5804,16 +5804,7 @@ class Room2D(_BaseGeometry):
         union_used = False
         if min_separation <= tolerance:
             closed_polys = Polygon2D.joined_intersected_boundary(floor_polys, tolerance)
-        else:  # otherwise, use the more intense gap crossing methods
-            # when there are a lot of points to evaluate, just use boolean union
-            max_eval_pts = 100000  # maximum points to evaluate
-            closed_polys, total_perimeter = None, 0
-            for poly in floor_polys:
-                total_perimeter += poly.perimeter
-            if total_perimeter / min_separation < max_eval_pts:
-                closed_polys = Polygon2D.gap_crossing_boundary(
-                    floor_polys, min_separation, tolerance)
-
+        else:  # otherwise, use boolean union to cross gaps
             # compute room centers to evaluate how good of a boundary it is
             room_centers = []
             for geo in floor_geos:
@@ -5821,32 +5812,18 @@ class Room2D(_BaseGeometry):
                     geo.pole_of_inaccessibility(min_separation)
                 room_centers.append(Point2D(center.x, center.y))
 
-            # check to see if gap_crossing_boundary is a good boundary
-            if closed_polys is not None:
-                rooms_included = [0] * len(room_centers)
-                for poly in closed_polys:
-                    for pi, pt in enumerate(room_centers):
-                        if poly.is_point_inside_bound_rect(pt):
-                            rooms_included[pi] = 1
-                    if sum(rooms_included) == len(rooms_included):
-                        break  # we have done a good job finding the boundary
-                else:
-                    closed_polys = None  # we have not found a good boundary
-
-            # if we have not gotten a result from gap_crossing_boundary, use boolean union
-            if closed_polys is None:
-                union_used, bound_polys, hole_polys = True, [], []
-                for geo in floor_geos:
-                    bound_polys.append(geo.boundary_polygon2d)
-                    if geo.has_holes:
-                        hole_polys.extend(geo.hole_polygon2d)
-                closed_polys = Polygon2D.offset_unioned_boundary(
-                    bound_polys, min_separation, tolerance, min_angle=math.radians(10)
-                )
-                hole_thresh = min_separation * 5
-                for hole in hole_polys:
-                    if hole.area > hole_thresh:
-                        closed_polys.append(hole)
+            union_used, bound_polys, hole_polys = True, [], []
+            for geo in floor_geos:
+                bound_polys.append(geo.boundary_polygon2d)
+                if geo.has_holes:
+                    hole_polys.extend(geo.hole_polygon2d)
+            closed_polys = Polygon2D.offset_unioned_boundary(
+                bound_polys, min_separation, tolerance, min_angle=math.radians(10)
+            )
+            hole_thresh = min_separation * 5
+            for hole in hole_polys:
+                if hole.area > hole_thresh:
+                    closed_polys.append(hole)
 
         # remove colinear vertices and clean up self intersections in the polygons
         clean_polys = []
@@ -5875,9 +5852,9 @@ class Room2D(_BaseGeometry):
             # if boolean union was used, do an extra check to remove incorrect faces
             if union_used:
                 correct_faces = []
-                for i, face in enumerate(bound_result):
+                for face in bound_result:
                     f_poly = Polygon2D([Point2D(p.x, p.y) for p in face.boundary])
-                    for pi, pt in enumerate(room_centers):
+                    for pt in room_centers:
                         if f_poly.is_point_inside_bound_rect(pt):
                             correct_faces.append(face)
                             break
