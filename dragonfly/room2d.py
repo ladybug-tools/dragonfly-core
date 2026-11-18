@@ -1504,7 +1504,10 @@ class Room2D(_BaseGeometry):
                     user_dts.append(ud)
             # set up any skylight surfaces
             if isinstance(self.skylight_parameters, DetailedSkylights):
-                roof = Face('{}_roof'.format(self.identifier), self.floor_geometry.flip())
+                roof = Face(
+                    '{}_roof'.format(self.identifier), self.floor_geometry,
+                    ftyp.roof_ceiling, bcs.outdoors
+                )
                 self.skylight_parameters.add_skylight_to_face(roof, tolerance)
                 skylight_sfs.extend(roof.sub_faces)
 
