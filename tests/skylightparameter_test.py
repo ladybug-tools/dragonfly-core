@@ -97,4 +97,3 @@ def test_gridded_skylight_ratio_add_skylight_to_face():
     assert ashrae_base.area_from_face(face) == \
         pytest.approx(face.aperture_area, rel=1e-3) == \
         pytest.approx(0.4 * face.area, rel=1e-3)
-

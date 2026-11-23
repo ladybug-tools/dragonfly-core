@@ -1536,6 +1536,19 @@ def test_to_honeybee_invalid_roof_2():
     assert len(hb_models) == 1
 
 
+def test_model_validation_with_skylights():
+    """Test the validation of a model with skylights close to the edge."""
+    model_file = './tests/json/room_with_valid_skylight.dfjson'
+    model = Model.from_file(model_file)
+
+    assert model.check_window_parameters_valid(raise_exception=False) != ''
+
+    room, tol = model.room_2ds[0], model.tolerance
+    room.offset_skylights_from_edges(tol, tol)
+
+    assert model.check_window_parameters_valid(raise_exception=False) == ''
+
+
 def test_model_with_room3ds():
     """Test to_honeybee with an invalid roof to ensure all exceptions are caught."""
     # load up the model

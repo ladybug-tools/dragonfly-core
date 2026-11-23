@@ -1005,16 +1005,15 @@ class DetailedSkylights(_SkylightParameterBase):
                     else face_3d.boundary_segments + \
                     tuple(seg for hole in face_3d.hole_segments for seg in hole)
                 for new_f in bool_int:
-                    new_pts_2d = []
+                    new_pts_2d, needs_offset = [], False
                     for pt in new_f.boundary:
-                        for edge in parent_edges:
-                            close_pt = edge.closest_point(pt)
-                            if pt.distance_to_point(close_pt) < offset_distance:
-                                move_vec = edge.v.rotate_xy(math.pi / 2).normalize()
-                                move_vec = move_vec * offset_distance
-                                pt = pt.move(move_vec)
                         new_pts_2d.append(Point2D(pt.x, pt.y))
-                    new_polygons.append(Polygon2D(new_pts_2d))
+                        if any(e.distance_to_point(pt) < offset_distance for e in parent_edges):
+                            needs_offset = True
+                    new_poly = Polygon2D(new_pts_2d)
+                    if needs_offset:
+                        new_poly = new_poly.offset(offset_distance)
+                    new_polygons.append(new_poly)
                     new_are_doors.append(isd)
             else:
                 new_polygons.append(polygon)
@@ -1215,6 +1214,9 @@ class DetailedSkylights(_SkylightParameterBase):
             else:
                 try:
                     new_geo = polygon.remove_colinear_vertices(tolerance)
+                    if new_geo.is_self_intersecting:
+                        new_geos = new_geo.split_through_self_intersection(tolerance)
+                        new_geo = sorted(new_geos, key=lambda r: r.area)[-1]
                     if not new_geo.is_self_intersecting:
                         new_polygons.append(new_geo)
                         new_are_doors.append(isd)
