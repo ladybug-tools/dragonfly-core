@@ -1642,10 +1642,15 @@ using-multipliers-zone-and-or-window.html
             rm_pt = room.floor_geometry.center if room.floor_geometry.is_convex else \
                 room.floor_geometry.pole_of_inaccessibility(tolerance)
             face_ray = Ray3D(rm_pt, up_vec)
-            for other_room in story_above._room_2ds:
-                if other_room._floor_geometry.intersect_line_ray(face_ray) is not None:
-                    room.is_top_exposed = False
-                    break
+            off_geo = room.floor_geometry.offset_edges(tolerance)
+            face_rays = [face_ray] + [Ray3D(p, up_vec) for p in off_geo.boundary]
+            ray_ints = [False] * len(face_rays)
+            for o_room in story_above._room_2ds:
+                for i, fr in enumerate(face_rays):
+                    if o_room.floor_geometry.intersect_line_ray(fr) is not None:
+                        ray_ints[i] = True
+            if all(ray_ints):
+                room.is_top_exposed = False
             else:
                 room.is_top_exposed = True
 
@@ -1671,10 +1676,15 @@ using-multipliers-zone-and-or-window.html
             rm_pt = room.floor_geometry.center if room.floor_geometry.is_convex else \
                 room.floor_geometry.pole_of_inaccessibility(tolerance)
             face_ray = Ray3D(Point3D(rm_pt.x, rm_pt.y, rm_pt.z + tolerance), down_vec)
-            for other_room in story_below._room_2ds:
-                if other_room._floor_geometry.intersect_line_ray(face_ray) is not None:
-                    room.is_ground_contact = False
-                    break
+            off_geo = room.floor_geometry.offset_edges(tolerance)
+            face_rays = [face_ray] + [Ray3D(p, down_vec) for p in off_geo.boundary]
+            ray_ints = [False] * len(face_rays)
+            for o_room in story_below._room_2ds:
+                for i, fr in enumerate(face_rays):
+                    if o_room.floor_geometry.intersect_line_ray(fr) is not None:
+                        ray_ints[i] = True
+            if all(ray_ints):
+                room.is_ground_contact = False
             else:
                 room.is_ground_contact = True
 

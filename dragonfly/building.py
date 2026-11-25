@@ -1511,9 +1511,10 @@ class Building(_BaseGeometry):
                                 constrain_edges, tolerance)
 
     def match_and_replace_room_2d_floor_geometry(
-            self, base_story_id, replaced_story_ids=None,
-            overlap_percent=50, projection_distance=0,
-            remove_unmatched=False, tolerance=0.01, angle_tolerance=1.0):
+        self, base_story_id, replaced_story_ids=None,
+        overlap_percent=50, projection_distance=0,
+        remove_unmatched=False, tolerance=0.01, angle_tolerance=1.0
+    ):
         """Replace Room2D floor_geometry on stories using a base story in the building.
 
         This method is intended for the case that several stories with repeated
@@ -1608,8 +1609,9 @@ class Building(_BaseGeometry):
                     elif len(match_r) > 1:
                         joined_geo = Face3D.join_coplanar_faces(match_r, tolerance)
                         r_geo = tuple(sorted(joined_geo, key=lambda x: x.area))[0]
-                        r_room.replace_floor_geometry(
-                            r_geo, projection_distance, tolerance, angle_tolerance)
+                        if r_geo.area / r_room.floor_area > overlap_frac:
+                            r_room.replace_floor_geometry(
+                                r_geo, projection_distance, tolerance, angle_tolerance)
                 final_matched_rooms.append(r_room)
             final_matched_stories.append(final_matched_rooms)
 
