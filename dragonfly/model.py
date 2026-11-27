@@ -2186,9 +2186,21 @@ class Model(_BaseGeometry):
             for model in models:
                 self._apply_merge_map(model, merge_map, tolerance)
 
-        # rename all objects to have human-readable names
+        # manage the IDs and names of all Faces and SubFaces
         include_units = not exclude_units_in_name
         for model in models:
+            # set all window/door identifiers to be unique
+            existing_dict = {}
+            for room in model._rooms:
+                for face in room._faces:
+                    for sf in face._apertures + face._doors:
+                        val = sf.identifier
+                        if val in existing_dict:
+                            existing_dict[val] += 1
+                            sf.identifier = val + '__' + str(existing_dict[val])
+                        else:
+                            existing_dict[val] = 1
+            # rename all objects to have human-readable names
             if face_rename_format:
                 model.rename_faces_by_attribute(
                     face_rename_format, decimal_count=name_decimal_count,
