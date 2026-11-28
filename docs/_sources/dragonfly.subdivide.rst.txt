@@ -1,0 +1,7 @@
+dragonfly.subdivide module
+==========================
+
+.. automodule:: dragonfly.subdivide
+   :members:
+   :undoc-members:
+   :show-inheritance:
